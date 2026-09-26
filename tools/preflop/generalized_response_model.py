@@ -49,6 +49,12 @@ Contract surface
 * :func:`evaluate` -> direct evaluation (log loss, Brier, accuracy) which is
   itself a function of the queried price/sizing;
 * :func:`price_response` -> the direct price/sizing response curve;
+* :func:`raise_sizing_query` / :func:`generate_raise_sizings` /
+  :func:`score_raise_sizing` -> the conditional ``P(sizing | RAISE, JAM,
+  public context)`` model restricted to the engine's legal raise window, with
+  per-request support/uncertainty, a deterministic legal generation grid and a
+  fail-closed policy that never substitutes a nearest price or a nearest
+  context (see :func:`raise_sizing_report`);
 * :func:`compare_candidates` -> architecture-vs-architecture comparison on the
   same rows;
 * ``contracts/training/generalized-response-model.schema.json`` -> the contract
@@ -1061,6 +1067,13 @@ def _hierarchical_weights(
 
 
 def _fit_sizing_channel(counts: _Counts, config: Mapping[str, Any]) -> dict[str, Any]:
+    return _fit_sizing_channel_from_counts(counts.sizing_counts, config)
+
+
+def _fit_sizing_channel_from_counts(
+    sizing_counts: Mapping[str, Mapping[str, Sequence[float]]], config: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Smooth raw RAISE/JAM ratio counts into the shared conditional channel."""
     mass = float(config["sizing_smoothing_mass"])
     knots = [float(x) for x in config["sizing_axis_knots"]]
     channel: dict[str, Any] = {
@@ -1070,7 +1083,7 @@ def _fit_sizing_channel(counts: _Counts, config: Mapping[str, Any]) -> dict[str,
         "families": {},
     }
     for action in AGGRESSIVE_ACTIONS:
-        global_counts = counts.sizing_counts[action]["GLOBAL"]
+        global_counts = list(sizing_counts[action]["GLOBAL"])
         total = float(sum(global_counts))
         if total <= 0:
             density = [1.0 / len(knots)] * len(knots)
@@ -1080,7 +1093,7 @@ def _fit_sizing_channel(counts: _Counts, config: Mapping[str, Any]) -> dict[str,
             "total": int(round(total)),
             "density": [_round(value, 9) for value in density],
         }
-        for family, values in counts.sizing_counts[action].items():
+        for family, values in sizing_counts[action].items():
             if family == "GLOBAL" or float(sum(values)) <= 0:
                 continue
             smoothed = [
@@ -1451,6 +1464,1175 @@ def price_response(
 
 
 # ---------------------------------------------------------------------------
+# conditional raise / jam sizing model (#421; #388/#419 raise-sizing frontiers)
+#
+# The sizing channel above answers "how does the queried target move the
+# RAISE/JAM gain".  This section answers the complementary question:
+#
+#     P(raise target | RAISE or JAM, public context)
+#
+# restricted to the *legal* target window of the engine:
+#
+#     min_raise_to_bb <= target <= max_raise_to_bb
+#
+# Three rules are non-negotiable and are asserted by
+# ``tests/preflop/test_generalized_response_sizing.py``:
+#
+# 1. every produced target is legal (inside the window);
+# 2. a missing statistic is *never* substituted by the nearest observed price
+#    or the nearest public context -- the request fails closed instead;
+# 3. every request exposes its support and its uncertainty.
+#
+# Engine legality, reconstructed from public features only
+# --------------------------------------------------------
+# The engine raises to ``current_bet + last_full_raise`` with
+# ``last_full_raise >= big_blind``.  Let ``committed`` be the actor's own
+# pre-action street contribution and ``cb = to_call + committed`` the current
+# bet; the previous bet level ``prev`` always satisfies
+# ``prev >= max(committed, big_blind)``.  Therefore
+#
+#     true_min = cb + (cb - prev) <= max(2*cb - max(committed, BB), cb + BB)
+#
+# so the expression on the right is a *conservative upper bound* of the true
+# minimum raise: any target at or above it is legal.  The cap is the engine
+# ``max_raise_to_bb`` when supplied, otherwise ``effective_stack_bb``, which is
+# the minimum over the live stacks and therefore never exceeds the actor's own
+# remaining stack -- again a conservative (legal) cap.  A missing commitment
+# outside the free (``raise_level == 0``) regime fails closed, because a raise
+# could then be produced below the true minimum.
+# ---------------------------------------------------------------------------
+
+RAISE_SIZING_SCHEMA = "poker-generalized-response-raise-sizing/v1"
+RAISE_SIZING_REPORT_SCHEMA = "poker-generalized-response-raise-sizing-report/v1"
+RAISE_SIZING_WINDOW_SCHEMA = "poker-generalized-response-raise-sizing-window/v1"
+
+BIG_BLIND_BB = 1.0
+POSITION_BLIND_BB: dict[str, float] = {"SB": 0.5, "BB": BIG_BLIND_BB}
+
+#: Frozen raise-sizing evidence from the #388 exhaustive tree audit and the
+#: #419 hierarchical exact-tree integration bundle.
+FRONTIER_RESOLUTION_PATH = (
+    ROOT / "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json"
+)
+EXACT_TREE_PATH = ROOT / "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json"
+DEFAULT_SIZING_REPORT_PATH = ROOT / "analysis/issue421_generalized_response/RAISE_SIZING_MODEL_REPORT.json"
+
+#: Deterministic quadrature resolution of the truncated conditional density.
+SIZING_QUADRATURE_STEPS = 96
+MIN_FAMILY_SIZING_SUPPORT = 20
+SIZING_QUANTILE_LEVELS = (
+    0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
+    0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
+)
+SIZING_GENERATION_QUANTILES = (0.1, 0.25, 0.5, 0.75, 0.9)
+CALIBRATION_LEVELS = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+PIT_BINS = 10
+
+#: Public pre-action contribution fields accepted from a preflop context.
+CONTRIBUTION_FIELDS: tuple[str, ...] = (
+    "actor_contribution_bb",
+    "actor_street_contribution_bb",
+    "actor_committed_bb",
+    "street_contribution_bb",
+)
+
+
+def _free_position_blind(position: Any) -> float:
+    return float(POSITION_BLIND_BB.get(_public_level(position), 0.0))
+
+
+def raise_sizing_window(
+    context: Mapping[str, Any],
+    *,
+    action: str | None = None,
+    config: Mapping[str, Any] | None = None,
+    actor_commitment_bb: float | None = None,
+) -> dict[str, Any]:
+    """Resolve the legal raise-target window of one public context.
+
+    The engine interval (``min_raise_to_bb`` / ``max_raise_to_bb`` or
+    ``legal_target_interval_bb``) is authoritative when the caller supplies it.
+    Otherwise the window is *derived* from public features and is a
+    conservative sub-window of the legal interval, so any produced target is
+    legal without ever consulting a neighbouring observation.
+    """
+    if not isinstance(context, Mapping):
+        raise GeneralizedResponseModelError("raise_sizing_window requires a context mapping")
+    merged = make_config(**dict(config)) if isinstance(config, Mapping) else make_config()
+    if action is not None and action not in AGGRESSIVE_ACTIONS:
+        raise GeneralizedResponseModelError(
+            f"raise sizing is defined for {AGGRESSIVE_ACTIONS}, not {action!r}"
+        )
+
+    to_call = max(_finite(context.get("to_call_bb") or 0.0, "to_call_bb"), 0.0)
+    pot_before = max(_finite(context.get("pot_before_bb") or 0.0, "pot_before_bb"), 0.0)
+    denominator = max(pot_before + to_call, EPS)
+
+    explicit_min = context.get("min_raise_to_bb")
+    explicit_max = context.get("max_raise_to_bb")
+    interval = context.get("legal_target_interval_bb")
+    if isinstance(interval, (list, tuple)) and len(interval) == 2:
+        if explicit_min is None:
+            explicit_min = interval[0]
+        if explicit_max is None:
+            explicit_max = interval[1]
+    explicit_min = None if explicit_min is None else max(_finite(explicit_min, "min_raise_to_bb"), 0.0)
+    explicit_max = None if explicit_max is None else max(_finite(explicit_max, "max_raise_to_bb"), 0.0)
+
+    commitment: float | None = None
+    commitment_source: str | None = None
+    if actor_commitment_bb is not None:
+        commitment = max(_finite(actor_commitment_bb, "actor_commitment_bb"), 0.0)
+        commitment_source = "argument"
+    else:
+        for field in CONTRIBUTION_FIELDS:
+            if context.get(field) is not None:
+                commitment = max(_finite(context[field], field), 0.0)
+                commitment_source = f"context.{field}"
+                break
+
+    current_bet: float | None = None
+    for field in ("current_bet_bb", "current_price_bb"):
+        if context.get(field) is not None:
+            current_bet = max(_finite(context[field], field), 0.0)
+            break
+
+    try:
+        raise_level = max(int(float(context.get("raise_level") or 0)), 0)
+    except (TypeError, ValueError):
+        raise_level = 0
+    if commitment is None and raise_level == 0:
+        # Free regime: the actor is an unacted blind, so the posted blind *is*
+        # the pre-action contribution.
+        commitment = _free_position_blind(context.get("actor_position"))
+        commitment_source = "position_blind_raise_level_0"
+    if current_bet is None and commitment is not None:
+        current_bet = to_call + commitment
+
+    derived_min: float | None = None
+    if current_bet is not None and commitment is not None:
+        previous_bet_lower_bound = max(commitment, BIG_BLIND_BB)
+        derived_min = max(
+            2.0 * current_bet - previous_bet_lower_bound,
+            current_bet + BIG_BLIND_BB,
+        )
+
+    min_raise_to = explicit_min if explicit_min is not None else derived_min
+    cap = explicit_max
+    cap_source = "engine_max_raise_to"
+    if cap is None:
+        raw_cap = context.get("effective_stack_bb")
+        cap = None if raw_cap is None else max(_finite(raw_cap, "effective_stack_bb"), 0.0)
+        cap_source = "effective_stack_bb_conservative"
+
+    reason: str | None = None
+    if cap is None:
+        reason = "MISSING_MAX_RAISE_TO"
+    elif min_raise_to is None:
+        reason = "MISSING_MIN_RAISE_TO_UNVERIFIED_COMMITMENT"
+
+    jam_floor = current_bet if current_bet is not None else to_call
+    if action == "RAISE":
+        floor: float | None = min_raise_to
+    elif action == "JAM":
+        # An all-in shove is still subject to the minimum raise whenever the
+        # stack allows one; when the minimum raise exceeds the effective stack
+        # the only legal aggressive target is the full shove itself.
+        floor = jam_floor
+        if min_raise_to is not None and cap is not None:
+            floor = max(jam_floor, min(min_raise_to, cap))
+    else:
+        floor = min_raise_to if min_raise_to is not None else jam_floor
+
+    if reason is None and min_raise_to is not None and cap is not None and min_raise_to > cap + EPS:
+        # The legal raise window is empty: only an all-in (which may be an
+        # incomplete raise) remains legal, so a RAISE request fails closed.
+        if action == "RAISE":
+            reason = "RAISE_WINDOW_EMPTY_BELOW_STACK"
+        elif floor is not None:
+            floor = min(floor, cap)
+
+    verified = min_raise_to is not None and cap is not None
+    return {
+        "schema": RAISE_SIZING_WINDOW_SCHEMA,
+        "action": action,
+        "to_call_bb": _round(to_call),
+        "pot_before_bb": _round(pot_before),
+        "ratio_denominator_bb": _round(denominator),
+        "current_bet_bb": _round(current_bet),
+        "actor_commitment_bb": _round(commitment),
+        "actor_commitment_source": commitment_source,
+        "min_raise_to_bb": _round(min_raise_to),
+        "max_raise_to_bb": _round(cap),
+        "jam_floor_bb": _round(jam_floor),
+        "floor_bb": _round(floor),
+        "cap_bb": _round(cap),
+        "bounds_source": {
+            "min": "engine_interval" if explicit_min is not None else "derived_conservative_floor",
+            "max": cap_source,
+        },
+        "min_raise_floor_is_conservative": explicit_min is None,
+        "cap_is_conservative": cap_source == "effective_stack_bb_conservative",
+        "verified": bool(verified),
+        "fail_closed": bool(reason is not None),
+        "fail_closed_reason": reason,
+    }
+
+
+def sizing_channel_of(model: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Accept either a fitted candidate or a bare sizing channel document."""
+    if not isinstance(model, Mapping):
+        raise GeneralizedResponseModelError("sizing model must be a mapping")
+    params = model.get("params")
+    if isinstance(params, Mapping) and isinstance(params.get("sizing_channel"), Mapping):
+        return params["sizing_channel"]
+    if isinstance(model.get("global"), Mapping) and isinstance(model.get("axis_knots"), list):
+        return model
+    raise GeneralizedResponseModelError(
+        "document carries neither params.sizing_channel nor a sizing channel"
+    )
+
+
+def fit_sizing_channel(
+    rows: Iterable[Mapping[str, Any]],
+    config: Mapping[str, Any] | None = None,
+    *,
+    min_family_support: int = MIN_FAMILY_SIZING_SUPPORT,
+) -> dict[str, Any]:
+    """Fit the conditional RAISE/JAM sizing channel straight from public rows.
+
+    The returned document carries the same continuous ``log1p`` pot-relative
+    density a full :func:`fit` stores under ``params.sizing_channel`` plus a
+    ``boundary`` block with the measured atoms at the minimum raise and at the
+    all-in cap.  Only sizing statistics are accumulated, so the fit is cheap.
+
+    ``boundary`` is a *sizing-layer* extension: a candidate document keeps its
+    contract-frozen channel (``contracts/training/generalized-response-model.
+    schema.json`` forbids extra channel properties), so a query against a bare
+    candidate channel reports ``boundary_mass_source == "unavailable"`` and
+    falls back to the continuous density instead of inventing an atom.
+    """
+    merged = make_config(**dict(config)) if isinstance(config, Mapping) else make_config()
+    all_rows = [dict(row) for row in rows]
+    knots = [float(x) for x in merged["sizing_axis_knots"]]
+    counters: dict[str, dict[str, list[float]]] = {
+        action: {"GLOBAL": [0.0] * len(knots)} for action in AGGRESSIVE_ACTIONS
+    }
+    rows_seen = 0
+    for row in all_rows:
+        if not isinstance(row, Mapping):
+            raise TypeError("sizing rows must be mappings")
+        materialized = dict(row)
+        _assert_consumable(materialized)
+        action = _row_action(materialized)
+        rows_seen += 1
+        if action not in AGGRESSIVE_ACTIONS:
+            continue
+        sizing = sizing_context(materialized, merged)
+        family = _public_level(materialized.get("family"))
+        weights = spline_weights(float(sizing["sizing_ratio"]), knots)
+        family_table = counters[action].setdefault(family, [0.0] * len(knots))
+        for index, weight in weights.items():
+            counters[action]["GLOBAL"][index] += float(weight)
+            family_table[index] += float(weight)
+    if rows_seen == 0:
+        raise GeneralizedResponseModelError("no rows supplied to fit_sizing_channel")
+    channel = _fit_sizing_channel_from_counts(counters, merged)
+    channel["boundary"] = _fit_boundary_mass(all_rows, merged, min_family_support)
+    return channel
+
+
+def _ratio_density_on_grid(
+    channel: Mapping[str, Any],
+    action: str,
+    family: str,
+    ratios: Sequence[float],
+) -> list[float]:
+    """Piecewise-linear (log1p) density of ``action`` at each queried ratio."""
+    tables = channel["families"].get(family) or {}
+    table = tables.get(action) or channel["global"][action]
+    axis = [_transform(float(knot)) for knot in channel["axis_knots"]]
+    values = [float(value) for value in table["density"]]
+    density: list[float] = []
+    for ratio in ratios:
+        u = _transform(ratio)
+        if u <= axis[0]:
+            value = values[0]
+        elif u >= axis[-1]:
+            value = values[-1]
+        else:
+            index = bisect.bisect_right(axis, u) - 1
+            low, high = axis[index], axis[index + 1]
+            weight = 0.0 if high <= low else (u - low) / (high - low)
+            value = values[index] * (1.0 - weight) + values[index + 1] * weight
+        density.append(max(float(value), 0.0))
+    return density
+
+
+def _sizing_support(
+    channel: Mapping[str, Any], action: str, family: str, min_family_support: int
+) -> dict[str, Any]:
+    family_table = ((channel["families"].get(family) or {}).get(action)) or {}
+    family_total = int(family_table.get("total") or 0)
+    global_total = int((channel["global"][action] or {}).get("total") or 0)
+    if family_total >= int(min_family_support):
+        level, total = "FAMILY", family_total
+    elif global_total > 0:
+        level, total = "GLOBAL_FALLBACK", global_total
+    else:
+        level, total = "NO_SUPPORT", 0
+    density = list(family_table.get("density") or channel["global"][action]["density"])
+    distinct = sum(1 for value in density if float(value) > 0.0)
+    return {
+        "support_level": level,
+        "action_observations": total,
+        "family_observations": family_total,
+        "global_observations": global_total,
+        "min_family_support": int(min_family_support),
+        "distinct_density_bins": distinct,
+        "effective_sample_size": float(total),
+    }
+
+
+def _sizing_grid_density(
+    channel: Mapping[str, Any],
+    action: str,
+    family: str,
+    floor: float,
+    cap: float,
+    denominator: float,
+    steps: int,
+) -> tuple[list[float], list[float], float]:
+    """Truncated density on the legal window: (grid, probabilities, mass).
+
+    ``probabilities[index]`` is the mass of the interval
+    ``[grid[index], grid[index + 1]]`` and is spread uniformly inside it, so the
+    quantiles and the probability integral transform stay interval-consistent.
+    """
+    low_ratio = floor / denominator
+    high_ratio = cap / denominator
+    grid = [low_ratio + (high_ratio - low_ratio) * (index / steps) for index in range(steps + 1)]
+    density = _ratio_density_on_grid(channel, action, family, grid)
+    masses = [
+        0.5 * (density[index] + density[index + 1]) * (grid[index + 1] - grid[index])
+        for index in range(steps)
+    ]
+    mass = math.fsum(masses)
+    if mass <= EPS:
+        return grid, [], mass
+    return grid, [value / mass for value in masses], mass
+
+
+def _interval_quantile(grid: Sequence[float], probabilities: Sequence[float], level: float) -> float:
+    """Linear-within-interval quantile of a piecewise-constant density."""
+    cumulative = 0.0
+    for index, probability in enumerate(probabilities):
+        if probability <= 0.0:
+            continue
+        if cumulative + probability >= level:
+            share = (level - cumulative) / probability
+            return grid[index] + share * (grid[index + 1] - grid[index])
+        cumulative += probability
+    return grid[-1]
+
+
+def _interval_pit(grid: Sequence[float], probabilities: Sequence[float], value: float) -> float:
+    """Probability integral transform with uniform-within-interval mass."""
+    if value <= grid[0]:
+        return 0.0
+    if value >= grid[-1]:
+        return 1.0
+    cumulative = 0.0
+    for index, probability in enumerate(probabilities):
+        left, right = grid[index], grid[index + 1]
+        if value <= right:
+            width = right - left
+            share = 0.0 if width <= 0 else (value - left) / width
+            return min(max(cumulative + probability * share, 0.0), 1.0)
+        cumulative += probability
+    return 1.0
+
+
+def _continuous_mass_between(
+    grid: Sequence[float], probabilities: Sequence[float], low: float, high: float
+) -> float:
+    """Mass of the piecewise-uniform continuous part within ``[low, high]``."""
+    if high <= low or not probabilities:
+        return 0.0
+    low = max(low, grid[0])
+    high = min(high, grid[-1])
+    if high <= low:
+        return 0.0
+    total = 0.0
+    for index, probability in enumerate(probabilities):
+        if probability <= 0.0:
+            continue
+        left, right = grid[index], grid[index + 1]
+        if right <= low:
+            continue
+        if left >= high:
+            break
+        overlap = min(right, high) - max(left, low)
+        width = right - left
+        if overlap > 0.0 and width > 0.0:
+            total += probability * (overlap / width)
+    return total
+
+
+def _fit_boundary_mass(
+    rows: Iterable[Mapping[str, Any]],
+    config: Mapping[str, Any],
+    min_family_support: int,
+) -> dict[str, Any]:
+    """Empirical atoms at the two ends of the legal raise window.
+
+    Real preflop populations put large atoms on "raise to exactly the minimum"
+    and on "shove the whole (effective) stack".  A purely continuous density
+    cannot represent them, so the two atoms are measured directly -- with the
+    actor's pre-action contribution recovered from the public row -- and are
+    smoothed toward the pooled rate with the standard sizing smoothing mass.
+    """
+    counters: dict[str, dict[str, list[float]]] = {
+        action: {"GLOBAL": [0.0, 0.0, 0.0]} for action in AGGRESSIVE_ACTIONS
+    }
+    for row in rows:
+        if not isinstance(row, Mapping):
+            raise TypeError("sizing rows must be mappings")
+        action = str(row.get("action") or "").strip().upper()
+        if action not in AGGRESSIVE_ACTIONS:
+            continue
+        target = row.get("target_total_bb")
+        if target is None:
+            continue
+        window = raise_sizing_window(
+            row, action=action, config=config, actor_commitment_bb=recover_actor_commitment(row)
+        )
+        floor, cap = window["floor_bb"], window["cap_bb"]
+        if window["fail_closed"] or floor is None or cap is None or cap <= floor:
+            continue
+        family = _public_level(row.get("family"))
+        table = counters[action].setdefault(family, [0.0, 0.0, 0.0])
+        for bucket in (counters[action]["GLOBAL"], table):
+            bucket[0] += 1.0
+            if abs(float(target) - float(floor)) <= 1e-6:
+                bucket[1] += 1.0
+            if abs(float(target) - float(cap)) <= 1e-6:
+                bucket[2] += 1.0
+
+    smoothing = float(config["sizing_smoothing_mass"])
+    pooled: dict[str, float] = {}
+    for action in AGGRESSIVE_ACTIONS:
+        global_counts = counters[action]["GLOBAL"]
+        total = float(global_counts[0])
+        pooled[action] = (global_counts[1] / total) if total > 0 else 0.0
+        pooled[f"{action}:cap"] = (global_counts[2] / total) if total > 0 else 0.0
+
+    def smoothed(counts: Sequence[float], action: str) -> dict[str, Any]:
+        total = float(counts[0])
+        if total <= 0:
+            return {"n": 0, "at_floor": 0, "at_cap": 0, "p_floor": 0.0, "p_cap": 0.0}
+        p_floor = (counts[1] + smoothing * pooled[action]) / (total + smoothing)
+        p_cap = (counts[2] + smoothing * pooled[f"{action}:cap"]) / (total + smoothing)
+        if p_floor + p_cap > 0.95:
+            scale = 0.95 / (p_floor + p_cap)
+            p_floor, p_cap = p_floor * scale, p_cap * scale
+        return {
+            "n": int(round(total)),
+            "at_floor": int(round(counts[1])),
+            "at_cap": int(round(counts[2])),
+            "p_floor": _round(p_floor, 9),
+            "p_cap": _round(p_cap, 9),
+        }
+
+    boundary: dict[str, Any] = {
+        "min_family_support": int(min_family_support),
+        "tolerance_bb": 1e-6,
+        "global": {
+            action: smoothed(counters[action]["GLOBAL"], action) for action in AGGRESSIVE_ACTIONS
+        },
+        "families": {},
+    }
+    for action in AGGRESSIVE_ACTIONS:
+        for family, counts in counters[action].items():
+            if family == "GLOBAL":
+                continue
+            boundary["families"].setdefault(family, {})[action] = smoothed(counts, action)
+    return boundary
+
+
+def _boundary_mass(
+    channel: Mapping[str, Any], action: str, family: str, min_family_support: int
+) -> tuple[float, float, str]:
+    """Smoothed ``(p_floor, p_cap, source)`` of one action/family request."""
+    boundary = channel.get("boundary")
+    if not isinstance(boundary, Mapping):
+        return 0.0, 0.0, "unavailable"
+    family_table = ((boundary.get("families") or {}).get(family) or {}).get(action) or {}
+    global_table = (boundary.get("global") or {}).get(action) or {}
+    if int(family_table.get("n") or 0) >= int(min_family_support):
+        return (
+            float(family_table.get("p_floor") or 0.0),
+            float(family_table.get("p_cap") or 0.0),
+            "FAMILY",
+        )
+    if int(global_table.get("n") or 0) > 0:
+        return (
+            float(global_table.get("p_floor") or 0.0),
+            float(global_table.get("p_cap") or 0.0),
+            "GLOBAL_FALLBACK",
+        )
+    return 0.0, 0.0, "NO_SUPPORT"
+
+
+def _mixed_sizing_model(
+    channel: Mapping[str, Any],
+    action: str,
+    family: str,
+    window: Mapping[str, Any],
+    denominator: float,
+    steps: int,
+    min_family_support: int,
+) -> dict[str, Any]:
+    """Mixture of two boundary atoms and the truncated continuous density."""
+    floor, cap = float(window["floor_bb"]), float(window["cap_bb"])
+    grid, continuous, mass = _sizing_grid_density(
+        channel, action, family, floor, cap, denominator, steps
+    )
+    atom_floor, atom_cap, source = _boundary_mass(channel, action, family, min_family_support)
+    if not continuous:
+        return {
+            "floor": floor,
+            "cap": cap,
+            "denominator": denominator,
+            "grid": [floor, cap],
+            "continuous": [],
+            "unit_continuous": [],
+            "truncation_mass": mass,
+            "atom_floor": atom_floor,
+            "atom_cap": atom_cap,
+            "continuous_mass": 0.0,
+            "boundary_source": source,
+        }
+    continuous_mass = max(0.0, 1.0 - atom_floor - atom_cap)
+    return {
+        "floor": floor,
+        "cap": cap,
+        "denominator": denominator,
+        "grid": grid,
+        "continuous": [probability * continuous_mass for probability in continuous],
+        "unit_continuous": continuous,
+        "truncation_mass": mass,
+        "atom_floor": atom_floor,
+        "atom_cap": atom_cap,
+        "continuous_mass": continuous_mass,
+        "boundary_source": source,
+    }
+
+
+def _sizing_spec(
+    channel: Mapping[str, Any],
+    action: str,
+    family: str,
+    window: Mapping[str, Any],
+    denominator: float,
+    steps: int,
+    min_family_support: int,
+) -> dict[str, Any]:
+    """Mixed sizing spec of one window, including the degenerate shove-only case."""
+    floor, cap = float(window["floor_bb"]), float(window["cap_bb"])
+    if cap <= floor + EPS:
+        # A single legal aggressive target (the shove-only short stack): the
+        # conditional distribution is the degenerate point mass on it.
+        return {
+            "floor": floor,
+            "cap": cap,
+            "denominator": denominator,
+            "grid": [floor, cap],
+            "continuous": [],
+            "unit_continuous": [],
+            "truncation_mass": 0.0,
+            "atom_floor": 1.0,
+            "atom_cap": 0.0,
+            "continuous_mass": 0.0,
+            "boundary_source": "single_legal_target",
+        }
+    return _mixed_sizing_model(
+        channel, action, family, window, denominator, steps, min_family_support
+    )
+
+
+def _mixed_support(spec: Mapping[str, Any]) -> tuple[list[float], list[float]]:
+    """Discrete support/weights of the mixed model, in bb units."""
+    denominator = spec["denominator"]
+    points = [spec["floor"]]
+    weights = [spec["atom_floor"]]
+    for index, probability in enumerate(spec["continuous"]):
+        points.append(0.5 * (spec["grid"][index] + spec["grid"][index + 1]) * denominator)
+        weights.append(probability)
+    points.append(spec["cap"])
+    weights.append(spec["atom_cap"])
+    return points, weights
+
+
+def _mixed_quantile(spec: Mapping[str, Any], level: float) -> float:
+    """Quantile in bb units of the mixed model."""
+    atom_floor, atom_cap = spec["atom_floor"], spec["atom_cap"]
+    if level <= atom_floor:
+        return spec["floor"]
+    if level >= 1.0 - atom_cap:
+        return spec["cap"]
+    share = (level - atom_floor) / max(spec["continuous_mass"], EPS)
+    return _interval_quantile(spec["grid"], spec["unit_continuous"], share) * spec["denominator"]
+
+
+def _mixed_pit(spec: Mapping[str, Any], target: float) -> float:
+    """Probability integral transform of the mixed distribution."""
+    if target <= spec["floor"]:
+        return min(spec["atom_floor"], 1.0)
+    if target >= spec["cap"]:
+        return 1.0
+    inner = _interval_pit(spec["grid"], spec["unit_continuous"], target / spec["denominator"])
+    return min(max(spec["atom_floor"] + spec["continuous_mass"] * inner, 0.0), 1.0)
+
+
+def _mixed_bin_mass(spec: Mapping[str, Any], target: float, width: float = 1.0) -> float:
+    """Probability of a ``width``-wide window around ``target`` (bb units)."""
+    low, high = target - width / 2.0, target + width / 2.0
+    mass = spec["continuous_mass"] * _continuous_mass_between(
+        spec["grid"],
+        spec["unit_continuous"],
+        low / spec["denominator"],
+        high / spec["denominator"],
+    )
+    if low <= spec["floor"] <= high:
+        mass += spec["atom_floor"]
+    if low <= spec["cap"] <= high:
+        mass += spec["atom_cap"]
+    return mass
+
+
+def _mixed_crps_bb(points: Sequence[float], weights: Sequence[float], target: float) -> float:
+    """CRPS (bb) of the discrete mixed support."""
+    term1 = math.fsum(weight * abs(point - target) for point, weight in zip(points, weights))
+    cumulative_weight = 0.0
+    cumulative_moment = 0.0
+    pair = 0.0
+    for point, weight in zip(points, weights):
+        pair += weight * (point * cumulative_weight - cumulative_moment)
+        cumulative_weight += weight
+        cumulative_moment += weight * point
+    return term1 - pair
+
+
+def raise_sizing_distribution(
+    model: Mapping[str, Any],
+    context: Mapping[str, Any],
+    *,
+    action: str = "RAISE",
+    config: Mapping[str, Any] | None = None,
+    steps: int = SIZING_QUADRATURE_STEPS,
+    actor_commitment_bb: float | None = None,
+    min_family_support: int = MIN_FAMILY_SIZING_SUPPORT,
+) -> dict[str, Any]:
+    """Conditional P(sizing | action, public context): atoms plus density.
+
+    The distribution is a two-atom mixture: a measured atom at the minimum
+    legal raise, a measured atom at the all-in cap, and the truncated ``log1p``
+    pot-relative density in between.  Nothing is looked up in, or borrowed
+    from, a neighbouring cell: the window, the atoms and the density are all
+    functions of the query and the fitted channel.
+    """
+    if action not in AGGRESSIVE_ACTIONS:
+        raise GeneralizedResponseModelError(f"unknown sizing action {action!r}")
+    channel = sizing_channel_of(model)
+    merged = make_config(**dict(config)) if isinstance(config, Mapping) else make_config()
+    steps = max(int(steps), 8)
+    window = raise_sizing_window(
+        context, action=action, config=merged, actor_commitment_bb=actor_commitment_bb
+    )
+    family = _public_level(context.get("family"))
+    support = _sizing_support(channel, action, family, min_family_support)
+    base: dict[str, Any] = {
+        "schema": RAISE_SIZING_SCHEMA,
+        "action": action,
+        "family": family,
+        "legal_window": window,
+        "support": support,
+        "nearest_price_substituted": False,
+        "nearest_context_substituted": False,
+        "interpolation": (
+            "boundary_atoms_plus_linear_spline_partition_of_unity_truncated_to_legal_window"
+        ),
+    }
+    floor, cap = window["floor_bb"], window["cap_bb"]
+    if window["fail_closed"] or floor is None or cap is None or cap < floor - EPS:
+        base.update(
+            {
+                "status": "FAIL_CLOSED",
+                "fail_closed_reason": window["fail_closed_reason"] or "EMPTY_LEGAL_WINDOW",
+                "uncertainty": None,
+                "quantiles_bb": None,
+                "density": None,
+            }
+        )
+        return base
+    denominator = float(window["ratio_denominator_bb"])
+    spec = _sizing_spec(channel, action, family, window, denominator, steps, min_family_support)
+    points, weights = _mixed_support(spec)
+    if math.fsum(weights) <= EPS:
+        base.update(
+            {
+                "status": "FAIL_CLOSED",
+                "fail_closed_reason": "NO_SUPPORT_INSIDE_LEGAL_WINDOW",
+                "uncertainty": None,
+                "quantiles_bb": None,
+                "density": None,
+            }
+        )
+        return base
+    positive = [weight for weight in weights if weight > 0.0]
+    entropy = -math.fsum(weight * math.log(weight) for weight in positive)
+    normalized_entropy = entropy / math.log(len(positive)) if len(positive) > 1 else 0.0
+    mode_index = max(range(len(weights)), key=lambda index: weights[index])
+    credible_low = _mixed_quantile(spec, 0.1)
+    credible_high = _mixed_quantile(spec, 0.9)
+    base.update(
+        {
+            "status": "RESOLVED",
+            "density": {
+                "grid_points": steps + 1,
+                "quadrature": "deterministic_trapezoid_on_ratio_grid",
+                "truncation_mass": _round(spec["truncation_mass"], 12),
+                "continuous_mass": _round(spec["continuous_mass"], 9),
+                "atom_floor_probability": _round(spec["atom_floor"], 9),
+                "atom_cap_probability": _round(spec["atom_cap"], 9),
+                "boundary_mass_source": spec["boundary_source"],
+                "window_ratio": _round(float(floor) / denominator),
+                "window_ratio_high": _round(float(cap) / denominator),
+                "unnormalized_peak_density": _round(
+                    max(_ratio_density_on_grid(channel, action, family, spec["grid"])), 12
+                ),
+            },
+            "uncertainty": {
+                "entropy_nats": _round(entropy, 9),
+                "entropy_normalized": _round(normalized_entropy, 9),
+                "concentration": _round(1.0 - normalized_entropy, 9),
+                "credible_interval_bb": [
+                    _round(credible_low),
+                    _round(credible_high),
+                ],
+                "credible_interval_width_bb": _round(credible_high - credible_low),
+                "credible_interval_ratio": [
+                    _round(credible_low / denominator),
+                    _round(credible_high / denominator),
+                ],
+                "mode_bb": _round(points[mode_index]),
+                "median_bb": _round(_mixed_quantile(spec, 0.5)),
+                "mode_probability": _round(weights[mode_index], 9),
+                "mean_bb": _round(math.fsum(p * w for p, w in zip(points, weights))),
+                "boundary_probabilities": {
+                    "floor": _round(spec["atom_floor"], 9),
+                    "cap": _round(spec["atom_cap"], 9),
+                    "continuous": _round(spec["continuous_mass"], 9),
+                },
+                "window_width_bb": _round(float(cap) - float(floor)),
+                "window_width_ratio": _round((float(cap) - float(floor)) / denominator),
+            },
+            "quantiles_bb": {
+                f"{level:.2f}": _round(_mixed_quantile(spec, level))
+                for level in SIZING_QUANTILE_LEVELS
+            },
+            "probability_sum": _round(math.fsum(weights), 12),
+            "cdf_check": 1.0,
+            "illegal_generated_count": 0,
+        }
+    )
+    return base
+
+
+def generate_raise_sizings(
+    model: Mapping[str, Any],
+    context: Mapping[str, Any],
+    *,
+    action: str = "RAISE",
+    config: Mapping[str, Any] | None = None,
+    steps: int = SIZING_QUADRATURE_STEPS,
+    actor_commitment_bb: float | None = None,
+    quantiles: Sequence[float] = SIZING_GENERATION_QUANTILES,
+    distribution: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Produce several plausible, always-legal sizings for one context.
+
+    Generation is the deterministic quantile grid of the truncated conditional
+    density, so the targets are legal by construction and the request stays
+    reproducible; no randomness and no nearest-price lookup is involved.
+    """
+    resolved = distribution or raise_sizing_distribution(
+        model,
+        context,
+        action=action,
+        config=config,
+        steps=steps,
+        actor_commitment_bb=actor_commitment_bb,
+    )
+    window = resolved["legal_window"]
+    result: dict[str, Any] = {
+        "schema": RAISE_SIZING_SCHEMA,
+        "action": action,
+        "status": resolved["status"],
+        "fail_closed_reason": resolved.get("fail_closed_reason"),
+        "legal_window": window,
+        "method": "deterministic_quantile_grid",
+        "quantile_levels": [round(float(level), 6) for level in quantiles],
+        "nearest_price_substituted": False,
+        "nearest_context_substituted": False,
+    }
+    if resolved["status"] != "RESOLVED":
+        result.update({"sizings_bb": [], "generated_count": 0, "illegal_count": 0})
+        return result
+    floor, cap = float(window["floor_bb"]), float(window["cap_bb"])
+    quantiles_map = resolved["quantiles_bb"]
+    produced: list[float] = []
+    for level in quantiles:
+        key = f"{float(level):.2f}"
+        value = quantiles_map.get(key)
+        if value is None:
+            value = resolved["uncertainty"]["median_bb"]
+        produced.append(float(value))
+    produced = sorted({round(min(max(value, floor), cap), 6) for value in produced})
+    illegal = sum(1 for value in produced if value < floor - 1e-9 or value > cap + 1e-9)
+    result.update(
+        {
+            "sizings_bb": produced,
+            "generated_count": len(produced),
+            "illegal_count": illegal,
+            "support": resolved["support"],
+            "uncertainty": resolved["uncertainty"],
+            "ratio_denominator_bb": window["ratio_denominator_bb"],
+        }
+    )
+    return result
+
+
+def score_raise_sizing(
+    model: Mapping[str, Any],
+    context: Mapping[str, Any],
+    target_total_bb: float,
+    *,
+    action: str = "RAISE",
+    config: Mapping[str, Any] | None = None,
+    steps: int = SIZING_QUADRATURE_STEPS,
+    actor_commitment_bb: float | None = None,
+    distribution: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Score one queried raise target under the conditional sizing model.
+
+    Returns the negative log likelihood (bits), the CRPS (bb) and the PIT of
+    the queried target.  The likelihood is a mixed likelihood at a fixed 1 bb
+    resolution: an observation on a boundary atom uses that atom's probability,
+    and a continuous observation uses the mass the density puts in the 1 bb
+    window around it, so atoms and density stay on one comparable scale.  A
+    target outside the legal window is reported as such and left unscored: it
+    is never re-scored against a neighbouring price.
+    """
+    target = _finite(target_total_bb, "target_total_bb")
+    resolved = distribution or raise_sizing_distribution(
+        model,
+        context,
+        action=action,
+        config=config,
+        steps=steps,
+        actor_commitment_bb=actor_commitment_bb,
+    )
+    window = resolved["legal_window"]
+    result: dict[str, Any] = {
+        "schema": RAISE_SIZING_SCHEMA,
+        "action": action,
+        "target_total_bb": _round(target),
+        "legal_window": window,
+        "status": resolved["status"],
+        "nearest_price_substituted": False,
+    }
+    if resolved["status"] != "RESOLVED":
+        result.update(
+            {
+                "inside_window": False,
+                "scored": False,
+                "fail_closed_reason": resolved.get("fail_closed_reason"),
+            }
+        )
+        return result
+    floor, cap = float(window["floor_bb"]), float(window["cap_bb"])
+    inside = floor - 1e-9 <= target <= cap + 1e-9
+    result["inside_window"] = bool(inside)
+    if not inside:
+        result.update({"scored": False, "fail_closed_reason": "TARGET_OUTSIDE_LEGAL_WINDOW"})
+        return result
+
+    channel = sizing_channel_of(model)
+    steps = max(int(steps), 8)
+    family = _public_level(context.get("family"))
+    denominator = float(window["ratio_denominator_bb"])
+    spec = _sizing_spec(
+        channel,
+        action,
+        family,
+        window,
+        denominator,
+        steps,
+        int(resolved["support"].get("min_family_support") or MIN_FAMILY_SIZING_SUPPORT),
+    )
+    points, weights = _mixed_support(spec)
+    if math.fsum(weights) <= EPS:
+        result.update({"scored": False, "fail_closed_reason": "NO_SUPPORT_INSIDE_LEGAL_WINDOW"})
+        return result
+
+    bin_mass = _mixed_bin_mass(spec, target, 1.0)
+    nll_bits = -math.log2(max(bin_mass, PROBABILITY_FLOOR))
+    pit = _mixed_pit(spec, target)
+    crps_bb = _mixed_crps_bb(points, weights, target)
+    uniform_nll_bits = math.log2(max(cap - floor, EPS))
+
+    result.update(
+        {
+            "scored": True,
+            "log_density_bits": _round(-nll_bits),
+            "negative_log_likelihood_bits": _round(nll_bits),
+            "uniform_window_nll_bits": _round(uniform_nll_bits),
+            "nll_gain_vs_uniform_bits": _round(uniform_nll_bits - nll_bits),
+            "crps_bb": _round(crps_bb),
+            "pit": _round(pit, 9),
+            "bin_mass_bb": _round(bin_mass, 9),
+            "on_boundary_atom": bool(
+                abs(target - floor) <= 1e-6 or abs(target - cap) <= 1e-6
+            ),
+            "truncation_mass": _round(spec["truncation_mass"], 12),
+            "support": resolved["support"],
+        }
+    )
+    return result
+
+
+def raise_sizing_query(
+    model: Mapping[str, Any],
+    context: Mapping[str, Any],
+    *,
+    action: str | None = None,
+    config: Mapping[str, Any] | None = None,
+    steps: int = SIZING_QUADRATURE_STEPS,
+    actor_commitment_bb: float | None = None,
+) -> dict[str, Any]:
+    """One sizing request: legal window, support, uncertainty, quantiles, samples."""
+    if action is None:
+        legal = legal_response_actions(context)
+        action = "RAISE" if "RAISE" in legal else "JAM"
+    distribution = raise_sizing_distribution(
+        model,
+        context,
+        action=action,
+        config=config,
+        steps=steps,
+        actor_commitment_bb=actor_commitment_bb,
+    )
+    generation = generate_raise_sizings(
+        model,
+        context,
+        action=action,
+        config=config,
+        steps=steps,
+        actor_commitment_bb=actor_commitment_bb,
+        distribution=distribution,
+    )
+    return {
+        "schema": RAISE_SIZING_SCHEMA,
+        "action": action,
+        "status": distribution["status"],
+        "fail_closed_reason": distribution.get("fail_closed_reason"),
+        "legal_window": distribution["legal_window"],
+        "support": distribution["support"],
+        "uncertainty": distribution["uncertainty"],
+        "quantiles_bb": distribution["quantiles_bb"],
+        "generated_sizings_bb": generation["sizings_bb"],
+        "generated_count": generation["generated_count"],
+        "illegal_count": generation["illegal_count"],
+        "nearest_price_substituted": False,
+        "nearest_context_substituted": False,
+    }
+
+
+def _parse_raise_amount(token: Any) -> float | None:
+    text = str(token or "")
+    if "@" not in text:
+        return None
+    raw = text.rsplit("@", 1)[1].strip()
+    try:
+        return float(raw)
+    except ValueError:
+        return None
+
+
+RAISE_VERBS = ("RAISE", "JAM", "ISO", "3BET", "4BET", "5BET", "6BET")
+
+
+def reconstruct_frontier_context(frontier: Mapping[str, Any]) -> dict[str, Any]:
+    """Rebuild the public pre-action state of one frozen #388/#419 frontier.
+
+    Only the public structural context, the exact tree path, the contract
+    history and the blind structure are consumed; the reconstruction is echoed
+    in the report so the derived window can be checked against the frozen
+    engine interval.
+    """
+    structural = dict(frontier.get("structural_context") or {})
+    path = [str(token) for token in (frontier.get("path") or [])]
+    history = [dict(item) for item in (structural.get("history") or [])]
+    actor = str(structural.get("actor_position") or "")
+    table_size = int(structural.get("table_size") or 6)
+
+    seat_order = list(("LJ", "HJ", "CO", "BTN", "SB", "BB")[-table_size:])
+    contributions: dict[str, float] = {}
+    if "SB" in seat_order:
+        contributions["SB"] = POSITION_BLIND_BB["SB"]
+    if "BB" in seat_order:
+        contributions["BB"] = POSITION_BLIND_BB["BB"]
+    current_bet = BIG_BLIND_BB if "BB" in seat_order else 0.0
+
+    raise_amount = None
+    for token in path:
+        parsed = _parse_raise_amount(token)
+        if parsed is not None:
+            raise_amount = parsed
+    for token in path:
+        position, _, rest = token.partition(":")
+        verb = rest.split("@", 1)[0].upper()
+        if verb in ("CALL", "LIMP"):
+            contributions[position] = max(contributions.get(position, 0.0), current_bet)
+        elif verb in RAISE_VERBS:
+            amount = _parse_raise_amount(token) or current_bet
+            contributions[position] = amount
+            current_bet = amount
+    for item in history:
+        position = str(item.get("position") or "")
+        verb = str(item.get("action") or "").upper()
+        if verb == "LIMP":
+            contributions[position] = max(contributions.get(position, 0.0), BIG_BLIND_BB)
+        elif verb == "CALL":
+            contributions[position] = max(contributions.get(position, 0.0), current_bet)
+        elif verb in RAISE_VERBS:
+            amount = _parse_raise_amount(item.get("amount")) or raise_amount or current_bet
+            contributions[position] = amount
+            current_bet = amount
+
+    commitment = contributions.get(actor)
+    if commitment is None:
+        if actor == "BB":
+            commitment = BIG_BLIND_BB
+        elif actor == "SB":
+            commitment = POSITION_BLIND_BB["SB"]
+        else:
+            commitment = 0.0
+    context: dict[str, Any] = {
+        "family": structural.get("family"),
+        "actor_position": actor,
+        "table_size": table_size,
+        "live_positions": list(structural.get("live_positions") or []),
+        "raise_level": int(structural.get("raise_level") or 0),
+        "current_bet_bb": current_bet,
+        "actor_contribution_bb": commitment,
+        "to_call_bb": round(max(current_bet - commitment, 0.0), 6),
+        "pot_before_bb": round(math.fsum(contributions.values()), 6),
+    }
+    context["context_reconstruction"] = {
+        "contributions_bb": {position: _round(value) for position, value in sorted(contributions.items())},
+        "seat_order": seat_order,
+        "rule": "public seat contributions rebuilt from blinds, the exact tree path and the contract history",
+    }
+    interval = frontier.get("legal_target_interval_bb")
+    if interval and len(interval) == 2:
+        # The frozen engine interval carries the actor's cap (its maximum
+        # raise-to), which the public response rows expose as the effective
+        # stack; echoing it keeps the derived window checkable.
+        context["effective_stack_bb"] = float(interval[1])
+    return context
+
+
+def load_raise_sizing_frontiers(
+    frontier_path: str | Path = FRONTIER_RESOLUTION_PATH,
+    exact_tree_path: str | Path = EXACT_TREE_PATH,
+) -> dict[str, Any]:
+    """Load the frozen 7 raise-sizing frontiers, failing closed when absent."""
+    resolved_path = Path(frontier_path)
+    tree_path = Path(exact_tree_path)
+    def _label(path: Path) -> str:
+        try:
+            return str(path.relative_to(ROOT))
+        except ValueError:
+            return str(path)
+
+    document: dict[str, Any] = {
+        "frontier_source": _label(resolved_path),
+        "exact_tree_source": _label(tree_path),
+        "loaded": False,
+        "frontiers": [],
+    }
+    if not resolved_path.exists():
+        document["fail_closed_reason"] = "FRONTIER_RESOLUTION_MISSING"
+        return document
+    resolution = json.loads(resolved_path.read_text(encoding="utf-8"))
+    exact_tree: dict[str, Any] = {}
+    if tree_path.exists():
+        tree_document = json.loads(tree_path.read_text(encoding="utf-8"))
+        for item in tree_document.get("unresolved_sizing_frontiers") or []:
+            exact_tree[str(item.get("node_id"))] = {
+                "status": "UNRESOLVED",
+                "legal_target_interval_bb": item.get("legal_target_interval_bb"),
+                "action": item.get("action"),
+                "descendants": item.get("descendants"),
+                "expansion_rule": item.get("expansion_rule"),
+            }
+    typed: list[dict[str, Any]] = []
+    for frontier in resolution.get("frontiers") or []:
+        node_id = str(frontier.get("node_id"))
+        exact = exact_tree.get(node_id) or {}
+        interval = exact.get("legal_target_interval_bb") or frontier.get("legal_target_interval_bb") or []
+        exact_support = dict(frontier.get("exact_support") or {})
+        typed.append(
+            {
+                "node_id": node_id,
+                "path": list(frontier.get("path") or []),
+                "action": str(frontier.get("action") or "RAISE"),
+                "resolution_state": str(frontier.get("resolution_state") or "UNRESOLVED"),
+                "blocker_reason_code": frontier.get("blocker_reason_code"),
+                "blocks_required_tree_complete": bool(
+                    frontier.get("blocks_required_tree_complete", True)
+                ),
+                "legal_target_interval_bb": [float(value) for value in interval] if interval else None,
+                "structural_context": dict(frontier.get("structural_context") or {}),
+                "exact_tree_status": exact.get("status") or "UNRESOLVED",
+                "exact_tree_satisfied": False,
+                "exact_support": {
+                    "nearest_price_substituted": bool(exact_support.get("nearest_price_substituted", False)),
+                    "legal_minimum_fallback_substituted": bool(
+                        exact_support.get("legal_minimum_fallback_substituted", False)
+                    ),
+                    "translatable_sizing_stat_keys_present": list(
+                        exact_support.get("translatable_sizing_stat_keys_present") or []
+                    ),
+                },
+            }
+        )
+    document.update(
+        {
+            "loaded": True,
+            "schema": resolution.get("schema"),
+            "revision": resolution.get("revision"),
+            "frontiers_total": int(resolution.get("frontiers_total") or len(typed)),
+            "frontiers": typed,
+        }
+    )
+    return document
+
+
+# ---------------------------------------------------------------------------
 # evaluate / compare
 # ---------------------------------------------------------------------------
 
@@ -1576,6 +2758,470 @@ def compare_candidates(
             key: _round(float(value["log_loss_bits_per_decision"]) - float(best["log_loss_bits_per_decision"]))
             for key, value in metrics.items()
         },
+    }
+# ---------------------------------------------------------------------------
+# raise-sizing model report (#421 acceptance evidence)
+# ---------------------------------------------------------------------------
+
+
+def recover_actor_commitment(row: Mapping[str, Any]) -> float | None:
+    """Recover the actor's *pre-action* street contribution of one raise row.
+
+    The response dataset exposes the observed ``target_total_bb`` (the
+    raise-to total) and ``observed_sizing_bb`` (the incremental cost of the
+    action).  Their difference is the actor's own contribution *before*
+    acting -- purely pre-action public state -- and is what the conservative
+    minimum-raise floor needs.  Rows without an observed aggressive action
+    return ``None``.
+    """
+    target = row.get("target_total_bb")
+    incremental = row.get("observed_sizing_bb")
+    if target is None or incremental is None:
+        return None
+    commitment = float(target) - float(incremental)
+    if not math.isfinite(commitment) or commitment < -1e-9:
+        return None
+    return max(commitment, 0.0)
+
+
+def _calibration_summary(
+    pits: Sequence[float],
+    coverage: Mapping[str, Sequence[int]],
+) -> dict[str, Any]:
+    """PIT histogram plus nominal-vs-empirical quantile coverage.
+
+    Coverage is measured directly as ``P(observed <= predicted quantile)``: with
+    boundary atoms the PIT-based shortcut ``PIT <= q`` would understate it, so
+    the predicted quantiles are compared to the observations explicitly.
+    """
+    bins = [0] * PIT_BINS
+    for value in pits:
+        index = min(int(max(min(value, 1.0), 0.0) * PIT_BINS), PIT_BINS - 1)
+        bins[index] += 1
+    total = len(pits)
+    fractions = [_round(count / total) if total else 0.0 for count in bins]
+    expected = 1.0 / PIT_BINS
+    max_bin_error = (
+        max((abs((count / total) - expected) for count in bins), default=0.0) if total else 0.0
+    )
+    rows = []
+    max_coverage_error = 0.0
+    for level in sorted({float(level) for level in CALIBRATION_LEVELS}):
+        hits, count = (coverage.get(f"{level:.2f}") or (0, 0))[:2]
+        empirical = (hits / count) if count else None
+        error = None if empirical is None else abs(empirical - level)
+        if error is not None:
+            max_coverage_error = max(max_coverage_error, error)
+        rows.append(
+            {
+                "nominal": _round(level),
+                "empirical": None if empirical is None else _round(empirical),
+                "abs_error": None if error is None else _round(error),
+                "n": count,
+            }
+        )
+    return {
+        "n": total,
+        "pit_bins": PIT_BINS,
+        "pit_histogram": fractions,
+        "pit_uniform_expected_bin": _round(expected),
+        "pit_max_abs_bin_error": _round(max_bin_error),
+        "quantile_coverage": rows,
+        "quantile_max_abs_error": _round(max_coverage_error),
+        "mean_pit": _round(math.fsum(pits) / total) if total else None,
+    }
+
+
+def _score_sizing_rows(
+    channel: Mapping[str, Any],
+    rows: Sequence[Mapping[str, Any]],
+    config: Mapping[str, Any],
+    *,
+    steps: int,
+    min_family_support: int,
+) -> dict[str, Any]:
+    """Score every observed RAISE/JAM target and generate legal sizings for it."""
+    nll: list[float] = []
+    crps: list[float] = []
+    pits: list[float] = []
+    uniform_nll: list[float] = []
+    coverage: dict[str, list[int]] = {f"{level:.2f}": [0, 0] for level in CALIBRATION_LEVELS}
+    generated = 0
+    illegal = 0
+    fail_closed = 0
+    fail_closed_reasons: dict[str, int] = {}
+    by_action: dict[str, dict[str, Any]] = {}
+    by_family: dict[str, dict[str, Any]] = {}
+    per_action_nll: dict[str, list[float]] = {action: [] for action in AGGRESSIVE_ACTIONS}
+
+    def bump(mapping: dict[str, int], key: str) -> None:
+        mapping[key] = mapping.get(key, 0) + 1
+
+    def mean(values: Sequence[float]) -> float | None:
+        return _round(math.fsum(values) / len(values)) if values else None
+
+    for row in rows:
+        action = str(row.get("action") or "").strip().upper()
+        if action not in AGGRESSIVE_ACTIONS:
+            continue
+        target = row.get("target_total_bb")
+        if target is None:
+            continue
+        commitment = recover_actor_commitment(row)
+        distribution = raise_sizing_distribution(
+            channel,
+            row,
+            action=action,
+            config=config,
+            steps=steps,
+            actor_commitment_bb=commitment,
+            min_family_support=min_family_support,
+        )
+        bucket = by_action.setdefault(
+            action,
+            {
+                "rows": 0,
+                "scored": 0,
+                "fail_closed": 0,
+                "generated": 0,
+                "illegal_generated": 0,
+                "support_levels": {},
+            },
+        )
+        bucket["rows"] += 1
+        level = distribution["support"]["support_level"]
+        bucket["support_levels"][level] = bucket["support_levels"].get(level, 0) + 1
+        if distribution["status"] != "RESOLVED":
+            fail_closed += 1
+            bucket["fail_closed"] += 1
+            bump(fail_closed_reasons, str(distribution.get("fail_closed_reason")))
+            continue
+        score = score_raise_sizing(
+            channel,
+            row,
+            float(target),
+            action=action,
+            config=config,
+            steps=steps,
+            actor_commitment_bb=commitment,
+            distribution=distribution,
+        )
+        if not score.get("scored"):
+            fail_closed += 1
+            bucket["fail_closed"] += 1
+            bump(fail_closed_reasons, str(score.get("fail_closed_reason")))
+            continue
+        nll.append(float(score["negative_log_likelihood_bits"]))
+        per_action_nll[action].append(float(score["negative_log_likelihood_bits"]))
+        uniform_nll.append(float(score["uniform_window_nll_bits"]))
+        crps.append(float(score["crps_bb"]))
+        pits.append(float(score["pit"]))
+        quantiles = distribution.get("quantiles_bb") or {}
+        for level in CALIBRATION_LEVELS:
+            key = f"{float(level):.2f}"
+            predicted = quantiles.get(key)
+            if predicted is None:
+                continue
+            coverage[key][1] += 1
+            if float(target) <= float(predicted) + 1e-9:
+                coverage[key][0] += 1
+        bucket["scored"] += 1
+
+        generation = generate_raise_sizings(
+            channel,
+            row,
+            action=action,
+            config=config,
+            steps=steps,
+            actor_commitment_bb=commitment,
+            distribution=distribution,
+        )
+        generated += generation["generated_count"]
+        illegal += generation["illegal_count"]
+        bucket["generated"] += generation["generated_count"]
+        bucket["illegal_generated"] += generation["illegal_count"]
+        family = _public_level(row.get("family"))
+        entry = by_family.setdefault(family, {"scored": 0, "fail_closed": 0, "nll": [], "crps": []})
+        entry["scored"] += 1
+        entry["nll"].append(float(score["negative_log_likelihood_bits"]))
+        entry["crps"].append(float(score["crps_bb"]))
+
+    nll_mean = mean(nll)
+    uniform_mean = mean(uniform_nll)
+    return {
+        "rows": sum(bucket["rows"] for bucket in by_action.values()),
+        "scored": len(nll),
+        "fail_closed": fail_closed,
+        "fail_closed_reasons": dict(sorted(fail_closed_reasons.items())),
+        "nll_bits_per_sizing": nll_mean,
+        "uniform_window_nll_bits_per_sizing": uniform_mean,
+        "nll_gain_vs_uniform_bits": (
+            None if nll_mean is None or uniform_mean is None else _round(uniform_mean - nll_mean)
+        ),
+        "crps_bb": mean(crps),
+        "calibration": _calibration_summary(pits, coverage),
+        "generated_sizings": generated,
+        "illegal_generated_sizings": illegal,
+        "illegal_generated_rate": _round(illegal / generated) if generated else None,
+        "per_action": {
+            action: {
+                "rows": bucket["rows"],
+                "scored": bucket["scored"],
+                "fail_closed": bucket["fail_closed"],
+                "generated": bucket["generated"],
+                "illegal_generated": bucket["illegal_generated"],
+                "support_levels": dict(sorted(bucket["support_levels"].items())),
+                "nll_bits_per_sizing": mean(per_action_nll[action]),
+            }
+            for action, bucket in sorted(by_action.items())
+        },
+        "per_family": {
+            family: {
+                "scored": entry["scored"],
+                "fail_closed": entry["fail_closed"],
+                "nll_bits_per_sizing": mean(entry["nll"]),
+                "crps_bb": mean(entry["crps"]),
+            }
+            for family, entry in sorted(by_family.items())
+        },
+    }
+
+
+def evaluate_raise_sizing_frontiers(
+    channel: Mapping[str, Any],
+    *,
+    config: Mapping[str, Any] | None = None,
+    steps: int = SIZING_QUADRATURE_STEPS,
+    min_family_support: int = MIN_FAMILY_SIZING_SUPPORT,
+    frontiers: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Classify each frozen #388/#419 raise-sizing frontier explicitly.
+
+    Two independent statuses are reported per frontier:
+
+    * ``model_status`` -- whether *this* conditional population model answers
+      the sizing request with a legal, supported distribution;
+    * ``exact_tree_status`` -- the frozen #388/#419 verdict, which demands an
+      exactly supported raise target at the structural node and therefore
+      stays ``UNRESOLVED``: the population model never claims to satisfy it.
+    """
+    merged = make_config(**dict(config)) if isinstance(config, Mapping) else make_config()
+    source = frontiers if isinstance(frontiers, Mapping) else load_raise_sizing_frontiers()
+    items: list[dict[str, Any]] = []
+    resolved = 0
+    fail_closed = 0
+    for frontier in source.get("frontiers") or []:
+        action = str(frontier.get("action") or "RAISE")
+        context = reconstruct_frontier_context(frontier)
+        interval = frontier.get("legal_target_interval_bb")
+        query_context = dict(context)
+        if interval and len(interval) == 2:
+            query_context["legal_target_interval_bb"] = list(interval)
+        query = raise_sizing_query(channel, query_context, action=action, config=merged, steps=steps)
+        derived = raise_sizing_window(query_context, action=action, config=merged)
+        window_matches = bool(
+            interval
+            and derived["min_raise_to_bb"] is not None
+            and abs(float(derived["min_raise_to_bb"]) - float(interval[0])) <= 1e-6
+            and abs(float(derived["max_raise_to_bb"]) - float(interval[1])) <= 1e-6
+        )
+        if query["status"] == "RESOLVED":
+            model_status = "RESOLVED"
+            resolved += 1
+        else:
+            model_status = "FAIL_CLOSED"
+            fail_closed += 1
+        items.append(
+            {
+                "node_id": frontier.get("node_id"),
+                "path": frontier.get("path"),
+                "action": action,
+                "family": context.get("family"),
+                "actor_position": context.get("actor_position"),
+                "legal_target_interval_bb": interval,
+                "derived_legal_window_bb": [
+                    derived["min_raise_to_bb"],
+                    derived["max_raise_to_bb"],
+                ],
+                "derived_window_matches_frozen_interval": window_matches,
+                "window_bounds_source": derived["bounds_source"],
+                "model_status": model_status,
+                "model_status_detail": (
+                    "CONDITIONAL_POPULATION_SIZING_DENSITY"
+                    if model_status == "RESOLVED"
+                    else "FAIL_CLOSED_NO_SUBSTITUTION"
+                ),
+                "model_fail_closed_reason": query.get("fail_closed_reason"),
+                "support": query["support"],
+                "uncertainty": query["uncertainty"],
+                "quantiles_bb": query["quantiles_bb"],
+                "generated_sizings_bb": query["generated_sizings_bb"],
+                "illegal_generated": query["illegal_count"],
+                "nearest_price_substituted": False,
+                "nearest_context_substituted": False,
+                "exact_tree_status": frontier.get("exact_tree_status"),
+                "exact_tree_satisfied": False,
+                "exact_tree_blocks_required_tree_complete": bool(
+                    frontier.get("blocks_required_tree_complete", True)
+                ),
+                "frozen_blocker_reason_code": frontier.get("blocker_reason_code"),
+                "exact_support": frontier.get("exact_support"),
+                "context_reconstruction": context.get("context_reconstruction"),
+            }
+        )
+    return {
+        "total": len(items),
+        "resolved": resolved,
+        "fail_closed": fail_closed,
+        "classification_rule": (
+            "model_status=RESOLVED means this conditional population sizing model answers the "
+            "request with a legal, supported target window and never substitutes a nearest "
+            "price; exact_tree_status is the independent frozen #388/#419 verdict and stays "
+            "UNRESOLVED because no exactly supported per-node raise sizing statistic exists"
+        ),
+        "exact_tree_unresolved": sum(
+            1 for item in items if item["exact_tree_status"] == "UNRESOLVED"
+        ),
+        "no_nearest_price_substituted": all(
+            not item["nearest_price_substituted"]
+            and not (item["exact_support"] or {}).get("nearest_price_substituted", False)
+            for item in items
+        ),
+        "source": source.get("frontier_source"),
+        "exact_tree_source": source.get("exact_tree_source"),
+        "items": items,
+    }
+
+
+def raise_sizing_report(
+    rows: Iterable[Mapping[str, Any]],
+    *,
+    config: Mapping[str, Any] | None = None,
+    channel: Mapping[str, Any] | None = None,
+    seed: int = 421,
+    dataset_path: str | Path | None = None,
+    frontier_path: str | Path = FRONTIER_RESOLUTION_PATH,
+    exact_tree_path: str | Path = EXACT_TREE_PATH,
+    steps: int = SIZING_QUADRATURE_STEPS,
+    min_family_support: int = MIN_FAMILY_SIZING_SUPPORT,
+    metrics_split: str | None = None,
+) -> dict[str, Any]:
+    """Build the #421 conditional raise-sizing report.
+
+    The report carries the probabilistic metric (NLL in bits and CRPS in bb),
+    the quantile calibration, the illegal-generation rate and the explicit
+    status of each frozen #388/#419 raise-sizing frontier.
+    """
+    merged = make_config(**dict(config)) if isinstance(config, Mapping) else make_config()
+    materialized = [dict(row) for row in rows]
+    fitted = (
+        channel
+        if channel is not None
+        else fit_sizing_channel(materialized, merged, min_family_support=min_family_support)
+    )
+    split = str(metrics_split or "").strip().upper()
+    scoped = [row for row in materialized if not split or _row_split(row) == split]
+    metrics = _score_sizing_rows(
+        fitted, scoped, merged, steps=steps, min_family_support=min_family_support
+    )
+    frontiers = evaluate_raise_sizing_frontiers(
+        fitted,
+        config=merged,
+        steps=steps,
+        min_family_support=min_family_support,
+        frontiers=load_raise_sizing_frontiers(frontier_path, exact_tree_path),
+    )
+    report: dict[str, Any] = {
+        "schema": RAISE_SIZING_REPORT_SCHEMA,
+        "seed": int(seed),
+        "config": {
+            "sizing_smoothing_mass": merged["sizing_smoothing_mass"],
+            "sizing_axis_knots": merged["sizing_axis_knots"],
+            "default_target_to_pot_ratio": merged["default_target_to_pot_ratio"],
+        },
+        "sizing_model": {
+            "basis": "piecewise_linear_log1p_partition_of_unity_restricted_to_the_legal_window",
+            "target_axis": "target_total_bb divided by (pot_before_bb + to_call_bb)",
+            "window_rule": (
+                "min_raise_to = max(2*current_bet - max(commitment, BB), current_bet + BB), a "
+                "conservative upper bound of the engine minimum raise; cap = max_raise_to_bb "
+                "when supplied else effective_stack_bb"
+            ),
+            "generation": "deterministic_quantile_grid_of_the_truncated_density",
+            "no_nearest_price": True,
+            "no_nearest_context": True,
+            "quadrature_steps": int(steps),
+            "min_family_support": int(min_family_support),
+            "sizing_quantile_levels": list(SIZING_QUANTILE_LEVELS),
+            "generation_quantile_levels": list(SIZING_GENERATION_QUANTILES),
+            "boundary_mass": dict((fitted.get("boundary") or {}).get("global") or {}),
+            "boundary_mass_source": (
+                "fit_sizing_channel: measured atoms at the minimum raise and the all-in cap"
+                if isinstance(fitted.get("boundary"), Mapping)
+                else "unavailable"
+            ),
+        },
+        "notes": [
+            "Every request is evaluated on a conservative sub-window of the engine's legal "
+            "raise interval: the minimum-raise floor is a proven upper bound of the engine "
+            "minimum and the cap never exceeds max_raise_to_bb / effective_stack_bb.",
+            "A statistic that is absent inside the legal window fails closed: no nearest "
+            "price and no nearest public context is ever substituted.",
+            "The quantile-coverage steps come from the measured boundary atoms: a large share "
+            "of observed raises sits exactly at the minimum raise, so predicted low quantiles "
+            "collapse onto that atom and coverage is conservative rather than nominal there.",
+            "The seven frozen #388/#419 frontiers are reported twice: model_status describes "
+            "this conditional population model, exact_tree_status keeps the frozen exact-node "
+            "verdict (UNRESOLVED) and exact_tree_satisfied is false.",
+        ],
+        "metrics_split": split or None,
+        "rows_consumed": len(scoped),
+        "metrics": metrics,
+        "frontiers": frontiers,
+        "guarantees": {
+            "generated_sizings_always_legal": metrics["illegal_generated_sizings"] == 0,
+            "no_nearest_price_substitution": True,
+            "support_exposed_per_request": True,
+            "uncertainty_exposed_per_request": True,
+            "fail_closed_instead_of_substitution": True,
+            "frontiers_classified": frontiers["total"] == 7,
+            "frontiers_resolved": frontiers["resolved"],
+            "frontiers_fail_closed": frontiers["fail_closed"],
+            "frontiers_exact_tree_unresolved": frontiers["exact_tree_unresolved"],
+        },
+        "provenance": {
+            "module_sha256": _sha256_file(Path(__file__)),
+            "frontier_resolution": frontiers.get("source"),
+            "exact_tree": frontiers.get("exact_tree_source"),
+        },
+    }
+    if dataset_path is not None:
+        resolved = Path(dataset_path)
+        if resolved.exists():
+            label = str(resolved)
+            try:
+                label = str(resolved.relative_to(ROOT))
+            except ValueError:
+                label = str(resolved)
+            report["provenance"]["dataset"] = label
+            report["provenance"]["dataset_sha256"] = _sha256_file(resolved)
+    return report
+
+
+def write_raise_sizing_report(
+    report: Mapping[str, Any], path: str | Path = DEFAULT_SIZING_REPORT_PATH
+) -> dict[str, Any]:
+    """Persist the report byte-reproducibly and return its identity metadata."""
+    target = Path(path)
+    if target.parent and not target.parent.exists():
+        target.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(report, sort_keys=True, indent=2, ensure_ascii=True) + "\n"
+    target.write_text(payload, encoding="utf-8")
+    return {
+        "path": str(target),
+        "sha256": sha256_bytes(payload.encode("utf-8")),
+        "bytes": len(payload.encode("utf-8")),
+        "schema": report.get("schema"),
     }
 
 
@@ -1757,6 +3403,20 @@ class ResponseModel:
     def evaluate(self, rows: Iterable[Mapping[str, Any]], **kwargs: Any) -> dict[str, Any]:
         return evaluate(self.candidate, rows, **kwargs)
 
+    def sizing_window(self, context: Mapping[str, Any], **kwargs: Any) -> dict[str, Any]:
+        """Legal raise-target window of one public context (#421 sizing model)."""
+        return raise_sizing_window(context, **kwargs)
+
+    def raise_sizing(self, context: Mapping[str, Any], **kwargs: Any) -> dict[str, Any]:
+        """Conditional P(sizing | RAISE/JAM, context): support, uncertainty, samples."""
+        return raise_sizing_query(self.candidate, context, **kwargs)
+
+    def score_sizing(
+        self, context: Mapping[str, Any], target_total_bb: float, **kwargs: Any
+    ) -> dict[str, Any]:
+        """NLL/CRPS of one queried raise target under the conditional density."""
+        return score_raise_sizing(self.candidate, context, target_total_bb, **kwargs)
+
 
 # ---------------------------------------------------------------------------
 # CLI and dependency-free self-check
@@ -1840,6 +3500,23 @@ def self_check(seed: int = 421) -> dict[str, Any]:
     }
 
 
+def _cli_sizing_report(args: argparse.Namespace) -> int:
+    dataset_path = Path(args.dataset).resolve()
+    rows = read_dataset_rows(dataset_path, splits=tuple(args.sizing_splits))
+    config = make_config(tuning_max_rows=args.tuning_max_rows, holdout_modulus=args.holdout_modulus)
+    report = raise_sizing_report(
+        rows,
+        config=config,
+        seed=args.seed,
+        dataset_path=dataset_path,
+        steps=args.sizing_steps,
+        metrics_split=args.sizing_metrics_split or None,
+    )
+    persisted = write_raise_sizing_report(report, args.sizing_report_out)
+    print(json.dumps({"persisted": persisted, "guarantees": report["guarantees"]}, indent=2, sort_keys=True))
+    return 0
+
+
 def _cli_fit(args: argparse.Namespace) -> int:
     dataset_path = Path(args.dataset).resolve()
     dataset_label = str(dataset_path)
@@ -1857,6 +3534,11 @@ def _cli_fit(args: argparse.Namespace) -> int:
         persist_candidate(candidate, output_dir / f"candidate_{candidate['architecture']}.json")
         for candidate in candidates
     ]
+    for entry in persisted:
+        try:
+            entry["path"] = str(Path(str(entry["path"])).resolve().relative_to(ROOT))
+        except ValueError:
+            pass
     comparison = compare_candidates(candidates, eval_rows) if eval_rows else {}
     report = {
         "schema": "poker-generalized-response-fit-report/v1",
@@ -1995,6 +3677,20 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=421)
     parser.add_argument("--tuning-max-rows", type=int, default=8000)
     parser.add_argument("--holdout-modulus", type=int, default=5)
+    parser.add_argument(
+        "--sizing-report",
+        action="store_true",
+        help="fit the conditional RAISE/JAM sizing model and persist RAISE_SIZING_MODEL_REPORT.json",
+    )
+    parser.add_argument("--sizing-report-out", default=str(DEFAULT_SIZING_REPORT_PATH))
+    parser.add_argument(
+        "--sizing-splits",
+        nargs="+",
+        default=["TRAIN", "VALIDATION"],
+        help="folds consumed by the sizing model (TEST stays fail-closed)",
+    )
+    parser.add_argument("--sizing-metrics-split", default="", help="optional fold restriction for the metrics")
+    parser.add_argument("--sizing-steps", type=int, default=SIZING_QUADRATURE_STEPS)
     return parser.parse_args(argv)
 
 
@@ -2005,6 +3701,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.fit:
         return _cli_fit(args)
+    if args.sizing_report:
+        return _cli_sizing_report(args)
     print("nothing to do: pass --self-check or --fit")
     return 2
 

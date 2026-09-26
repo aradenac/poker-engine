@@ -1,0 +1,1131 @@
+{
+  "config": {
+    "default_target_to_pot_ratio": 1.2,
+    "sizing_axis_knots": [
+      0.1,
+      0.25,
+      0.5,
+      0.8,
+      1.2,
+      2.0,
+      3.5,
+      7.0,
+      15.0
+    ],
+    "sizing_smoothing_mass": 8.0
+  },
+  "frontiers": {
+    "classification_rule": "model_status=RESOLVED means this conditional population sizing model answers the request with a legal, supported target window and never substitutes a nearest price; exact_tree_status is the independent frozen #388/#419 verdict and stays UNRESOLVED because no exactly supported per-node raise sizing statistic exists",
+    "exact_tree_source": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+    "exact_tree_unresolved": 7,
+    "fail_closed": 0,
+    "items": [
+      {
+        "action": "RAISE",
+        "actor_position": "BTN",
+        "context_reconstruction": {
+          "contributions_bb": {
+            "BB": 1.0,
+            "BTN": 1.0,
+            "CO": 1.0,
+            "SB": 5.0
+          },
+          "rule": "public seat contributions rebuilt from blinds, the exact tree path and the contract history",
+          "seat_order": [
+            "LJ",
+            "HJ",
+            "CO",
+            "BTN",
+            "SB",
+            "BB"
+          ]
+        },
+        "derived_legal_window_bb": [
+          9.0,
+          100.0
+        ],
+        "derived_window_matches_frozen_interval": true,
+        "exact_support": {
+          "legal_minimum_fallback_substituted": false,
+          "nearest_price_substituted": false,
+          "translatable_sizing_stat_keys_present": []
+        },
+        "exact_tree_blocks_required_tree_complete": true,
+        "exact_tree_satisfied": false,
+        "exact_tree_status": "UNRESOLVED",
+        "family": "LIMPER_VS_ISO",
+        "frozen_blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "generated_sizings_bb": [
+          9.0,
+          22.527061,
+          55.648862
+        ],
+        "illegal_generated": 0,
+        "legal_target_interval_bb": [
+          9.0,
+          100.0
+        ],
+        "model_fail_closed_reason": null,
+        "model_status": "RESOLVED",
+        "model_status_detail": "CONDITIONAL_POPULATION_SIZING_DENSITY",
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "node_id": "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:FOLD"
+        ],
+        "quantiles_bb": {
+          "0.05": 9.0,
+          "0.10": 9.0,
+          "0.15": 9.0,
+          "0.20": 9.0,
+          "0.25": 9.0,
+          "0.30": 9.0,
+          "0.35": 9.0,
+          "0.40": 9.0,
+          "0.45": 9.0,
+          "0.50": 9.0,
+          "0.55": 9.06822,
+          "0.60": 11.250998,
+          "0.65": 13.899478,
+          "0.70": 17.428432,
+          "0.75": 22.527061,
+          "0.80": 30.912251,
+          "0.85": 41.705212,
+          "0.90": 55.648862,
+          "0.95": 74.008043
+        },
+        "support": {
+          "action_observations": 29,
+          "distinct_density_bins": 9,
+          "effective_sample_size": 29.0,
+          "family_observations": 29,
+          "global_observations": 6500,
+          "min_family_support": 20,
+          "support_level": "FAMILY"
+        },
+        "uncertainty": {
+          "boundary_probabilities": {
+            "cap": 0.0,
+            "continuous": 0.451598413,
+            "floor": 0.548401587
+          },
+          "concentration": 0.430871348,
+          "credible_interval_bb": [
+            9.0,
+            55.648862
+          ],
+          "credible_interval_ratio": [
+            0.75,
+            4.637405
+          ],
+          "credible_interval_width_bb": 46.648862,
+          "entropy_nats": 2.603599092,
+          "entropy_normalized": 0.569128652,
+          "mean_bb": 20.937572,
+          "median_bb": 9.0,
+          "mode_bb": 9.0,
+          "mode_probability": 0.548401587,
+          "window_width_bb": 91.0,
+          "window_width_ratio": 7.583333
+        },
+        "window_bounds_source": {
+          "max": "engine_max_raise_to",
+          "min": "engine_interval"
+        }
+      },
+      {
+        "action": "RAISE",
+        "actor_position": "BTN",
+        "context_reconstruction": {
+          "contributions_bb": {
+            "BB": 1.0,
+            "BTN": 1.0,
+            "CO": 5.0,
+            "SB": 5.0
+          },
+          "rule": "public seat contributions rebuilt from blinds, the exact tree path and the contract history",
+          "seat_order": [
+            "LJ",
+            "HJ",
+            "CO",
+            "BTN",
+            "SB",
+            "BB"
+          ]
+        },
+        "derived_legal_window_bb": [
+          9.0,
+          100.0
+        ],
+        "derived_window_matches_frozen_interval": true,
+        "exact_support": {
+          "legal_minimum_fallback_substituted": false,
+          "nearest_price_substituted": false,
+          "translatable_sizing_stat_keys_present": []
+        },
+        "exact_tree_blocks_required_tree_complete": true,
+        "exact_tree_satisfied": false,
+        "exact_tree_status": "UNRESOLVED",
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "frozen_blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "generated_sizings_bb": [
+          9.0,
+          22.016371,
+          40.445164
+        ],
+        "illegal_generated": 0,
+        "legal_target_interval_bb": [
+          9.0,
+          100.0
+        ],
+        "model_fail_closed_reason": null,
+        "model_status": "RESOLVED",
+        "model_status_detail": "CONDITIONAL_POPULATION_SIZING_DENSITY",
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "node_id": "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD",
+          "CO:CALL"
+        ],
+        "quantiles_bb": {
+          "0.05": 9.0,
+          "0.10": 9.0,
+          "0.15": 9.0,
+          "0.20": 9.0,
+          "0.25": 9.0,
+          "0.30": 9.0,
+          "0.35": 9.0,
+          "0.40": 9.0,
+          "0.45": 9.0,
+          "0.50": 9.0,
+          "0.55": 10.205474,
+          "0.60": 13.718425,
+          "0.65": 16.968013,
+          "0.70": 19.460678,
+          "0.75": 22.016371,
+          "0.80": 25.234712,
+          "0.85": 30.104972,
+          "0.90": 40.445164,
+          "0.95": 57.952599
+        },
+        "support": {
+          "action_observations": 46,
+          "distinct_density_bins": 9,
+          "effective_sample_size": 46.0,
+          "family_observations": 46,
+          "global_observations": 6500,
+          "min_family_support": 20,
+          "support_level": "FAMILY"
+        },
+        "uncertainty": {
+          "boundary_probabilities": {
+            "cap": 0.0,
+            "continuous": 0.476095209,
+            "floor": 0.523904791
+          },
+          "concentration": 0.430854023,
+          "credible_interval_bb": [
+            9.0,
+            40.445164
+          ],
+          "credible_interval_ratio": [
+            0.5625,
+            2.527823
+          ],
+          "credible_interval_width_bb": 31.445164,
+          "entropy_nats": 2.603678349,
+          "entropy_normalized": 0.569145977,
+          "mean_bb": 18.704165,
+          "median_bb": 9.0,
+          "mode_bb": 9.0,
+          "mode_probability": 0.523904791,
+          "window_width_bb": 91.0,
+          "window_width_ratio": 5.6875
+        },
+        "window_bounds_source": {
+          "max": "engine_max_raise_to",
+          "min": "engine_interval"
+        }
+      },
+      {
+        "action": "RAISE",
+        "actor_position": "CO",
+        "context_reconstruction": {
+          "contributions_bb": {
+            "BB": 1.0,
+            "BTN": 1.0,
+            "CO": 1.0,
+            "SB": 5.0
+          },
+          "rule": "public seat contributions rebuilt from blinds, the exact tree path and the contract history",
+          "seat_order": [
+            "LJ",
+            "HJ",
+            "CO",
+            "BTN",
+            "SB",
+            "BB"
+          ]
+        },
+        "derived_legal_window_bb": [
+          9.0,
+          100.0
+        ],
+        "derived_window_matches_frozen_interval": true,
+        "exact_support": {
+          "legal_minimum_fallback_substituted": false,
+          "nearest_price_substituted": false,
+          "translatable_sizing_stat_keys_present": []
+        },
+        "exact_tree_blocks_required_tree_complete": true,
+        "exact_tree_satisfied": false,
+        "exact_tree_status": "UNRESOLVED",
+        "family": "LIMPER_VS_ISO",
+        "frozen_blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "generated_sizings_bb": [
+          9.0,
+          22.527061,
+          55.648862
+        ],
+        "illegal_generated": 0,
+        "legal_target_interval_bb": [
+          9.0,
+          100.0
+        ],
+        "model_fail_closed_reason": null,
+        "model_status": "RESOLVED",
+        "model_status_detail": "CONDITIONAL_POPULATION_SIZING_DENSITY",
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "node_id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD"
+        ],
+        "quantiles_bb": {
+          "0.05": 9.0,
+          "0.10": 9.0,
+          "0.15": 9.0,
+          "0.20": 9.0,
+          "0.25": 9.0,
+          "0.30": 9.0,
+          "0.35": 9.0,
+          "0.40": 9.0,
+          "0.45": 9.0,
+          "0.50": 9.0,
+          "0.55": 9.06822,
+          "0.60": 11.250998,
+          "0.65": 13.899478,
+          "0.70": 17.428432,
+          "0.75": 22.527061,
+          "0.80": 30.912251,
+          "0.85": 41.705212,
+          "0.90": 55.648862,
+          "0.95": 74.008043
+        },
+        "support": {
+          "action_observations": 29,
+          "distinct_density_bins": 9,
+          "effective_sample_size": 29.0,
+          "family_observations": 29,
+          "global_observations": 6500,
+          "min_family_support": 20,
+          "support_level": "FAMILY"
+        },
+        "uncertainty": {
+          "boundary_probabilities": {
+            "cap": 0.0,
+            "continuous": 0.451598413,
+            "floor": 0.548401587
+          },
+          "concentration": 0.430871348,
+          "credible_interval_bb": [
+            9.0,
+            55.648862
+          ],
+          "credible_interval_ratio": [
+            0.75,
+            4.637405
+          ],
+          "credible_interval_width_bb": 46.648862,
+          "entropy_nats": 2.603599092,
+          "entropy_normalized": 0.569128652,
+          "mean_bb": 20.937572,
+          "median_bb": 9.0,
+          "mode_bb": 9.0,
+          "mode_probability": 0.548401587,
+          "window_width_bb": 91.0,
+          "window_width_ratio": 7.583333
+        },
+        "window_bounds_source": {
+          "max": "engine_max_raise_to",
+          "min": "engine_interval"
+        }
+      },
+      {
+        "action": "RAISE",
+        "actor_position": "BTN",
+        "context_reconstruction": {
+          "contributions_bb": {
+            "BB": 5.0,
+            "BTN": 1.0,
+            "CO": 1.0,
+            "SB": 5.0
+          },
+          "rule": "public seat contributions rebuilt from blinds, the exact tree path and the contract history",
+          "seat_order": [
+            "LJ",
+            "HJ",
+            "CO",
+            "BTN",
+            "SB",
+            "BB"
+          ]
+        },
+        "derived_legal_window_bb": [
+          9.0,
+          100.0
+        ],
+        "derived_window_matches_frozen_interval": true,
+        "exact_support": {
+          "legal_minimum_fallback_substituted": false,
+          "nearest_price_substituted": false,
+          "translatable_sizing_stat_keys_present": []
+        },
+        "exact_tree_blocks_required_tree_complete": true,
+        "exact_tree_satisfied": false,
+        "exact_tree_status": "UNRESOLVED",
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "frozen_blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "generated_sizings_bb": [
+          9.0,
+          22.016371,
+          40.445164
+        ],
+        "illegal_generated": 0,
+        "legal_target_interval_bb": [
+          9.0,
+          100.0
+        ],
+        "model_fail_closed_reason": null,
+        "model_status": "RESOLVED",
+        "model_status_detail": "CONDITIONAL_POPULATION_SIZING_DENSITY",
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "node_id": "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:FOLD"
+        ],
+        "quantiles_bb": {
+          "0.05": 9.0,
+          "0.10": 9.0,
+          "0.15": 9.0,
+          "0.20": 9.0,
+          "0.25": 9.0,
+          "0.30": 9.0,
+          "0.35": 9.0,
+          "0.40": 9.0,
+          "0.45": 9.0,
+          "0.50": 9.0,
+          "0.55": 10.205474,
+          "0.60": 13.718425,
+          "0.65": 16.968013,
+          "0.70": 19.460678,
+          "0.75": 22.016371,
+          "0.80": 25.234712,
+          "0.85": 30.104972,
+          "0.90": 40.445164,
+          "0.95": 57.952599
+        },
+        "support": {
+          "action_observations": 46,
+          "distinct_density_bins": 9,
+          "effective_sample_size": 46.0,
+          "family_observations": 46,
+          "global_observations": 6500,
+          "min_family_support": 20,
+          "support_level": "FAMILY"
+        },
+        "uncertainty": {
+          "boundary_probabilities": {
+            "cap": 0.0,
+            "continuous": 0.476095209,
+            "floor": 0.523904791
+          },
+          "concentration": 0.430854023,
+          "credible_interval_bb": [
+            9.0,
+            40.445164
+          ],
+          "credible_interval_ratio": [
+            0.5625,
+            2.527823
+          ],
+          "credible_interval_width_bb": 31.445164,
+          "entropy_nats": 2.603678349,
+          "entropy_normalized": 0.569145977,
+          "mean_bb": 18.704165,
+          "median_bb": 9.0,
+          "mode_bb": 9.0,
+          "mode_probability": 0.523904791,
+          "window_width_bb": 91.0,
+          "window_width_ratio": 5.6875
+        },
+        "window_bounds_source": {
+          "max": "engine_max_raise_to",
+          "min": "engine_interval"
+        }
+      },
+      {
+        "action": "RAISE",
+        "actor_position": "BTN",
+        "context_reconstruction": {
+          "contributions_bb": {
+            "BB": 5.0,
+            "BTN": 1.0,
+            "CO": 5.0,
+            "SB": 5.0
+          },
+          "rule": "public seat contributions rebuilt from blinds, the exact tree path and the contract history",
+          "seat_order": [
+            "LJ",
+            "HJ",
+            "CO",
+            "BTN",
+            "SB",
+            "BB"
+          ]
+        },
+        "derived_legal_window_bb": [
+          9.0,
+          100.0
+        ],
+        "derived_window_matches_frozen_interval": true,
+        "exact_support": {
+          "legal_minimum_fallback_substituted": false,
+          "nearest_price_substituted": false,
+          "translatable_sizing_stat_keys_present": []
+        },
+        "exact_tree_blocks_required_tree_complete": true,
+        "exact_tree_satisfied": false,
+        "exact_tree_status": "UNRESOLVED",
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "frozen_blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "generated_sizings_bb": [
+          9.0,
+          25.371514,
+          43.932495
+        ],
+        "illegal_generated": 0,
+        "legal_target_interval_bb": [
+          9.0,
+          100.0
+        ],
+        "model_fail_closed_reason": null,
+        "model_status": "RESOLVED",
+        "model_status_detail": "CONDITIONAL_POPULATION_SIZING_DENSITY",
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "node_id": "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL",
+          "CO:CALL"
+        ],
+        "quantiles_bb": {
+          "0.05": 9.0,
+          "0.10": 9.0,
+          "0.15": 9.0,
+          "0.20": 9.0,
+          "0.25": 9.0,
+          "0.30": 9.0,
+          "0.35": 9.0,
+          "0.40": 9.0,
+          "0.45": 9.0,
+          "0.50": 9.0,
+          "0.55": 10.320655,
+          "0.60": 13.278965,
+          "0.65": 18.178987,
+          "0.70": 22.162226,
+          "0.75": 25.371514,
+          "0.80": 29.04778,
+          "0.85": 34.033691,
+          "0.90": 43.932495,
+          "0.95": 62.061191
+        },
+        "support": {
+          "action_observations": 46,
+          "distinct_density_bins": 9,
+          "effective_sample_size": 46.0,
+          "family_observations": 46,
+          "global_observations": 6500,
+          "min_family_support": 20,
+          "support_level": "FAMILY"
+        },
+        "uncertainty": {
+          "boundary_probabilities": {
+            "cap": 0.0,
+            "continuous": 0.476095209,
+            "floor": 0.523904791
+          },
+          "concentration": 0.419247288,
+          "credible_interval_bb": [
+            9.0,
+            43.932495
+          ],
+          "credible_interval_ratio": [
+            0.45,
+            2.196625
+          ],
+          "credible_interval_width_bb": 34.932495,
+          "entropy_nats": 2.656775805,
+          "entropy_normalized": 0.580752712,
+          "mean_bb": 19.901269,
+          "median_bb": 9.0,
+          "mode_bb": 9.0,
+          "mode_probability": 0.523904791,
+          "window_width_bb": 91.0,
+          "window_width_ratio": 4.55
+        },
+        "window_bounds_source": {
+          "max": "engine_max_raise_to",
+          "min": "engine_interval"
+        }
+      },
+      {
+        "action": "RAISE",
+        "actor_position": "CO",
+        "context_reconstruction": {
+          "contributions_bb": {
+            "BB": 5.0,
+            "BTN": 1.0,
+            "CO": 1.0,
+            "SB": 5.0
+          },
+          "rule": "public seat contributions rebuilt from blinds, the exact tree path and the contract history",
+          "seat_order": [
+            "LJ",
+            "HJ",
+            "CO",
+            "BTN",
+            "SB",
+            "BB"
+          ]
+        },
+        "derived_legal_window_bb": [
+          9.0,
+          100.0
+        ],
+        "derived_window_matches_frozen_interval": true,
+        "exact_support": {
+          "legal_minimum_fallback_substituted": false,
+          "nearest_price_substituted": false,
+          "translatable_sizing_stat_keys_present": []
+        },
+        "exact_tree_blocks_required_tree_complete": true,
+        "exact_tree_satisfied": false,
+        "exact_tree_status": "UNRESOLVED",
+        "family": "LIMPER_VS_ISO_CALLERS",
+        "frozen_blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "generated_sizings_bb": [
+          9.0,
+          22.016371,
+          40.445164
+        ],
+        "illegal_generated": 0,
+        "legal_target_interval_bb": [
+          9.0,
+          100.0
+        ],
+        "model_fail_closed_reason": null,
+        "model_status": "RESOLVED",
+        "model_status_detail": "CONDITIONAL_POPULATION_SIZING_DENSITY",
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "node_id": "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+        "path": [
+          "SB:ISO@5",
+          "BB:CALL"
+        ],
+        "quantiles_bb": {
+          "0.05": 9.0,
+          "0.10": 9.0,
+          "0.15": 9.0,
+          "0.20": 9.0,
+          "0.25": 9.0,
+          "0.30": 9.0,
+          "0.35": 9.0,
+          "0.40": 9.0,
+          "0.45": 9.0,
+          "0.50": 9.0,
+          "0.55": 10.205474,
+          "0.60": 13.718425,
+          "0.65": 16.968013,
+          "0.70": 19.460678,
+          "0.75": 22.016371,
+          "0.80": 25.234712,
+          "0.85": 30.104972,
+          "0.90": 40.445164,
+          "0.95": 57.952599
+        },
+        "support": {
+          "action_observations": 46,
+          "distinct_density_bins": 9,
+          "effective_sample_size": 46.0,
+          "family_observations": 46,
+          "global_observations": 6500,
+          "min_family_support": 20,
+          "support_level": "FAMILY"
+        },
+        "uncertainty": {
+          "boundary_probabilities": {
+            "cap": 0.0,
+            "continuous": 0.476095209,
+            "floor": 0.523904791
+          },
+          "concentration": 0.430854023,
+          "credible_interval_bb": [
+            9.0,
+            40.445164
+          ],
+          "credible_interval_ratio": [
+            0.5625,
+            2.527823
+          ],
+          "credible_interval_width_bb": 31.445164,
+          "entropy_nats": 2.603678349,
+          "entropy_normalized": 0.569145977,
+          "mean_bb": 18.704165,
+          "median_bb": 9.0,
+          "mode_bb": 9.0,
+          "mode_probability": 0.523904791,
+          "window_width_bb": 91.0,
+          "window_width_ratio": 5.6875
+        },
+        "window_bounds_source": {
+          "max": "engine_max_raise_to",
+          "min": "engine_interval"
+        }
+      },
+      {
+        "action": "RAISE",
+        "actor_position": "BB",
+        "context_reconstruction": {
+          "contributions_bb": {
+            "BB": 1.0,
+            "BTN": 1.0,
+            "CO": 1.0,
+            "SB": 5.0
+          },
+          "rule": "public seat contributions rebuilt from blinds, the exact tree path and the contract history",
+          "seat_order": [
+            "LJ",
+            "HJ",
+            "CO",
+            "BTN",
+            "SB",
+            "BB"
+          ]
+        },
+        "derived_legal_window_bb": [
+          9.0,
+          100.0
+        ],
+        "derived_window_matches_frozen_interval": true,
+        "exact_support": {
+          "legal_minimum_fallback_substituted": false,
+          "nearest_price_substituted": false,
+          "translatable_sizing_stat_keys_present": []
+        },
+        "exact_tree_blocks_required_tree_complete": true,
+        "exact_tree_satisfied": false,
+        "exact_tree_status": "UNRESOLVED",
+        "family": "VS_ISO",
+        "frozen_blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "generated_sizings_bb": [
+          9.0,
+          10.129899,
+          22.252921,
+          50.494048
+        ],
+        "illegal_generated": 0,
+        "legal_target_interval_bb": [
+          9.0,
+          100.0
+        ],
+        "model_fail_closed_reason": null,
+        "model_status": "RESOLVED",
+        "model_status_detail": "CONDITIONAL_POPULATION_SIZING_DENSITY",
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+        "path": [
+          "SB:ISO@5"
+        ],
+        "quantiles_bb": {
+          "0.05": 9.0,
+          "0.10": 9.0,
+          "0.15": 9.0,
+          "0.20": 9.0,
+          "0.25": 9.0,
+          "0.30": 9.0,
+          "0.35": 9.0,
+          "0.40": 9.0,
+          "0.45": 9.0,
+          "0.50": 10.129899,
+          "0.55": 12.025588,
+          "0.60": 14.02811,
+          "0.65": 16.224324,
+          "0.70": 18.850511,
+          "0.75": 22.252921,
+          "0.80": 27.283323,
+          "0.85": 34.58748,
+          "0.90": 50.494048,
+          "0.95": 73.006585
+        },
+        "support": {
+          "action_observations": 131,
+          "distinct_density_bins": 9,
+          "effective_sample_size": 131.0,
+          "family_observations": 131,
+          "global_observations": 6500,
+          "min_family_support": 20,
+          "support_level": "FAMILY"
+        },
+        "uncertainty": {
+          "boundary_probabilities": {
+            "cap": 0.0,
+            "continuous": 0.530281592,
+            "floor": 0.469718408
+          },
+          "concentration": 0.378730094,
+          "credible_interval_bb": [
+            9.0,
+            50.494048
+          ],
+          "credible_interval_ratio": [
+            0.75,
+            4.207837
+          ],
+          "credible_interval_width_bb": 41.494048,
+          "entropy_nats": 2.842130259,
+          "entropy_normalized": 0.621269906,
+          "mean_bb": 20.576377,
+          "median_bb": 10.129899,
+          "mode_bb": 9.0,
+          "mode_probability": 0.469718408,
+          "window_width_bb": 91.0,
+          "window_width_ratio": 7.583333
+        },
+        "window_bounds_source": {
+          "max": "engine_max_raise_to",
+          "min": "engine_interval"
+        }
+      }
+    ],
+    "no_nearest_price_substituted": true,
+    "resolved": 7,
+    "source": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "total": 7
+  },
+  "guarantees": {
+    "fail_closed_instead_of_substitution": true,
+    "frontiers_classified": true,
+    "frontiers_exact_tree_unresolved": 7,
+    "frontiers_fail_closed": 0,
+    "frontiers_resolved": 7,
+    "generated_sizings_always_legal": true,
+    "no_nearest_price_substitution": true,
+    "support_exposed_per_request": true,
+    "uncertainty_exposed_per_request": true
+  },
+  "metrics": {
+    "calibration": {
+      "mean_pit": 0.576005,
+      "n": 7639,
+      "pit_bins": 10,
+      "pit_histogram": [
+        0.0,
+        0.0,
+        0.000655,
+        0.143082,
+        0.333682,
+        0.239953,
+        0.079592,
+        0.036261,
+        0.011651,
+        0.155125
+      ],
+      "pit_max_abs_bin_error": 0.233682,
+      "pit_uniform_expected_bin": 0.1,
+      "quantile_coverage": [
+        {
+          "abs_error": 0.313798,
+          "empirical": 0.413798,
+          "n": 7639,
+          "nominal": 0.1
+        },
+        {
+          "abs_error": 0.296531,
+          "empirical": 0.496531,
+          "n": 7639,
+          "nominal": 0.2
+        },
+        {
+          "abs_error": 0.20072,
+          "empirical": 0.50072,
+          "n": 7639,
+          "nominal": 0.3
+        },
+        {
+          "abs_error": 0.106873,
+          "empirical": 0.506873,
+          "n": 7639,
+          "nominal": 0.4
+        },
+        {
+          "abs_error": 0.138303,
+          "empirical": 0.638303,
+          "n": 7639,
+          "nominal": 0.5
+        },
+        {
+          "abs_error": 0.268176,
+          "empirical": 0.868176,
+          "n": 7639,
+          "nominal": 0.6
+        },
+        {
+          "abs_error": 0.247768,
+          "empirical": 0.947768,
+          "n": 7639,
+          "nominal": 0.7
+        },
+        {
+          "abs_error": 0.184029,
+          "empirical": 0.984029,
+          "n": 7639,
+          "nominal": 0.8
+        },
+        {
+          "abs_error": 0.09568,
+          "empirical": 0.99568,
+          "n": 7639,
+          "nominal": 0.9
+        }
+      ],
+      "quantile_max_abs_error": 0.313798
+    },
+    "crps_bb": 4.702839,
+    "fail_closed": 174,
+    "fail_closed_reasons": {
+      "RAISE_WINDOW_EMPTY_BELOW_STACK": 2,
+      "TARGET_OUTSIDE_LEGAL_WINDOW": 172
+    },
+    "generated_sizings": 27627,
+    "illegal_generated_rate": 0.0,
+    "illegal_generated_sizings": 0,
+    "nll_bits_per_sizing": 2.683351,
+    "nll_gain_vs_uniform_bits": 3.380691,
+    "per_action": {
+      "JAM": {
+        "fail_closed": 161,
+        "generated": 1816,
+        "illegal_generated": 0,
+        "nll_bits_per_sizing": 0.163059,
+        "rows": 1313,
+        "scored": 1152,
+        "support_levels": {
+          "FAMILY": 1254,
+          "GLOBAL_FALLBACK": 59
+        }
+      },
+      "RAISE": {
+        "fail_closed": 13,
+        "generated": 25811,
+        "illegal_generated": 0,
+        "nll_bits_per_sizing": 3.130919,
+        "rows": 6500,
+        "scored": 6487,
+        "support_levels": {
+          "FAMILY": 6470,
+          "GLOBAL_FALLBACK": 30
+        }
+      }
+    },
+    "per_family": {
+      "AGGRESSOR_VS_4BET": {
+        "crps_bb": 3.021602,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 1.000058,
+        "scored": 26
+      },
+      "CALLER_VS_4BET": {
+        "crps_bb": 0.0,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 0.0,
+        "scored": 1
+      },
+      "CALLER_VS_SQUEEZE_OR_3BET": {
+        "crps_bb": 0.531467,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 0.293345,
+        "scored": 16
+      },
+      "COLD_VS_3BET": {
+        "crps_bb": 1.000038,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 0.777482,
+        "scored": 21
+      },
+      "LIMPER_VS_ISO": {
+        "crps_bb": 2.888069,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 1.537762,
+        "scored": 65
+      },
+      "LIMPER_VS_ISO_CALLERS": {
+        "crps_bb": 1.984955,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 1.776795,
+        "scored": 79
+      },
+      "OPENER_OR_ISO_VS_3BET": {
+        "crps_bb": 3.449828,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 2.04132,
+        "scored": 104
+      },
+      "UNOPENED": {
+        "crps_bb": 5.493651,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 2.662712,
+        "scored": 3430
+      },
+      "VS_5BET": {
+        "crps_bb": 2.513128,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 0.979313,
+        "scored": 4
+      },
+      "VS_6BET_PLUS": {
+        "crps_bb": 3.931114,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 2.01572,
+        "scored": 5
+      },
+      "VS_ISO": {
+        "crps_bb": 3.066583,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 2.347128,
+        "scored": 199
+      },
+      "VS_ISO_CALLERS": {
+        "crps_bb": 2.844048,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 2.699695,
+        "scored": 38
+      },
+      "VS_LIMPERS": {
+        "crps_bb": 4.35077,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 2.897603,
+        "scored": 3050
+      },
+      "VS_RFI": {
+        "crps_bb": 3.789475,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 2.315837,
+        "scored": 401
+      },
+      "VS_RFI_CALLERS": {
+        "crps_bb": 3.66459,
+        "fail_closed": 0,
+        "nll_bits_per_sizing": 2.576855,
+        "scored": 200
+      }
+    },
+    "rows": 7813,
+    "scored": 7639,
+    "uniform_window_nll_bits_per_sizing": 6.064042
+  },
+  "metrics_split": null,
+  "notes": [
+    "Every request is evaluated on a conservative sub-window of the engine's legal raise interval: the minimum-raise floor is a proven upper bound of the engine minimum and the cap never exceeds max_raise_to_bb / effective_stack_bb.",
+    "A statistic that is absent inside the legal window fails closed: no nearest price and no nearest public context is ever substituted.",
+    "The quantile-coverage steps come from the measured boundary atoms: a large share of observed raises sits exactly at the minimum raise, so predicted low quantiles collapse onto that atom and coverage is conservative rather than nominal there.",
+    "The seven frozen #388/#419 frontiers are reported twice: model_status describes this conditional population model, exact_tree_status keeps the frozen exact-node verdict (UNRESOLVED) and exact_tree_satisfied is false."
+  ],
+  "provenance": {
+    "dataset": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+    "dataset_sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+    "exact_tree": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+    "frontier_resolution": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "module_sha256": "a224a99300ed78fadf072ad2161f6bb9b5c6310c0e84da4149d2ae149135f31f"
+  },
+  "rows_consumed": 105698,
+  "schema": "poker-generalized-response-raise-sizing-report/v1",
+  "seed": 421,
+  "sizing_model": {
+    "basis": "piecewise_linear_log1p_partition_of_unity_restricted_to_the_legal_window",
+    "boundary_mass": {
+      "JAM": {
+        "at_cap": 1094,
+        "at_floor": 0,
+        "n": 1244,
+        "p_cap": 0.879421222,
+        "p_floor": 0.0
+      },
+      "RAISE": {
+        "at_cap": 0,
+        "at_floor": 2673,
+        "n": 6498,
+        "p_cap": 0.0,
+        "p_floor": 0.411357341
+      }
+    },
+    "boundary_mass_source": "fit_sizing_channel: measured atoms at the minimum raise and the all-in cap",
+    "generation": "deterministic_quantile_grid_of_the_truncated_density",
+    "generation_quantile_levels": [
+      0.1,
+      0.25,
+      0.5,
+      0.75,
+      0.9
+    ],
+    "min_family_support": 20,
+    "no_nearest_context": true,
+    "no_nearest_price": true,
+    "quadrature_steps": 96,
+    "sizing_quantile_levels": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "target_axis": "target_total_bb divided by (pot_before_bb + to_call_bb)",
+    "window_rule": "min_raise_to = max(2*current_bet - max(commitment, BB), current_bet + BB), a conservative upper bound of the engine minimum raise; cap = max_raise_to_bb when supplied else effective_stack_bb"
+  }
+}

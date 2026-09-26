@@ -560,20 +560,20 @@
   "dataset": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
   "dataset_sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
   "eval_split": "VALIDATION",
-  "module_sha256": "69fdf695a67aff29a2edad1326eb2cb2cdd47867e993dbb98423f06b2b496abe",
+  "module_sha256": "a224a99300ed78fadf072ad2161f6bb9b5c6310c0e84da4149d2ae149135f31f",
   "persisted": [
     {
       "architecture": "regularized_multinomial_spline",
       "bytes": 59853,
       "canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
-      "path": "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-421/tasks/task-backlog-jey/analysis/issue421_generalized_response/model/candidate_regularized_multinomial_spline.json",
+      "path": "analysis/issue421_generalized_response/model/candidate_regularized_multinomial_spline.json",
       "sha256": "ea93e8c35e2604debd943495474cdb9262d724efb4a5caefe3723b53f23a59e7"
     },
     {
       "architecture": "hierarchical_empirical_bayes_dirichlet",
       "bytes": 58214,
       "canonical_payload_sha256": "7eb7b4794d9e42bcf151f7e1cf21c337a7f2393bfaf4a1ecc6b310793d2c302f",
-      "path": "/home/abel/.cache/poker-engine-orchestrator/worktrees/issue-421/tasks/task-backlog-jey/analysis/issue421_generalized_response/model/candidate_hierarchical_empirical_bayes_dirichlet.json",
+      "path": "analysis/issue421_generalized_response/model/candidate_hierarchical_empirical_bayes_dirichlet.json",
       "sha256": "3cffaa69b63cd8972ebbd55a055fda26d802c838f5c565bf79c0818b30aa3ce6"
     }
   ],

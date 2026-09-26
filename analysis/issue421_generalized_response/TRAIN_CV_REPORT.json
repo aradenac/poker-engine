@@ -7443,7 +7443,7 @@
       "hierarchical_empirical_bayes_dirichlet"
     ],
     "path": "tools/preflop/generalized_response_model.py",
-    "sha256": "69fdf695a67aff29a2edad1326eb2cb2cdd47867e993dbb98423f06b2b496abe"
+    "sha256": "a224a99300ed78fadf072ad2161f6bb9b5c6310c0e84da4149d2ae149135f31f"
   },
   "module_sha256": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
   "protocol": {

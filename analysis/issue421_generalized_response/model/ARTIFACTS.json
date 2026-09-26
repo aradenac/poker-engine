@@ -1,11 +1,11 @@
 {
   "FIT_REPORT.json": {
-    "bytes": 17851,
-    "sha256": "942594831344d2a74171bf1ff1aa1e9c0074212b76b5e24fd23d486c6c344dd3"
+    "bytes": 17677,
+    "sha256": "33b9037eb5c5917d83d0ea10f76017a48d2659025b07f595c195cb44c9d11818"
   },
   "SUMMARY.md": {
     "bytes": 2160,
-    "sha256": "223ad5c1f300d08e18af9f963ffa3258c3ce78373197a4331fa333668052b271"
+    "sha256": "1b22b9a8d055409a958ac0fbc7d84ca25b976d9386419bcd12d4486bd1ff8a8a"
   },
   "candidate_hierarchical_empirical_bayes_dirichlet.json": {
     "architecture": "hierarchical_empirical_bayes_dirichlet",
