@@ -1,23 +1,23 @@
 {
   "active_definition": "workflow file present at HEAD with at least one automatic trigger; the #373 manual-only historical workflows are excluded explicitly",
-  "active_workflow_count": 55,
+  "active_workflow_count": 56,
   "aggregate": {
-    "job_count": 97,
+    "job_count": 98,
     "repro_statuses": {
       "REPRO_COMPOSITE_VERIFIED": 15,
       "REPRO_HELPER_VERIFIED": 7,
       "REPRO_INCOMPLETE": 2,
-      "REPRO_NOT_VERIFIED": 24,
+      "REPRO_NOT_VERIFIED": 25,
       "REPRO_STRONG_IDENTITY_BOUND": 7
     },
     "side_effect_classes": {
       "ARTIFACT_ONLY": 13,
       "PUBLICATION_CAPABLE": 1,
-      "READ_ONLY": 18,
+      "READ_ONLY": 19,
       "REPOSITORY_WRITE": 19,
       "UNKNOWN": 4
     },
-    "static_cost_proxy": 603
+    "static_cost_proxy": 608
   },
   "base_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
   "excluded_manual_only_workflows": [
@@ -37,10 +37,10 @@
     ".github/workflows/unseen-preflop-context-audit.yml",
     ".github/workflows/v84-strategy-candidate.yml"
   ],
-  "inventory_sha256": "c3f1b1dbc86f80725c427f20dcaa5afc01b576d61ddbcf2e52fe2e02990d1d30",
+  "inventory_sha256": "57697e3c37dd6c04ee6af39c8bd4c605692cb4db3d7a16c95f6ba74f3d440c81",
   "inventory_snapshot_base_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
   "inventory_source": "analysis/workflow_audit/workflows.json",
-  "inventory_workflow_count": 70,
+  "inventory_workflow_count": 71,
   "issue": 382,
   "manual_only_count": 15,
   "parent_issue": 204,
@@ -6437,6 +6437,224 @@
             "analysis/workflow_audit/active_workflow_dag_v2.json",
             "analysis/workflow_audit/consolidation_decision_v1.json",
             ".github/workflows/issue-419-hierarchical-exact-tree.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}"
+      },
+      "concurrency_recommendation": {
+        "blockers": [],
+        "cancel_in_progress": false,
+        "group": "issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}",
+        "has_concurrency": true,
+        "justification": "No repository/publication capability detected; cancellation may be evaluated separately.",
+        "safe_candidate_for_future_cancellation_change": true,
+        "side_effect_class": "READ_ONLY"
+      },
+      "jobs": [
+        {
+          "id": "contract",
+          "if": null,
+          "permissions": {
+            "contents": "read"
+          },
+          "runner": "ubuntu-24.04",
+          "write_capable": false
+        }
+      ],
+      "lifecycle": "current",
+      "name": "Execute issue 421 generalized response model",
+      "path": ".github/workflows/issue-421-generalized-response-model.yml",
+      "path_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/simulation/issue421_issue367_preflight.py",
+            "tools/training/audit_generalized_response_features.py",
+            "tools/training/build_generalized_response_dataset.py",
+            "tools/training/build_issue421_evidence_bundle.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "tools/training/freeze_generalized_validation_protocol.py",
+            "tools/training/validate_generalized_response.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-model.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "contracts/training/generalized-validation-protocol.schema.json",
+            "tests/ci/test_issue421_contract_guards.py",
+            "tests/preflop/test_generalized_response_*.py",
+            "tests/preflop/test_issue421_mandatory_contracts.py",
+            "tests/simulation/test_issue421_preflight.py",
+            "tests/training/test_*generalized*.py",
+            "tests/training/test_issue421_evidence_bundle.py",
+            "tests/test_github_workflow_audit.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "tests/ci/test_consolidation_decision.py",
+            "docs/generalized-opponent-response-model.md",
+            "docs/ci-workflow-dag.md",
+            ".project/decisions/*generalized*.md",
+            "analysis/issue421_generalized_response/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-421-generalized-response-model.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/simulation/issue421_issue367_preflight.py",
+            "tools/training/audit_generalized_response_features.py",
+            "tools/training/build_generalized_response_dataset.py",
+            "tools/training/build_issue421_evidence_bundle.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "tools/training/freeze_generalized_validation_protocol.py",
+            "tools/training/validate_generalized_response.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-model.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "contracts/training/generalized-validation-protocol.schema.json",
+            "tests/ci/test_issue421_contract_guards.py",
+            "tests/preflop/test_generalized_response_*.py",
+            "tests/preflop/test_issue421_mandatory_contracts.py",
+            "tests/simulation/test_issue421_preflight.py",
+            "tests/training/test_*generalized*.py",
+            "tests/training/test_issue421_evidence_bundle.py",
+            "tests/test_github_workflow_audit.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "tests/ci/test_consolidation_decision.py",
+            "docs/generalized-opponent-response-model.md",
+            "docs/ci-workflow-dag.md",
+            ".project/decisions/*generalized*.md",
+            "analysis/issue421_generalized_response/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-421-generalized-response-model.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "raw": "permissions:\n  contents: read",
+        "workflow": {
+          "contents": "read"
+        }
+      },
+      "repro_status": "REPRO_NOT_VERIFIED",
+      "role": "validation_or_utility",
+      "scientific_boundaries": {
+        "TEST": true,
+        "TRAIN": true,
+        "VALIDATION": true
+      },
+      "sha256": "92f6aec842a253d1555ee7629594af976d64080ac911b839cc5316c994abc19b",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": {
+        "band": "low",
+        "components": {
+          "checkout": 1,
+          "download_artifact": 0,
+          "npm_install": 0,
+          "pip_install": 0,
+          "playwright_install": 0,
+          "setup_node": 0,
+          "setup_python": 1,
+          "upload_artifact": 0
+        },
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "triggers": {
+        "pull_request": {
+          "paths": [
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/simulation/issue421_issue367_preflight.py",
+            "tools/training/audit_generalized_response_features.py",
+            "tools/training/build_generalized_response_dataset.py",
+            "tools/training/build_issue421_evidence_bundle.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "tools/training/freeze_generalized_validation_protocol.py",
+            "tools/training/validate_generalized_response.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-model.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "contracts/training/generalized-validation-protocol.schema.json",
+            "tests/ci/test_issue421_contract_guards.py",
+            "tests/preflop/test_generalized_response_*.py",
+            "tests/preflop/test_issue421_mandatory_contracts.py",
+            "tests/simulation/test_issue421_preflight.py",
+            "tests/training/test_*generalized*.py",
+            "tests/training/test_issue421_evidence_bundle.py",
+            "tests/test_github_workflow_audit.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "tests/ci/test_consolidation_decision.py",
+            "docs/generalized-opponent-response-model.md",
+            "docs/ci-workflow-dag.md",
+            ".project/decisions/*generalized*.md",
+            "analysis/issue421_generalized_response/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-421-generalized-response-model.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/simulation/issue421_issue367_preflight.py",
+            "tools/training/audit_generalized_response_features.py",
+            "tools/training/build_generalized_response_dataset.py",
+            "tools/training/build_issue421_evidence_bundle.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "tools/training/freeze_generalized_validation_protocol.py",
+            "tools/training/validate_generalized_response.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-model.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "contracts/training/generalized-validation-protocol.schema.json",
+            "tests/ci/test_issue421_contract_guards.py",
+            "tests/preflop/test_generalized_response_*.py",
+            "tests/preflop/test_issue421_mandatory_contracts.py",
+            "tests/simulation/test_issue421_preflight.py",
+            "tests/training/test_*generalized*.py",
+            "tests/training/test_issue421_evidence_bundle.py",
+            "tests/test_github_workflow_audit.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "tests/ci/test_consolidation_decision.py",
+            "docs/generalized-opponent-response-model.md",
+            "docs/ci-workflow-dag.md",
+            ".project/decisions/*generalized*.md",
+            "analysis/issue421_generalized_response/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-421-generalized-response-model.yml"
           ]
         },
         "workflow_dispatch": {}
