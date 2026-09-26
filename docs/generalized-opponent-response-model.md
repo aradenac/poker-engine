@@ -144,17 +144,24 @@ bit for bit after the legal-window declaration was added (revision
 `af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`), and
 re-computed once more after the runtime surface was made independent of the
 interpreter (revision
-`36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4`). Across
-those revisions the selected action, the selected and generated sizings, the
-declared `sizing_window` verdict and the model-side predictions do not move; the
-only fields that move are the emitted runtime probabilities, each quantised
-onto the runtime's fixed twelve-decimal grid and re-closed with `math.fsum` so
-`probability_sum` stays exactly `1.0` and `illegal_mass` exactly `0.0`, whatever
-the summation semantics of the interpreter that ran the frozen model. Regenerate
+`36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4`), which is
+the revision the entries are pinned at. Across those revisions the selected
+action, the selected and generated sizings, the declared `sizing_window` verdict
+and the model-side distribution do not move; the only fields that move are the
+emitted probabilities, each quantised onto the runtime's fixed twelve-decimal
+grid and re-closed with `math.fsum` so `probability_sum` stays exactly `1.0` and
+`illegal_mass` exactly `0.0`, whatever the summation semantics of the
+interpreter that ran the frozen model. The frozen model probe of each entry is
+captured through the runtime's own canonicalisation helper
+(`canonical_prediction`), the same one the runtime applies before it derives
+anything from the frozen floats, so the recorded model probabilities sit on that
+grid too instead of pinning the last bits of the frozen module's `sum`. The
+reference also pins the candidate identity it was captured from (candidate id,
+canonical payload digest and candidate byte digest). Regenerate
 the reference with
 `python3 tests/preflop/test_generalized_response_sizing.py --write-in-window-reference`
 (it re-captures the canonical surface; the entry digest is
-`4af7100b42c2687151ea49740028e94c52c154afcb7a78ac29ece3d630c094bf`).
+`a48c280c9cd7607d06752fedb0fa264ec9b082fdf2529b8dfee594219937cb79`).
 
 ## 5. Evaluation, freeze and one-shot VALIDATION
 

@@ -5,6 +5,7 @@
     "test_consumed": false,
     "validation_split_reopened": false
   },
+  "candidate_byte_sha256": "ea93e8c35e2604debd943495474cdb9262d724efb4a5caefe3723b53f23a59e7",
   "candidate_canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
   "candidate_id": "generalized-adverse-response-candidate-v1",
   "captured_at_runtime_module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
@@ -22,12 +23,12 @@
         2.0,
         70.975
       ],
-      "model_prediction_sha256": "6baf3cc49d71fa47e92f78a835da311d35ffa4c5e82b0a8982ed3ded3c50d42d",
+      "model_prediction_sha256": "49df8e59a178a20bf16d826ea74e912f3145f79049f8408ad67cb0579ea74bf2",
       "model_probabilities": {
-        "CALL": 0.3495352733202476,
-        "FOLD": 0.5432556229824147,
-        "JAM": 0.0009611245756500075,
-        "RAISE": 0.10624797912168772
+        "CALL": 0.34953527332,
+        "FOLD": 0.543255622982,
+        "JAM": 0.000961124576,
+        "RAISE": 0.106247979122
       },
       "probe_id": "free_unopened_raise_floor",
       "runtime_generated_sizings_sha256": "1583e2dcafea72d58b0931af53787523089c70e1e42c3da4cb1870a278b0bcb1",
@@ -61,12 +62,12 @@
         2.0,
         70.975
       ],
-      "model_prediction_sha256": "e37654eefd5fea55d3b514fe86c074914a8f28f06899aca59c948da3ece01cdb",
+      "model_prediction_sha256": "fc8244bd595f88496b9de977f648fe99a25a2fc13d09f4615a04d1465ea64158",
       "model_probabilities": {
-        "CALL": 0.35836843928398743,
-        "FOLD": 0.5569843291955411,
-        "JAM": 0.0009854133199814763,
-        "RAISE": 0.08366181820048998
+        "CALL": 0.358368439284,
+        "FOLD": 0.556984329196,
+        "JAM": 0.00098541332,
+        "RAISE": 0.0836618182
       },
       "probe_id": "free_unopened_raise_default_relative",
       "runtime_generated_sizings_sha256": "1583e2dcafea72d58b0931af53787523089c70e1e42c3da4cb1870a278b0bcb1",
@@ -100,12 +101,12 @@
         2.0,
         70.975
       ],
-      "model_prediction_sha256": "c52a1c0256a7724d2eca3bffa85d388bffc7bed83ad775ab02861d8a16e9dd3c",
+      "model_prediction_sha256": "300d822d48e6cb16f9876da5ebf2328e5085efd865f1ffb47fa76dda3322921d",
       "model_probabilities": {
-        "CALL": 0.38381794802071395,
-        "FOLD": 0.5965385309561733,
-        "JAM": 0.008443139003719957,
-        "RAISE": 0.011200382019392878
+        "CALL": 0.383817948021,
+        "FOLD": 0.5965385309560001,
+        "JAM": 0.008443139004,
+        "RAISE": 0.011200382019
       },
       "probe_id": "free_unopened_jam_effective_stack",
       "runtime_generated_sizings_sha256": "02865385569048571d290ff376de2f6dd3e64f43a5adc94eb27aa37ee16b8aa7",
@@ -139,12 +140,12 @@
         9.0,
         60.0
       ],
-      "model_prediction_sha256": "c793473c11154ebf0878c44cffc728414c95b0170300e9b486d779e68fb22a8b",
+      "model_prediction_sha256": "aba930f68df4cfd838af8cc69e1dd4433104a02cbf0a7e800830a4b12c0272ed",
       "model_probabilities": {
-        "CALL": 0.3866746020079299,
-        "FOLD": 0.6009784071573037,
-        "JAM": 0.0010632473776944762,
-        "RAISE": 0.011283743457071956
+        "CALL": 0.386674602008,
+        "FOLD": 0.600978407157,
+        "JAM": 0.001063247378,
+        "RAISE": 0.011283743457
       },
       "probe_id": "explicit_interval_raise_interior",
       "runtime_generated_sizings_sha256": "a21ea388f6212161ed74821ccfc1929eff69cab4dcca7d857914157603d66895",
@@ -178,12 +179,12 @@
         9.0,
         60.0
       ],
-      "model_prediction_sha256": "6d0f2da557ce0d8951dd529d4cddd43dfcec173459fc96f71add38b8e5bc08e4",
+      "model_prediction_sha256": "36ace846325ec87a5a1c89f63a5d02b5a5b50eb1b082f9b298170ee0d0933ca2",
       "model_probabilities": {
-        "CALL": 0.38381794802071395,
-        "FOLD": 0.5965385309561733,
-        "JAM": 0.008443139003719957,
-        "RAISE": 0.011200382019392878
+        "CALL": 0.383817948021,
+        "FOLD": 0.5965385309560001,
+        "JAM": 0.008443139004,
+        "RAISE": 0.011200382019
       },
       "probe_id": "explicit_interval_jam_cap",
       "runtime_generated_sizings_sha256": "df4d62e567ba0bea35d205da7f6fc569ac14b0b864e1f1282e1f20a87027ffce",
@@ -217,12 +218,12 @@
         2.5,
         70.975
       ],
-      "model_prediction_sha256": "24abbb8c9d7fc4593b9d4097702b6d5a419512dd87a3e3aa69ac7add595bab60",
+      "model_prediction_sha256": "59d2becdd37a3225c3f1f02342eb50fd28d6c92caa5b2dea1240057479e9e417",
       "model_probabilities": {
-        "CALL": 0.38452007484377504,
-        "FOLD": 0.41189529029966204,
-        "JAM": 0.003886528164895875,
-        "RAISE": 0.19969810669166707
+        "CALL": 0.384520074844,
+        "FOLD": 0.41189529029899996,
+        "JAM": 0.003886528165,
+        "RAISE": 0.199698106692
       },
       "probe_id": "vs_limpers_bb_raise_3bb",
       "runtime_generated_sizings_sha256": "d3c4059a63ac2946e86e44cfb5bcc298aef76ac7ac92bc5f31d030de45c982a5",
@@ -256,12 +257,12 @@
         2.0,
         20.0
       ],
-      "model_prediction_sha256": "0f4b65d1f2422e2d81c86e068d47af2e23697bac581840ae390db17182a553bf",
+      "model_prediction_sha256": "a71d34e976561a8085a1521e9b0582a0bd8728d8ed346b8cc36dddba9b1b047e",
       "model_probabilities": {
-        "CALL": 0.38279510101767034,
-        "FOLD": 0.6006456813860758,
-        "JAM": 0.005464283356628075,
-        "RAISE": 0.011094934239625777
+        "CALL": 0.382795101018,
+        "FOLD": 0.600645681385,
+        "JAM": 0.005464283357,
+        "RAISE": 0.01109493424
       },
       "probe_id": "short_stack_raise_15bb",
       "runtime_generated_sizings_sha256": "01a5ba640a64189fcb73690e3f96897a2c74182371e78f5f7f37838297690350",
@@ -295,12 +296,12 @@
         2.0,
         20.0
       ],
-      "model_prediction_sha256": "71d527c3f278f12ab3d55b02e67f66758dc54acc9b9027cf405971c58c30515b",
+      "model_prediction_sha256": "a566a6b96b2db7ec72052a7f86435cdf4db1ba8ad54ccd0ee075c1b6742a3c7b",
       "model_probabilities": {
-        "CALL": 0.379799829105396,
-        "FOLD": 0.5959457854524506,
-        "JAM": 0.01324626617170599,
-        "RAISE": 0.0110081192704474
+        "CALL": 0.379799829105,
+        "FOLD": 0.595945785453,
+        "JAM": 0.013246266172,
+        "RAISE": 0.01100811927
       },
       "probe_id": "short_stack_jam_cap",
       "runtime_generated_sizings_sha256": "fcdf8c814aaf13779cf38fe2bcf60a9b425220ce41575c237a1f50dcff20f077",
@@ -334,12 +335,12 @@
         2.0,
         150.0
       ],
-      "model_prediction_sha256": "96347e60136b1c1cefbd3126a9a623a8040126fdf51faf8b8029116a820b2597",
+      "model_prediction_sha256": "91d26f0f14e43b29893324f78e9a56d15b077758d26e17b6efb39abd54769b2c",
       "model_probabilities": {
-        "CALL": 0.37763394911025583,
-        "FOLD": 0.61020378886889,
-        "JAM": 0.0009074412588571112,
-        "RAISE": 0.01125482076199706
+        "CALL": 0.37763394911,
+        "FOLD": 0.6102037888690001,
+        "JAM": 0.000907441259,
+        "RAISE": 0.011254820762
       },
       "probe_id": "deep_stack_raise_9bb",
       "runtime_generated_sizings_sha256": "160263e16ec7551573076f19587dbe11ae3520bf2f8cf6c83a0e122657123072",
@@ -361,12 +362,12 @@
       "target_total_bb": 9.0
     }
   ],
-  "entries_sha256": "4af7100b42c2687151ea49740028e94c52c154afcb7a78ac29ece3d630c094bf",
+  "entries_sha256": "a48c280c9cd7607d06752fedb0fa264ec9b082fdf2529b8dfee594219937cb79",
   "issue": 421,
   "kind": "IN_WINDOW_PREDICTION_REFERENCE",
   "model_module_sha256": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3",
   "purpose": "Freeze the in-window RAISE/JAM response predictions so that the explicit legal-window declaration, and every later runtime revision, is proved not to move the in-window action, the selected sizing or the declared window verdict.",
   "regeneration": "python3 tests/preflop/test_generalized_response_sizing.py --write-in-window-reference",
-  "rule": "an in-window query keeps the same selected action, the same selected sizing and the same declared sizing_window verdict across runtime revisions; the legal-window declaration added no probability, and the interpreter-independent canonical surface only moved each emitted probability onto the runtime's fixed decimal grid, where probability_sum stays exactly 1.0 and illegal_mass exactly 0.0",
+  "rule": "an in-window query keeps the same selected action, the same selected sizing and the same declared sizing_window verdict across runtime revisions; the legal-window declaration added no probability, and the interpreter-independent canonical surface only moved each emitted probability -- the runtime's, and the frozen model probe captured beside it -- onto the runtime's fixed decimal grid, where probability_sum stays exactly 1.0 and illegal_mass exactly 0.0",
   "schema": "poker-generalized-response-in-window-reference/v1"
 }

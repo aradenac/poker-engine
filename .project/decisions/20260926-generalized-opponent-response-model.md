@@ -113,7 +113,21 @@ remplacés par les digests du tableau ci-dessus. Dans la référence in-window
 entrées `4af7100b42c2687151ea49740028e94c52c154afcb7a78ac29ece3d630c094bf`),
 seules les probabilités émises bougent — chacune étant quantifiée sur la
 grille — tandis que l'action sélectionnée, les sizings sélectionnés et générés,
-le verdict `sizing_window` et les prédictions du modèle restent inchangés.
+le verdict `sizing_window` et la distribution du modèle restent inchangés.
+Enfin #421 `backlog-bvi` (re-pin de la référence in-window sur la surface
+canonique) : la référence est régénérée par son générateur officiel
+(`python3 tests/preflop/test_generalized_response_sizing.py
+--write-in-window-reference`) et la sonde du **modèle** de chaque entrée est
+capturée à travers le *même* helper de canonicalisation que le runtime
+(`canonical_prediction`), au lieu des flottants bruts du module gelé
+(`92d7ac94…`, inchangé). Le runtime, son identité de candidat et l'interpréteur
+ne changent pas ; seules les représentations enregistrées changent, chacune
+quantifiée sur la grille décimale fixe (l'écart par probabilité est au plus d'un
+pas de grille, ≤ 1 ulp du vecteur émis), la distribution, l'action sélectionnée,
+les sizings et le verdict `sizing_window` restant identiques. Les entrées
+passent à `a48c280c9cd7607d06752fedb0fa264ec9b082fdf2529b8dfee594219937cb79` ;
+les octets de la référence antérieure sont conservés comme preuve historique
+dans `.project/decisions/20260926-generalized-opponent-response-model-ci-reproducibility.md`.
 
 ## Provenance indépendante de l'environnement
 

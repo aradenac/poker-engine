@@ -637,8 +637,10 @@ IN_WINDOW_PROBE_SPECS: tuple[tuple[str, str, float, dict], ...] = (
 #: The runtime revision the in-window entries were captured from.  The entries
 #: were re-computed bit for bit after the runtime surface was made
 #: interpreter-independent (every emitted float quantised on the fixed decimal
-#: grid and every legal vector re-closed with ``math.fsum``), so this pinned
-#: revision stays the capture reference.
+#: grid and every legal vector re-closed with ``math.fsum``) and after the
+#: *model* probes of the reference were captured through the same
+#: canonicalisation helper (never as the raw floats of the frozen module), so
+#: this pinned revision stays the capture reference.
 CAPTURED_AT_RUNTIME_MODULE_SHA256 = (
     "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4"
 )
@@ -681,7 +683,15 @@ def in_window_reference_entries() -> list[dict]:
         context, action = probe["context"], probe["action"]
         window = model.raise_sizing_window(context, action=action)
         document = handle.resolve(context, action=action, include_sizing=True)
-        prediction = model.predict(handle.candidate, context)
+        # The frozen model answer is captured through ``canonical_prediction``,
+        # the *same* helper the runtime applies to ``self.predict(context)``
+        # before it derives anything from the model floats.  The
+        # consumer-facing surface is the canonical one: recording the raw
+        # floats of the frozen module would pin the last bits of the
+        # interpreter's ``sum`` semantics instead of the frozen distribution.
+        prediction = runtime.canonical_prediction(
+            model.predict(handle.candidate, context)
+        )
         probabilities = dict(document["action_probabilities"])
         sizing = document["sizing"] or {}
         entries.append(
@@ -743,11 +753,13 @@ def build_in_window_reference() -> dict:
             "an in-window query keeps the same selected action, the same selected sizing and "
             "the same declared sizing_window verdict across runtime revisions; the legal-window "
             "declaration added no probability, and the interpreter-independent canonical surface "
-            "only moved each emitted probability onto the runtime's fixed decimal grid, where "
-            "probability_sum stays exactly 1.0 and illegal_mass exactly 0.0"
+            "only moved each emitted probability -- the runtime's, and the frozen model probe "
+            "captured beside it -- onto the runtime's fixed decimal grid, where probability_sum "
+            "stays exactly 1.0 and illegal_mass exactly 0.0"
         ),
         "candidate_id": handle.entry.get("candidate_id"),
         "candidate_canonical_payload_sha256": handle.candidate["canonical_payload_sha256"],
+        "candidate_byte_sha256": handle.entry.get("artifact_sha256"),
         "model_module_sha256": model.sha256_bytes(MODULE_PATH.read_bytes()),
         "captured_at_runtime_module_sha256": CAPTURED_AT_RUNTIME_MODULE_SHA256,
         "entries": entries,
@@ -789,6 +801,14 @@ class InWindowReferenceTests(unittest.TestCase):
         self.assertEqual(
             reference["candidate_canonical_payload_sha256"],
             runtime.GeneralizedResponseRuntime().candidate["canonical_payload_sha256"],
+        )
+        self.assertEqual(
+            reference["candidate_byte_sha256"],
+            runtime.GeneralizedResponseRuntime().entry["artifact_sha256"],
+        )
+        self.assertEqual(
+            reference["captured_at_runtime_module_sha256"],
+            CAPTURED_AT_RUNTIME_MODULE_SHA256,
         )
         self.assertEqual(len(CAPTURED_AT_RUNTIME_MODULE_SHA256), 64)
         self.assertEqual(reference["boundary"]["test_consumed"], False)
