@@ -1,0 +1,3026 @@
+{
+  "action_space": [
+    "FOLD",
+    "CALL",
+    "RAISE",
+    "JAM"
+  ],
+  "architecture": "hierarchical_empirical_bayes_dirichlet",
+  "canonical_payload_sha256": "7eb7b4794d9e42bcf151f7e1cf21c337a7f2393bfaf4a1ecc6b310793d2c302f",
+  "config": {
+    "default_target_to_pot_ratio": 1.2,
+    "deviation_clip": 0.5,
+    "deviation_scale_grid": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.45
+    ],
+    "hierarchical_min_cells": 2,
+    "hierarchical_strength_bounds": [
+      1.0,
+      400.0
+    ],
+    "holdout_modulus": 5,
+    "interaction_block_weight": 0.5,
+    "interaction_max_cells": 48,
+    "interaction_min_support": 20,
+    "interaction_smoothing_mass": 8.0,
+    "lift_scale_grid": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      6.0,
+      8.0
+    ],
+    "sizing_axis_knots": [
+      0.1,
+      0.25,
+      0.5,
+      0.8,
+      1.2,
+      2.0,
+      3.5,
+      7.0,
+      15.0
+    ],
+    "sizing_gain_bounds": [
+      0.125,
+      8.0
+    ],
+    "sizing_smoothing_mass": 8.0,
+    "smoothing_mass": 8.0,
+    "spline_knots": {
+      "effective_stack_bb": [
+        1.0,
+        5.0,
+        10.0,
+        20.0,
+        35.0,
+        60.0,
+        100.0,
+        160.0,
+        300.0
+      ],
+      "pot_before_bb": [
+        1.0,
+        2.0,
+        3.5,
+        6.0,
+        10.0,
+        20.0,
+        40.0,
+        80.0,
+        160.0
+      ],
+      "to_call_bb": [
+        0.25,
+        0.5,
+        1.0,
+        2.0,
+        4.0,
+        8.0,
+        16.0,
+        40.0,
+        100.0
+      ]
+    },
+    "tuning_max_rows": 8000
+  },
+  "fit_summary": {
+    "action_counts": {
+      "CALL": 35620,
+      "FOLD": 51581,
+      "JAM": 1157,
+      "RAISE": 5802
+    },
+    "action_rates": {
+      "CALL": 0.378316,
+      "FOLD": 0.54759,
+      "JAM": 0.012322,
+      "RAISE": 0.061772
+    },
+    "baseline_log_loss_bits_per_decision": 1.329203,
+    "distinct_hands": 19016,
+    "fit_rows": 74985,
+    "holdout_gain_bits_per_decision": 0.059539,
+    "holdout_log_loss_bits_per_decision": 1.269664,
+    "holdout_modulus": 5,
+    "holdout_rows": 19175,
+    "interaction_cells": {
+      "family_x_actor_position": 48,
+      "family_x_aggressor_position": 48,
+      "family_x_effective_stack_bb": 48,
+      "family_x_to_call_bb": 38
+    },
+    "rows": 94160,
+    "sizing_channel": {
+      "JAM": {
+        "families": [
+          "AGGRESSOR_VS_4BET",
+          "CALLER_VS_4BET",
+          "CALLER_VS_SQUEEZE_OR_3BET",
+          "COLD_VS_3BET",
+          "LIMPER_VS_ISO",
+          "LIMPER_VS_ISO_CALLERS",
+          "OPENER_OR_ISO_VS_3BET",
+          "UNOPENED",
+          "VS_5BET",
+          "VS_6BET_PLUS",
+          "VS_ISO",
+          "VS_ISO_CALLERS",
+          "VS_LIMPERS",
+          "VS_RFI",
+          "VS_RFI_CALLERS"
+        ],
+        "global_total": 1157
+      },
+      "RAISE": {
+        "families": [
+          "AGGRESSOR_VS_4BET",
+          "CALLER_VS_SQUEEZE_OR_3BET",
+          "COLD_VS_3BET",
+          "LIMPER_VS_ISO",
+          "LIMPER_VS_ISO_CALLERS",
+          "OPENER_OR_ISO_VS_3BET",
+          "UNOPENED",
+          "VS_5BET",
+          "VS_6BET_PLUS",
+          "VS_ISO",
+          "VS_ISO_CALLERS",
+          "VS_LIMPERS",
+          "VS_RFI",
+          "VS_RFI_CALLERS"
+        ],
+        "global_total": 5802
+      }
+    },
+    "tuning": {
+      "baseline_log_loss_bits_per_decision": 1.325754,
+      "grid": [
+        0.05,
+        0.1,
+        0.15,
+        0.2,
+        0.25,
+        0.3,
+        0.35,
+        0.45
+      ],
+      "results": [
+        {
+          "holdout_log_loss_bits_per_decision": 1.299808,
+          "scale": 0.05
+        },
+        {
+          "holdout_log_loss_bits_per_decision": 1.285909,
+          "scale": 0.1
+        },
+        {
+          "holdout_log_loss_bits_per_decision": 1.274989,
+          "scale": 0.15
+        },
+        {
+          "holdout_log_loss_bits_per_decision": 1.266544,
+          "scale": 0.2
+        },
+        {
+          "holdout_log_loss_bits_per_decision": 1.260985,
+          "scale": 0.25
+        },
+        {
+          "holdout_log_loss_bits_per_decision": 1.279608,
+          "scale": 0.3
+        },
+        {
+          "holdout_log_loss_bits_per_decision": 1.334334,
+          "scale": 0.35
+        },
+        {
+          "holdout_log_loss_bits_per_decision": 1.406341,
+          "scale": 0.45
+        }
+      ],
+      "selected": 0.25,
+      "selected_holdout_log_loss_bits_per_decision": 1.260985
+    },
+    "tuning_rows": 8000
+  },
+  "params": {
+    "block_strengths": {
+      "actor_position": {
+        "basis": "method_of_moments",
+        "prior_strength": 327.430853
+      },
+      "aggressor_position": {
+        "basis": "method_of_moments",
+        "prior_strength": 80.835399
+      },
+      "caller_count": {
+        "basis": "method_of_moments",
+        "prior_strength": 337.974766
+      },
+      "effective_stack_bb": {
+        "basis": "method_of_moments",
+        "prior_strength": 396.005906
+      },
+      "family": {
+        "basis": "method_of_moments",
+        "prior_strength": 32.715707
+      },
+      "family_x_actor_position": {
+        "basis": "method_of_moments",
+        "prior_strength": 20.701719
+      },
+      "family_x_aggressor_position": {
+        "basis": "method_of_moments",
+        "prior_strength": 20.701719
+      },
+      "family_x_effective_stack_bb": {
+        "basis": "method_of_moments",
+        "prior_strength": 20.701719
+      },
+      "family_x_to_call_bb": {
+        "basis": "method_of_moments",
+        "prior_strength": 20.701719
+      },
+      "limper_count": {
+        "basis": "method_of_moments",
+        "prior_strength": 169.897703
+      },
+      "live_position_count": {
+        "basis": "method_of_moments",
+        "prior_strength": 160.960631
+      },
+      "pot_before_bb": {
+        "basis": "method_of_moments",
+        "prior_strength": 150.683654
+      },
+      "raise_level": {
+        "basis": "method_of_moments",
+        "prior_strength": 339.395607
+      },
+      "to_call_bb": {
+        "basis": "method_of_moments",
+        "prior_strength": 41.124657
+      }
+    },
+    "blocks": {
+      "actor_position": {
+        "basis": "categorical",
+        "counts": [
+          [
+            4214.0,
+            2298.0,
+            827.0,
+            195.0
+          ],
+          [
+            9639.0,
+            5986.0,
+            1023.0,
+            206.0
+          ],
+          [
+            9796.0,
+            6368.0,
+            925.0,
+            194.0
+          ],
+          [
+            9778.0,
+            6857.0,
+            1037.0,
+            169.0
+          ],
+          [
+            9661.0,
+            6978.0,
+            1184.0,
+            205.0
+          ],
+          [
+            8493.0,
+            7133.0,
+            806.0,
+            188.0
+          ]
+        ],
+        "kind": "primary",
+        "knots": null,
+        "nodes": [
+          "BB",
+          "BTN",
+          "CO",
+          "HJ",
+          "LJ",
+          "SB"
+        ],
+        "support": [
+          7534,
+          16854,
+          17283,
+          17841,
+          18028,
+          16620
+        ],
+        "transform": null
+      },
+      "aggressor_position": {
+        "basis": "categorical",
+        "counts": [
+          [
+            840.0,
+            1605.0,
+            45.0,
+            49.0
+          ],
+          [
+            2517.0,
+            1861.0,
+            108.0,
+            74.0
+          ],
+          [
+            3064.0,
+            1689.0,
+            103.0,
+            68.0
+          ],
+          [
+            4035.0,
+            2020.0,
+            141.0,
+            91.0
+          ],
+          [
+            4929.0,
+            2364.0,
+            194.0,
+            118.0
+          ],
+          [
+            34804.0,
+            24573.0,
+            5151.0,
+            704.0
+          ],
+          [
+            1392.0,
+            1508.0,
+            60.0,
+            53.0
+          ]
+        ],
+        "kind": "primary",
+        "knots": null,
+        "nodes": [
+          "BB",
+          "BTN",
+          "CO",
+          "HJ",
+          "LJ",
+          "NONE",
+          "SB"
+        ],
+        "support": [
+          2539,
+          4560,
+          4924,
+          6287,
+          7605,
+          65232,
+          3013
+        ],
+        "transform": null
+      },
+      "caller_count": {
+        "basis": "categorical",
+        "counts": [
+          [
+            46656.0,
+            31104.0,
+            5567.0,
+            994.0
+          ],
+          [
+            3895.0,
+            3241.0,
+            181.0,
+            128.0
+          ],
+          [
+            883.0,
+            1032.0,
+            45.0,
+            34.0
+          ],
+          [
+            147.0,
+            243.0,
+            9.0,
+            1.0
+          ]
+        ],
+        "kind": "primary",
+        "knots": null,
+        "nodes": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "support": [
+          84321,
+          7445,
+          1994,
+          400
+        ],
+        "transform": null
+      },
+      "effective_stack_bb": {
+        "basis": "spline",
+        "counts": [
+          [
+            19.141613,
+            18.393476,
+            0.470231,
+            14.921392
+          ],
+          [
+            111.083378,
+            93.258897,
+            7.342554,
+            36.332389
+          ],
+          [
+            368.612522,
+            287.762327,
+            44.78351,
+            59.590125
+          ],
+          [
+            1286.947748,
+            917.060916,
+            139.195058,
+            94.317172
+          ],
+          [
+            4450.893033,
+            3305.011229,
+            510.05659,
+            158.887314
+          ],
+          [
+            8954.660031,
+            6865.062798,
+            1098.471105,
+            245.270424
+          ],
+          [
+            20261.751475,
+            14084.27917,
+            2150.652247,
+            368.27477
+          ],
+          [
+            10818.012285,
+            6930.571389,
+            1195.672516,
+            133.693817
+          ],
+          [
+            5309.897914,
+            3118.599797,
+            655.35619,
+            45.712598
+          ]
+        ],
+        "kind": "primary",
+        "knots": [
+          1.0,
+          5.0,
+          10.0,
+          20.0,
+          35.0,
+          60.0,
+          100.0,
+          160.0,
+          300.0
+        ],
+        "nodes": [
+          "1.0",
+          "5.0",
+          "10.0",
+          "20.0",
+          "35.0",
+          "60.0",
+          "100.0",
+          "160.0",
+          "300.0"
+        ],
+        "support": [
+          53,
+          248,
+          761,
+          2438,
+          8425,
+          17163,
+          36865,
+          19078,
+          9130
+        ],
+        "transform": "log1p"
+      },
+      "family": {
+        "basis": "categorical",
+        "counts": [
+          [
+            16.0,
+            123.0,
+            8.0,
+            16.0
+          ],
+          [
+            64.0,
+            59.0,
+            0.0,
+            2.0
+          ],
+          [
+            399.0,
+            298.0,
+            5.0,
+            17.0
+          ],
+          [
+            977.0,
+            181.0,
+            7.0,
+            17.0
+          ],
+          [
+            23.0,
+            3.0,
+            0.0,
+            0.0
+          ],
+          [
+            1103.0,
+            1923.0,
+            27.0,
+            40.0
+          ],
+          [
+            776.0,
+            1948.0,
+            41.0,
+            32.0
+          ],
+          [
+            110.0,
+            449.0,
+            56.0,
+            52.0
+          ],
+          [
+            20175.0,
+            13334.0,
+            2740.0,
+            351.0
+          ],
+          [
+            9.0,
+            35.0,
+            3.0,
+            2.0
+          ],
+          [
+            0.0,
+            4.0,
+            4.0,
+            1.0
+          ],
+          [
+            3428.0,
+            1335.0,
+            116.0,
+            66.0
+          ],
+          [
+            669.0,
+            321.0,
+            20.0,
+            14.0
+          ],
+          [
+            14629.0,
+            11239.0,
+            2411.0,
+            353.0
+          ],
+          [
+            6331.0,
+            2761.0,
+            244.0,
+            131.0
+          ],
+          [
+            2872.0,
+            1607.0,
+            120.0,
+            63.0
+          ]
+        ],
+        "kind": "primary",
+        "knots": null,
+        "nodes": [
+          "AGGRESSOR_VS_4BET",
+          "CALLER_VS_4BET",
+          "CALLER_VS_SQUEEZE_OR_3BET",
+          "COLD_VS_3BET",
+          "COLD_VS_4BET",
+          "LIMPER_VS_ISO",
+          "LIMPER_VS_ISO_CALLERS",
+          "OPENER_OR_ISO_VS_3BET",
+          "UNOPENED",
+          "VS_5BET",
+          "VS_6BET_PLUS",
+          "VS_ISO",
+          "VS_ISO_CALLERS",
+          "VS_LIMPERS",
+          "VS_RFI",
+          "VS_RFI_CALLERS"
+        ],
+        "support": [
+          163,
+          125,
+          719,
+          1182,
+          26,
+          3093,
+          2797,
+          667,
+          36600,
+          49,
+          9,
+          4945,
+          1024,
+          28632,
+          9467,
+          4662
+        ],
+        "transform": null
+      },
+      "family_x_actor_position": {
+        "basis": "categorical",
+        "counts": [
+          [
+            8921.0,
+            5451.0,
+            1136.0,
+            147.0
+          ],
+          [
+            5394.0,
+            3589.0,
+            704.0,
+            86.0
+          ],
+          [
+            3588.0,
+            4143.0,
+            515.0,
+            79.0
+          ],
+          [
+            4486.0,
+            2975.0,
+            581.0,
+            80.0
+          ],
+          [
+            3978.0,
+            2555.0,
+            397.0,
+            52.0
+          ],
+          [
+            3227.0,
+            2060.0,
+            448.0,
+            62.0
+          ],
+          [
+            2577.0,
+            1566.0,
+            259.0,
+            36.0
+          ],
+          [
+            1838.0,
+            1254.0,
+            302.0,
+            38.0
+          ],
+          [
+            1458.0,
+            619.0,
+            39.0,
+            34.0
+          ],
+          [
+            1461.0,
+            588.0,
+            66.0,
+            31.0
+          ],
+          [
+            1323.0,
+            554.0,
+            49.0,
+            29.0
+          ],
+          [
+            795.0,
+            980.0,
+            150.0,
+            18.0
+          ],
+          [
+            1275.0,
+            589.0,
+            53.0,
+            24.0
+          ],
+          [
+            1063.0,
+            767.0,
+            37.0,
+            27.0
+          ],
+          [
+            1126.0,
+            443.0,
+            42.0,
+            17.0
+          ],
+          [
+            1111.0,
+            432.0,
+            33.0,
+            22.0
+          ],
+          [
+            963.0,
+            557.0,
+            48.0,
+            20.0
+          ],
+          [
+            944.0,
+            449.0,
+            40.0,
+            12.0
+          ],
+          [
+            359.0,
+            735.0,
+            13.0,
+            20.0
+          ],
+          [
+            719.0,
+            213.0,
+            21.0,
+            13.0
+          ],
+          [
+            602.0,
+            274.0,
+            33.0,
+            14.0
+          ],
+          [
+            337.0,
+            555.0,
+            11.0,
+            7.0
+          ],
+          [
+            208.0,
+            557.0,
+            13.0,
+            12.0
+          ],
+          [
+            0.0,
+            0.0,
+            659.0,
+            106.0
+          ],
+          [
+            189.0,
+            481.0,
+            9.0,
+            7.0
+          ],
+          [
+            418.0,
+            218.0,
+            14.0,
+            7.0
+          ],
+          [
+            185.0,
+            406.0,
+            8.0,
+            7.0
+          ],
+          [
+            455.0,
+            81.0,
+            3.0,
+            6.0
+          ],
+          [
+            198.0,
+            321.0,
+            3.0,
+            8.0
+          ],
+          [
+            323.0,
+            101.0,
+            9.0,
+            7.0
+          ],
+          [
+            263.0,
+            117.0,
+            10.0,
+            10.0
+          ],
+          [
+            95.0,
+            294.0,
+            6.0,
+            4.0
+          ],
+          [
+            305.0,
+            65.0,
+            2.0,
+            7.0
+          ],
+          [
+            127.0,
+            196.0,
+            0.0,
+            3.0
+          ],
+          [
+            99.0,
+            210.0,
+            5.0,
+            2.0
+          ],
+          [
+            181.0,
+            84.0,
+            4.0,
+            6.0
+          ],
+          [
+            35.0,
+            144.0,
+            20.0,
+            19.0
+          ],
+          [
+            82.0,
+            116.0,
+            0.0,
+            2.0
+          ],
+          [
+            126.0,
+            59.0,
+            1.0,
+            7.0
+          ],
+          [
+            158.0,
+            22.0,
+            2.0,
+            3.0
+          ],
+          [
+            101.0,
+            70.0,
+            2.0,
+            5.0
+          ],
+          [
+            33.0,
+            115.0,
+            9.0,
+            10.0
+          ],
+          [
+            64.0,
+            71.0,
+            1.0,
+            2.0
+          ],
+          [
+            61.0,
+            49.0,
+            0.0,
+            1.0
+          ],
+          [
+            16.0,
+            71.0,
+            10.0,
+            5.0
+          ],
+          [
+            10.0,
+            71.0,
+            6.0,
+            11.0
+          ],
+          [
+            70.0,
+            19.0,
+            2.0,
+            1.0
+          ],
+          [
+            59.0,
+            13.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "kind": "interaction",
+        "knots": null,
+        "nodes": [
+          "UNOPENED|LJ",
+          "UNOPENED|HJ",
+          "VS_LIMPERS|SB",
+          "VS_LIMPERS|BTN",
+          "VS_LIMPERS|CO",
+          "UNOPENED|CO",
+          "VS_LIMPERS|HJ",
+          "UNOPENED|BTN",
+          "VS_RFI|CO",
+          "VS_RFI|BTN",
+          "VS_RFI|SB",
+          "UNOPENED|SB",
+          "VS_ISO|BB",
+          "VS_RFI_CALLERS|BB",
+          "VS_RFI|HJ",
+          "VS_ISO|SB",
+          "VS_RFI|BB",
+          "VS_RFI_CALLERS|SB",
+          "LIMPER_VS_ISO|LJ",
+          "VS_ISO|BTN",
+          "VS_RFI_CALLERS|BTN",
+          "LIMPER_VS_ISO|HJ",
+          "LIMPER_VS_ISO_CALLERS|LJ",
+          "VS_LIMPERS|BB",
+          "LIMPER_VS_ISO_CALLERS|HJ",
+          "VS_ISO_CALLERS|BB",
+          "LIMPER_VS_ISO_CALLERS|CO",
+          "COLD_VS_3BET|BB",
+          "LIMPER_VS_ISO|CO",
+          "VS_ISO|CO",
+          "VS_RFI_CALLERS|CO",
+          "LIMPER_VS_ISO_CALLERS|BTN",
+          "COLD_VS_3BET|SB",
+          "LIMPER_VS_ISO|BTN",
+          "LIMPER_VS_ISO_CALLERS|SB",
+          "VS_ISO_CALLERS|SB",
+          "OPENER_OR_ISO_VS_3BET|LJ",
+          "LIMPER_VS_ISO|SB",
+          "CALLER_VS_SQUEEZE_OR_3BET|LJ",
+          "COLD_VS_3BET|BTN",
+          "CALLER_VS_SQUEEZE_OR_3BET|HJ",
+          "OPENER_OR_ISO_VS_3BET|HJ",
+          "CALLER_VS_SQUEEZE_OR_3BET|CO",
+          "CALLER_VS_SQUEEZE_OR_3BET|BTN",
+          "OPENER_OR_ISO_VS_3BET|CO",
+          "OPENER_OR_ISO_VS_3BET|BTN",
+          "VS_ISO_CALLERS|BTN",
+          "COLD_VS_3BET|CO"
+        ],
+        "support": [
+          15655,
+          9773,
+          8325,
+          8122,
+          6982,
+          5797,
+          4438,
+          3432,
+          2150,
+          2146,
+          1955,
+          1943,
+          1941,
+          1894,
+          1628,
+          1598,
+          1588,
+          1445,
+          1127,
+          966,
+          923,
+          910,
+          790,
+          765,
+          686,
+          657,
+          606,
+          545,
+          530,
+          440,
+          400,
+          399,
+          379,
+          326,
+          316,
+          275,
+          218,
+          200,
+          193,
+          185,
+          178,
+          167,
+          138,
+          111,
+          102,
+          98,
+          92,
+          73
+        ],
+        "transform": null
+      },
+      "family_x_aggressor_position": {
+        "basis": "categorical",
+        "counts": [
+          [
+            20175.0,
+            13334.0,
+            2740.0,
+            351.0
+          ],
+          [
+            14629.0,
+            11239.0,
+            2411.0,
+            353.0
+          ],
+          [
+            3101.0,
+            1281.0,
+            117.0,
+            61.0
+          ],
+          [
+            1760.0,
+            982.0,
+            73.0,
+            52.0
+          ],
+          [
+            1733.0,
+            725.0,
+            56.0,
+            41.0
+          ],
+          [
+            1018.0,
+            430.0,
+            38.0,
+            21.0
+          ],
+          [
+            1079.0,
+            360.0,
+            35.0,
+            16.0
+          ],
+          [
+            919.0,
+            439.0,
+            35.0,
+            15.0
+          ],
+          [
+            450.0,
+            862.0,
+            9.0,
+            17.0
+          ],
+          [
+            759.0,
+            424.0,
+            34.0,
+            7.0
+          ],
+          [
+            822.0,
+            297.0,
+            27.0,
+            18.0
+          ],
+          [
+            509.0,
+            248.0,
+            16.0,
+            11.0
+          ],
+          [
+            277.0,
+            459.0,
+            7.0,
+            8.0
+          ],
+          [
+            206.0,
+            495.0,
+            8.0,
+            10.0
+          ],
+          [
+            458.0,
+            219.0,
+            27.0,
+            11.0
+          ],
+          [
+            190.0,
+            487.0,
+            10.0,
+            6.0
+          ],
+          [
+            185.0,
+            455.0,
+            11.0,
+            6.0
+          ],
+          [
+            218.0,
+            340.0,
+            6.0,
+            7.0
+          ],
+          [
+            315.0,
+            142.0,
+            9.0,
+            7.0
+          ],
+          [
+            284.0,
+            151.0,
+            10.0,
+            4.0
+          ],
+          [
+            111.0,
+            314.0,
+            5.0,
+            6.0
+          ],
+          [
+            300.0,
+            65.0,
+            2.0,
+            4.0
+          ],
+          [
+            280.0,
+            41.0,
+            3.0,
+            7.0
+          ],
+          [
+            218.0,
+            106.0,
+            5.0,
+            2.0
+          ],
+          [
+            113.0,
+            182.0,
+            4.0,
+            5.0
+          ],
+          [
+            84.0,
+            197.0,
+            7.0,
+            4.0
+          ],
+          [
+            235.0,
+            44.0,
+            0.0,
+            3.0
+          ],
+          [
+            158.0,
+            108.0,
+            2.0,
+            9.0
+          ],
+          [
+            120.0,
+            97.0,
+            9.0,
+            3.0
+          ],
+          [
+            136.0,
+            73.0,
+            6.0,
+            5.0
+          ],
+          [
+            162.0,
+            31.0,
+            2.0,
+            3.0
+          ],
+          [
+            97.0,
+            78.0,
+            3.0,
+            6.0
+          ],
+          [
+            24.0,
+            111.0,
+            19.0,
+            12.0
+          ],
+          [
+            25.0,
+            110.0,
+            10.0,
+            13.0
+          ],
+          [
+            31.0,
+            95.0,
+            14.0,
+            12.0
+          ],
+          [
+            45.0,
+            80.0,
+            1.0,
+            3.0
+          ],
+          [
+            69.0,
+            50.0,
+            3.0,
+            0.0
+          ],
+          [
+            58.0,
+            55.0,
+            0.0,
+            1.0
+          ],
+          [
+            21.0,
+            52.0,
+            5.0,
+            9.0
+          ],
+          [
+            5.0,
+            55.0,
+            6.0,
+            5.0
+          ],
+          [
+            32.0,
+            20.0,
+            0.0,
+            0.0
+          ],
+          [
+            29.0,
+            19.0,
+            0.0,
+            1.0
+          ],
+          [
+            5.0,
+            36.0,
+            2.0,
+            3.0
+          ],
+          [
+            27.0,
+            18.0,
+            0.0,
+            1.0
+          ],
+          [
+            25.0,
+            18.0,
+            0.0,
+            0.0
+          ],
+          [
+            4.0,
+            26.0,
+            2.0,
+            1.0
+          ],
+          [
+            4.0,
+            22.0,
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            22.0,
+            1.0,
+            2.0
+          ]
+        ],
+        "kind": "interaction",
+        "knots": null,
+        "nodes": [
+          "UNOPENED|NONE",
+          "VS_LIMPERS|NONE",
+          "VS_RFI|LJ",
+          "VS_RFI_CALLERS|LJ",
+          "VS_RFI|HJ",
+          "VS_ISO|BTN",
+          "VS_ISO|CO",
+          "VS_RFI|CO",
+          "LIMPER_VS_ISO|BB",
+          "VS_RFI_CALLERS|HJ",
+          "VS_ISO|HJ",
+          "VS_ISO|SB",
+          "LIMPER_VS_ISO|SB",
+          "LIMPER_VS_ISO_CALLERS|BTN",
+          "VS_RFI|BTN",
+          "LIMPER_VS_ISO_CALLERS|BB",
+          "LIMPER_VS_ISO_CALLERS|SB",
+          "LIMPER_VS_ISO|BTN",
+          "VS_ISO_CALLERS|HJ",
+          "VS_RFI_CALLERS|CO",
+          "LIMPER_VS_ISO_CALLERS|CO",
+          "COLD_VS_3BET|BTN",
+          "COLD_VS_3BET|CO",
+          "VS_ISO_CALLERS|CO",
+          "LIMPER_VS_ISO|CO",
+          "LIMPER_VS_ISO_CALLERS|HJ",
+          "COLD_VS_3BET|HJ",
+          "CALLER_VS_SQUEEZE_OR_3BET|BB",
+          "VS_RFI|SB",
+          "VS_ISO_CALLERS|BTN",
+          "COLD_VS_3BET|SB",
+          "CALLER_VS_SQUEEZE_OR_3BET|SB",
+          "OPENER_OR_ISO_VS_3BET|BB",
+          "OPENER_OR_ISO_VS_3BET|SB",
+          "OPENER_OR_ISO_VS_3BET|BTN",
+          "LIMPER_VS_ISO|HJ",
+          "VS_RFI_CALLERS|BTN",
+          "CALLER_VS_SQUEEZE_OR_3BET|BTN",
+          "OPENER_OR_ISO_VS_3BET|CO",
+          "OPENER_OR_ISO_VS_3BET|HJ",
+          "CALLER_VS_SQUEEZE_OR_3BET|LJ",
+          "CALLER_VS_SQUEEZE_OR_3BET|CO",
+          "AGGRESSOR_VS_4BET|LJ",
+          "CALLER_VS_4BET|LJ",
+          "CALLER_VS_SQUEEZE_OR_3BET|HJ",
+          "OPENER_OR_ISO_VS_3BET|LJ",
+          "AGGRESSOR_VS_4BET|BTN",
+          "AGGRESSOR_VS_4BET|HJ"
+        ],
+        "support": [
+          36600,
+          28632,
+          4560,
+          2867,
+          2555,
+          1507,
+          1490,
+          1408,
+          1338,
+          1224,
+          1164,
+          784,
+          751,
+          719,
+          715,
+          693,
+          657,
+          571,
+          473,
+          449,
+          436,
+          371,
+          331,
+          331,
+          304,
+          292,
+          282,
+          277,
+          229,
+          220,
+          198,
+          184,
+          166,
+          158,
+          152,
+          129,
+          122,
+          114,
+          87,
+          71,
+          52,
+          49,
+          46,
+          46,
+          43,
+          33,
+          29,
+          27
+        ],
+        "transform": null
+      },
+      "family_x_effective_stack_bb": {
+        "basis": "categorical",
+        "counts": [
+          [
+            12061.0,
+            8244.0,
+            1568.0,
+            152.0
+          ],
+          [
+            9116.0,
+            7189.0,
+            1528.0,
+            181.0
+          ],
+          [
+            4430.0,
+            2538.0,
+            679.0,
+            32.0
+          ],
+          [
+            3296.0,
+            2288.0,
+            447.0,
+            105.0
+          ],
+          [
+            3954.0,
+            1705.0,
+            143.0,
+            81.0
+          ],
+          [
+            2948.0,
+            1946.0,
+            415.0,
+            22.0
+          ],
+          [
+            2297.0,
+            1898.0,
+            420.0,
+            91.0
+          ],
+          [
+            2173.0,
+            852.0,
+            78.0,
+            36.0
+          ],
+          [
+            1782.0,
+            1051.0,
+            72.0,
+            32.0
+          ],
+          [
+            719.0,
+            1228.0,
+            12.0,
+            19.0
+          ],
+          [
+            542.0,
+            1232.0,
+            32.0,
+            19.0
+          ],
+          [
+            1196.0,
+            461.0,
+            56.0,
+            7.0
+          ],
+          [
+            1073.0,
+            538.0,
+            41.0,
+            30.0
+          ],
+          [
+            644.0,
+            237.0,
+            21.0,
+            8.0
+          ],
+          [
+            563.0,
+            269.0,
+            29.0,
+            3.0
+          ],
+          [
+            557.0,
+            225.0,
+            17.0,
+            16.0
+          ],
+          [
+            478.0,
+            268.0,
+            19.0,
+            21.0
+          ],
+          [
+            605.0,
+            109.0,
+            2.0,
+            10.0
+          ],
+          [
+            361.0,
+            244.0,
+            46.0,
+            43.0
+          ],
+          [
+            423.0,
+            201.0,
+            11.0,
+            8.0
+          ],
+          [
+            187.0,
+            412.0,
+            7.0,
+            14.0
+          ],
+          [
+            245.0,
+            194.0,
+            46.0,
+            41.0
+          ],
+          [
+            124.0,
+            361.0,
+            7.0,
+            7.0
+          ],
+          [
+            252.0,
+            183.0,
+            4.0,
+            9.0
+          ],
+          [
+            105.0,
+            313.0,
+            1.0,
+            4.0
+          ],
+          [
+            177.0,
+            233.0,
+            7.0,
+            3.0
+          ],
+          [
+            62.0,
+            274.0,
+            33.0,
+            30.0
+          ],
+          [
+            189.0,
+            32.0,
+            2.0,
+            3.0
+          ],
+          [
+            134.0,
+            66.0,
+            7.0,
+            2.0
+          ],
+          [
+            162.0,
+            35.0,
+            2.0,
+            4.0
+          ],
+          [
+            101.0,
+            48.0,
+            4.0,
+            11.0
+          ],
+          [
+            103.0,
+            49.0,
+            2.0,
+            4.0
+          ],
+          [
+            72.0,
+            63.0,
+            1.0,
+            6.0
+          ],
+          [
+            20.0,
+            93.0,
+            12.0,
+            12.0
+          ],
+          [
+            72.0,
+            46.0,
+            0.0,
+            1.0
+          ],
+          [
+            27.0,
+            74.0,
+            8.0,
+            7.0
+          ],
+          [
+            7.0,
+            68.0,
+            7.0,
+            10.0
+          ],
+          [
+            44.0,
+            36.0,
+            0.0,
+            2.0
+          ],
+          [
+            53.0,
+            18.0,
+            0.0,
+            6.0
+          ],
+          [
+            20.0,
+            46.0,
+            1.0,
+            4.0
+          ],
+          [
+            46.0,
+            17.0,
+            0.0,
+            7.0
+          ],
+          [
+            27.0,
+            20.0,
+            0.0,
+            19.0
+          ],
+          [
+            23.0,
+            12.0,
+            2.0,
+            18.0
+          ],
+          [
+            5.0,
+            40.0,
+            1.0,
+            2.0
+          ],
+          [
+            3.0,
+            36.0,
+            0.0,
+            5.0
+          ],
+          [
+            6.0,
+            25.0,
+            3.0,
+            1.0
+          ],
+          [
+            6.0,
+            18.0,
+            1.0,
+            1.0
+          ],
+          [
+            12.0,
+            13.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "kind": "interaction",
+        "knots": null,
+        "nodes": [
+          "UNOPENED|B2",
+          "VS_LIMPERS|B2",
+          "UNOPENED|B3",
+          "UNOPENED|B1",
+          "VS_RFI|B2",
+          "VS_LIMPERS|B3",
+          "VS_LIMPERS|B1",
+          "VS_ISO|B2",
+          "VS_RFI_CALLERS|B2",
+          "LIMPER_VS_ISO|B2",
+          "LIMPER_VS_ISO_CALLERS|B2",
+          "VS_RFI|B3",
+          "VS_RFI|B1",
+          "VS_ISO|B3",
+          "VS_RFI_CALLERS|B3",
+          "VS_ISO|B1",
+          "VS_RFI_CALLERS|B1",
+          "COLD_VS_3BET|B2",
+          "UNOPENED|B0",
+          "VS_ISO_CALLERS|B2",
+          "LIMPER_VS_ISO|B1",
+          "VS_LIMPERS|B0",
+          "LIMPER_VS_ISO_CALLERS|B1",
+          "CALLER_VS_SQUEEZE_OR_3BET|B2",
+          "LIMPER_VS_ISO_CALLERS|B3",
+          "LIMPER_VS_ISO|B3",
+          "OPENER_OR_ISO_VS_3BET|B2",
+          "COLD_VS_3BET|B3",
+          "VS_ISO_CALLERS|B3",
+          "COLD_VS_3BET|B1",
+          "VS_RFI|B0",
+          "VS_ISO_CALLERS|B1",
+          "CALLER_VS_SQUEEZE_OR_3BET|B1",
+          "OPENER_OR_ISO_VS_3BET|B1",
+          "CALLER_VS_SQUEEZE_OR_3BET|B3",
+          "OPENER_OR_ISO_VS_3BET|B3",
+          "AGGRESSOR_VS_4BET|B2",
+          "CALLER_VS_4BET|B2",
+          "VS_ISO|B0",
+          "LIMPER_VS_ISO|B0",
+          "VS_RFI_CALLERS|B0",
+          "UNOPENED|B-1",
+          "VS_LIMPERS|B-1",
+          "LIMPER_VS_ISO_CALLERS|B0",
+          "AGGRESSOR_VS_4BET|B1",
+          "VS_5BET|B2",
+          "AGGRESSOR_VS_4BET|B3",
+          "CALLER_VS_4BET|B1"
+        ],
+        "support": [
+          22025,
+          18014,
+          7679,
+          6136,
+          5883,
+          5331,
+          4706,
+          3139,
+          2937,
+          1978,
+          1825,
+          1720,
+          1682,
+          910,
+          864,
+          815,
+          786,
+          726,
+          694,
+          643,
+          620,
+          526,
+          499,
+          448,
+          423,
+          420,
+          399,
+          226,
+          209,
+          203,
+          164,
+          158,
+          142,
+          137,
+          119,
+          116,
+          92,
+          82,
+          77,
+          71,
+          70,
+          66,
+          55,
+          48,
+          44,
+          35,
+          26,
+          25
+        ],
+        "transform": null
+      },
+      "family_x_to_call_bb": {
+        "basis": "categorical",
+        "counts": [
+          [
+            19380.0,
+            12354.0,
+            2590.0,
+            333.0
+          ],
+          [
+            11041.0,
+            7096.0,
+            1237.0,
+            168.0
+          ],
+          [
+            3588.0,
+            4143.0,
+            515.0,
+            79.0
+          ],
+          [
+            4326.0,
+            2271.0,
+            222.0,
+            94.0
+          ],
+          [
+            2329.0,
+            1470.0,
+            110.0,
+            55.0
+          ],
+          [
+            1509.0,
+            855.0,
+            80.0,
+            27.0
+          ],
+          [
+            1563.0,
+            428.0,
+            31.0,
+            30.0
+          ],
+          [
+            795.0,
+            980.0,
+            150.0,
+            18.0
+          ],
+          [
+            335.0,
+            1506.0,
+            36.0,
+            18.0
+          ],
+          [
+            239.0,
+            1282.0,
+            21.0,
+            14.0
+          ],
+          [
+            1102.0,
+            385.0,
+            22.0,
+            22.0
+          ],
+          [
+            493.0,
+            544.0,
+            6.0,
+            20.0
+          ],
+          [
+            903.0,
+            105.0,
+            0.0,
+            15.0
+          ],
+          [
+            341.0,
+            420.0,
+            4.0,
+            12.0
+          ],
+          [
+            0.0,
+            0.0,
+            659.0,
+            106.0
+          ],
+          [
+            438.0,
+            236.0,
+            16.0,
+            7.0
+          ],
+          [
+            511.0,
+            117.0,
+            5.0,
+            8.0
+          ],
+          [
+            406.0,
+            130.0,
+            9.0,
+            7.0
+          ],
+          [
+            371.0,
+            93.0,
+            0.0,
+            6.0
+          ],
+          [
+            412.0,
+            34.0,
+            0.0,
+            7.0
+          ],
+          [
+            352.0,
+            52.0,
+            4.0,
+            9.0
+          ],
+          [
+            242.0,
+            87.0,
+            1.0,
+            6.0
+          ],
+          [
+            198.0,
+            83.0,
+            4.0,
+            7.0
+          ],
+          [
+            142.0,
+            117.0,
+            2.0,
+            10.0
+          ],
+          [
+            29.0,
+            174.0,
+            26.0,
+            29.0
+          ],
+          [
+            74.0,
+            145.0,
+            4.0,
+            13.0
+          ],
+          [
+            7.0,
+            130.0,
+            26.0,
+            10.0
+          ],
+          [
+            137.0,
+            7.0,
+            1.0,
+            1.0
+          ],
+          [
+            100.0,
+            19.0,
+            1.0,
+            2.0
+          ],
+          [
+            15.0,
+            87.0,
+            1.0,
+            9.0
+          ],
+          [
+            15.0,
+            94.0,
+            2.0,
+            1.0
+          ],
+          [
+            53.0,
+            44.0,
+            0.0,
+            2.0
+          ],
+          [
+            54.0,
+            30.0,
+            2.0,
+            2.0
+          ],
+          [
+            33.0,
+            2.0,
+            0.0,
+            0.0
+          ],
+          [
+            8.0,
+            24.0,
+            0.0,
+            2.0
+          ],
+          [
+            1.0,
+            21.0,
+            1.0,
+            6.0
+          ],
+          [
+            0.0,
+            15.0,
+            6.0,
+            1.0
+          ],
+          [
+            20.0,
+            2.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "kind": "interaction",
+        "knots": null,
+        "nodes": [
+          "UNOPENED|B1",
+          "VS_LIMPERS|B1",
+          "VS_LIMPERS|B0",
+          "VS_RFI|B1",
+          "VS_RFI_CALLERS|B1",
+          "VS_ISO|B1",
+          "VS_ISO|B2",
+          "UNOPENED|B0",
+          "LIMPER_VS_ISO_CALLERS|B1",
+          "LIMPER_VS_ISO|B1",
+          "VS_RFI|B2",
+          "LIMPER_VS_ISO|B2",
+          "VS_RFI|B3",
+          "LIMPER_VS_ISO_CALLERS|B2",
+          "VS_LIMPERS|B-1",
+          "VS_ISO_CALLERS|B1",
+          "COLD_VS_3BET|B2",
+          "VS_RFI_CALLERS|B2",
+          "LIMPER_VS_ISO|B3",
+          "COLD_VS_3BET|B3",
+          "VS_ISO|B3",
+          "CALLER_VS_SQUEEZE_OR_3BET|B3",
+          "VS_ISO_CALLERS|B2",
+          "CALLER_VS_SQUEEZE_OR_3BET|B2",
+          "OPENER_OR_ISO_VS_3BET|B2",
+          "OPENER_OR_ISO_VS_3BET|B3",
+          "OPENER_OR_ISO_VS_3BET|B1",
+          "VS_RFI_CALLERS|B3",
+          "LIMPER_VS_ISO_CALLERS|B3",
+          "AGGRESSOR_VS_4BET|B3",
+          "CALLER_VS_SQUEEZE_OR_3BET|B1",
+          "CALLER_VS_4BET|B3",
+          "COLD_VS_3BET|B1",
+          "VS_ISO_CALLERS|B3",
+          "VS_5BET|B3",
+          "AGGRESSOR_VS_4BET|B2",
+          "AGGRESSOR_VS_4BET|B1",
+          "COLD_VS_4BET|B3"
+        ],
+        "support": [
+          34657,
+          19542,
+          8325,
+          6913,
+          3964,
+          2471,
+          2052,
+          1943,
+          1895,
+          1556,
+          1531,
+          1063,
+          1023,
+          777,
+          765,
+          697,
+          641,
+          552,
+          470,
+          453,
+          417,
+          336,
+          292,
+          271,
+          258,
+          236,
+          173,
+          146,
+          122,
+          112,
+          112,
+          99,
+          88,
+          35,
+          34,
+          29,
+          22,
+          22
+        ],
+        "transform": null
+      },
+      "limper_count": {
+        "basis": "categorical",
+        "counts": [
+          [
+            30412.0,
+            18398.0,
+            3155.0,
+            605.0
+          ],
+          [
+            14878.0,
+            11010.0,
+            1650.0,
+            326.0
+          ],
+          [
+            5032.0,
+            4780.0,
+            749.0,
+            163.0
+          ],
+          [
+            1259.0,
+            1432.0,
+            248.0,
+            63.0
+          ]
+        ],
+        "kind": "primary",
+        "knots": null,
+        "nodes": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "support": [
+          52570,
+          27864,
+          10724,
+          3002
+        ],
+        "transform": null
+      },
+      "live_position_count": {
+        "basis": "categorical",
+        "counts": [
+          [
+            582.0,
+            314.0,
+            0.0,
+            0.0
+          ],
+          [
+            2771.0,
+            2899.0,
+            502.0,
+            149.0
+          ],
+          [
+            7662.0,
+            6850.0,
+            1004.0,
+            264.0
+          ],
+          [
+            12193.0,
+            8376.0,
+            1324.0,
+            261.0
+          ],
+          [
+            28373.0,
+            17181.0,
+            2972.0,
+            483.0
+          ]
+        ],
+        "kind": "primary",
+        "knots": null,
+        "nodes": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "support": [
+          896,
+          6321,
+          15780,
+          22154,
+          49009
+        ],
+        "transform": null
+      },
+      "pot_before_bb": {
+        "basis": "spline",
+        "counts": [
+          [
+            9071.896286,
+            5995.770264,
+            1232.069186,
+            157.830761
+          ],
+          [
+            17678.207763,
+            12139.710375,
+            2510.405541,
+            327.613213
+          ],
+          [
+            11141.951994,
+            8533.381048,
+            1511.039825,
+            280.745136
+          ],
+          [
+            5906.905006,
+            4640.859451,
+            354.94035,
+            137.289979
+          ],
+          [
+            3868.984192,
+            2759.237403,
+            131.63526,
+            116.858782
+          ],
+          [
+            1312.473071,
+            803.16366,
+            47.640595,
+            58.907691
+          ],
+          [
+            652.827736,
+            224.497558,
+            8.872266,
+            34.014471
+          ],
+          [
+            829.812116,
+            210.515102,
+            4.691607,
+            29.397812
+          ],
+          [
+            1117.941835,
+            312.865139,
+            0.70537,
+            14.342156
+          ]
+        ],
+        "kind": "primary",
+        "knots": [
+          1.0,
+          2.0,
+          3.5,
+          6.0,
+          10.0,
+          20.0,
+          40.0,
+          80.0,
+          160.0
+        ],
+        "nodes": [
+          "1.0",
+          "2.0",
+          "3.5",
+          "6.0",
+          "10.0",
+          "20.0",
+          "40.0",
+          "80.0",
+          "160.0"
+        ],
+        "support": [
+          16458,
+          32656,
+          21467,
+          11040,
+          6877,
+          2222,
+          920,
+          1074,
+          1446
+        ],
+        "transform": "log1p"
+      },
+      "raise_level": {
+        "basis": "categorical",
+        "counts": [
+          [
+            34804.0,
+            24573.0,
+            5151.0,
+            704.0
+          ],
+          [
+            15179.0,
+            9895.0,
+            568.0,
+            346.0
+          ],
+          [
+            1486.0,
+            928.0,
+            68.0,
+            86.0
+          ],
+          [
+            112.0,
+            224.0,
+            15.0,
+            21.0
+          ]
+        ],
+        "kind": "primary",
+        "knots": null,
+        "nodes": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ],
+        "support": [
+          65232,
+          25988,
+          2568,
+          372
+        ],
+        "transform": null
+      },
+      "to_call_bb": {
+        "basis": "spline",
+        "counts": [
+          [
+            1.20489,
+            1.864637,
+            659.036688,
+            106.0
+          ],
+          [
+            4385.103893,
+            5126.926019,
+            665.963312,
+            97.0
+          ],
+          [
+            31498.574613,
+            21749.358573,
+            3959.130717,
+            534.892526
+          ],
+          [
+            5370.872643,
+            3962.006622,
+            279.546091,
+            129.499208
+          ],
+          [
+            5568.43264,
+            3172.540066,
+            176.633772,
+            137.231251
+          ],
+          [
+            1695.895304,
+            785.737723,
+            41.430432,
+            62.693373
+          ],
+          [
+            635.104961,
+            208.809584,
+            13.052491,
+            34.41658
+          ],
+          [
+            739.573418,
+            203.018515,
+            5.473364,
+            28.460219
+          ],
+          [
+            1686.237639,
+            409.738261,
+            1.733133,
+            26.806842
+          ]
+        ],
+        "kind": "primary",
+        "knots": [
+          0.25,
+          0.5,
+          1.0,
+          2.0,
+          4.0,
+          8.0,
+          16.0,
+          40.0,
+          100.0
+        ],
+        "nodes": [
+          "0.25",
+          "0.5",
+          "1.0",
+          "2.0",
+          "4.0",
+          "8.0",
+          "16.0",
+          "40.0",
+          "100.0"
+        ],
+        "support": [
+          768,
+          10275,
+          57742,
+          9742,
+          9055,
+          2586,
+          891,
+          977,
+          2125
+        ],
+        "transform": "log1p"
+      }
+    },
+    "estimator": "empirical_bayes_dirichlet_posterior_mean",
+    "prior": {
+      "CALL": 0.378316,
+      "FOLD": 0.54759,
+      "JAM": 0.012322,
+      "RAISE": 0.061772
+    },
+    "regularization": {
+      "kind": "deviation_scale",
+      "scale": 0.25
+    },
+    "sizing_channel": {
+      "actions": [
+        "RAISE",
+        "JAM"
+      ],
+      "axis_knots": [
+        0.1,
+        0.25,
+        0.5,
+        0.8,
+        1.2,
+        2.0,
+        3.5,
+        7.0,
+        15.0
+      ],
+      "families": {
+        "AGGRESSOR_VS_4BET": {
+          "JAM": {
+            "density": [
+              0.000254332,
+              0.027570537,
+              0.215048348,
+              0.148361237,
+              0.098776366,
+              0.077916585,
+              0.122659693,
+              0.103653753,
+              0.20575915
+            ],
+            "total": 16
+          },
+          "RAISE": {
+            "density": [
+              7.6496e-05,
+              0.081623341,
+              0.236815202,
+              0.295792335,
+              0.212109647,
+              0.13841153,
+              0.022498396,
+              0.007396957,
+              0.005276095
+            ],
+            "total": 8
+          }
+        },
+        "CALLER_VS_4BET": {
+          "JAM": {
+            "density": [
+              0.000610396,
+              0.003868036,
+              0.111331967,
+              0.040290164,
+              0.033635921,
+              0.136006905,
+              0.089110047,
+              0.139948622,
+              0.445197942
+            ],
+            "total": 2
+          },
+          "RAISE": {
+            "density": [
+              0.000152993,
+              0.010087468,
+              0.130798107,
+              0.337576182,
+              0.327513322,
+              0.135055186,
+              0.033470639,
+              0.014793913,
+              0.010552191
+            ],
+            "total": 0
+          }
+        },
+        "CALLER_VS_SQUEEZE_OR_3BET": {
+          "JAM": {
+            "density": [
+              0.000244158,
+              0.013443073,
+              0.103448813,
+              0.084806483,
+              0.089916598,
+              0.129530373,
+              0.209579597,
+              0.172677162,
+              0.196353743
+            ],
+            "total": 17
+          },
+          "RAISE": {
+            "density": [
+              9.4149e-05,
+              0.065382883,
+              0.218314437,
+              0.377674314,
+              0.219228415,
+              0.083110884,
+              0.020597316,
+              0.009103947,
+              0.006493656
+            ],
+            "total": 5
+          }
+        },
+        "COLD_VS_3BET": {
+          "JAM": {
+            "density": [
+              0.000244158,
+              0.001547214,
+              0.010435633,
+              0.136179858,
+              0.110252568,
+              0.144155433,
+              0.209534309,
+              0.148222976,
+              0.239427849
+            ],
+            "total": 17
+          },
+          "RAISE": {
+            "density": [
+              8.1596e-05,
+              0.005379983,
+              0.241346534,
+              0.34178642,
+              0.228692919,
+              0.129867001,
+              0.039327625,
+              0.007890087,
+              0.005627835
+            ],
+            "total": 7
+          }
+        },
+        "LIMPER_VS_ISO": {
+          "JAM": {
+            "density": [
+              0.000127166,
+              0.000805841,
+              0.029724936,
+              0.053043914,
+              0.108110448,
+              0.125782947,
+              0.169012233,
+              0.210712805,
+              0.302679711
+            ],
+            "total": 40
+          },
+          "RAISE": {
+            "density": [
+              3.497e-05,
+              0.006376349,
+              0.188291731,
+              0.371837464,
+              0.223225058,
+              0.097475417,
+              0.064108473,
+              0.030439398,
+              0.01821114
+            ],
+            "total": 27
+          }
+        },
+        "LIMPER_VS_ISO_CALLERS": {
+          "JAM": {
+            "density": [
+              0.000152599,
+              0.000967009,
+              0.00820861,
+              0.086762021,
+              0.062895453,
+              0.072479349,
+              0.152587698,
+              0.348489259,
+              0.267458002
+            ],
+            "total": 32
+          },
+          "RAISE": {
+            "density": [
+              2.4978e-05,
+              0.115397041,
+              0.375627426,
+              0.14918886,
+              0.280708407,
+              0.053591669,
+              0.02132348,
+              0.002415333,
+              0.001722807
+            ],
+            "total": 41
+          }
+        },
+        "OPENER_OR_ISO_VS_3BET": {
+          "JAM": {
+            "density": [
+              0.000101733,
+              0.00550566,
+              0.088188357,
+              0.107595708,
+              0.088831202,
+              0.113190579,
+              0.21067733,
+              0.223727842,
+              0.162181589
+            ],
+            "total": 52
+          },
+          "RAISE": {
+            "density": [
+              1.9124e-05,
+              0.04279275,
+              0.253076501,
+              0.34831075,
+              0.24818469,
+              0.092005849,
+              0.012442073,
+              0.001849239,
+              0.001319024
+            ],
+            "total": 56
+          }
+        },
+        "UNOPENED": {
+          "JAM": {
+            "density": [
+              1.7003e-05,
+              0.000107745,
+              0.001730346,
+              0.01051649,
+              0.02590958,
+              0.026695091,
+              0.04977978,
+              0.100484871,
+              0.784759094
+            ],
+            "total": 351
+          },
+          "RAISE": {
+            "density": [
+              4.45e-07,
+              2.9367e-05,
+              0.000380781,
+              0.437790955,
+              0.336228605,
+              0.160230059,
+              0.039642984,
+              0.014407156,
+              0.011289648
+            ],
+            "total": 2740
+          }
+        },
+        "VS_5BET": {
+          "JAM": {
+            "density": [
+              0.000610396,
+              0.003868036,
+              0.019688275,
+              0.077826635,
+              0.087743141,
+              0.118679803,
+              0.106437149,
+              0.139948622,
+              0.445197942
+            ],
+            "total": 2
+          },
+          "RAISE": {
+            "density": [
+              0.000111268,
+              0.031664219,
+              0.277388933,
+              0.311646307,
+              0.238191507,
+              0.098221953,
+              0.024342283,
+              0.01075921,
+              0.00767432
+            ],
+            "total": 3
+          }
+        },
+        "VS_6BET_PLUS": {
+          "JAM": {
+            "density": [
+              0.000678218,
+              0.004297818,
+              0.021875861,
+              0.058629677,
+              0.125336741,
+              0.050679309,
+              0.088339526,
+              0.155498469,
+              0.494664381
+            ],
+            "total": 1
+          },
+          "RAISE": {
+            "density": [
+              0.000101995,
+              0.058922958,
+              0.285000759,
+              0.225050788,
+              0.277281251,
+              0.114431088,
+              0.022313759,
+              0.009862609,
+              0.007034794
+            ],
+            "total": 4
+          }
+        },
+        "VS_ISO": {
+          "JAM": {
+            "density": [
+              8.2486e-05,
+              0.000522708,
+              0.034585976,
+              0.07718477,
+              0.082295096,
+              0.073632717,
+              0.159512812,
+              0.263589708,
+              0.308593728
+            ],
+            "total": 66
+          },
+          "RAISE": {
+            "density": [
+              9.871e-06,
+              0.005106866,
+              0.200567096,
+              0.31120673,
+              0.296655922,
+              0.122812616,
+              0.032878871,
+              0.024671732,
+              0.006090296
+            ],
+            "total": 116
+          }
+        },
+        "VS_ISO_CALLERS": {
+          "JAM": {
+            "density": [
+              0.000277453,
+              0.001758198,
+              0.008949216,
+              0.016001858,
+              0.068244086,
+              0.058949698,
+              0.202838747,
+              0.293491845,
+              0.3494889
+            ],
+            "total": 14
+          },
+          "RAISE": {
+            "density": [
+              4.3712e-05,
+              0.0488463,
+              0.248002664,
+              0.264325769,
+              0.293499706,
+              0.086549768,
+              0.051490337,
+              0.004226832,
+              0.003014912
+            ],
+            "total": 20
+          }
+        },
+        "VS_LIMPERS": {
+          "JAM": {
+            "density": [
+              1.6908e-05,
+              0.009408351,
+              0.014992227,
+              0.0123525,
+              0.017307473,
+              0.041330489,
+              0.06345926,
+              0.13800778,
+              0.703125013
+            ],
+            "total": 353
+          },
+          "RAISE": {
+            "density": [
+              5.06e-07,
+              0.014742649,
+              0.245630918,
+              0.240808105,
+              0.332098795,
+              0.11537222,
+              0.027142596,
+              0.014617561,
+              0.009586649
+            ],
+            "total": 2411
+          }
+        },
+        "VS_RFI": {
+          "JAM": {
+            "density": [
+              4.3913e-05,
+              0.001531051,
+              0.032323609,
+              0.060316082,
+              0.037005088,
+              0.062442394,
+              0.085777625,
+              0.258030991,
+              0.462529247
+            ],
+            "total": 131
+          },
+          "RAISE": {
+            "density": [
+              4.857e-06,
+              0.000320237,
+              0.176116257,
+              0.345860054,
+              0.28665241,
+              0.125230772,
+              0.027966623,
+              0.020716872,
+              0.017131916
+            ],
+            "total": 244
+          }
+        },
+        "VS_RFI_CALLERS": {
+          "JAM": {
+            "density": [
+              8.5971e-05,
+              0.000544794,
+              0.012549134,
+              0.062761284,
+              0.02961525,
+              0.07045102,
+              0.20871509,
+              0.337941323,
+              0.277336134
+            ],
+            "total": 63
+          },
+          "RAISE": {
+            "density": [
+              9.562e-06,
+              0.071217829,
+              0.346584113,
+              0.125086002,
+              0.320539619,
+              0.083416826,
+              0.033773065,
+              0.011545208,
+              0.007827776
+            ],
+            "total": 120
+          }
+        }
+      },
+      "global": {
+        "JAM": {
+          "density": [
+            0.000762995,
+            0.004835045,
+            0.024610344,
+            0.03991732,
+            0.042044901,
+            0.057014223,
+            0.099381967,
+            0.174935778,
+            0.556497428
+          ],
+          "total": 1157
+        },
+        "RAISE": {
+          "density": [
+            0.000152993,
+            0.010087468,
+            0.130798107,
+            0.337576182,
+            0.327513322,
+            0.135055186,
+            0.033470639,
+            0.014793913,
+            0.010552191
+          ],
+          "total": 5802
+        }
+      }
+    }
+  },
+  "schema": "poker-generalized-response-model/v1",
+  "seed": 421
+}
