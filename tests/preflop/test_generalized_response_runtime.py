@@ -3,7 +3,12 @@
 
 Covers every acceptance criterion of the runtime task:
 
-* the same context and seed always produce the same prediction document;
+* the same context and seed always produce the same prediction document, and
+  the document is byte-identical under the *pre-3.12* naive ``sum`` semantics
+  the frozen model module was fitted with: every float it emits is quantised on
+  the runtime's fixed decimal grid and every legal vector is re-closed with
+  ``math.fsum``, so the interpreter that ran the raw model answer can never
+  move a byte of the surface;
 * a variation of the sizing / price is *recomputed directly* through the
   partition-of-unity price/sizing channel -- never a nearest-cell lookup;
 * a context outside the calibrated domain (or with a never-observed category)
@@ -21,7 +26,10 @@ Covers every acceptance criterion of the runtime task:
 from __future__ import annotations
 
 import ast
+import builtins
+import contextlib
 import json
+import math
 import sys
 import tempfile
 import unittest
@@ -32,6 +40,10 @@ sys.path.insert(0, str(ROOT))
 
 from tools.preflop import generalized_response_model as model  # noqa: E402
 from tools.preflop import generalized_response_runtime as runtime  # noqa: E402
+from tools.simulation import issue421_issue367_preflight as preflight_tool  # noqa: E402
+from tests.preflop import (  # noqa: E402
+    test_generalized_response_sizing as sizing_reference,
+)
 
 MODULE_PATH = ROOT / "tools/preflop/generalized_response_runtime.py"
 MANIFEST_PATH = ROOT / "analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json"
@@ -58,6 +70,156 @@ def json_string_leaves(node: object, path: str = "$") -> list[tuple[str, str]]:
     elif isinstance(node, str):
         found.append((path, node))
     return found
+
+
+def float_leaves(node: object, path: tuple = ()) -> list[tuple[tuple, float]]:
+    """Every float value of a document, addressed by its structural path."""
+    found: list[tuple[tuple, float]] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            found.extend(float_leaves(value, path + (key,)))
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            found.extend(float_leaves(value, path + (index,)))
+    elif isinstance(node, float):
+        found.append((path, node))
+    return found
+
+
+def dotted(path: tuple) -> str:
+    """A structural path as a readable ``$.a.b[0]`` address."""
+    rendered = "$"
+    for part in path:
+        rendered += f"[{part}]" if isinstance(part, int) else f".{part}"
+    return rendered
+
+
+def quantised(value: object, decimals: int = runtime.CANONICAL_DECIMALS) -> float:
+    """The fixed decimal grid, recomputed *here* rather than read off the runtime.
+
+    The expectation side of every canonical assertion is computed with the
+    plain, correctly rounded ``round``, so a test can never agree with a broken
+    canonicaliser just because both sides called the same helper.  The grid
+    itself is taken from the runtime's published constant, which is the
+    contract under test.
+    """
+    number = round(float(value), decimals)  # type: ignore[arg-type]
+    return 0.0 if number == 0 else number
+
+
+def probability_leaf_action(path: tuple) -> str | None:
+    """The action a legal-distribution copy leaf belongs to, else ``None``."""
+    if len(path) == 2 and path[0] == "probabilities" and path[1] in model.ACTIONS:
+        return str(path[1])
+    if len(path) == 1 and isinstance(path[0], str) and path[0].startswith("P("):
+        return str(path[0])[2:-1]
+    return None
+
+
+def naive_sum(iterable: object, start: object = 0) -> object:
+    """CPython <= 3.11's builtin ``sum``: a naive left-to-right float fold."""
+    total = start
+    for item in iterable:  # type: ignore[union-attr]
+        total = total + item  # type: ignore[operator]
+    return total
+
+
+@contextlib.contextmanager
+def naive_sum_semantics():
+    """Emulate the pre-3.12 ``sum`` semantics for the enclosing block.
+
+    CPython 3.12 replaced the naive float fold with a compensated one, so the
+    frozen model module -- whose distribution closure uses the builtin ``sum``
+    and which must stay byte-frozen -- can answer a probability whose last bits
+    depend on the interpreter that ran it.  The runtime surface has to be
+    invariant to that, so this emulation reproduces exactly what 3.9..3.11
+    compute for the same operands.
+    """
+    original = builtins.sum
+    builtins.sum = naive_sum
+    try:
+        yield
+    finally:
+        builtins.sum = original
+
+
+def builtin_sum_is_compensated() -> bool:
+    """Whether this interpreter's builtin ``sum`` uses the post-3.11 compensated fold.
+
+    ``sum([1.0, 1e100, -1e100])`` is the discriminating probe: the naive
+    left-to-right fold loses the ``1.0`` to the huge addend and answers
+    ``0.0``, while the compensated fold (CPython 3.12+) answers ``1.0``.  The
+    control below only demands an observed perturbation when the running
+    interpreter actually *has* something to perturb, so the suite keeps its
+    meaning on 3.9..3.14 instead of hard-coding one release.
+    """
+    return sum([1.0, 1e100, -1e100]) == 1.0
+
+
+def preflight_probe_contexts() -> list[tuple[str, dict]]:
+    """The exact public contexts the #367 preflight queries, from frozen fields.
+
+    Rebuilt with the preflight tool's own constructors -- the required nodes,
+    their alternate stack bucket and the frozen raise-sizing frontiers -- so the
+    text below tests the same contexts the preflight document reports.
+    """
+    tree = preflight_tool.load_required_tree()
+    tree_nodes = {str(node["id"]): node for node in tree["nodes"]}
+    contexts = [
+        (f"node:{node['id']}", preflight_tool.node_request_context(node))
+        for node in tree["nodes"]
+    ]
+    contexts += [
+        (f"alternate:{node['id']}", preflight_tool.alternate_stack_context(node))
+        for node in tree["nodes"]
+    ]
+    contexts += [
+        (
+            f"frontier:{frontier['node_id']}",
+            preflight_tool.frontier_request_context(frontier, tree_nodes),
+        )
+        for frontier in model.load_raise_sizing_frontiers()["frontiers"]
+    ]
+    return contexts
+
+
+def in_window_probe_contexts() -> list[tuple[str, dict]]:
+    """The nine frozen in-window probes of the sizing reference."""
+    return [
+        (f"in_window:{probe['probe_id']}", probe["context"])
+        for probe in sizing_reference.in_window_probes()
+    ]
+
+
+def canonical_probe_contexts() -> list[tuple[str, dict]]:
+    """The contexts the interpreter-independence contract is pinned on.
+
+    The runtime's own price probes, the full #367 preflight context set (the
+    required nodes, their alternate stack bucket and the frozen raise-sizing
+    frontiers) and the nine frozen in-window sizing probes.  The surface has to
+    be interpreter-independent on all of them, not on a chosen sample.
+    """
+    return [
+        ("probe:target_3bb", base_context(target_total_bb=3.0)),
+        ("probe:default_relative", base_context()),
+        ("probe:all_in", base_context(facing_all_in=True)),
+        ("probe:no_call_price", base_context(to_call_bb=0.0)),
+        ("probe:ood_stack", base_context(effective_stack_bb=5000.0, target_total_bb=3.0)),
+    ] + preflight_probe_contexts() + in_window_probe_contexts()
+
+
+def resolve_probe(
+    handle: runtime.GeneralizedResponseRuntime, context: dict, action: str | None = None
+) -> tuple[dict | None, str | None]:
+    """Resolve one probe: ``(document, None)`` or ``(None, fail_closed_code)``.
+
+    A fail-closed refusal is part of the surface too, so the interpreter
+    independence tests compare the refusal code as well as the emitted bytes.
+    """
+    try:
+        return handle.resolve(context, action=action), None
+    except runtime.GeneralizedResponseRuntimeError as error:
+        return None, error.code
 
 
 def base_context(**overrides: object) -> dict:
@@ -353,7 +515,57 @@ class DecisionContractTests(RuntimeFixtures):
         context = base_context(target_total_bb=3.0)
         candidate = model.load_candidate(MODEL_DIR / Path(self.runtime.entry["path"]).name)
         document = self.runtime.resolve(context, action="RAISE")
-        self.assertEqual(document["prediction"], model.predict(candidate, context))
+        raw = model.predict(candidate, context)
+        # The frozen surface is reused verbatim *through the canonical
+        # quantiser*: the emitted prediction is exactly the frozen prediction
+        # with every float moved onto the runtime's fixed decimal grid, so a
+        # mismatch here can only be a canonicalisation defect, never a
+        # re-derived distribution.
+        self.assertEqual(document["prediction"], runtime.canonical_prediction(raw))
+        legal = list(document["legal_actions"])
+        # The same statement, recomputed here without calling the runtime's own
+        # canonicaliser: every float leaf of the emitted prediction is the
+        # *frozen* float on the fixed decimal grid, and the single value that is
+        # deliberately off the grid is the one legal action that carries the
+        # ``math.fsum`` closure residual.  Nothing is re-derived from another
+        # cell, another context or another price.
+        frozen_grid = {action: quantised(raw["probabilities"][action]) for action in legal}
+        anchor = max(
+            legal, key=lambda name: (frozen_grid[name], -model.ACTIONS.index(name))
+        )
+        for path, value in float_leaves(document["prediction"]):
+            action = probability_leaf_action(path)
+            if action == anchor:
+                expected = document["action_probabilities"][anchor]
+            elif action is not None:
+                expected = frozen_grid[action] if action in legal else 0.0
+            else:
+                expected = quantised(value)
+            self.assertEqual(value, expected, dotted(path))
+            if value != quantised(value):
+                # The only off-grid float of the whole prediction is the
+                # closure residual of the legal vector, in all of its copies.
+                self.assertEqual(action, anchor, dotted(path))
+        residual = 1.0 - math.fsum(
+            frozen_grid[name] for name in legal if name != anchor
+        )
+        self.assertLessEqual(
+            abs(document["action_probabilities"][anchor] - residual), 4.0 * math.ulp(1.0)
+        )
+        self.assertEqual(math.fsum(document["action_probabilities"].values()), 1.0)
+        # The canonicalisation stays a sub-grid perturbation of the frozen
+        # answer -- at most one grid step per quantised sibling, because one
+        # legal action carries the ``math.fsum`` closure residual -- so the
+        # emitted distribution is the frozen one, never a substitute.
+        for action in model.ACTIONS:
+            self.assertLessEqual(
+                abs(
+                    document["action_probabilities"][action]
+                    - float(raw["probabilities"][action])
+                ),
+                len(legal) * 10.0 ** -runtime.CANONICAL_DECIMALS,
+                action,
+            )
         self.assertEqual(
             document["ood"]["status"],
             model.ood_gate_decision(
@@ -428,10 +640,14 @@ class DirectEvaluationTests(RuntimeFixtures):
             self.assertEqual(request[axis], _round(base_context(target_total_bb=3.0)[axis]))
 
 
-def _round(value: object, digits: int = 6) -> float:
-    number = float(value)  # type: ignore[arg-type]
-    rounded = round(number, digits)
-    return 0.0 if rounded == 0 else rounded
+def _round(value: object, digits: int = runtime.CANONICAL_DECIMALS) -> float:
+    """The fixed decimal grid at the request echo's resolution.
+
+    Recomputed with the plain ``round`` rather than read off the runtime, so the
+    price-echo assertion in :class:`DirectEvaluationTests` stays an independent
+    expectation of the canonical grid.
+    """
+    return quantised(value, digits)
 
 
 # ---------------------------------------------------------------------------
@@ -727,6 +943,236 @@ class OodAbstentionTests(RuntimeFixtures):
         self.assertEqual(consumer["status"], runtime.STATUS_ABSTAIN)
         self.assertIsNone(consumer["selected_action"])
         self.assertIsNone(consumer["selected_sizing_bb"])
+
+
+# ---------------------------------------------------------------------------
+# interpreter independence (the canonical numeric surface)
+# ---------------------------------------------------------------------------
+
+
+class CanonicalSurfaceTests(RuntimeFixtures):
+    """The runtime surface, not the interpreter, decides the emitted bytes.
+
+    The frozen model closes its distribution with the builtin ``sum``, whose
+    float semantics changed in CPython 3.12.  These tests drive the *same*
+    contexts through the pre-3.12 naive summation semantics and pin the two
+    exactness invariants the #367 consumer relies on -- ``probability_sum`` is
+    exactly ``1.0`` and ``illegal_mass`` is exactly ``0.0`` -- plus the fixed
+    decimal grid every emitted float is anchored on.
+    """
+
+    def test_the_document_is_byte_identical_under_naive_sum_semantics(self) -> None:
+        contexts = canonical_probe_contexts()
+        self.assertGreaterEqual(len(contexts), 50, "the preflight context set is walked")
+        for label, context in contexts:
+            for action in (None, "RAISE"):
+                with self.subTest(context=label, action=action):
+                    native, native_code = resolve_probe(self.runtime, context, action)
+                    with naive_sum_semantics():
+                        naive, naive_code = resolve_probe(
+                            runtime.GeneralizedResponseRuntime(candidate_id=self.candidate_id),
+                            context,
+                            action,
+                        )
+                    # A fail-closed refusal is part of the surface: the same
+                    # request must fail closed with the same code.
+                    self.assertEqual(native_code, naive_code, (label, action))
+                    if native_code is not None:
+                        self.assertIsNone(native)
+                        self.assertIsNone(naive)
+                        continue
+                    self.assertIsNotNone(native)
+                    self.assertIsNotNone(naive)
+                    # Byte identity, not a tolerance: the JSON encoding of the
+                    # whole document and its canonical digest must agree.
+                    self.assertEqual(
+                        json.dumps(native, sort_keys=True), json.dumps(naive, sort_keys=True)
+                    )
+                    self.assertEqual(
+                        native["decision_canonical_sha256"],
+                        naive["decision_canonical_sha256"],
+                    )
+                    self.assertEqual(
+                        native["action_probabilities"], naive["action_probabilities"]
+                    )
+
+    def test_probability_sum_and_illegal_mass_are_exact(self) -> None:
+        for label, context in preflight_probe_contexts() + in_window_probe_contexts():
+            document = self.runtime.resolve(context)
+            with self.subTest(context=label):
+                self.assertEqual(document["probability_sum"], 1.0)
+                self.assertEqual(document["illegal_mass"], 0.0)
+                self.assertEqual(math.fsum(document["action_probabilities"].values()), 1.0)
+                legal = set(document["legal_actions"])
+                for action in model.ACTIONS:
+                    if action not in legal:
+                        self.assertEqual(document["action_probabilities"][action], 0.0, action)
+                # The embedded copies of the distribution are the same vector,
+                # never a second (interpreter-dependent) computation of it.
+                self.assertEqual(
+                    document["prediction"]["probabilities"], document["action_probabilities"]
+                )
+                self.assertEqual(document["prediction"]["probability_sum"], 1.0)
+                self.assertEqual(
+                    document["consumer"]["actions"], document["action_probabilities"]
+                )
+                self.assertEqual(document["consumer"]["probability_sum"], 1.0)
+                self.assertEqual(document["consumer"]["illegal_mass"], 0.0)
+                for action in model.ACTIONS:
+                    self.assertEqual(
+                        document["prediction"][f"P({action})"],
+                        document["action_probabilities"][action],
+                        action,
+                    )
+
+    def test_the_queried_context_and_price_are_never_substituted(self) -> None:
+        for label, context in preflight_probe_contexts() + in_window_probe_contexts():
+            document = self.runtime.resolve(context)
+            with self.subTest(context=label):
+                # The context key is the queried context's own key and the
+                # request echo is the queried price, quantised -- never a
+                # neighbouring observation, a bucket representative or a
+                # clamped substitute.
+                self.assertEqual(document["context_key"], model.ood_exact_context_key(context))
+                query = model.sizing_context(context, self.runtime.candidate["config"])
+                for axis in ("pot_before_bb", "to_call_bb"):
+                    self.assertEqual(
+                        document["request"][axis], runtime.canonical_float(query[axis]), axis
+                    )
+                self.assertEqual(
+                    document["request"]["effective_stack_bb"],
+                    runtime.canonical_float(context["effective_stack_bb"]),
+                )
+                self.assertEqual(
+                    document["sizing_window"]["queried_target_bb"],
+                    None
+                    if context.get("target_total_bb") is None
+                    else runtime.canonical_float(context["target_total_bb"]),
+                )
+                self.assertFalse(document["sizing_window"]["substituted"])
+                flags = document["provenance"]["identity_flags"]
+                self.assertFalse(flags["nearest_price_substituted"])
+                self.assertFalse(flags["nearest_context_substituted"])
+
+    def test_the_selected_action_follows_the_emitted_distribution(self) -> None:
+        for label, context in preflight_probe_contexts() + in_window_probe_contexts():
+            document = self.runtime.resolve(context)
+            with self.subTest(context=label):
+                if not document["usable"]:
+                    self.assertIsNone(document["selected_action"])
+                    continue
+                emitted = document["action_probabilities"]
+                expected = max(
+                    document["legal_actions"],
+                    key=lambda name: (emitted[name], -model.ACTIONS.index(name)),
+                )
+                self.assertEqual(document["selected_action"], expected)
+
+    def test_every_emitted_float_is_anchored_on_the_fixed_grid(self) -> None:
+        stride = 10.0 ** -runtime.CANONICAL_DECIMALS
+        for label, context in canonical_probe_contexts():
+            for action in (None, "RAISE"):
+                with self.subTest(context=label, action=action):
+                    document, code = resolve_probe(self.runtime, context, action)
+                    if code is not None:
+                        self.assertIsNone(document)
+                        continue
+                    self.assertIsNotNone(document)
+                    leaves = float_leaves(document)
+                    self.assertGreater(len(leaves), 40)
+                    emitted = document["action_probabilities"]
+                    legal = list(document["legal_actions"])
+                    anchor = max(
+                        legal, key=lambda name: (emitted[name], -model.ACTIONS.index(name))
+                    )
+                    for path, value in leaves:
+                        # Every float the document emits was quantised on the
+                        # fixed grid by the one canonical pass ...
+                        self.assertLessEqual(
+                            abs(value - quantised(value)), stride, dotted(path)
+                        )
+                        if value != quantised(value):
+                            # ... and the single exception is the copy of the
+                            # closure residual that keeps the legal vector an
+                            # exact partition of unity.
+                            self.assertIn(path[-1], (anchor, f"P({anchor})"), dotted(path))
+                            self.assertEqual(value, emitted[anchor], dotted(path))
+
+    def test_the_interpreter_perturbation_never_crosses_a_grid_cell(self) -> None:
+        """The byte identity is a property of the grid, not a coincidence.
+
+        The frozen model closes its distribution with the builtin ``sum``, so
+        the same context can answer a probability whose last bits depend on the
+        interpreter.  Quantising on the fixed decimal grid can only absorb that
+        perturbation while the frozen value stays clear of a cell boundary:
+        these tests measure the distance to the nearest boundary and the size of
+        the perturbation itself, and require the first to dominate the second by
+        an order of magnitude on every float of the frozen prediction.
+
+        The measurement is also a control on the emulation itself: on an
+        interpreter whose builtin ``sum`` is already the naive fold (3.9..3.11)
+        there is nothing to perturb, but on a compensated one (3.12+) the
+        emulation must actually move at least one frozen float -- otherwise the
+        byte-identity test above would be proving a tautology.
+        """
+        stride = 10.0 ** -runtime.CANONICAL_DECIMALS
+        tightest = math.inf
+        perturbed = 0
+        for label, context in canonical_probe_contexts():
+            native = float_leaves(self.runtime.predict(context))
+            with naive_sum_semantics():
+                emulated = float_leaves(
+                    runtime.GeneralizedResponseRuntime(
+                        candidate_id=self.candidate_id
+                    ).predict(context)
+                )
+            with self.subTest(context=label):
+                self.assertEqual([path for path, _ in native], [path for path, _ in emulated])
+                for (path, value), (_, other) in zip(native, emulated):
+                    # Both summation semantics quantise into the same cell ...
+                    self.assertEqual(quantised(value), quantised(other), dotted(path))
+                    # ... because the frozen value sits well inside its cell.
+                    scaled = value / stride
+                    margin = abs(scaled - math.floor(scaled) - 0.5) * stride
+                    delta = abs(value - other)
+                    if delta > 0.0:
+                        perturbed += 1
+                        tightest = min(tightest, margin / delta)
+        if builtin_sum_is_compensated():
+            self.assertGreater(
+                perturbed,
+                0,
+                "the naive-sum emulation moved no frozen float: the "
+                "interpreter-independence test is vacuous on this candidate",
+            )
+        # Measured at ~2.3e2 on the frozen candidate; the order of magnitude is
+        # what makes the contract hold on 3.9..3.14 and not only between the two
+        # summation semantics emulated here.
+        self.assertGreaterEqual(tightest, 10.0, tightest)
+
+    def test_the_canonical_helper_absorbs_a_one_ulp_perturbation(self) -> None:
+        raw = self.runtime.predict(base_context(target_total_bb=3.0))
+        legal = list(raw["legal_actions"])
+        vector, probability_sum, illegal_mass = runtime.canonical_legal_distribution(
+            raw["probabilities"], legal
+        )
+        self.assertEqual(probability_sum, 1.0)
+        self.assertEqual(illegal_mass, 0.0)
+        self.assertEqual(math.fsum(vector.values()), 1.0)
+        for direction in (math.inf, -math.inf):
+            perturbed = {
+                action: math.nextafter(value, direction)
+                for action, value in raw["probabilities"].items()
+            }
+            with self.subTest(direction=direction):
+                self.assertEqual(
+                    runtime.canonical_legal_distribution(perturbed, legal), (vector, 1.0, 0.0)
+                )
+
+    def test_the_document_canonicalisation_is_idempotent(self) -> None:
+        for action in (None, "RAISE"):
+            document = self.runtime.resolve(base_context(target_total_bb=3.0), action=action)
+            self.assertEqual(runtime.canonicalize_decision_document(document), document)
 
 
 # ---------------------------------------------------------------------------

@@ -69,38 +69,58 @@ dans `analysis/issue421_generalized_response/sha256/`, indexés par
 
 | artefact | SHA256 octets |
 | --- | --- |
-| GENERALIZED_RESPONSE_MODEL_SPEC.json | `486ef55e14cdc1160faef7e53ac29631f1e13a9953b4f4996a8b3b052b185abf` |
+| GENERALIZED_RESPONSE_MODEL_SPEC.json | `7f7dde23f18beb6abaa775018d9cbf6d66e2d45fb6b8f8faf89092496643ce12` |
 | TRAIN_CV_REPORT.json | `43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff` |
 | CANDIDATE_MANIFEST.json | `06f8380ea898d41efc9f7dbe65968292fd1277fe750229e0059b4df5918f8fea` |
 | FROZEN_VALIDATION_PROTOCOL.json | `ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5` |
 | VALIDATION_RESULT.json | `6a8f02b6ea92d2906f9681684f572926601d6bab7bd78bb14bc8efd424f516c3` |
 | OOD_CALIBRATION_REPORT.json | `a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71` |
 | RAISE_SIZING_MODEL_REPORT.json | `955b926a5d19efe4998abfeae416792f85284d167cfaf9306315cb639320e9f6` |
-| ISSUE367_PREFLIGHT.json | `4b7c757f9f4bd8f2aac83d2ec1f4106dbb67a4ab5a5df31c30c02fbdac9cb7d1` |
+| ISSUE367_PREFLIGHT.json | `415d65dfeac78fd7c54931e0cebd0cea6a9df35d3607333c60c2142c04de7220` |
 | DECISION.json | `8783fbc871853821270ed5fe92cda22a8e69c229af557383894c883d507211ea` |
-| SUMMARY.md | `0c0a2031e7e4649a75af866ab3e705db1204b51397443dce953817b2cc61a7ba` |
+| SUMMARY.md | `bbe2a44de0f3d159b6fc00e5e2c7665b075c521cbba1e73d4afddaee21de0b7c` |
 
 Les copies `sha256/<digest>.json|.md` sont régénérées avec ces digests et les
 objets devenus orphelins (l'ancien `16d8b75d….json`, ainsi que les copies
 obsolètes de la spec et du résumé) sont purgés : aucun digest n'est édité à la
-main. Le dernier incrément (#421 `backlog-jj0`, fenêtre légale explicite) a
-rejoué la même chaîne : le module runtime a changé, donc la préflight et les
-dix artefacts ont été régénérés, et les anciens objets `sha256/4d392697….json`,
-`68b014cd….json` et `4c73491a….md` ont été remplacés par les digests ci-dessus.
-Le nouveau module runtime
+main. Deux incréments ont rejoué la même chaîne. D'abord #421 `backlog-jj0`
+(fenêtre légale explicite) : le module runtime a changé, donc la préflight et
+les dix artefacts ont été régénérés, et les anciens objets
+`sha256/4d392697….json`, `68b014cd….json` et `4c73491a….md` ont été remplacés
+par `sha256/486ef55e….json`, `sha256/4b7c757f….json` et `sha256/0c0a2031….md`.
+Le module runtime de cet incrément
 (`tools/preflop/generalized_response_runtime.py`,
 `af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`) déclare la
 fenêtre légale de la cible de raise et refuse en fail-closed
-(`ILLEGAL_SIZING_GENERATED`) une cible hors fenêtre sur un contexte
-autrement répondable ; la distribution in-window est inchangée, bit à bit
-(`analysis/issue421_generalized_response/IN_WINDOW_PREDICTION_REFERENCE.json`).
+(`ILLEGAL_SIZING_GENERATED`) une cible hors fenêtre sur un contexte autrement
+répondable. Ensuite #421 `backlog-k78` (surface runtime indépendante de
+l'interpréteur) : le module runtime
+(`tools/preflop/generalized_response_runtime.py`,
+`36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4`) quantifie
+sur une grille décimale fixe **tout** flottant qu'un document de décision émet
+(`action_probabilities`, `P(FOLD|CALL|RAISE|JAM)`, `illegal_mass`,
+`probability_sum`, incertitude, sizing et la sous-structure `prediction`
+embarquée) et referme chaque vecteur légal avec `math.fsum`, si bien que
+`probability_sum` reste exactement `1.0` et `illegal_mass` exactement `0.0`
+quelle que soit la sémantique de sommation de l'interpréteur (le `sum` natif
+est compensé depuis CPython 3.12). Le module gelé
+`tools/preflop/generalized_response_model.py` n'est pas touché
+(`92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3`) ; la
+préflight et les dix artefacts ont été régénérés une nouvelle fois, les objets
+`sha256/486ef55e….json`, `sha256/4b7c757f….json` et `sha256/0c0a2031….md` étant
+remplacés par les digests du tableau ci-dessus. Dans la référence in-window
+(`analysis/issue421_generalized_response/IN_WINDOW_PREDICTION_REFERENCE.json`,
+entrées `4af7100b42c2687151ea49740028e94c52c154afcb7a78ac29ece3d630c094bf`),
+seules les probabilités émises bougent — chacune étant quantifiée sur la
+grille — tandis que l'action sélectionnée, les sizings sélectionnés et générés,
+le verdict `sizing_window` et les prédictions du modèle restent inchangés.
 
 ## Provenance indépendante de l'environnement
 
 Depuis le correctif de provenance du runtime, chaque chemin enregistré par la
 preflight est un chemin POSIX relatif au dépôt, jamais un chemin absolu d'hôte :
 `evidence_bindings.runtime_module_path` (`tools/preflop/generalized_response_runtime.py`,
-`af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`) et chaque
+`36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4`) et chaque
 `registry_source` (`analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json`)
 sont désormais identiques sur tout hôte et dans tout worktree. Les artefacts
 régénérés ne contiennent plus aucune occurrence de `/home/`, et

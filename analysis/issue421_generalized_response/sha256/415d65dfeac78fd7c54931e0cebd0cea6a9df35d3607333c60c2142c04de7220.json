@@ -157,7 +157,7 @@
     "required_tree_path": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
     "required_tree_sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
     "runtime_module_path": "tools/preflop/generalized_response_runtime.py",
-    "runtime_module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+    "runtime_module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
     "validation_result_path": "analysis/issue421_generalized_response/VALIDATION_RESULT.json",
     "validation_result_sha256": "6a8f02b6ea92d2906f9681684f572926601d6bab7bd78bb14bc8efd424f516c3"
   },
@@ -581,20 +581,20 @@
           "to_call_bb": 4.2
         },
         "perturbed_distribution": {
-          "CALL": 0.38050324304294086,
-          "FOLD": 0.5971870792763349,
-          "JAM": 0.005500438316724421,
-          "RAISE": 0.01680923936399983
+          "CALL": 0.380503243043,
+          "FOLD": 0.597187079276,
+          "JAM": 0.005500438317,
+          "RAISE": 0.016809239364
         },
         "probe": "PRICE_RECOMPUTATION",
         "requested": {
           "to_call_bb": 4.0
         },
         "requested_distribution": {
-          "CALL": 0.38142004448819666,
-          "FOLD": 0.5962833987268605,
-          "JAM": 0.00543131787918838,
-          "RAISE": 0.016865238905754424
+          "CALL": 0.381420044488,
+          "FOLD": 0.596283398727,
+          "JAM": 0.005431317879,
+          "RAISE": 0.016865238906
         }
       },
       {
@@ -638,14 +638,17 @@
     "rule": "A_CHANGED_REQUEST_IS_RECOMPUTED_NEVER_SNAPPED_TO_A_NEIGHBOUR",
     "runtime_declared_flags": {
       "metadata_guarantees": {
+        "canonical_decimal_grid": 12,
         "deterministic": true,
         "direct_price_sizing_evaluation": true,
         "fail_closed_on_candidate_hash_mismatch": true,
         "fail_closed_on_ood": true,
         "illegal_mass": 0.0,
+        "interpreter_independent_bytes": true,
         "legal_masking": true,
         "nearest_context_substituted": false,
         "nearest_price_substituted": false,
+        "probability_sum": 1.0,
         "sizing_conditioned_on_raise_or_jam": true,
         "stdlib_only": true
       },
@@ -701,17 +704,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.38142004448819666,
-            "FOLD": 0.5962833987268605,
-            "JAM": 0.00543131787918838,
-            "RAISE": 0.016865238905754424
+            "CALL": 0.381420044488,
+            "FOLD": 0.596283398727,
+            "JAM": 0.005431317879,
+            "RAISE": 0.016865238906
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.596283399
         },
         "context_key": "VS_ISO|BB|SB|0|2|1|4|B2|B2|P2",
-        "decision_canonical_sha256": "2a5fa20444da2656542a3a2f708e9246e17a6f9deb9484951e826a1ca938745e",
+        "decision_canonical_sha256": "7b1da1c202f681bdd4a61b0469dd5de590799d679936dbcab762e0761cdf4be8",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -902,7 +905,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -974,7 +977,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "b4b47865b09b93e689f338fc2d9f2285e8989180dffb8aad08db43a199ef67b8",
+        "decision_canonical_sha256": "2d4bbf007a8b75e6be9ed3b496743a13765f1d05213a1e01b69bad394d7e69c4",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 23.041807,
@@ -1133,17 +1136,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.4959439568098084,
-            "FOLD": 0.4882242755634257,
-            "JAM": 0.0067438154191156174,
-            "RAISE": 0.009087952207650251
+            "CALL": 0.49594395681000003,
+            "FOLD": 0.488224275563,
+            "JAM": 0.006743815419,
+            "RAISE": 0.009087952208
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.495943957
         },
         "context_key": "LIMPER_VS_ISO|CO|SB|0|2|1|3|B2|B2|P2",
-        "decision_canonical_sha256": "a95981d8a0846c8bc1df7f889f46146e3c1f244364802ad251d6769b555e18f6",
+        "decision_canonical_sha256": "7a6683eafce2138f95a50f099ad6bd886cac9bb9149a3150b185664768f56b75",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -1334,7 +1337,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -1406,7 +1409,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "97193d319add30f6813c2eb943f9798e127003b34c598e14de5c243cbba77d5b",
+        "decision_canonical_sha256": "f5f5eeba8bb80710b16ef26d43aa9d7ae4abafe1ef552b9196ac08e9aeef7c79",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 31.461866,
@@ -1564,17 +1567,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.5032603079264845,
-            "FOLD": 0.4832159432413971,
-            "JAM": 0.007186616434160298,
-            "RAISE": 0.0063371323979581175
+            "CALL": 0.503260307927,
+            "FOLD": 0.483215943241,
+            "JAM": 0.007186616434,
+            "RAISE": 0.006337132398
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.503260308
         },
         "context_key": "LIMPER_VS_ISO|BTN|SB|0|2|1|2|B2|B2|P2",
-        "decision_canonical_sha256": "f40d796961de923b9d70019a293d553968061051a10129f02cc2017bdb0e24f5",
+        "decision_canonical_sha256": "5699a043b7d312064918cef5a96cdb6c3e5f2f2f46674b74879692f87e77692a",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -1765,7 +1768,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -1837,7 +1840,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "ef5fb39e27b01add236d35716d761b3f0698977a5269d86f2be1a460a09f8d49",
+        "decision_canonical_sha256": "966dec8b113f50d7fcaf3493ffa04195fdc547a547544321066cba92a37e38c3",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 31.461866,
@@ -1994,8 +1997,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.37320493055917403,
-            "FOLD": 0.626795069440826,
+            "CALL": 0.373204930559,
+            "FOLD": 0.626795069441,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -2004,7 +2007,7 @@
           "selected_action_probability": 0.626795069
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|BTN|0|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "ab12df76a92e732d3f6f331bdf6c23b983587447ff86855df8e653cce6ebd710",
+        "decision_canonical_sha256": "062cd5761e3a4c9617302255999f5078b9fdbd22ce12a24cd7621639adcfa048",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -2208,7 +2211,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -2363,17 +2366,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.529504717809214,
-            "FOLD": 0.45862236494489056,
-            "JAM": 0.003492513530448327,
-            "RAISE": 0.008380403715447078
+            "CALL": 0.52950471781,
+            "FOLD": 0.458622364945,
+            "JAM": 0.00349251353,
+            "RAISE": 0.008380403715
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.529504718
         },
         "context_key": "LIMPER_VS_ISO_CALLERS|BTN|SB|1|2|1|3|B2|B2|P2",
-        "decision_canonical_sha256": "406a27f0d88f046c55704247cd6ad69f8b8b34b97d7c832bfaf3225798f1335a",
+        "decision_canonical_sha256": "e07e80212e56f23acf0202d73c8df6f8dcc9426d4de670a903dcaa745f1edf64",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -2568,7 +2571,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -2645,7 +2648,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "265b3008c014007db455b177b8b73d6c0df3de9fac8e987d3189ffebf0db6ccf",
+        "decision_canonical_sha256": "6185c3b54ad62f6326d69f6306b28a8c1415553d8aa7c5d409fb3006ee47db09",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 21.769238,
@@ -2807,17 +2810,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.4174735468954144,
-            "FOLD": 0.5338264334691609,
-            "JAM": 0.045798091196791346,
-            "RAISE": 0.002901928438633376
+            "CALL": 0.417473546895,
+            "FOLD": 0.533826433469,
+            "JAM": 0.045798091197,
+            "RAISE": 0.002901928439
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.533826433
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|BTN|1|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "5c410273a84e22e8913f46ee62765f4cae1a44dbeb528bb88282bc99a316633f",
+        "decision_canonical_sha256": "0bedc3dfb69347d47c88e94988f14b1182a3fa51d6941f4495afdd556b6267a0",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -3018,7 +3021,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -3103,7 +3106,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "8b7cffefa17ee876cbd02f1fb661592180063a4e8bfa7a4b37eb3d682ad4283f",
+        "decision_canonical_sha256": "9782890ef27b82e2aec6b93a8bdd2ed48a3f8ae867dab73abe77c9cf1bfdfad8",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -3220,8 +3223,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.28991784095050466,
-            "FOLD": 0.7100821590494953,
+            "CALL": 0.289917840951,
+            "FOLD": 0.7100821590490001,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -3230,7 +3233,7 @@
           "selected_action_probability": 0.710082159
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|CO|BTN|1|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "2868dea8390a0c43cf2c974147f493cb91facc045b56c0ec45cce698fba16e56",
+        "decision_canonical_sha256": "df0a3a3af12268e581cdb3980200a6e453e286bbeab8f6eb7b1c3a82b396693e",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -3434,7 +3437,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -3594,8 +3597,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.3132611802127845,
-            "FOLD": 0.6867388197872155,
+            "CALL": 0.313261180213,
+            "FOLD": 0.686738819787,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -3604,7 +3607,7 @@
           "selected_action_probability": 0.68673882
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|CO|BTN|2|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "65206392470293d1d1e7e28cf32608cb1c4b10423157f07d7c8836d323e8ed08",
+        "decision_canonical_sha256": "89380ba0987f20ef5ddb4b73968103ea0340b15a080c8037208f811199f231c5",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -3810,7 +3813,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -3978,17 +3981,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.27040449243769366,
-            "FOLD": 0.7078051885557184,
-            "JAM": 0.020499741166788765,
-            "RAISE": 0.0012905778397992419
+            "CALL": 0.270404492438,
+            "FOLD": 0.707805188555,
+            "JAM": 0.020499741167,
+            "RAISE": 0.00129057784
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.707805189
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BTN|CO|0|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "cc0eaaba60102c72a71b149e0c6c8c28dc655ef0fe79a943ec544f3fb78d8ed1",
+        "decision_canonical_sha256": "c25f7338c7b64e645afe7a70ff938ca554509a948788213a1313163455a961c6",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -4189,7 +4192,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -4273,7 +4276,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "dbd50ff803acd232a68c49940ccb79bf07e37cd056008f4564ea801a0d9a5118",
+        "decision_canonical_sha256": "cc68c3ce2cca082f3ef914ea46d0fe7c9733875741a0d4eeee9e47e77202016f",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -4386,8 +4389,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.3457254463871946,
-            "FOLD": 0.6542745536128054,
+            "CALL": 0.345725446387,
+            "FOLD": 0.654274553613,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -4396,7 +4399,7 @@
           "selected_action_probability": 0.654274554
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|CO|0|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "209fafeac915f75d6207887f381050ad463ef81e73f19603a9b130c2d95b49a4",
+        "decision_canonical_sha256": "75146d77131e76132f36ab47e2fc9c37d818abf90afe9ce626d5317a3f86b95f",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -4600,7 +4603,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -4755,8 +4758,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.36522124425728497,
-            "FOLD": 0.634778755742715,
+            "CALL": 0.365221244257,
+            "FOLD": 0.634778755743,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -4765,7 +4768,7 @@
           "selected_action_probability": 0.634778756
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|CO|1|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "221d887c52082c6ed41f1b8cebbf9a4c649e60d28467bfb862a80f5214b7b32d",
+        "decision_canonical_sha256": "1cb3c5009138815682de73acd9119e0d73f3619ff3aeb7924decb93b88dcef61",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -4971,7 +4974,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -5134,17 +5137,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.5028123852213888,
-            "FOLD": 0.48634739403080596,
-            "JAM": 0.0031160890947447006,
-            "RAISE": 0.007724131653060555
+            "CALL": 0.502812385221,
+            "FOLD": 0.486347394031,
+            "JAM": 0.003116089095,
+            "RAISE": 0.007724131653
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.502812385
         },
         "context_key": "LIMPER_VS_ISO_CALLERS|CO|SB|1|2|1|4|B2|B2|P2",
-        "decision_canonical_sha256": "352c3ba26fcc19b9e4a9990dd5c21118be741aacf546292d527214b14b759d9a",
+        "decision_canonical_sha256": "96487c7ec51e2174ea39637ebc538521d0e4b53371d77c256fa713d0656f3eee",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -5341,7 +5344,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -5420,7 +5423,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "70ea6d71869fadd9aa318a097a62e9b9e1ccbbb849126953f3a25953d276133e",
+        "decision_canonical_sha256": "bc38b6831448455501b2d9f7a53a91a0439e14c81e487c48eb0c588cdb0d8e31",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 21.769238,
@@ -5583,17 +5586,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.529504717809214,
-            "FOLD": 0.45862236494489056,
-            "JAM": 0.003492513530448327,
-            "RAISE": 0.008380403715447078
+            "CALL": 0.52950471781,
+            "FOLD": 0.458622364945,
+            "JAM": 0.00349251353,
+            "RAISE": 0.008380403715
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.529504718
         },
         "context_key": "LIMPER_VS_ISO_CALLERS|BTN|SB|1|2|1|3|B2|B2|P2",
-        "decision_canonical_sha256": "406a27f0d88f046c55704247cd6ad69f8b8b34b97d7c832bfaf3225798f1335a",
+        "decision_canonical_sha256": "e07e80212e56f23acf0202d73c8df6f8dcc9426d4de670a903dcaa745f1edf64",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -5788,7 +5791,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -5865,7 +5868,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "265b3008c014007db455b177b8b73d6c0df3de9fac8e987d3189ffebf0db6ccf",
+        "decision_canonical_sha256": "6185c3b54ad62f6326d69f6306b28a8c1415553d8aa7c5d409fb3006ee47db09",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 21.769238,
@@ -6027,17 +6030,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.4174735468954144,
-            "FOLD": 0.5338264334691609,
-            "JAM": 0.045798091196791346,
-            "RAISE": 0.002901928438633376
+            "CALL": 0.417473546895,
+            "FOLD": 0.533826433469,
+            "JAM": 0.045798091197,
+            "RAISE": 0.002901928439
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.533826433
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|BTN|1|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "5c410273a84e22e8913f46ee62765f4cae1a44dbeb528bb88282bc99a316633f",
+        "decision_canonical_sha256": "0bedc3dfb69347d47c88e94988f14b1182a3fa51d6941f4495afdd556b6267a0",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -6238,7 +6241,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -6323,7 +6326,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "8b7cffefa17ee876cbd02f1fb661592180063a4e8bfa7a4b37eb3d682ad4283f",
+        "decision_canonical_sha256": "9782890ef27b82e2aec6b93a8bdd2ed48a3f8ae867dab73abe77c9cf1bfdfad8",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -6440,8 +6443,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.25962482943017606,
-            "FOLD": 0.7403751705698239,
+            "CALL": 0.25962482943,
+            "FOLD": 0.74037517057,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -6450,7 +6453,7 @@
           "selected_action_probability": 0.740375171
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BB|BTN|1|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "bfcebd3eea770d19aedf35a5755c01a5d71a65a1a94680842c1be0381c175372",
+        "decision_canonical_sha256": "6e438e57da67e411901abb4189c14b52720972636da4fa31bcc213de8af90f39",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -6654,7 +6657,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -6814,8 +6817,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.2832240769864468,
-            "FOLD": 0.7167759230135532,
+            "CALL": 0.283224076986,
+            "FOLD": 0.7167759230140001,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -6824,7 +6827,7 @@
           "selected_action_probability": 0.716775923
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BB|BTN|2|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "84066a3017a19f3dace4883d863b58fd3a2e0151f1164fb4787c18f141d4c223",
+        "decision_canonical_sha256": "b791104b056beae8d598091c75b414c15227fbafb86e2628304b91969abfea8d",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -7030,7 +7033,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -7198,17 +7201,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.5303404694935366,
-            "FOLD": 0.4578703014433216,
-            "JAM": 0.0035706494662604005,
-            "RAISE": 0.008218579596881425
+            "CALL": 0.530340469494,
+            "FOLD": 0.457870301443,
+            "JAM": 0.003570649466,
+            "RAISE": 0.008218579597
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.530340469
         },
         "context_key": "LIMPER_VS_ISO_CALLERS|BTN|SB|2|2|1|4|B2|B2|P3",
-        "decision_canonical_sha256": "36ed8cb0ecea64635181b3febfb58aeb58bc2b932ce2173cdb12ae6f16c93af0",
+        "decision_canonical_sha256": "52a6e372dbeb6f010b8fbd724e8653ff434f32cb9831c32aad9a3e34f71e50cb",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -7403,7 +7406,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -7481,7 +7484,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "586f2c664f8c36fcbccea68abd8e9ed500efdb4b620c30abd60c83301e6adb06",
+        "decision_canonical_sha256": "510ebb463822671942a7365ad417c3f16050919b75a654680f66d22647c08560",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 25.399205,
@@ -7648,17 +7651,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.43334463480123725,
-            "FOLD": 0.5233013670344017,
-            "JAM": 0.0407733981671391,
-            "RAISE": 0.0025805999972219793
+            "CALL": 0.433344634801,
+            "FOLD": 0.523301367035,
+            "JAM": 0.040773398167,
+            "RAISE": 0.002580599997
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.523301367
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|BTN|2|2|2|3|B3|B2|P4",
-        "decision_canonical_sha256": "8dd200020e35fa1fc6a39c8d55329a64a19281d63c41c07d8d5ac93a39e0aa0f",
+        "decision_canonical_sha256": "574b30ca5aa32f857307c3f095f7587087d46de768cca42d42e30f30911592b3",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -7859,7 +7862,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -7945,7 +7948,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "142fbafaea4e90ea7b5f3bbaac0e8e4ed163e8c45b4c51929d9c1f664323228d",
+        "decision_canonical_sha256": "de5a62722d7e1c7c7c973cfacc27180e7527d7c04490a71da94ad3740de12c9b",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -8067,17 +8070,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.31226643112976815,
-            "FOLD": 0.6541632645523655,
-            "JAM": 0.03240884379264353,
-            "RAISE": 0.001161460525222789
+            "CALL": 0.31226643113,
+            "FOLD": 0.654163264552,
+            "JAM": 0.032408843793,
+            "RAISE": 0.001161460525
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.654163265
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BB|BTN|2|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "7c7761a9e16d81c9f9f58a18a5c5846b0925082f7a8ca151531e35a0f934e257",
+        "decision_canonical_sha256": "5c62284c895b4c7a404d568c0875c1dab4322db6c0a36130b3c9d3d5f5c629db",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -8278,7 +8281,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -8364,7 +8367,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "ff700a62dc026f4853edb7bb4a10c3036b09e646d62600b83a49cfb4fadc31e6",
+        "decision_canonical_sha256": "5d27adb309aba65d0ca9e99943a32f513dc265e5cba527067aa0a3a958eacb6d",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -8485,8 +8488,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.3104851003615562,
-            "FOLD": 0.6895148996384438,
+            "CALL": 0.310485100362,
+            "FOLD": 0.6895148996380001,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -8495,7 +8498,7 @@
           "selected_action_probability": 0.6895149
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|CO|BTN|2|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "37e5838ea4463556a952b1e4f0f304d2816444f86d219f9ccb5baa505e476cdf",
+        "decision_canonical_sha256": "6108fbe2bd0190d5484a1aab6b80ccc115615805418564ddcb5eda6af9436677",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -8699,7 +8702,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -8864,8 +8867,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.334002841486322,
-            "FOLD": 0.665997158513678,
+            "CALL": 0.334002841486,
+            "FOLD": 0.665997158514,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -8874,7 +8877,7 @@
           "selected_action_probability": 0.665997159
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|CO|BTN|3|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "ca0cc5d9d6e3d834146bebe5a8465db659d5918e108e0d220d2bbcacdb5b08da",
+        "decision_canonical_sha256": "96a0887ee033d46b180f81dc5bfb32bb0aa57b31df596d931a9be9efcd87d59d",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -9080,7 +9083,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -9253,17 +9256,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.34108880890844095,
-            "FOLD": 0.6362812603711747,
-            "JAM": 0.02170175652570483,
-            "RAISE": 0.0009281741946794863
+            "CALL": 0.341088808908,
+            "FOLD": 0.6362812603710001,
+            "JAM": 0.021701756526,
+            "RAISE": 0.000928174195
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.63628126
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BB|BTN|3|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "165b245c8720a89f0092096ed15bb2273f999cbea615b6978e05f5fcc1f58789",
+        "decision_canonical_sha256": "63d074f3450e21506a204dda55c3e8fc1713be425edda3bf39bb02203545a993",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -9466,7 +9469,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -9555,7 +9558,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "213d1a0d2ad8dbf132a8e885edc1495485c7e1781e76c559fe61dcd0e25a82e7",
+        "decision_canonical_sha256": "048fb61b8b1d63e2c2a4b63f7ab16c568b5cb5a6a7a1a4e1021415ef0f755d63",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -9681,8 +9684,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.334002841486322,
-            "FOLD": 0.665997158513678,
+            "CALL": 0.334002841486,
+            "FOLD": 0.665997158514,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -9691,7 +9694,7 @@
           "selected_action_probability": 0.665997159
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|CO|BTN|3|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "ca0cc5d9d6e3d834146bebe5a8465db659d5918e108e0d220d2bbcacdb5b08da",
+        "decision_canonical_sha256": "96a0887ee033d46b180f81dc5bfb32bb0aa57b31df596d931a9be9efcd87d59d",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -9897,7 +9900,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -10070,8 +10073,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.334002841486322,
-            "FOLD": 0.665997158513678,
+            "CALL": 0.334002841486,
+            "FOLD": 0.665997158514,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -10080,7 +10083,7 @@
           "selected_action_probability": 0.665997159
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|CO|BTN|3|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "067a908d9bfb5f2ea93de50704d46690484fc8a0f0a5ad9ccd5f2fd129f16f74",
+        "decision_canonical_sha256": "8de28f4133e6ef0a2d8814fdfee59b1e06996d270e759469b9c74799fdce671b",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -10286,7 +10289,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -10465,17 +10468,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.27460950771317616,
-            "FOLD": 0.7046375462550591,
-            "JAM": 0.019881323236857984,
-            "RAISE": 0.000871622794906757
+            "CALL": 0.274609507713,
+            "FOLD": 0.704637546255,
+            "JAM": 0.019881323237,
+            "RAISE": 0.000871622795
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.704637546
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BTN|CO|1|2|2|3|B3|B2|P4",
-        "decision_canonical_sha256": "edb2ecadc7cec9f508af604dc6fbd987f544ad93633338a6a49671c94345fabf",
+        "decision_canonical_sha256": "90f60a8ced6a9c7aa876b1eadbf3378ee2a4edede8e492361cddde3832ea8f9a",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -10676,7 +10679,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -10761,7 +10764,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "f670b5ba2b50f1d1470445920e5dfd63380b3d5c8fb6bb0681d7865c37d9e120",
+        "decision_canonical_sha256": "84e5e94f033c1de4a0a165dfbc6676c86d5c7e93a8cf01af085eef6d2df8ac21",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -10879,17 +10882,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.39022648204402294,
-            "FOLD": 0.5622614870992473,
-            "JAM": 0.044918646005783214,
-            "RAISE": 0.0025933848509465222
+            "CALL": 0.390226482044,
+            "FOLD": 0.562261487099,
+            "JAM": 0.044918646006,
+            "RAISE": 0.002593384851
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.562261487
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|CO|1|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "06319aa27b2db2f951ee52a4d6c08fbc109735336d26652e8f2999fc88ce7ddc",
+        "decision_canonical_sha256": "8d7313e9295b6e3a87dce7af01d9f84328516f0d3e781d0b04ac07ac52c40e64",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -11090,7 +11093,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -11175,7 +11178,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "1d499ac0f8442eb10dc9015502809e8ed156fa763c4cb250396b23add6b66c73",
+        "decision_canonical_sha256": "6b05ff6e7192345b60c530d0a53cc98459e1a44544d64dfb246e63f1b3fd19d1",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -11292,8 +11295,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.23328683112056503,
-            "FOLD": 0.766713168879435,
+            "CALL": 0.233286831121,
+            "FOLD": 0.766713168879,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -11302,7 +11305,7 @@
           "selected_action_probability": 0.766713169
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BB|CO|1|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "1bc0c6f62cf302f4e4f1df5c40a81f6c40ef9e1a16dd96b4a6b9c8b57427f427",
+        "decision_canonical_sha256": "720708466d7870691a4b4801fc416910d0fdb5504c1df2fc3e80c4f3fb4431fa",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -11506,7 +11509,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -11666,8 +11669,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.25531760898599287,
-            "FOLD": 0.7446823910140071,
+            "CALL": 0.255317608986,
+            "FOLD": 0.744682391014,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -11676,7 +11679,7 @@
           "selected_action_probability": 0.744682391
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BB|CO|2|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "e9ae301109a46c79d691059cbe820f95bd34efe13e41f39d09ba8fe386ee4b59",
+        "decision_canonical_sha256": "354c1170e22f2761b3480a021d4c0cdac1a9ddc7a7582320d6f086d7975427d1",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -11882,7 +11885,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -12050,17 +12053,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.41188311704868186,
-            "FOLD": 0.5266756088543116,
-            "JAM": 0.059561540123929224,
-            "RAISE": 0.0018797339730772795
+            "CALL": 0.411883117049,
+            "FOLD": 0.526675608854,
+            "JAM": 0.059561540124,
+            "RAISE": 0.001879733973
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.526675609
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|CO|2|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "ed5e41e9252958741ccaa40fe9b4ad2c72ff6de4d4635950ec1a61e9353876b3",
+        "decision_canonical_sha256": "543c01f963fe981da7767ea8110fe113a9a58f2ff87590e93a3ac48f01a0a145",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -12263,7 +12266,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -12351,7 +12354,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "9d3ebc2e644674e9c389a3dc53d4858923e47a4c24f765879b2e23f4c2b662e7",
+        "decision_canonical_sha256": "07b8b7882e4936cf55a8753695d08d78027967e2f2e3e47ce9e1e6b88d4498f8",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -12473,8 +12476,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.25531760898599287,
-            "FOLD": 0.7446823910140071,
+            "CALL": 0.255317608986,
+            "FOLD": 0.744682391014,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -12483,7 +12486,7 @@
           "selected_action_probability": 0.744682391
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BB|CO|2|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "ecb387fa756213ed7fdb089d94b658738f40cec5be64482156eaab10d1efd1d2",
+        "decision_canonical_sha256": "b6560c9ac6b5069fad91c822d9cfc6a09c6aad63d72f93e12f2430de075d4c82",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -12689,7 +12692,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -12857,8 +12860,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.2752039553789033,
-            "FOLD": 0.7247960446210967,
+            "CALL": 0.275203955379,
+            "FOLD": 0.724796044621,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -12867,7 +12870,7 @@
           "selected_action_probability": 0.724796045
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BB|CO|3|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "6650318fe1f12cf52d66cb08c9309aefe768c25abb338ac2d15d1f0be912a508",
+        "decision_canonical_sha256": "0423863db3c479f9f66761529505960c7fca74d3259135e5cfd37aa489541024",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -13073,7 +13076,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -13247,17 +13250,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.3467849653488204,
-            "FOLD": 0.627057958813624,
-            "JAM": 0.023879468963703077,
-            "RAISE": 0.0022776068738525218
+            "CALL": 0.346784965349,
+            "FOLD": 0.6270579588130001,
+            "JAM": 0.023879468964,
+            "RAISE": 0.002277606874
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.627057959
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|CO|BB|0|2|2|3|B3|B2|P4",
-        "decision_canonical_sha256": "9599ed3dda877aa2623fd37cd15cc977c5d7a117ce5d9127f4bec6d0107d707e",
+        "decision_canonical_sha256": "48017057f3873b47cc82df3508a49f2f84d880cf4eca8260e40f2a1046ee1ccd",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -13456,7 +13459,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -13538,7 +13541,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "e5b448e6236f9078de5640dc1f456ca2ad44cdc738e1a7cfb0b58e4d860d1c96",
+        "decision_canonical_sha256": "c8b6b6f7c7eef03a24962b04af5685186406a40c170ce684d5f57519e792f3b9",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -13652,17 +13655,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.34368200436323215,
-            "FOLD": 0.628952517056213,
-            "JAM": 0.025633779234276677,
-            "RAISE": 0.0017316993462781125
+            "CALL": 0.343682004363,
+            "FOLD": 0.6289525170570001,
+            "JAM": 0.025633779234,
+            "RAISE": 0.001731699346
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.628952517
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BTN|BB|0|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "35f21cc28b8bc143dc7191227c73ac4b8f6c64d8f866e8485d3b01c4a5ac2839",
+        "decision_canonical_sha256": "f2682f5a1bc46bf6d0bc6e0e7807cfba78bade21826c3bec443c27ebc8e955d2",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -13861,7 +13864,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -13943,7 +13946,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "89b0e241c01a6be8e014adc7e8d7122a0cb28e4f087a1da273bf67b1a33d2d6c",
+        "decision_canonical_sha256": "97e1db83b475a6d9a24c08f2ac5d68f1e56c7a48d9efe1c21d2565437f6cf256",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -14056,8 +14059,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.45832671752528376,
-            "FOLD": 0.5416732824747162,
+            "CALL": 0.458326717525,
+            "FOLD": 0.541673282475,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -14066,7 +14069,7 @@
           "selected_action_probability": 0.541673282
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|BB|0|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "4ab84244cc9fc41f9c1f78952693cb5979addac204511d0422115af976624bac",
+        "decision_canonical_sha256": "a705b4647e227a2063f1321923cb9f229775d3607a88935b18d994ddf8aee3c5",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -14268,7 +14271,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -14421,8 +14424,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.47951851258541633,
-            "FOLD": 0.5204814874145837,
+            "CALL": 0.479518512585,
+            "FOLD": 0.520481487415,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -14431,7 +14434,7 @@
           "selected_action_probability": 0.520481487
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|BB|1|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "d7bafe5cf16e72fc2d25123261e52d492d66d0016b43e24b123dd1c50102650d",
+        "decision_canonical_sha256": "12512bd5bbbf6929b24a3fc512670bf1779bf6f8382906a5bb887fb4444f50e6",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -14637,7 +14640,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -14800,17 +14803,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.3595937397628645,
-            "FOLD": 0.6080664251500434,
-            "JAM": 0.03138481386713965,
-            "RAISE": 0.000955021219952419
+            "CALL": 0.359593739763,
+            "FOLD": 0.60806642515,
+            "JAM": 0.031384813867,
+            "RAISE": 0.00095502122
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.608066425
         },
         "context_key": "CALLER_VS_SQUEEZE_OR_3BET|BTN|BB|1|2|2|2|B3|B2|P4",
-        "decision_canonical_sha256": "3e3469097fa8f5899fbba8bd8946470e25e8e3ab4a612edf175d5b1ccb951498",
+        "decision_canonical_sha256": "34a4572ff139a790f804746dcac8ccf4472f2e5adab0ff79807bdf0bb2d08653",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -15013,7 +15016,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -15100,7 +15103,7 @@
         "table_size": 6
       },
       "raise_simulation": {
-        "decision_canonical_sha256": "684434a572907416d157745cc7c5a7a65d7c4ed484c6d490c5ca3042d04ea219",
+        "decision_canonical_sha256": "2546598c500dc4df0d1d5468fbdbeef321256300e973bc9a36d6c1c173a40819",
         "reason": "RAISE_WINDOW_EMPTY_BELOW_STACK",
         "requested_action": "RAISE",
         "selected_sizing_bb": null,
@@ -15218,8 +15221,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.47951851258541633,
-            "FOLD": 0.5204814874145837,
+            "CALL": 0.479518512585,
+            "FOLD": 0.520481487415,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -15228,7 +15231,7 @@
           "selected_action_probability": 0.520481487
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|BB|1|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "d7bafe5cf16e72fc2d25123261e52d492d66d0016b43e24b123dd1c50102650d",
+        "decision_canonical_sha256": "12512bd5bbbf6929b24a3fc512670bf1779bf6f8382906a5bb887fb4444f50e6",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -15434,7 +15437,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -15597,8 +15600,8 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.5054999772958626,
-            "FOLD": 0.49450002270413734,
+            "CALL": 0.505499977296,
+            "FOLD": 0.494500022704,
             "JAM": 0.0,
             "RAISE": 0.0
           },
@@ -15607,7 +15610,7 @@
           "selected_action_probability": 0.505499977
         },
         "context_key": "OPENER_OR_ISO_VS_3BET|SB|BB|2|2|2|1|B3|B2|P4",
-        "decision_canonical_sha256": "c9fb94db8fed8404a9e3b0e7db56c74c6486f610dfa2639c6038c8d2fcfc224a",
+        "decision_canonical_sha256": "3462651fe98a7541eff50f30ff47cc85b6bc75a314e6075008daf12d047b226c",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -15813,7 +15816,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -16029,14 +16032,17 @@
     "deterministic_seed": 421,
     "entry_point": "tools/preflop/generalized_response_runtime.py::resolve_generalized_response",
     "guarantees": {
+      "canonical_decimal_grid": 12,
       "deterministic": true,
       "direct_price_sizing_evaluation": true,
       "fail_closed_on_candidate_hash_mismatch": true,
       "fail_closed_on_ood": true,
       "illegal_mass": 0.0,
+      "interpreter_independent_bytes": true,
       "legal_masking": true,
       "nearest_context_substituted": false,
       "nearest_price_substituted": false,
+      "probability_sum": 1.0,
       "sizing_conditioned_on_raise_or_jam": true,
       "stdlib_only": true
     },
@@ -16058,7 +16064,7 @@
     "research_status": "CANDIDATE_ONLY_NOT_ACTIVE",
     "runtime": {
       "module_path": "tools/preflop/generalized_response_runtime.py",
-      "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+      "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
       "schema": "poker-generalized-response-runtime-decision/v1"
     },
     "statuses": [
@@ -16173,17 +16179,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.5032603079264845,
-            "FOLD": 0.4832159432413971,
-            "JAM": 0.007186616434160298,
-            "RAISE": 0.0063371323979581175
+            "CALL": 0.503260307927,
+            "FOLD": 0.483215943241,
+            "JAM": 0.007186616434,
+            "RAISE": 0.006337132398
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.503260308
         },
         "context_key": "LIMPER_VS_ISO|BTN|SB|0|2|1|2|B2|B2|P2",
-        "decision_canonical_sha256": "7d5c8e0da89501a951415cf33c73e57495de5957350f327ee9c3d6ec9d707240",
+        "decision_canonical_sha256": "ddaf3b2f4cb588f9d4c1cfda8b7b41ee050a4a8b1e2b861c1c886d71715542c5",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -16374,7 +16380,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -16421,7 +16427,7 @@
         "CO:FOLD"
       ],
       "raise_simulation": {
-        "decision_canonical_sha256": "577a9971c250352f1f7616770b9784a57f9e43364c9ed1e7f473fdecc4866aa2",
+        "decision_canonical_sha256": "d015f13b4c54b3edd0228b528a2023e44a0d47eb174eb9a1ad9d1cb2a3d4cf7d",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 27.66197,
@@ -16611,17 +16617,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.529504717809214,
-            "FOLD": 0.45862236494489056,
-            "JAM": 0.003492513530448327,
-            "RAISE": 0.008380403715447078
+            "CALL": 0.52950471781,
+            "FOLD": 0.458622364945,
+            "JAM": 0.00349251353,
+            "RAISE": 0.008380403715
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.529504718
         },
         "context_key": "LIMPER_VS_ISO_CALLERS|BTN|SB|1|2|1|3|B2|B2|P2",
-        "decision_canonical_sha256": "29a0b1b2242724eed47f833641028bbb96de79fd8134296469c052b457ffae5d",
+        "decision_canonical_sha256": "5933be05a327dd74ff060b103d45720aebb45cd95fd126899204b49ab4210b7f",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -16816,7 +16822,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -16867,7 +16873,7 @@
         "CO:CALL"
       ],
       "raise_simulation": {
-        "decision_canonical_sha256": "26af696236f2a67f3402e795507824694d9a2bec509888e5cd06b289f7b74d29",
+        "decision_canonical_sha256": "dbe6443fdbc8a3a3eed5e6d06ccb54f2d683453489ff95094d3157f680093e26",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 21.596816,
@@ -17064,17 +17070,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.4959439568098084,
-            "FOLD": 0.4882242755634257,
-            "JAM": 0.0067438154191156174,
-            "RAISE": 0.009087952207650251
+            "CALL": 0.49594395681000003,
+            "FOLD": 0.488224275563,
+            "JAM": 0.006743815419,
+            "RAISE": 0.009087952208
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.495943957
         },
         "context_key": "LIMPER_VS_ISO|CO|SB|0|2|1|3|B2|B2|P2",
-        "decision_canonical_sha256": "f4f7eaccc84f6542e229dba7bf028a1655b9fcbab146cd7945a36d39fabf115e",
+        "decision_canonical_sha256": "1efad58570f27dc5b785adfaf8136490e7de816d29d2486afa289988813129c0",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -17265,7 +17271,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -17311,7 +17317,7 @@
         "BB:FOLD"
       ],
       "raise_simulation": {
-        "decision_canonical_sha256": "5e441acc9feaba22be7f6beb55d3024f9b2369b055a01b8ac9abc06bfcf867e0",
+        "decision_canonical_sha256": "577f7047c1b9cb13f56243fb1d66a408347db784f959e4a61f31c64c7b9d8af7",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 27.66197,
@@ -17504,17 +17510,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.529504717809214,
-            "FOLD": 0.45862236494489056,
-            "JAM": 0.003492513530448327,
-            "RAISE": 0.008380403715447078
+            "CALL": 0.52950471781,
+            "FOLD": 0.458622364945,
+            "JAM": 0.00349251353,
+            "RAISE": 0.008380403715
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.529504718
         },
         "context_key": "LIMPER_VS_ISO_CALLERS|BTN|SB|1|2|1|3|B2|B2|P2",
-        "decision_canonical_sha256": "29a0b1b2242724eed47f833641028bbb96de79fd8134296469c052b457ffae5d",
+        "decision_canonical_sha256": "5933be05a327dd74ff060b103d45720aebb45cd95fd126899204b49ab4210b7f",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -17709,7 +17715,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -17760,7 +17766,7 @@
         "CO:FOLD"
       ],
       "raise_simulation": {
-        "decision_canonical_sha256": "26af696236f2a67f3402e795507824694d9a2bec509888e5cd06b289f7b74d29",
+        "decision_canonical_sha256": "dbe6443fdbc8a3a3eed5e6d06ccb54f2d683453489ff95094d3157f680093e26",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 21.596816,
@@ -17957,17 +17963,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.5303404694935366,
-            "FOLD": 0.4578703014433216,
-            "JAM": 0.0035706494662604005,
-            "RAISE": 0.008218579596881425
+            "CALL": 0.530340469494,
+            "FOLD": 0.457870301443,
+            "JAM": 0.003570649466,
+            "RAISE": 0.008218579597
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.530340469
         },
         "context_key": "LIMPER_VS_ISO_CALLERS|BTN|SB|2|2|1|4|B2|B2|P3",
-        "decision_canonical_sha256": "01495a130e0849425f6b66d752798c715c3d754936b2175860e22506b03f1159",
+        "decision_canonical_sha256": "f7c9b9351c8ffbd0a08e5fb1d67e7280ea7ceb7c18b6f58e8839e015ebbd21a5",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -18162,7 +18168,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -18213,7 +18219,7 @@
         "CO:CALL"
       ],
       "raise_simulation": {
-        "decision_canonical_sha256": "419d9a1c411527f5e2454eb4c8d444853e55eb62f8a4ee120ded2f93d1c253fc",
+        "decision_canonical_sha256": "da521a8359ab7d6df6c5578e2e8a1f6a1b4ea633f7d35eb8523d01d1ae174e9c",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 24.956903,
@@ -18417,17 +18423,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.5028123852213888,
-            "FOLD": 0.48634739403080596,
-            "JAM": 0.0031160890947447006,
-            "RAISE": 0.007724131653060555
+            "CALL": 0.502812385221,
+            "FOLD": 0.486347394031,
+            "JAM": 0.003116089095,
+            "RAISE": 0.007724131653
           },
           "probability_sum": 1.0,
           "selected_action": "CALL",
           "selected_action_probability": 0.502812385
         },
         "context_key": "LIMPER_VS_ISO_CALLERS|CO|SB|1|2|1|4|B2|B2|P2",
-        "decision_canonical_sha256": "cb4c6cfb9b1f468d6a4899173cb1354d7f6dd42d1df072f12cd49e971d028e4e",
+        "decision_canonical_sha256": "34f7854f4f05b16f7ca03718efe63374a357470c2ece9c9a9f86de045d8fb792",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -18624,7 +18630,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -18676,7 +18682,7 @@
         "BB:CALL"
       ],
       "raise_simulation": {
-        "decision_canonical_sha256": "41b2d4a20010df06e5489595ec23a0c43204784bc526414f2d854dde6871e047",
+        "decision_canonical_sha256": "fa020a671d1c6551d13d9affb6d30d7a0686cbf8741e0ffd0c8118ddbbfbce51",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 21.596816,
@@ -18876,17 +18882,17 @@
           "illegal_mass": 0.0,
           "normalization": "legal_normalized",
           "probabilities": {
-            "CALL": 0.38142004448819666,
-            "FOLD": 0.5962833987268605,
-            "JAM": 0.00543131787918838,
-            "RAISE": 0.016865238905754424
+            "CALL": 0.381420044488,
+            "FOLD": 0.596283398727,
+            "JAM": 0.005431317879,
+            "RAISE": 0.016865238906
           },
           "probability_sum": 1.0,
           "selected_action": "FOLD",
           "selected_action_probability": 0.596283399
         },
         "context_key": "VS_ISO|BB|SB|0|2|1|4|B2|B2|P2",
-        "decision_canonical_sha256": "b351135ded952ea7b8e15a10fdf6efc84109dfd17c4f5e59381fc3bbad7e7f12",
+        "decision_canonical_sha256": "d75e3133b7dd249368d761b966bfa2dc77e19ef49df5ee6e2f9d45111db28e9f",
         "fail_closed": false,
         "fail_closed_reason": null,
         "legal_actions": [
@@ -19077,7 +19083,7 @@
           },
           "runtime": {
             "module_path": "tools/preflop/generalized_response_runtime.py",
-            "module_sha256": "af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361",
+            "module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
             "schema": "poker-generalized-response-runtime-decision/v1"
           }
         },
@@ -19122,7 +19128,7 @@
         "SB:ISO@5"
       ],
       "raise_simulation": {
-        "decision_canonical_sha256": "25e8bb45d2e68d8295c23d31d5c51ce45d6daac034cd1aaa475fe7fd3e882a1c",
+        "decision_canonical_sha256": "5d77341ef95c682dec266eb6b9e05741cc1b7505b434001da61bcdf2a62db564",
         "reason": null,
         "requested_action": "RAISE",
         "selected_sizing_bb": 21.537157,

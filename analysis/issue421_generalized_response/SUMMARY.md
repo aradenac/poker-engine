@@ -3,7 +3,7 @@
 **RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT** (protocol outcome `RETAIN_ACTIVE_REFERENCE`, 8/10 frozen criteria passed). The candidate `generalized-adverse-response-candidate-v1` (`regularized_multinomial_spline`, canonical payload `c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc`) is **not** admitted, is **not** wired into #367 and does **not** replace the active Model A reference.
 
 This bundle persists and content-addresses the ten required #421 artifacts under `analysis/issue421_generalized_response/sha256/` and binds them in `ARTIFACTS.json`.
-`GENERALIZED_RESPONSE_MODEL_SPEC.json` is a deterministic projection of the frozen evidence (no re-fit, no new claim); its byte SHA256 is `486ef55e14cdc1160faef7e53ac29631f1e13a9953b4f4996a8b3b052b185abf` (canonical payload `ee744adcfd0413719430725f1bb3bbd4e5ff341cbd8b038e8ce533dbf8348dd8`).
+`GENERALIZED_RESPONSE_MODEL_SPEC.json` is a deterministic projection of the frozen evidence (no re-fit, no new claim); its byte SHA256 is `7f7dde23f18beb6abaa775018d9cbf6d66e2d45fb6b8f8faf89092496643ce12` (canonical payload `cdf97d55fb24bc898c67ccb89195f748feae761fa7f178a6e06599e6e5246f40`).
 
 ## 1. Decision
 
@@ -63,14 +63,14 @@ Every digest this bundle persists is recomputed from the persisted bytes: 36 cro
 
 | artifact | byte SHA256 | canonical payload SHA256 |
 | --- | --- | --- |
-| GENERALIZED_RESPONSE_MODEL_SPEC.json | `486ef55e14cdc1160faef7e53ac29631f1e13a9953b4f4996a8b3b052b185abf` | `ee744adcfd0413719430725f1bb3bbd4e5ff341cbd8b038e8ce533dbf8348dd8` |
+| GENERALIZED_RESPONSE_MODEL_SPEC.json | `7f7dde23f18beb6abaa775018d9cbf6d66e2d45fb6b8f8faf89092496643ce12` | `cdf97d55fb24bc898c67ccb89195f748feae761fa7f178a6e06599e6e5246f40` |
 | TRAIN_CV_REPORT.json | `43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff` | `dee8ebbdfa8c65e462cf46bfb39a5ff2e0d0e576da85769d90fde9193d618814` |
 | CANDIDATE_MANIFEST.json | `06f8380ea898d41efc9f7dbe65968292fd1277fe750229e0059b4df5918f8fea` | `4a9cbcd3ddc2bab6500803c08a5876d5ebad47c2f460be00c37292fd9dbf69e7` |
 | FROZEN_VALIDATION_PROTOCOL.json | `ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5` | `7c703fd934629b239293932fd0a7349957b0fdd48538154429f4597da74883ce` |
 | VALIDATION_RESULT.json | `6a8f02b6ea92d2906f9681684f572926601d6bab7bd78bb14bc8efd424f516c3` | `48a166f30854d88b693fa2c70fe32c1d3cfb41c2e23ddeacf57ea37e6f9d18c6` |
 | OOD_CALIBRATION_REPORT.json | `a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71` | `e438d99c4114cef37ded4c76d5bdcaf557f47f818bc66fc40fb36de0adca6530` |
 | RAISE_SIZING_MODEL_REPORT.json | `955b926a5d19efe4998abfeae416792f85284d167cfaf9306315cb639320e9f6` | `1cb19b27bd0de7f44f19151cfe9e8fb536b2899c4257ea664f1e4d31a582791f` |
-| ISSUE367_PREFLIGHT.json | `4b7c757f9f4bd8f2aac83d2ec1f4106dbb67a4ab5a5df31c30c02fbdac9cb7d1` | `575a1eb46f5c2fc96e2e917cb876fe8ce8f2311bb1f3a6fe5e147e16d6b2d0a2` |
+| ISSUE367_PREFLIGHT.json | `415d65dfeac78fd7c54931e0cebd0cea6a9df35d3607333c60c2142c04de7220` | `2038a0a240fed447013900daf0e0e874058b87b4b32d3e5156169df28eaa83a4` |
 | DECISION.json | `8783fbc871853821270ed5fe92cda22a8e69c229af557383894c883d507211ea` | `8f68483ec52517b7897b5dc7f32a4344081c18cd1f6132bccf56c784f3725379` |
 | SUMMARY.md | `see ARTIFACTS.json` | n/a |
 

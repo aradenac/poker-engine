@@ -3,24 +3,24 @@
 Issue #421. The machine-readable source of truth is
 `analysis/issue421_generalized_response/GENERALIZED_RESPONSE_MODEL_SPEC.json`
 (`poker-generalized-response-model-spec/v1`), content-addressed as
-`analysis/issue421_generalized_response/sha256/486ef55e14cdc1160faef7e53ac29631f1e13a9953b4f4996a8b3b052b185abf.json`
+`analysis/issue421_generalized_response/sha256/7f7dde23f18beb6abaa775018d9cbf6d66e2d45fb6b8f8faf89092496643ce12.json`
 and pinned by
 `analysis/issue421_generalized_response/GENERALIZED_RESPONSE_MODEL_SPEC.sha256`.
 The ten required artifacts are bound by
 `analysis/issue421_generalized_response/ARTIFACTS.json`; the human summary is
 `analysis/issue421_generalized_response/SUMMARY.md`
-(`0c0a2031e7e4649a75af866ab3e705db1204b51397443dce953817b2cc61a7ba`). This
+(`bbe2a44de0f3d159b6fc00e5e2c7665b075c521cbba1e73d4afddaee21de0b7c`). This
 document explains the spec and the cycle; it is not itself normative. The JSON
 wins, and the spec digest is recorded outside its own payload.
 
 Provenance is environment-independent: every recorded path — including
 `evidence_bindings.runtime_module_path` and every `registry_source` embedded in
 `ISSUE367_PREFLIGHT.json` (object digest
-`4b7c757f9f4bd8f2aac83d2ec1f4106dbb67a4ab5a5df31c30c02fbdac9cb7d1`) — is a
+`415d65dfeac78fd7c54931e0cebd0cea6a9df35d3607333c60c2142c04de7220`) — is a
 repository-relative POSIX path, never an absolute host path, so the regenerated
 digests are reproducible across hosts and worktrees. The runtime module it pins
 (`tools/preflop/generalized_response_runtime.py`) hashes to
-`af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`. The
+`36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4`. The
 terminal decision is unchanged: `RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT`.
 
 Reproduce: `python3 tools/training/build_issue421_evidence_bundle.py`.
@@ -139,14 +139,22 @@ engine window, a limped family, three stack depths) with the exact runtime
 probabilities, the selected action, the recommended and generated sizings and
 the canonical digests of the runtime and model predictions of each. The entries
 were captured from the runtime revision
-`e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538` and
-re-computed bit for bit after the legal-window declaration was added (revision
-`af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`): every
-probability, selected sizing and digest is unchanged, and only the declared
-`sizing_window` block is new. Regenerate the reference with
+`e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538`, re-computed
+bit for bit after the legal-window declaration was added (revision
+`af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`), and
+re-computed once more after the runtime surface was made independent of the
+interpreter (revision
+`36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4`). Across
+those revisions the selected action, the selected and generated sizings, the
+declared `sizing_window` verdict and the model-side predictions do not move; the
+only fields that move are the emitted runtime probabilities, each quantised
+onto the runtime's fixed twelve-decimal grid and re-closed with `math.fsum` so
+`probability_sum` stays exactly `1.0` and `illegal_mass` exactly `0.0`, whatever
+the summation semantics of the interpreter that ran the frozen model. Regenerate
+the reference with
 `python3 tests/preflop/test_generalized_response_sizing.py --write-in-window-reference`
-(it re-captures the unchanged surface; the entry digest is
-`bc34f4a36e0c4978cea57dee686f268d97040d05822f4b82bf69af58e495834a`).
+(it re-captures the canonical surface; the entry digest is
+`4af7100b42c2687151ea49740028e94c52c154afcb7a78ac29ece3d630c094bf`).
 
 ## 5. Evaluation, freeze and one-shot VALIDATION
 

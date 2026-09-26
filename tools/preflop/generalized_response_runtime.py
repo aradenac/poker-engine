@@ -23,6 +23,23 @@ read without re-deriving the model contract:
     * is deterministic: the same context and seed always produce the same
       document, byte-for-byte.
 
+Interpreter-independent bytes
+-----------------------------
+
+The document is not only reproducible on one interpreter: **every float it
+emits** is quantised on a fixed decimal grid
+(:data:`CANONICAL_DECIMALS`, :func:`canonical_float`) and every embedded legal
+distribution is re-closed with :func:`math.fsum`
+(:func:`canonical_legal_distribution`), which keeps ``probability_sum``
+*exactly* ``1.0``, ``illegal_mass`` *exactly* ``0.0`` and every illegal action
+*exactly* ``0.0``.  This matters because the frozen model module closes its own
+distribution with the builtin ``sum``, whose float semantics changed in CPython
+3.12 (a naive left-to-right fold became a compensated one): the raw model
+answer can differ in its last bits between interpreters, while the canonical
+document cannot.  The embedded ``prediction`` substructure -- the raw output of
+the frozen model -- passes through the same canonicalisation, so the runtime
+surface, and not the interpreter, decides the emitted bytes.
+
 Fail-closed contract
 --------------------
 
@@ -196,6 +213,22 @@ SIZING_WINDOW_POLICY = "FAIL_CLOSED_ILLEGAL_SIZING_GENERATED"
 #: Tolerance of the window comparison, identical to the sizing channel's own.
 SIZING_WINDOW_TOLERANCE = 1e-9
 
+#: The fixed decimal grid every float a decision document emits is quantised on.
+#:
+#: The grid is the *interpreter-independence* boundary of this surface.  A
+#: ``round`` on a float is correctly rounded and identical on every CPython
+#: release (3.9..3.14) and ``math.fsum`` is correctly rounded too, but the
+#: builtin ``sum`` is not: 3.12 replaced the naive left-to-right float fold with
+#: a compensated one, so the frozen model's own closure
+#: (``tools/preflop/generalized_response_model.py``, never edited here) can emit
+#: a probability that differs in its last bits between interpreters.  The
+#: difference is bounded by a couple of ulps (measured at ``4.4e-16`` on the
+#: frozen candidate), so quantising on a grid that is coarser than that
+#: difference absorbs it and leaves the emitted bytes identical under both
+#: summation semantics -- while keeping twelve significant decimals of the
+#: frozen surface, i.e. a relative deviation of at most ``5e-13``.
+CANONICAL_DECIMALS = 12
+
 FAIL_CLOSED_CODES: tuple[str, ...] = (
     FAIL_CLOSED_CANDIDATE_NOT_FOUND,
     FAIL_CLOSED_CANDIDATE_HASH_MISMATCH,
@@ -286,14 +319,176 @@ def _repo_relative(path: str | Path) -> str:
             return resolved.as_posix()
 
 
-def _round(value: Any, digits: int = 6) -> float | None:
+def canonical_float(value: Any, *, decimals: int = CANONICAL_DECIMALS) -> float | None:
+    """Quantise one number onto the fixed decimal grid (:data:`CANONICAL_DECIMALS`).
+
+    This is the *only* numeric canonicalisation of the runtime: every float a
+    decision document emits passes through it (directly, or through
+    :func:`canonical_floats`).  ``round`` on a float is correctly rounded, so
+    the same input always yields the same output on CPython 3.9..3.14; a
+    negative zero is normalised to ``0.0`` (``-0.0`` and ``0.0`` are equal but
+    do not serialise to the same bytes), and a non-finite or non-numeric value
+    is reported as ``None`` exactly as the display rounding always did.
+    """
     if value is None:
         return None
-    number = float(value)
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
     if not math.isfinite(number):
         return None
-    rounded = round(number, digits)
-    return 0.0 if rounded == 0 else rounded
+    quantised = round(number, decimals)
+    return 0.0 if quantised == 0 else quantised
+
+
+def canonical_floats(value: Any, *, decimals: int = CANONICAL_DECIMALS) -> Any:
+    """Every float of a JSON-shaped document, quantised on the fixed decimal grid.
+
+    The walk is structural and exhaustive over the document the runtime emits
+    (mappings, lists and tuples), so no raw model float can escape onto the
+    decision surface: the embedded ``prediction``/``sizing``/``ood`` blocks are
+    canonicalised by the same pass as the runtime's own fields.  Non-float
+    leaves (strings, integers, booleans, ``None``) are returned unchanged, and
+    a non-finite float -- which could never be serialised into the document --
+    is left untouched rather than silently turned into a number.
+
+    Applying the pass twice is the identity on the *grid*: a value already on
+    the grid is its own quantization.  The one value that is deliberately not
+    on the grid is the residual of :func:`canonical_legal_distribution`'s
+    ``math.fsum`` closure, which that function re-derives consistently.
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, float):
+        quantised = canonical_float(value, decimals=decimals)
+        return value if quantised is None else quantised
+    if isinstance(value, int):
+        return value
+    if isinstance(value, Mapping):
+        return {
+            key: canonical_floats(item, decimals=decimals) for key, item in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [canonical_floats(item, decimals=decimals) for item in value]
+    return value
+
+
+def canonical_legal_distribution(
+    probabilities: Mapping[str, Any],
+    legal: Any,
+    *,
+    decimals: int = CANONICAL_DECIMALS,
+) -> tuple[dict[str, float], float, float]:
+    """Quantise a legal response distribution and re-close it with ``math.fsum``.
+
+    The legal actions are quantised on the fixed decimal grid, one anchor
+    action carries the residual that closes the vector and every masked action
+    is pinned to exactly ``0.0``.  The anchor is the legal action with the
+    largest quantised mass (ties broken by the model's ``FOLD``/``CALL``/
+    ``RAISE``/``JAM`` order): closing the *largest* share keeps the
+    ``1.0 - math.fsum(others)`` residual well conditioned and non-negative,
+    where closing an arbitrarily small share could need a clamp.
+
+    Returns ``(vector, probability_sum, illegal_mass)``, where ``vector``
+    covers the whole action space, ``probability_sum`` is the correctly rounded
+    ``math.fsum`` of the emitted vector -- the anchor is nudged by
+    ``math.nextafter`` when the exact sum needs one more ulp to read exactly
+    ``1.0`` -- and ``illegal_mass`` is exactly ``0.0``.  ``math.fsum``,
+    ``round`` and ``math.nextafter`` are correctly rounded and identical on
+    CPython 3.9..3.14, so no builtin ``sum`` semantics can leak into the
+    emitted bytes.
+    """
+    order = [action for action in ACTIONS if action in set(legal or ())]
+    vector: dict[str, float] = {action: 0.0 for action in ACTIONS}
+    if not order:
+        return vector, 0.0, 0.0
+    quantised = {
+        action: canonical_float(probabilities.get(action, 0.0), decimals=decimals) or 0.0
+        for action in order
+    }
+    anchor = max(order, key=lambda action: (quantised[action], -ACTIONS.index(action)))
+    vector.update(quantised)
+    others = math.fsum(value for action, value in quantised.items() if action != anchor)
+    residual = 1.0 - others
+    vector[anchor] = residual if residual > 0.0 else 0.0
+    probability_sum = math.fsum(vector.values())
+    for _ in range(4):
+        if probability_sum == 1.0:
+            break
+        vector[anchor] = math.nextafter(
+            vector[anchor], math.inf if probability_sum < 1.0 else -math.inf
+        )
+        probability_sum = math.fsum(vector.values())
+    masked = [action for action in ACTIONS if action not in set(order)]
+    illegal_mass = math.fsum(vector[action] for action in masked)
+    return vector, probability_sum, illegal_mass
+
+
+def canonical_prediction(
+    prediction: Mapping[str, Any], *, decimals: int = CANONICAL_DECIMALS
+) -> dict[str, Any]:
+    """The frozen model prediction with every float quantised and its vector closed.
+
+    The prediction substructure is the raw output of the frozen model module;
+    the runtime consumes it through this canonicalisation instead of copying
+    its floats verbatim, so the *same* model answer yields the same bytes under
+    every summation semantics while the contract of the prediction
+    (``probabilities``/``P(...)``/``legal_actions``/``sizing``/``support``)
+    stays exactly the frozen one.
+    """
+    canonical = canonical_floats(prediction, decimals=decimals)
+    if not isinstance(canonical, dict):  # pragma: no cover - the model returns a mapping
+        return canonical
+    vector, probability_sum, _illegal_mass = canonical_legal_distribution(
+        canonical.get("probabilities") or {},
+        canonical.get("legal_actions") or [],
+        decimals=decimals,
+    )
+    canonical["probabilities"] = vector
+    for action in ACTIONS:
+        canonical[f"P({action})"] = vector[action]
+    canonical["probability_sum"] = probability_sum
+    return canonical
+
+
+def canonicalize_decision_document(
+    document: Mapping[str, Any], *, decimals: int = CANONICAL_DECIMALS
+) -> dict[str, Any]:
+    """The decision document with every float quantised and every legal vector closed.
+
+    Every float of the document is first quantised on the fixed grid, then each
+    embedded copy of the legal distribution (the runtime's own
+    ``action_probabilities``/``P(...)``/``probability_sum``/``illegal_mass``,
+    the frozen ``prediction`` substructure and the ``consumer`` view) is
+    re-closed with :func:`canonical_legal_distribution`, so the copies can never
+    disagree and ``probability_sum``/``illegal_mass`` stay *exactly* ``1.0`` and
+    ``0.0``.
+    """
+    canonical = canonical_floats(document, decimals=decimals)
+    if not isinstance(canonical, dict):  # pragma: no cover - the runtime emits a mapping
+        return canonical
+    legal = canonical.get("legal_actions") or []
+    vector, probability_sum, illegal_mass = canonical_legal_distribution(
+        canonical.get("action_probabilities") or {}, legal, decimals=decimals
+    )
+    canonical["action_probabilities"] = dict(vector)
+    for action in ACTIONS:
+        canonical[f"P({action})"] = vector[action]
+    canonical["probability_sum"] = probability_sum
+    canonical["illegal_mass"] = illegal_mass
+    prediction = canonical.get("prediction")
+    if isinstance(prediction, dict):
+        prediction["probabilities"] = dict(vector)
+        for action in ACTIONS:
+            prediction[f"P({action})"] = vector[action]
+        prediction["probability_sum"] = probability_sum
+    consumer = canonical.get("consumer")
+    if isinstance(consumer, dict):
+        consumer["actions"] = dict(vector)
+        consumer["probability_sum"] = probability_sum
+        consumer["illegal_mass"] = illegal_mass
+    return canonical
 
 
 def _level(value: Any) -> str:
@@ -749,6 +944,9 @@ class GeneralizedResponseRuntime:
             "nearest_price_substituted": NEAREST_PRICE_SUBSTITUTED,
             "nearest_context_substituted": NEAREST_CONTEXT_SUBSTITUTED,
             "illegal_mass": 0.0,
+            "probability_sum": 1.0,
+            "interpreter_independent_bytes": True,
+            "canonical_decimal_grid": CANONICAL_DECIMALS,
             "fail_closed_on_ood": True,
             "fail_closed_on_candidate_hash_mismatch": True,
             "legal_masking": True,
@@ -800,7 +998,7 @@ class GeneralizedResponseRuntime:
             "schema": SIZING_WINDOW_SCHEMA,
             "action": action,
             "queried": target is not None,
-            "queried_target_bb": None if target is None else _round(target),
+            "queried_target_bb": None if target is None else canonical_float(target),
             "inside_legal_window": None,
             "violation": None,
             "violations": list(SIZING_WINDOW_VIOLATIONS),
@@ -867,9 +1065,15 @@ class GeneralizedResponseRuntime:
             )
         requested = _requested_action(action, legal)
 
-        prediction = self.predict(context)
+        # The frozen model surface is consumed through the canonical grid: the
+        # raw model floats are quantised and the legal vector re-closed with
+        # ``math.fsum`` *before* anything else is derived from them, so the
+        # selection, the uncertainty bundle and the emitted copies all read the
+        # same interpreter-independent values.
+        prediction = canonical_prediction(self.predict(context))
         probabilities = dict(prediction["probabilities"])
-        gate = self.ood(context)
+        probability_sum = float(prediction["probability_sum"])
+        gate = canonical_floats(self.ood(context))
         status = RUNTIME_STATUS_OF_OOD[gate["status"]]
         usable = status != STATUS_ABSTAIN
 
@@ -899,15 +1103,13 @@ class GeneralizedResponseRuntime:
         sizing: dict[str, Any] | None = None
         selected_sizing_bb: float | None = None
         if include_sizing and usable and selected in AGGRESSIVE_ACTIONS:
-            sizing = self.sizing(context, selected)
+            sizing = canonical_floats(self.sizing(context, selected))
             _verify_generated_sizings(sizing)
             if sizing.get("status") == "RESOLVED":
                 selected_sizing_bb = _representative_sizing(sizing)
 
         illegal_mass = math.fsum(
-            float(value)
-            for name, value in probabilities.items()
-            if name not in set(prediction["legal_actions"])
+            probabilities[name] for name in prediction["masked_actions"]
         )
         document: dict[str, Any] = {
             "schema": RUNTIME_SCHEMA,
@@ -926,7 +1128,7 @@ class GeneralizedResponseRuntime:
             "legal_actions": list(prediction["legal_actions"]),
             "masked_actions": list(prediction["masked_actions"]),
             "illegal_mass": illegal_mass,
-            "probability_sum": float(prediction["probability_sum"]),
+            "probability_sum": probability_sum,
             "normalization": prediction["normalization"],
             "selected_action": selected,
             "selected_sizing_bb": selected_sizing_bb,
@@ -937,10 +1139,17 @@ class GeneralizedResponseRuntime:
             "prediction": prediction,
             "provenance": self._provenance(context),
             "consumer": self._consumer_view(
-                probabilities, selected, selected_sizing_bb, usable, status
+                probabilities,
+                selected,
+                selected_sizing_bb,
+                usable,
+                status,
+                probability_sum=probability_sum,
+                illegal_mass=illegal_mass,
             ),
             "deterministic_seed": self.seed,
         }
+        document = canonicalize_decision_document(document)
         document["decision_canonical_sha256"] = decision_canonical_sha256(document)
         return document
 
@@ -958,7 +1167,7 @@ class GeneralizedResponseRuntime:
             "actor_position": _level(context.get("actor_position")),
             "to_call_bb": query["to_call_bb"],
             "pot_before_bb": query["pot_before_bb"],
-            "effective_stack_bb": _round(context.get("effective_stack_bb")),
+            "effective_stack_bb": canonical_float(context.get("effective_stack_bb")),
             "target_total_bb": query["target_total_bb"],
             "sizing_ratio": query["sizing_ratio"],
             "jam_ratio": query["jam_ratio"],
@@ -991,23 +1200,25 @@ class GeneralizedResponseRuntime:
             "reasons": list(gate["reasons"]),
             "hard_reasons": list(gate["hard_reasons"]),
             "soft_reasons": list(gate["soft_reasons"]),
-            "entropy_nats": _round(
+            "entropy_nats": canonical_float(
                 -math.fsum(
                     value * math.log(value) for value in probabilities.values() if value > 0.0
                 ),
-                9,
+                decimals=9,
             ),
             "entropy_normalized": predictive.get("normalized_entropy"),
-            "max_probability": _round(max(probabilities.values()), 9),
-            "probability_margin": _round(
-                ordered[0] - ordered[1] if len(ordered) > 1 else ordered[0], 9
+            "max_probability": canonical_float(max(probabilities.values()), decimals=9),
+            "probability_margin": canonical_float(
+                ordered[0] - ordered[1] if len(ordered) > 1 else ordered[0], decimals=9
             ),
             "selected_action_probability": (
-                None if selected is None else _round(float(probabilities[selected]), 9)
+                None
+                if selected is None
+                else canonical_float(float(probabilities[selected]), decimals=9)
             ),
             "model_node_support": support,
-            "model_node_support_per_row": _round(
-                support / fit_rows if fit_rows > 0 else 0.0, 12
+            "model_node_support_per_row": canonical_float(
+                support / fit_rows if fit_rows > 0 else 0.0, decimals=12
             ),
             "sizing_entropy_normalized": sizing_uncertainty.get("entropy_normalized"),
             "sizing_credible_interval_bb": sizing_uncertainty.get("credible_interval_bb"),
@@ -1074,6 +1285,9 @@ class GeneralizedResponseRuntime:
         selected_sizing_bb: float | None,
         usable: bool,
         status: str,
+        *,
+        probability_sum: float,
+        illegal_mass: float,
     ) -> dict[str, Any]:
         return {
             "schema": RUNTIME_SCHEMA,
@@ -1087,8 +1301,8 @@ class GeneralizedResponseRuntime:
             "selected_action": selected,
             "selected_sizing_bb": selected_sizing_bb,
             "actions": dict(probabilities),
-            "probability_sum": float(sum(probabilities.values())),
-            "illegal_mass": 0.0,
+            "probability_sum": float(probability_sum),
+            "illegal_mass": float(illegal_mass),
             "action_space": list(ACTIONS),
             "deterministic_seed": self.seed,
         }

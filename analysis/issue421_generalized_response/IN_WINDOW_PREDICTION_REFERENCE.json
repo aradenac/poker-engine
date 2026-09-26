@@ -7,7 +7,7 @@
   },
   "candidate_canonical_payload_sha256": "c3f3573f3e80b3f7889dc8b1fd6f1948daeea95effc5a41a5d707385c4eed7dc",
   "candidate_id": "generalized-adverse-response-candidate-v1",
-  "captured_at_runtime_module_sha256": "e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538",
+  "captured_at_runtime_module_sha256": "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4",
   "entries": [
     {
       "action": "RAISE",
@@ -33,12 +33,12 @@
       "runtime_generated_sizings_sha256": "1583e2dcafea72d58b0931af53787523089c70e1e42c3da4cb1870a278b0bcb1",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "0e03cbbe8b804955e2b8669491b47b01211afde06557a0f2b441129c1b102708",
+      "runtime_prediction_sha256": "230a3d1312be80faaa2d2885f8bb56ac92264bdb553c89d82a99b70cbe18a3da",
       "runtime_probabilities": {
-        "CALL": 0.3495352733202476,
-        "FOLD": 0.5432556229824147,
-        "JAM": 0.0009611245756500075,
-        "RAISE": 0.10624797912168772
+        "CALL": 0.34953527332,
+        "FOLD": 0.543255622982,
+        "JAM": 0.000961124576,
+        "RAISE": 0.106247979122
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "RAISE",
@@ -72,12 +72,12 @@
       "runtime_generated_sizings_sha256": "1583e2dcafea72d58b0931af53787523089c70e1e42c3da4cb1870a278b0bcb1",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "16b571aa838bf69383f5d5569ac8860afb109fe2dbda60f19221296f84fe76c9",
+      "runtime_prediction_sha256": "00ad87ec2e5edc717ff3dd1a4bf33e0e1e9d78f55048fcc19b18d45576fcd932",
       "runtime_probabilities": {
-        "CALL": 0.35836843928398743,
-        "FOLD": 0.5569843291955411,
-        "JAM": 0.0009854133199814763,
-        "RAISE": 0.08366181820048998
+        "CALL": 0.358368439284,
+        "FOLD": 0.556984329196,
+        "JAM": 0.00098541332,
+        "RAISE": 0.0836618182
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "RAISE",
@@ -111,12 +111,12 @@
       "runtime_generated_sizings_sha256": "02865385569048571d290ff376de2f6dd3e64f43a5adc94eb27aa37ee16b8aa7",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "6acab32594fea932748c707c9a630669b583996386fd66617a6414bc03b0e212",
+      "runtime_prediction_sha256": "98b7fd841ead5f19a23ccb4080ec7cd337b7ad3b5d27091b907543098e326a2a",
       "runtime_probabilities": {
-        "CALL": 0.38381794802071395,
-        "FOLD": 0.5965385309561733,
-        "JAM": 0.008443139003719957,
-        "RAISE": 0.011200382019392878
+        "CALL": 0.383817948021,
+        "FOLD": 0.5965385309560001,
+        "JAM": 0.008443139004,
+        "RAISE": 0.011200382019
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "JAM",
@@ -150,12 +150,12 @@
       "runtime_generated_sizings_sha256": "a21ea388f6212161ed74821ccfc1929eff69cab4dcca7d857914157603d66895",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "6c9455cdec6b5041f801d1772e3b7abd3865a434646fda1162cfbaddb016656b",
+      "runtime_prediction_sha256": "380baf5a702c18e24ef3050616034c4e413b12d697770a31f47a05df0c9c8b41",
       "runtime_probabilities": {
-        "CALL": 0.3866746020079299,
-        "FOLD": 0.6009784071573037,
-        "JAM": 0.0010632473776944762,
-        "RAISE": 0.011283743457071956
+        "CALL": 0.386674602008,
+        "FOLD": 0.600978407157,
+        "JAM": 0.001063247378,
+        "RAISE": 0.011283743457
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "RAISE",
@@ -189,12 +189,12 @@
       "runtime_generated_sizings_sha256": "df4d62e567ba0bea35d205da7f6fc569ac14b0b864e1f1282e1f20a87027ffce",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "81862552cdb3c4641d9574c3c515a145f483255f1e4245e125caf29ad9c9d031",
+      "runtime_prediction_sha256": "ba83729c813e8da5d9f512b854e61496bb29fdd5ba16ab3dd0f04cf4dca1a93c",
       "runtime_probabilities": {
-        "CALL": 0.38381794802071395,
-        "FOLD": 0.5965385309561733,
-        "JAM": 0.008443139003719957,
-        "RAISE": 0.011200382019392878
+        "CALL": 0.383817948021,
+        "FOLD": 0.5965385309560001,
+        "JAM": 0.008443139004,
+        "RAISE": 0.011200382019
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "JAM",
@@ -228,12 +228,12 @@
       "runtime_generated_sizings_sha256": "d3c4059a63ac2946e86e44cfb5bcc298aef76ac7ac92bc5f31d030de45c982a5",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "122aa8dba2f6109427c8df6771ac2e14943e8edf3ada94e075679ef904dfc0c6",
+      "runtime_prediction_sha256": "f63c8ff610091f41e04cef55fcd421a61adf7e5e8c1ba4a80d30051275925e90",
       "runtime_probabilities": {
-        "CALL": 0.38452007484377504,
-        "FOLD": 0.41189529029966204,
-        "JAM": 0.003886528164895875,
-        "RAISE": 0.19969810669166707
+        "CALL": 0.384520074844,
+        "FOLD": 0.41189529029899996,
+        "JAM": 0.003886528165,
+        "RAISE": 0.199698106692
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "RAISE",
@@ -267,12 +267,12 @@
       "runtime_generated_sizings_sha256": "01a5ba640a64189fcb73690e3f96897a2c74182371e78f5f7f37838297690350",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "24e448252b48a374bbd1d3d0f35fb3be31dac648f93b867a838fb90d3a352423",
+      "runtime_prediction_sha256": "775bf3648aa72f339959d3fad9d66377a4979975adc5a3d81e1fbe6fa6721752",
       "runtime_probabilities": {
-        "CALL": 0.38279510101767034,
-        "FOLD": 0.6006456813860758,
-        "JAM": 0.005464283356628075,
-        "RAISE": 0.011094934239625777
+        "CALL": 0.382795101018,
+        "FOLD": 0.600645681385,
+        "JAM": 0.005464283357,
+        "RAISE": 0.01109493424
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "RAISE",
@@ -306,12 +306,12 @@
       "runtime_generated_sizings_sha256": "fcdf8c814aaf13779cf38fe2bcf60a9b425220ce41575c237a1f50dcff20f077",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "640a143ff25b63d3fc3724367ec8684af2423577a723484a115ebc65d052b043",
+      "runtime_prediction_sha256": "a1df2a078484a12627a629894a6e2b57356b1f32126404bff923be104f66d282",
       "runtime_probabilities": {
-        "CALL": 0.379799829105396,
-        "FOLD": 0.5959457854524506,
-        "JAM": 0.01324626617170599,
-        "RAISE": 0.0110081192704474
+        "CALL": 0.379799829105,
+        "FOLD": 0.595945785453,
+        "JAM": 0.013246266172,
+        "RAISE": 0.01100811927
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "JAM",
@@ -345,12 +345,12 @@
       "runtime_generated_sizings_sha256": "160263e16ec7551573076f19587dbe11ae3520bf2f8cf6c83a0e122657123072",
       "runtime_illegal_mass": 0.0,
       "runtime_inside_legal_window": true,
-      "runtime_prediction_sha256": "463c1b92a619db934efadb90792b1a57058b689bbb121aff253923673e6507ea",
+      "runtime_prediction_sha256": "23ab0c724bfb888eade8c5ee9057335fe5a37505fd9d7415a8a46b6e49b07e49",
       "runtime_probabilities": {
-        "CALL": 0.37763394911025583,
-        "FOLD": 0.61020378886889,
-        "JAM": 0.0009074412588571112,
-        "RAISE": 0.01125482076199706
+        "CALL": 0.37763394911,
+        "FOLD": 0.6102037888690001,
+        "JAM": 0.000907441259,
+        "RAISE": 0.011254820762
       },
       "runtime_probability_sum": 1.0,
       "runtime_selected_action": "RAISE",
@@ -361,12 +361,12 @@
       "target_total_bb": 9.0
     }
   ],
-  "entries_sha256": "bc34f4a36e0c4978cea57dee686f268d97040d05822f4b82bf69af58e495834a",
+  "entries_sha256": "4af7100b42c2687151ea49740028e94c52c154afcb7a78ac29ece3d630c094bf",
   "issue": 421,
   "kind": "IN_WINDOW_PREDICTION_REFERENCE",
   "model_module_sha256": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3",
-  "purpose": "Freeze the in-window RAISE/JAM response predictions so that the explicit legal-window declaration (and any later revision) is proved not to move the in-window distribution.",
+  "purpose": "Freeze the in-window RAISE/JAM response predictions so that the explicit legal-window declaration, and every later runtime revision, is proved not to move the in-window action, the selected sizing or the declared window verdict.",
   "regeneration": "python3 tests/preflop/test_generalized_response_sizing.py --write-in-window-reference",
-  "rule": "an in-window query keeps the same action distribution and the same selected sizing as before the legal-window declaration was added; only the declared sizing_window verdict, never a probability, is new",
+  "rule": "an in-window query keeps the same selected action, the same selected sizing and the same declared sizing_window verdict across runtime revisions; the legal-window declaration added no probability, and the interpreter-independent canonical surface only moved each emitted probability onto the runtime's fixed decimal grid, where probability_sum stays exactly 1.0 and illegal_mass exactly 0.0",
   "schema": "poker-generalized-response-in-window-reference/v1"
 }

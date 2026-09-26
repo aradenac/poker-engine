@@ -635,10 +635,12 @@ IN_WINDOW_PROBE_SPECS: tuple[tuple[str, str, float, dict], ...] = (
 )
 
 #: The runtime revision the in-window entries were captured from.  The entries
-#: were re-computed bit for bit after the explicit legal-window declaration was
-#: added, so this pinned revision stays the capture reference.
+#: were re-computed bit for bit after the runtime surface was made
+#: interpreter-independent (every emitted float quantised on the fixed decimal
+#: grid and every legal vector re-closed with ``math.fsum``), so this pinned
+#: revision stays the capture reference.
 CAPTURED_AT_RUNTIME_MODULE_SHA256 = (
-    "e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538"
+    "36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4"
 )
 
 
@@ -734,13 +736,15 @@ def build_in_window_reference() -> dict:
         "issue": 421,
         "purpose": (
             "Freeze the in-window RAISE/JAM response predictions so that the explicit "
-            "legal-window declaration (and any later revision) is proved not to move the "
-            "in-window distribution."
+            "legal-window declaration, and every later runtime revision, is proved not to "
+            "move the in-window action, the selected sizing or the declared window verdict."
         ),
         "rule": (
-            "an in-window query keeps the same action distribution and the same selected "
-            "sizing as before the legal-window declaration was added; only the declared "
-            "sizing_window verdict, never a probability, is new"
+            "an in-window query keeps the same selected action, the same selected sizing and "
+            "the same declared sizing_window verdict across runtime revisions; the legal-window "
+            "declaration added no probability, and the interpreter-independent canonical surface "
+            "only moved each emitted probability onto the runtime's fixed decimal grid, where "
+            "probability_sum stays exactly 1.0 and illegal_mass exactly 0.0"
         ),
         "candidate_id": handle.entry.get("candidate_id"),
         "candidate_canonical_payload_sha256": handle.candidate["canonical_payload_sha256"],
