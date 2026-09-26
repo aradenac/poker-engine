@@ -4,6 +4,15 @@
     "object": "sha256/764b7f6daf111ef949471a69f7652d7d9ffba2cc0be09eff2a39a2c144327018.json",
     "sha256": "764b7f6daf111ef949471a69f7652d7d9ffba2cc0be09eff2a39a2c144327018"
   },
+  "PRE_PUSH_PREPARATION.json": {
+    "canonical_payload_sha256": "06566b412c39d53ed6eeacf11dfcb2d97c0d8bb0c0aa457e435b47f62e09625d",
+    "object": "sha256/4229ea1bd9a8b190dd622e58ba45f1f850c008dd13c19cecde98bda755f34b5d.json",
+    "sha256": "4229ea1bd9a8b190dd622e58ba45f1f850c008dd13c19cecde98bda755f34b5d"
+  },
+  "PRE_PUSH_PREPARATION.md": {
+    "object": "sha256/529e62fab067f8c8dbda6aa6eca4eaa04891bcf2c577cd81c851f5ae9c97c698.md",
+    "sha256": "529e62fab067f8c8dbda6aa6eca4eaa04891bcf2c577cd81c851f5ae9c97c698"
+  },
   "SUMMARY.md": {
     "object": "sha256/03281c96f9f3271050818874444981516aca4bb32498d3a727c08bc2f3faa2ef.md",
     "sha256": "03281c96f9f3271050818874444981516aca4bb32498d3a727c08bc2f3faa2ef"

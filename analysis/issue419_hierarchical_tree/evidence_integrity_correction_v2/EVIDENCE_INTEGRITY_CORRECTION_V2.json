@@ -1,0 +1,661 @@
+{
+  "authored_at": "2026-09-26T00:00:00Z",
+  "bundle_task": "backlog-g95",
+  "commit_cross_reference": {
+    "mutation": {
+      "offending": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "parent": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "repair": "0f9a6eb0e53a5191a2302d5eabb175ae267f7c24"
+    },
+    "note": "the repair commits are the commits that restored the bytes or pins; the record never rewrites their result, it re-verifies it",
+    "predecessor_correction": {
+      "offending": "871e0bd9e66c978932face1accf1aaf22ac9fa1a",
+      "repair": "c90452487b8824274979794839882e25cff9a87c"
+    },
+    "regression": {
+      "offending": "887e46afc34cae4334ffb279449c87a9b12bde71",
+      "parent": "5be7239de8993beef65c019963193c7516ab6e75",
+      "repair": "9859c46ede94646a7547871369bb257b8510114d"
+    }
+  },
+  "correction_id": "issue419-evidence-integrity-correction-v2",
+  "digest_table": [
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/c5d34a3dc03c418acefe627eae9a6973264f1fd75ab55200e82c30bd550fe19b.py",
+      "at_head_sha256": "c5d34a3dc03c418acefe627eae9a6973264f1fd75ab55200e82c30bd550fe19b",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "c8f7538464d3a4df001f8ec172fae41f0ad6d176d024a0a4136a3114f7fa5361",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "887e46afc34cae4334ffb279449c87a9b12bde71",
+      "mutant_object": "sha256/dfc405abf482c574793cde595baf55c5f43961f31ba278b58241624bc4f7009d.py",
+      "mutant_sha256": "dfc405abf482c574793cde595baf55c5f43961f31ba278b58241624bc4f7009d",
+      "parent_commit": "5be7239de8993beef65c019963193c7516ab6e75",
+      "path": "tools/simulation/issue419_exact_tree_preflight.py",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": true,
+      "surface": "REGRESSION_887E46A"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/47407185d5206a59c612e12c8eb50bdbc192bb97ab99a7692d9e9749f7de78fd.py",
+      "at_head_sha256": "47407185d5206a59c612e12c8eb50bdbc192bb97ab99a7692d9e9749f7de78fd",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "933c35a4333500f4fb61d4b69dd50c8d028adb1dd801ad67e34d4692339ffe75",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "887e46afc34cae4334ffb279449c87a9b12bde71",
+      "mutant_object": "sha256/421303847833ca619ae02fdf9f509cb5c5a25915250ed040c9453e9317239d8e.py",
+      "mutant_sha256": "421303847833ca619ae02fdf9f509cb5c5a25915250ed040c9453e9317239d8e",
+      "parent_commit": "5be7239de8993beef65c019963193c7516ab6e75",
+      "path": "tests/simulation/test_issue419_exact_tree_preflight.py",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": true,
+      "surface": "REGRESSION_887E46A"
+    },
+    {
+      "at_head_canonical_payload_sha256": "d88d1dba290f9a86033db7a875f8013b813472c24390c8a2736a09b7670b3a5b",
+      "at_head_object": "sha256/9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2.json",
+      "at_head_sha256": "9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2",
+      "before_canonical_payload_sha256": "5153759aa7f8f048c0f0cbde8a933991ca7fae4ab07ba1f2edf41f6abf879e72",
+      "before_sha256": "9d9cede166983a67cb64af7514e69a1f022790a66b45fb7a77f0f6b79d5569ef",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": "c25afda4d1fd56608b5041ba3cd63749b8229f10ea980a6f8957d02d52d24bcb",
+      "mutant_commit": "887e46afc34cae4334ffb279449c87a9b12bde71",
+      "mutant_object": "sha256/2c07ae3279d10ec3e3bbdbe81cdb0d0f1f23e6bbb91cbdadddae113d1a9ea691.json",
+      "mutant_sha256": "2c07ae3279d10ec3e3bbdbe81cdb0d0f1f23e6bbb91cbdadddae113d1a9ea691",
+      "parent_commit": "5be7239de8993beef65c019963193c7516ab6e75",
+      "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": true,
+      "surface": "REGRESSION_887E46A"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/ae130aaf4e1f9e42c66c9cc17b6335b5cfabd6df56959c9c83ffee757fdbdbbb.md",
+      "at_head_sha256": "ae130aaf4e1f9e42c66c9cc17b6335b5cfabd6df56959c9c83ffee757fdbdbbb",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "7706c3421baf312ebdefa4ed8f0cabcf43258197acf862e8bfa2fe6c046c3408",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "887e46afc34cae4334ffb279449c87a9b12bde71",
+      "mutant_object": "sha256/29a560cbfe69cf834d0a486d28808f455487f01c43a5696ee2f856035bd2ea45.md",
+      "mutant_sha256": "29a560cbfe69cf834d0a486d28808f455487f01c43a5696ee2f856035bd2ea45",
+      "parent_commit": "5be7239de8993beef65c019963193c7516ab6e75",
+      "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/SUMMARY.md",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": true,
+      "surface": "REGRESSION_887E46A"
+    },
+    {
+      "at_head_canonical_payload_sha256": "a83fffb0451e2873eb1fbcfdf83ac6bb535e1b8267de90b4537372081e40db18",
+      "at_head_object": "sha256/8738385f059bab207764586a73fe097ab97cbe8c4123eac2fac8532f04c49bbf.json",
+      "at_head_sha256": "8738385f059bab207764586a73fe097ab97cbe8c4123eac2fac8532f04c49bbf",
+      "before_canonical_payload_sha256": "b464b78986769b566f3ca862f1855de1748c04f5d4a76e32451e5f62beded52e",
+      "before_sha256": "01797e314b3a71130db0f3dd3116ec99fd29b05ee00387efb09f032b00364e09",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": "c76d277854a722f4fa87b36514b868b5ab22a3dd96dfd7ad74a0f9a30b158e8e",
+      "mutant_commit": "887e46afc34cae4334ffb279449c87a9b12bde71",
+      "mutant_object": "sha256/22ef95ca14743ab18221143750becf9629ed3ad6e6a00d8f4121e1c988e27240.json",
+      "mutant_sha256": "22ef95ca14743ab18221143750becf9629ed3ad6e6a00d8f4121e1c988e27240",
+      "parent_commit": "5be7239de8993beef65c019963193c7516ab6e75",
+      "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/ARTIFACTS.json",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": true,
+      "surface": "REGRESSION_887E46A"
+    },
+    {
+      "at_head_canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+      "at_head_object": "sha256/93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e.json",
+      "at_head_sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+      "before_canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+      "before_sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": "a29d1a90399a16c2236cff01e30aa2df8de644863d270a40ff4093d26c28c83e",
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/6a8cfcd1dbea6203538fbece8d07f02ee19e3e4e755cc5c8e87f8cd88746809a.json",
+      "mutant_sha256": "6a8cfcd1dbea6203538fbece8d07f02ee19e3e4e755cc5c8e87f8cd88746809a",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+      "reverted_to_the_parent_bytes": true,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": "d942ad4a6e269282a1f1ea535c3267837f9fcf2583d893445989c703b3534f91",
+      "at_head_object": "sha256/86ab23239979b9ee5a0e5cf4111cc7bc9525b417b567fb324699594fbc2ba3cf.json",
+      "at_head_sha256": "86ab23239979b9ee5a0e5cf4111cc7bc9525b417b567fb324699594fbc2ba3cf",
+      "before_canonical_payload_sha256": "d942ad4a6e269282a1f1ea535c3267837f9fcf2583d893445989c703b3534f91",
+      "before_sha256": "86ab23239979b9ee5a0e5cf4111cc7bc9525b417b567fb324699594fbc2ba3cf",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": "8ff4ce3396872a0f3b4bb5586f0dbf5200cb1d765ec548b8c063b32ca2d55ae7",
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/a7dd833e377beb2ccd4a52368b622352953a0d13272684a6bf87b9ce227f9b1b.json",
+      "mutant_sha256": "a7dd833e377beb2ccd4a52368b622352953a0d13272684a6bf87b9ce227f9b1b",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/ARTIFACTS.json",
+      "reverted_to_the_parent_bytes": true,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c.md",
+      "at_head_sha256": "cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/4aabb5ec2e566532cbc3f22a41e417ad723bc40a6e5da1193ea7dc3bfee51de2.md",
+      "mutant_sha256": "4aabb5ec2e566532cbc3f22a41e417ad723bc40a6e5da1193ea7dc3bfee51de2",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/SUMMARY.md",
+      "reverted_to_the_parent_bytes": true,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": "9b6aec99feeeb9c49424172f31a2d4657d8cf67cab2b80d2bbf66ecd22c261f5",
+      "at_head_object": "sha256/9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc.json",
+      "at_head_sha256": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+      "before_canonical_payload_sha256": "9b6aec99feeeb9c49424172f31a2d4657d8cf67cab2b80d2bbf66ecd22c261f5",
+      "before_sha256": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": "7085221310c7f7eeaddc65016ffad9a281fccd48f800580edb403a1cc85245bb",
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/70a0d8097c9629c6db71be452f2fb71112b12c323b98970eea4a32a7e450e411.json",
+      "mutant_sha256": "70a0d8097c9629c6db71be452f2fb71112b12c323b98970eea4a32a7e450e411",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+      "reverted_to_the_parent_bytes": true,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": "de4c1417eb3c68db7eec8712f422019934f788d2192e8447d0d4b3c3b7700023",
+      "at_head_object": "sha256/08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4.json",
+      "at_head_sha256": "08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4",
+      "before_canonical_payload_sha256": "de4c1417eb3c68db7eec8712f422019934f788d2192e8447d0d4b3c3b7700023",
+      "before_sha256": "08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": "88fbb97de9eefa3811240964b1aab254927a7c1fac593f40eb9888e3afc1b776",
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/1c433e7a1bf78db834aa7c7fc3cc32739d4980f0908fc2066f9ccca31813637b.json",
+      "mutant_sha256": "1c433e7a1bf78db834aa7c7fc3cc32739d4980f0908fc2066f9ccca31813637b",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json",
+      "reverted_to_the_parent_bytes": true,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/7a7169d03f7bc43df41f1bc27f05f364ac477f0a345801e229fc32027f9cbe37.json",
+      "at_head_sha256": "7a7169d03f7bc43df41f1bc27f05f364ac477f0a345801e229fc32027f9cbe37",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "7a7169d03f7bc43df41f1bc27f05f364ac477f0a345801e229fc32027f9cbe37",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/9c5aa225ba2df7e0ff04addf6f3eb200828ca02ebb1ce499438d314544a85359.json",
+      "mutant_sha256": "9c5aa225ba2df7e0ff04addf6f3eb200828ca02ebb1ce499438d314544a85359",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.sha256",
+      "reverted_to_the_parent_bytes": true,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/91ebba7897eb6d6c07643293901e85556288292ce7c09fde176c8d0ef8aa645b.py",
+      "at_head_sha256": "91ebba7897eb6d6c07643293901e85556288292ce7c09fde176c8d0ef8aa645b",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "307fb62490368e51ed0a7e461c286e780e79398b9156561e56b4de95312b5834",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/7e856e11a11415615347e68f53798c6e244a8a1c31497c746de1ce9575be5380.py",
+      "mutant_sha256": "7e856e11a11415615347e68f53798c6e244a8a1c31497c746de1ce9575be5380",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "tools/training/resolve_raise_sizing_frontiers.py",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": true,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/2f6dacac0d1653448b70c454fbca9dffb40bc956bc43286985564970e2f8dc1c.py",
+      "at_head_sha256": "2f6dacac0d1653448b70c454fbca9dffb40bc956bc43286985564970e2f8dc1c",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "80764cbe69da712f6356a1c7f3ce0aa5712e6785f1cb7acc5035a97d2e77f235",
+      "changed_by_the_offender": false,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/80764cbe69da712f6356a1c7f3ce0aa5712e6785f1cb7acc5035a97d2e77f235.py",
+      "mutant_sha256": "80764cbe69da712f6356a1c7f3ce0aa5712e6785f1cb7acc5035a97d2e77f235",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "tools/training/finalize_hierarchical_exact_tree_decision.py",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/751a55f005a8e6cb9e006771f13675febcf55135999e5b579d04b77ef590ea0a.py",
+      "at_head_sha256": "751a55f005a8e6cb9e006771f13675febcf55135999e5b579d04b77ef590ea0a",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "d1d3a7e5bec1a3d74b10bf4c9c597113916f2deb06903479eacee421e9ed4999",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/c2c020c9efedb474e9c98f3f4ffc75cc7306f2cb8d1e10a2258d47aa7ee7c7a8.py",
+      "mutant_sha256": "c2c020c9efedb474e9c98f3f4ffc75cc7306f2cb8d1e10a2258d47aa7ee7c7a8",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "tests/training/test_raise_sizing_frontier_resolution.py",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": true,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/34f2d8c45df8f28a05a748ef39f62b03e042bc5457a2b64fccc8df8d9b21f520.py",
+      "at_head_sha256": "34f2d8c45df8f28a05a748ef39f62b03e042bc5457a2b64fccc8df8d9b21f520",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "61135652c3f36df265662c70517e85d4c5e7284352fb312eb38621c3c3778fa8",
+      "changed_by_the_offender": false,
+      "kept_the_offender_bytes": false,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/61135652c3f36df265662c70517e85d4c5e7284352fb312eb38621c3c3778fa8.py",
+      "mutant_sha256": "61135652c3f36df265662c70517e85d4c5e7284352fb312eb38621c3c3778fa8",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "tests/training/test_hierarchical_terminal_decision.py",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/36d3b3d1d090a25a64c010aa5a94e8d0136f34ea2e62522d0aeb64e5733f0de3.py",
+      "at_head_sha256": "36d3b3d1d090a25a64c010aa5a94e8d0136f34ea2e62522d0aeb64e5733f0de3",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "90cdc9f63d43541daa1c0db1e38a54897c7199f38fc73f6590f9efd735babe78",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": true,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/36d3b3d1d090a25a64c010aa5a94e8d0136f34ea2e62522d0aeb64e5733f0de3.py",
+      "mutant_sha256": "36d3b3d1d090a25a64c010aa5a94e8d0136f34ea2e62522d0aeb64e5733f0de3",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "tests/training/test_hierarchical_candidate_contract.py",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60_RETAINED"
+    },
+    {
+      "at_head_canonical_payload_sha256": null,
+      "at_head_object": "sha256/c61526387815a460eb912900d389099673ae0dd2455729deb24b9edd5d3832c1.py",
+      "at_head_sha256": "c61526387815a460eb912900d389099673ae0dd2455729deb24b9edd5d3832c1",
+      "before_canonical_payload_sha256": null,
+      "before_sha256": "6a0ed3b48c45eb0ce4142fa0cf68e5061da9cdec3aaf244ba0476e440937f74a",
+      "changed_by_the_offender": true,
+      "kept_the_offender_bytes": true,
+      "mutant_canonical_payload_sha256": null,
+      "mutant_commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "mutant_object": "sha256/c61526387815a460eb912900d389099673ae0dd2455729deb24b9edd5d3832c1.py",
+      "mutant_sha256": "c61526387815a460eb912900d389099673ae0dd2455729deb24b9edd5d3832c1",
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "path": "tests/training/test_hierarchical_tree_sparsity_parity.py",
+      "reverted_to_the_parent_bytes": false,
+      "rewritten_by_the_repair": false,
+      "surface": "MUTATION_4E16A60_RETAINED"
+    }
+  ],
+  "digest_table_check": {
+    "check": "before_after_digest_table_re_derived",
+    "git_objects_cross_checked": [
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:analysis/issue419_hierarchical_tree/raise_sizing_frontiers/ARTIFACTS.json",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:analysis/issue419_hierarchical_tree/raise_sizing_frontiers/SUMMARY.md",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:analysis/issue419_hierarchical_tree/terminal_decision/DECISION.sha256",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:tests/training/test_hierarchical_candidate_contract.py",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:tests/training/test_hierarchical_terminal_decision.py",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:tests/training/test_hierarchical_tree_sparsity_parity.py",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:tests/training/test_raise_sizing_frontier_resolution.py",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:tools/training/finalize_hierarchical_exact_tree_decision.py",
+      "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9:tools/training/resolve_raise_sizing_frontiers.py",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:analysis/issue419_hierarchical_tree/raise_sizing_frontiers/ARTIFACTS.json",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:analysis/issue419_hierarchical_tree/raise_sizing_frontiers/SUMMARY.md",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:analysis/issue419_hierarchical_tree/terminal_decision/DECISION.sha256",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:tests/training/test_hierarchical_candidate_contract.py",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:tests/training/test_hierarchical_terminal_decision.py",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:tests/training/test_hierarchical_tree_sparsity_parity.py",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:tests/training/test_raise_sizing_frontier_resolution.py",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:tools/training/finalize_hierarchical_exact_tree_decision.py",
+      "4e16a60ac1c58b56429c0eda8ce36778dcea8971:tools/training/resolve_raise_sizing_frontiers.py",
+      "5be7239de8993beef65c019963193c7516ab6e75:analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/ARTIFACTS.json",
+      "5be7239de8993beef65c019963193c7516ab6e75:analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
+      "5be7239de8993beef65c019963193c7516ab6e75:analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/SUMMARY.md",
+      "5be7239de8993beef65c019963193c7516ab6e75:tests/simulation/test_issue419_exact_tree_preflight.py",
+      "5be7239de8993beef65c019963193c7516ab6e75:tools/simulation/issue419_exact_tree_preflight.py",
+      "887e46afc34cae4334ffb279449c87a9b12bde71:analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/ARTIFACTS.json",
+      "887e46afc34cae4334ffb279449c87a9b12bde71:analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
+      "887e46afc34cae4334ffb279449c87a9b12bde71:analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/SUMMARY.md",
+      "887e46afc34cae4334ffb279449c87a9b12bde71:tests/simulation/test_issue419_exact_tree_preflight.py",
+      "887e46afc34cae4334ffb279449c87a9b12bde71:tools/simulation/issue419_exact_tree_preflight.py"
+    ],
+    "git_objects_unreachable_in_this_checkout": [],
+    "object_path_note": "mutant_object / at_head_object name the content-addressed object each revision would occupy in a twin bundle; a *missing* mutant object is exactly what mutant_objects_absent asserts, so the field is a cross-reference, not a claim that the file exists",
+    "result": "PASS",
+    "rule": "at_head_sha256 == sha256(bytes persisted at HEAD); mutant_sha256 == sha256(bytes at the offending revision); before_sha256 == sha256(bytes at the offending commit's parent).  A REVERTED row has before == at_head (the repair put the parent bytes back); a REWRITTEN row has before != at_head (the repair is a new revision that restores the pin, not the file); a RETAINED row has mutant == at_head (the repair deliberately kept the offender's bytes)"
+  },
+  "frozen_bytes_reverified_at_head": {
+    "check": "frozen_bytes_re_derived_at_head",
+    "predecessor_record": {
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json": "f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803"
+    },
+    "recorded": {
+      "analysis/issue419_hierarchical_tree/ARTIFACTS.json": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768",
+      "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+      "analysis/issue419_hierarchical_tree/SUMMARY.md": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8",
+      "analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json": "d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/ARTIFACTS.json": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/SUMMARY.md": "3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
+      "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json": "08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4",
+      "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+      "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
+      "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350"
+    },
+    "result": "PASS"
+  },
+  "incidents": [
+    {
+      "ci_effect": "the #419 preflight suite and the exact-tree preflight check were red from 887e46a until the repair",
+      "commit": "887e46afc34cae4334ffb279449c87a9b12bde71",
+      "detected_by": "python3 tools/simulation/issue419_exact_tree_preflight.py --check",
+      "incident_id": "V1_PREFLIGHT_AND_PROTOCOL_V2_PIN_REGRESSION",
+      "kind": "RE_PIN_OF_RESTORED_CUSTODY_PINS",
+      "observed_before_repair": "PreflightError: the frozen v1 preflight artifact drifted: EXACT_TREE_PREFLIGHT.json e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f != 456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+      "parent_commit": "5be7239de8993beef65c019963193c7516ab6e75",
+      "repaired_by": {
+        "commit": "9859c46ede94646a7547871369bb257b8510114d",
+        "frozen_byte_rewritten": false,
+        "method": "RESTORE_THE_FOUR_CUSTODY_PINS_TO_THE_RESTORED_DIGESTS",
+        "short_sha": "9859c46",
+        "subject": "chore(n8n): task backlog-911 for issue #419",
+        "task": "backlog-911"
+      },
+      "short_sha": "887e46a",
+      "subject": "chore(n8n): task backlog-agg for issue #419",
+      "surface": "tools/simulation/issue419_exact_tree_preflight.py",
+      "task": "backlog-agg",
+      "tool_bytes": {
+        "at_head": "c5d34a3dc03c418acefe627eae9a6973264f1fd75ab55200e82c30bd550fe19b",
+        "before": "c8f7538464d3a4df001f8ec172fae41f0ad6d176d024a0a4136a3114f7fa5361",
+        "repinned": "dfc405abf482c574793cde595baf55c5f43961f31ba278b58241624bc4f7009d"
+      },
+      "violated_claim": "no active reference to e86b7c6b / 4fea09fc / ec010a54 / db1b1ab6 remains in tools/, docs/, tests/ or contracts/",
+      "what_happened": "887e46a re-pointed the exact-tree preflight tool onto the pre-correction custody digests while the frozen bytes persisted on disk stayed the restored ones, so the pin and the byte disagreed and issue419_exact_tree_preflight.py --check failed closed on its own frozen surface"
+    },
+    {
+      "commit": "4e16a60ac1c58b56429c0eda8ce36778dcea8971",
+      "detected_by": "PYTHONPATH=. python3 tests/training/test_hierarchical_terminal_decision.py and PYTHONPATH=. python3 tests/training/test_raise_sizing_frontier_resolution.py",
+      "incident_id": "IN_PLACE_MUTATION_OF_FROZEN_EVIDENCE",
+      "kind": "IN_PLACE_REWRITE_AND_RE_REGISTRATION",
+      "moved": [
+        {
+          "at_head_sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+          "mutant_sha256": "6a8cfcd1dbea6203538fbece8d07f02ee19e3e4e755cc5c8e87f8cd88746809a",
+          "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json"
+        },
+        {
+          "at_head_sha256": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+          "mutant_sha256": "70a0d8097c9629c6db71be452f2fb71112b12c323b98970eea4a32a7e450e411",
+          "path": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json"
+        },
+        {
+          "at_head_sha256": "08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4",
+          "mutant_sha256": "1c433e7a1bf78db834aa7c7fc3cc32739d4980f0908fc2066f9ccca31813637b",
+          "path": "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json"
+        }
+      ],
+      "parent_commit": "3f2dc2c0ee52c624697eba2bdd0b81c7d2f3d0f9",
+      "repaired_by": {
+        "commit": "0f9a6eb0e53a5191a2302d5eabb175ae267f7c24",
+        "frozen_byte_re_registered": false,
+        "method": "RESTORE_THE_PRE_MUTANT_BYTES_AND_MOVE_THE_MUTANT_OBJECTS_ASIDE",
+        "short_sha": "0f9a6eb",
+        "subject": "chore(n8n): task backlog-i8v for issue #419",
+        "task": "backlog-i8v"
+      },
+      "short_sha": "4e16a60",
+      "subject": "chore(n8n): task backlog-txu for issue #419",
+      "surface": [
+        "analysis/issue419_hierarchical_tree/raise_sizing_frontiers",
+        "analysis/issue419_hierarchical_tree/terminal_decision"
+      ],
+      "task": "backlog-txu",
+      "violated_claim": "no active reference to e86b7c6b / 4fea09fc / ec010a54 / db1b1ab6 remains in tools/, docs/, tests/ or contracts/",
+      "what_happened": "4e16a60 rewrote the raise-sizing frontier resolution and the terminal decision in place and re-registered the resulting digests, which makes the mutant commit the only witness of its own claim"
+    }
+  ],
+  "index_discipline": {
+    "bundle_registered_in_any_other_index": false,
+    "root_index": "analysis/issue419_hierarchical_tree/ARTIFACTS.json",
+    "root_index_mutated": false,
+    "root_index_sha256": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768",
+    "root_summary": "analysis/issue419_hierarchical_tree/SUMMARY.md",
+    "root_summary_sha256": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8"
+  },
+  "issue": 419,
+  "mutant_name_survey": {
+    "check": "mutant_names_survive_only_as_declared_history",
+    "declared_history_allowlist": [
+      "docs/hierarchical-exact-context-validation-protocol.md",
+      ".project/decisions/20260926-hierarchical-integration-report-v2.md",
+      ".project/decisions/20260926-hierarchical-frozen-evidence-correction.md",
+      ".project/decisions/20260926-hierarchical-evidence-integrity-correction-v2.md",
+      "tools/training/build_hierarchical_integration_bundle_v2.py",
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction/",
+      "analysis/issue419_hierarchical_tree/ci_evidence/",
+      "analysis/issue419_hierarchical_tree_v2/"
+    ],
+    "detail": "no mutant digest survives as a content-addressed object, as a custody pin or as an undeclared textual reference; every remaining mention is declared recorded history",
+    "excluded_from_the_scan": [
+      "analysis/issue419_hierarchical_tree/evidence_integrity_correction_v2",
+      "tools/training/build_hierarchical_evidence_integrity_correction_v2.py"
+    ],
+    "mentions_outside_this_record_and_its_generator": {
+      "4fea09fc5713b9fa490effb39c557962ae1d06146710d954fb21bfd39ef25743": [
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/sha256/f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803.json",
+        "analysis/issue419_hierarchical_tree_v2/EXACT_TREE_PREFLIGHT_V2.json",
+        "analysis/issue419_hierarchical_tree_v2/INTEGRATION_REPORT.json",
+        "analysis/issue419_hierarchical_tree_v2/INTEGRATION_REPORT.md",
+        "analysis/issue419_hierarchical_tree_v2/sha256/2c07ae3279d10ec3e3bbdbe81cdb0d0f1f23e6bbb91cbdadddae113d1a9ea691.json",
+        "analysis/issue419_hierarchical_tree_v2/sha256/5397d2df2c2f8c69d2ea2047fa6b168ee08fbd5d600c3091c7b2cdadd0600bbd.json",
+        "analysis/issue419_hierarchical_tree_v2/sha256/9dc6d3f029ba606435e78c34e878ea4487955dfa15a6d27cb749988e0a84d948.md",
+        "tools/training/build_hierarchical_integration_bundle_v2.py"
+      ],
+      "db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1": [
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/sha256/f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803.json",
+        "analysis/issue419_hierarchical_tree_v2/DECISION_V2.json",
+        "analysis/issue419_hierarchical_tree_v2/EXACT_TREE_PREFLIGHT_V2.json",
+        "analysis/issue419_hierarchical_tree_v2/INTEGRATION_REPORT.json",
+        "analysis/issue419_hierarchical_tree_v2/INTEGRATION_REPORT.md",
+        "analysis/issue419_hierarchical_tree_v2/sha256/2c07ae3279d10ec3e3bbdbe81cdb0d0f1f23e6bbb91cbdadddae113d1a9ea691.json",
+        "analysis/issue419_hierarchical_tree_v2/sha256/5397d2df2c2f8c69d2ea2047fa6b168ee08fbd5d600c3091c7b2cdadd0600bbd.json",
+        "analysis/issue419_hierarchical_tree_v2/sha256/9dc6d3f029ba606435e78c34e878ea4487955dfa15a6d27cb749988e0a84d948.md",
+        "analysis/issue419_hierarchical_tree_v2/sha256/ac291b9ed363080401e9649a30b157eec7f7b79d5d2dc6df70390ccebc67c4b5.json",
+        "tools/training/build_hierarchical_integration_bundle_v2.py"
+      ],
+      "e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f": [
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/SUMMARY.md",
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/sha256/f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803.json",
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/sha256/f65e28fc35c0f61f6ba4c96cb3e7737b680f9b0da53cec8483110eed830981ff.md",
+        "analysis/issue419_hierarchical_tree_v2/EXACT_TREE_PREFLIGHT_V2.json",
+        "analysis/issue419_hierarchical_tree_v2/INTEGRATION_REPORT.json",
+        "analysis/issue419_hierarchical_tree_v2/INTEGRATION_REPORT.md",
+        "analysis/issue419_hierarchical_tree_v2/SUMMARY.md",
+        "analysis/issue419_hierarchical_tree_v2/sha256/1d0a7d1ac065a2520b57b2fcc27eadcc5b0bb408fa4533eda56ae40e77f3a21f.md",
+        "analysis/issue419_hierarchical_tree_v2/sha256/2c07ae3279d10ec3e3bbdbe81cdb0d0f1f23e6bbb91cbdadddae113d1a9ea691.json",
+        "analysis/issue419_hierarchical_tree_v2/sha256/5397d2df2c2f8c69d2ea2047fa6b168ee08fbd5d600c3091c7b2cdadd0600bbd.json",
+        "analysis/issue419_hierarchical_tree_v2/sha256/9dc6d3f029ba606435e78c34e878ea4487955dfa15a6d27cb749988e0a84d948.md",
+        "docs/hierarchical-exact-context-validation-protocol.md",
+        "tools/training/build_hierarchical_integration_bundle_v2.py"
+      ],
+      "ec010a541636e70eae7d5158611c0a47d9ae926785f50cbf55432f32b46d8cff": [
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+        "analysis/issue419_hierarchical_tree/evidence_integrity_correction/sha256/f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803.json"
+      ]
+    },
+    "result": "PASS",
+    "scanned_roots": [
+      ".github",
+      ".project",
+      "analysis",
+      "contracts",
+      "docs",
+      "tests",
+      "tools"
+    ],
+    "undeclared_references": []
+  },
+  "mutant_object_check": {
+    "check": "no_mutant_content_addressed_object_survives",
+    "digests_probed": 10,
+    "result": "PASS",
+    "surviving_objects": []
+  },
+  "order_guard": {
+    "check": "order_guard_does_not_classify_this_record",
+    "result": "PASS",
+    "this_bundle_classified_as_a_validation_result": false,
+    "validation_result_artifacts": [
+      "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+      "analysis/issue419_hierarchical_tree/validation/sha256/0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68.json"
+    ]
+  },
+  "planner_key": "T3",
+  "predecessor_record": {
+    "byte_sha256": "f601d6195ccc4b71a36c5e5729c07c3277bc910bce254c39028485181e8a8803",
+    "claim_re_examined": {
+      "claim": "no active reference to e86b7c6b / 4fea09fc / ec010a54 / db1b1ab6 remains in tools/, docs/, tests/ or contracts/",
+      "precise_head_reading": "none of the four names is a custody pin, a checked digest or a content-addressed object any more; each survives only as recorded history (see mutant_name_survey)",
+      "status_after_887e46a": "BROKEN",
+      "status_at_head": "HELD_AGAIN",
+      "status_when_written": "HELD"
+    },
+    "path": "analysis/issue419_hierarchical_tree/evidence_integrity_correction/EVIDENCE_INTEGRITY_CORRECTION.json",
+    "relationship": "ADDITIVE_COMPANION_NEVER_EDITED: the v1 record stays byte-frozen; this record adds the two later incidents and their repairs without rewriting one predecessor byte",
+    "schema": "poker-issue419-evidence-integrity-correction/v1"
+  },
+  "recorded_against_branch": "n8n/issue-419/task-backlog-g95",
+  "repair": {
+    "active_model_pointer_mutated": false,
+    "admission_rules_changed": false,
+    "frozen_byte_re_registered": false,
+    "frozen_byte_rewritten": false,
+    "frozen_custody_pin_re_pointed": false,
+    "hero_ev_executed": false,
+    "issue367_run": false,
+    "pooling_limits_changed": false,
+    "predecessor_record_edited": false,
+    "priors_changed": false,
+    "summary": "both incidents are already repaired in the tree; this record documents them, the before/after digests and the cross-reference to the offending and repairing commits, and writes no frozen byte",
+    "test_data_read": false,
+    "thresholds_changed": false,
+    "validation_reconsumed": false
+  },
+  "reproduction": {
+    "build": "python3 tools/training/build_hierarchical_evidence_integrity_correction_v2.py",
+    "check": "python3 tools/training/build_hierarchical_evidence_integrity_correction_v2.py --check",
+    "determinism": "the payload is a pure function of the persisted bytes and of the declared commit constants; git is only ever used to confirm them, so --check is byte-stable whether or not the objects are reachable",
+    "inputs": [
+      "the #419 frozen evidence persisted in the worktree",
+      "the local git object store (offending and parent revisions), used for cross-checking only"
+    ]
+  },
+  "residual_findings": [
+    {
+      "detail": "analysis/issue419_hierarchical_tree_v2/ still binds EXACT_TREE_PREFLIGHT_V2.json to 2c07ae32 and DECISION_V2.json to ac291b9e, the revisions that existed when it was authored; 9859c46 and 0f9a6eb later regenerated those bundles, so PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py is red at HEAD (2 failures, 1 error)",
+      "detected_by": "PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py",
+      "finding_id": "INTEGRATION_BUNDLE_V2_PINS_PRE_REPAIR_REVISIONS",
+      "owner": "the #419 integration-bundle task (backlog-oso / T7), not this record",
+      "reason_not_repaired_here": "the integration bundle is a separate consumer of these surfaces; repairing it would rewrite its generated members and its own recorded residual findings, which is out of this record's scope",
+      "repaired_by_this_record": false,
+      "touches_a_frozen_byte": false
+    },
+    {
+      "detail": "e86b7c6b, 4fea09fc, db1b1ab6 and e80732c4 still appear as recorded history in the v1 correction record, the integration report and the validation-protocol document; none of them is a custody pin, a checked digest or an object on disk",
+      "detected_by": "tools/training/build_hierarchical_evidence_integrity_correction_v2.py --check",
+      "finding_id": "MUTANT_NAMES_SURVIVE_AS_RECORDED_HISTORY",
+      "owner": "documented, intentional history",
+      "repaired_by_this_record": false,
+      "touches_a_frozen_byte": false
+    }
+  ],
+  "revision": "v2",
+  "schema": "poker-issue419-evidence-integrity-correction/v2",
+  "tool_pin_table": {
+    "check": "preflight_tool_custody_pins_equal_the_restored_bytes_at_head",
+    "result": "PASS",
+    "rows": [
+      {
+        "custody_digest": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+        "matches_custody_at_head": true,
+        "pin": "V1_PREFLIGHT_SHA256",
+        "pin_at_head": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+        "repinned_by_887e46a": "e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f"
+      },
+      {
+        "custody_digest": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+        "matches_custody_at_head": true,
+        "pin": "V1_INDEX_SHA256",
+        "pin_at_head": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+        "repinned_by_887e46a": "4fea09fc5713b9fa490effb39c557962ae1d06146710d954fb21bfd39ef25743"
+      },
+      {
+        "custody_digest": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+        "matches_custody_at_head": true,
+        "pin": "PROTOCOL_V2_BYTE_SHA256",
+        "pin_at_head": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+        "repinned_by_887e46a": "db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1"
+      },
+      {
+        "custody_digest": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de",
+        "matches_custody_at_head": true,
+        "pin": "PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256",
+        "pin_at_head": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de",
+        "repinned_by_887e46a": "e80732c4ea5512863c448497b89896799f24c942f744193832dabd5c568579f0"
+      }
+    ],
+    "tool": "tools/simulation/issue419_exact_tree_preflight.py"
+  }
+}
