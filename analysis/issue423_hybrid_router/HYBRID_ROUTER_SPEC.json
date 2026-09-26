@@ -9,7 +9,7 @@
     "validation_consumed": false
   },
   "authored_before_validation_read": true,
-  "canonical_payload_sha256": "6cb2f83876e9975ecdf4012e2598844188dac068b0687a00037cc467330ec29a",
+  "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
   "evidence_bindings": [
     {
       "path": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
@@ -381,16 +381,16 @@
       "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
       "OOD_ABSTENTION_CRITERION"
     ],
-    "criteria_sha256": "ae5cedbc2acb9c4dd4eb189421977790e1bae82962875738294f97bb2a724887",
+    "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
     "derivation": {
       "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
-      "canonical_payload_sha256": "e50f03748826134ce2cabf0b42ed8c43dca18d3c1e5eb672a308a1a3285114cd",
+      "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
       "folds": 5,
       "hands": 19016,
       "planner_key": "T4",
       "rows": 94160,
       "schema": "poker-hybrid-router-cv-derivation/v1",
-      "sha256": "2d27442e78b07a9d78761d35e28c214551cdb4ba5c475267b13667abb292ef39"
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
     },
     "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold_cv_derivation",
     "frozen_at": "2026-09-26T00:00:00Z",

@@ -9,28 +9,28 @@
     "train_only": true,
     "validation_consumed": false
   },
-  "canonical_payload_sha256": "8151e4abc0c0e8cd67a8dde2af935bb4a7794e7196c9425b694ffd3475fc7eae",
+  "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
   "derivation_inputs": [
     {
       "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
       "role": "train_only_cv_derivation",
-      "sha256": "2d27442e78b07a9d78761d35e28c214551cdb4ba5c475267b13667abb292ef39"
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
     },
     {
       "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
       "role": "derivation_sha256_sidecar",
-      "sha256": "ec9b2986968f83f4ba598a26cecba1928585f604be54ea18971388e5562c1bac"
+      "sha256": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0"
     },
     {
-      "criteria_sha256": "ae5cedbc2acb9c4dd4eb189421977790e1bae82962875738294f97bb2a724887",
+      "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
       "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
       "role": "preregistration_spec",
-      "sha256": "d5a1451423798f04e76103cf9c1db197d81e9e3af405a1c06c3a79e78647ea85"
+      "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
     },
     {
       "path": "tools/training/freeze_hybrid_router_criteria.py",
       "role": "criteria_generator",
-      "sha256": "576d95c2b22d4f01d37398196bf272956f4d1be10c1016c8ae6b8b518d211da6"
+      "sha256": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63"
     },
     {
       "path": "tools/training/freeze_hybrid_router_spec.py",
@@ -116,11 +116,11 @@
       }
     ],
     "reference": {
-      "canonical_payload_sha256": "6cb2f83876e9975ecdf4012e2598844188dac068b0687a00037cc467330ec29a",
+      "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
       "pointer": "/procedure",
       "spec": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
       "spec_schema": "poker-hybrid-router-spec/v1",
-      "spec_sha256": "d5a1451423798f04e76103cf9c1db197d81e9e3af405a1c06c3a79e78647ea85"
+      "spec_sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
     },
     "resolved_by": "tools/training/freeze_hybrid_router_criteria.py::derive_criteria",
     "resolved_from": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json"
@@ -470,16 +470,16 @@
       "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
       "OOD_ABSTENTION_CRITERION"
     ],
-    "criteria_sha256": "ae5cedbc2acb9c4dd4eb189421977790e1bae82962875738294f97bb2a724887",
+    "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
     "derivation": {
       "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
-      "canonical_payload_sha256": "e50f03748826134ce2cabf0b42ed8c43dca18d3c1e5eb672a308a1a3285114cd",
+      "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
       "folds": 5,
       "hands": 19016,
       "planner_key": "T4",
       "rows": 94160,
       "schema": "poker-hybrid-router-cv-derivation/v1",
-      "sha256": "2d27442e78b07a9d78761d35e28c214551cdb4ba5c475267b13667abb292ef39"
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
     },
     "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold_cv_derivation",
     "frozen_at": "2026-09-26T00:00:00Z",
@@ -547,19 +547,19 @@
     },
     "terminal_evaluation_derived": false
   },
-  "frozen_criteria_sha256": "ae5cedbc2acb9c4dd4eb189421977790e1bae82962875738294f97bb2a724887",
+  "frozen_criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
   "frozen_spec": {
     "bytes": 62833,
-    "canonical_payload_sha256": "6cb2f83876e9975ecdf4012e2598844188dac068b0687a00037cc467330ec29a",
+    "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
     "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
-    "sha256": "d5a1451423798f04e76103cf9c1db197d81e9e3af405a1c06c3a79e78647ea85"
+    "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
   },
   "generated_by": {
     "criteria_schema": "poker-hybrid-router-frozen-criteria/v1",
     "spec_generator_path": "tools/training/freeze_hybrid_router_spec.py",
     "spec_generator_sha256": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
     "tool_path": "tools/training/freeze_hybrid_router_criteria.py",
-    "tool_sha256": "576d95c2b22d4f01d37398196bf272956f4d1be10c1016c8ae6b8b518d211da6"
+    "tool_sha256": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63"
   },
   "issue": 423,
   "kind": "frozen_hybrid_router_admission_criteria_and_manifest",

@@ -418,9 +418,18 @@ class PersistedArtifactTests(unittest.TestCase):
                 self.assertEqual(payload, layout.paths["spec"].read_bytes())
                 self.assertEqual(tool.check(), [])
 
-    def test_no_terminal_report_exists_in_this_checkout(self):
-        for path in tool.TERMINAL_REPORT_PATHS:
-            self.assertFalse(path.exists(), path)
+    def test_the_terminal_report_binds_the_frozen_spec_or_is_absent(self):
+        # #423 T6 writes the terminal score after this freeze.  Once it exists,
+        # the ordering proof is the frozen spec digest the report embeds; while
+        # it does not, the absence is the proof.  Anything else is unprovable.
+        state = tool.terminal_order_state()
+        if state["state"] == "ABSENT":
+            for path in tool.TERMINAL_REPORT_PATHS:
+                self.assertFalse(path.exists(), path)
+        else:
+            self.assertEqual(state["state"], "BOUND")
+            self.assertTrue(state["bound"])
+            self.assertEqual(state["unbound"], [])
 
 
 class OrderingGuardTests(unittest.TestCase):
@@ -447,13 +456,24 @@ class OrderingGuardTests(unittest.TestCase):
                 self.assertFalse(layout.paths["spec_digest"].exists())
 
     def test_the_guard_reports_the_declared_locations(self):
-        report = tool.assert_terminal_report_absent()
-        self.assertEqual(report["guard_id"], "ROUTER_CRITERIA_ORDER_GUARD")
-        self.assertEqual(report["result"], "PASS")
-        self.assertEqual(report["declared_terminal_report_locations_present"], [])
+        # The declared locations are a property of the guard itself.  Once the
+        # #423 T6 terminal score exists the pre-freeze guard is armed against it,
+        # so the satisfied path is asserted where it is genuinely reachable: a
+        # layout that has not been scored yet.
         self.assertEqual(
-            report["declared_terminal_report_locations"], list(tool.TERMINAL_REPORT_LOGICAL_PATHS)
+            tool.terminal_order_state()["declared_terminal_report_locations"],
+            list(tool.TERMINAL_REPORT_LOGICAL_PATHS),
         )
+        with tempfile.TemporaryDirectory() as tmp:
+            with _IsolatedLayout(Path(tmp)):
+                report = tool.assert_terminal_report_absent()
+                self.assertEqual(report["guard_id"], "ROUTER_CRITERIA_ORDER_GUARD")
+                self.assertEqual(report["result"], "PASS")
+                self.assertEqual(report["declared_terminal_report_locations_present"], [])
+                self.assertEqual(
+                    report["declared_terminal_report_locations"],
+                    list(tool.TERMINAL_REPORT_LOGICAL_PATHS),
+                )
 
     def test_check_reports_a_terminal_report_that_appeared_after_the_freeze(self):
         with tempfile.TemporaryDirectory() as tmp:

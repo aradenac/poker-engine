@@ -31,7 +31,12 @@ The freeze is authored *before* any terminal score.  ``freeze()`` refuses to
 run when a terminal ``TRAIN_CV_ROUTER_REPORT.json`` already exists -- a numeric
 threshold issued after the score it judges would not be a preregistration --
 and, once frozen, a regeneration that would produce a different value fails
-closed instead of silently rewriting the frozen criteria.
+closed instead of silently rewriting the frozen criteria.  ``check()`` runs
+both before and after the terminal run: while the report is absent the guard is
+satisfied by that absence, and once the #423 T6 report exists it is satisfied by
+the report *binding* the frozen spec digest this freeze wrote -- a report that
+pins nothing, or different bytes, leaves the ordering unprovable and is
+reported as a violation.
 
 Scientific boundary
 -------------------
@@ -1527,12 +1532,74 @@ def check(*, terminal_paths: Sequence[str | Path] | None = None) -> list[str]:
     return problems
 
 
-def terminal_absence_problems(paths: Sequence[str | Path] | None = None) -> list[str]:
-    """Report (never raise) whether the terminal score is still absent."""
+def terminal_order_state(
+    paths: Sequence[str | Path] | None = None,
+    *,
+    spec_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Where the ordering guard stands *now*, once the terminal score may exist.
+
+    Before the terminal run the guard is satisfied by the report's absence.
+    After it, the report is expected to exist, so the property that survives is
+    the *binding*: a terminal ``TRAIN_CV_ROUTER_REPORT.json`` carries the digest
+    of the frozen spec it was judged by, and only a report that pins the current
+    frozen bytes proves the freeze preceded the score.  A terminal report that
+    binds nothing (or that binds different bytes) leaves the ordering unprovable
+    and is reported as a violation.
+    """
     candidates = tuple(paths) if paths is not None else tuple(TERMINAL_REPORT_PATHS)
-    present = [str(_relative(path)) for path in candidates if Path(path).is_file()]
-    if present:
-        return ["a terminal hybrid router score exists after the freeze: " + ", ".join(present)]
+    spec = Path(spec_path) if spec_path is not None else SPEC_PATH
+    spec_sha256 = sha256_file(spec) if spec.is_file() else None
+    present: list[str] = []
+    bound: list[str] = []
+    unbound: list[str] = []
+    for path in candidates:
+        target = Path(path)
+        if not target.is_file():
+            continue
+        label = str(_relative(target))
+        present.append(label)
+        try:
+            report = json.loads(target.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            unbound.append(label)
+            continue
+        pinned = str((report.get("frozen_spec") or {}).get("sha256") or "")
+        if spec_sha256 is not None and pinned == spec_sha256:
+            bound.append(label)
+        else:
+            unbound.append(label)
+    if not present:
+        state = "ABSENT"
+    elif unbound:
+        state = "UNBOUND"
+    else:
+        state = "BOUND"
+    return {
+        "state": state,
+        "present": present,
+        "bound": bound,
+        "unbound": unbound,
+        "spec_path": str(_relative(spec)),
+        "spec_sha256": spec_sha256,
+        "declared_terminal_report_locations": list(TERMINAL_REPORT_LOGICAL_PATHS),
+    }
+
+
+def terminal_absence_problems(paths: Sequence[str | Path] | None = None) -> list[str]:
+    """Report (never raise) whether the ordering guard still holds.
+
+    The report is ``ABSENT`` before the terminal score and ``BOUND`` afterwards:
+    once the terminal run exists, the guard is proven by the frozen spec digest
+    the report embeds, because that digest is written by the freeze and can only
+    be copied into a report authored after it.
+    """
+    state = terminal_order_state(paths)
+    if state["state"] == "UNBOUND":
+        return [
+            "a terminal hybrid router score exists without binding the frozen spec digest: "
+            + ", ".join(state["unbound"])
+        ]
     return []
 
 

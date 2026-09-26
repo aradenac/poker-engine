@@ -1730,6 +1730,1130 @@ def self_check(seed: int = CV_SEED) -> dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# the terminal evaluation (#423 T6): score under the frozen criteria
+# ---------------------------------------------------------------------------
+
+TERMINAL_REPORT_NAME = "TRAIN_CV_ROUTER_REPORT.json"
+TERMINAL_REPORT_PATH = HERE / TERMINAL_REPORT_NAME
+TERMINAL_REPORT_DIGEST_PATH = HERE / "TRAIN_CV_ROUTER_REPORT.sha256"
+SPARSE_COMPARISON_NAME = "SPARSE_STRATA_COMPARISON.json"
+SPARSE_COMPARISON_PATH = HERE / SPARSE_COMPARISON_NAME
+SPARSE_COMPARISON_DIGEST_PATH = HERE / "SPARSE_STRATA_COMPARISON.sha256"
+
+#: The #423 T5 freeze this terminal run is judged by.
+CRITERIA_MANIFEST_NAME = "ROUTER_MANIFEST.json"
+CRITERIA_MANIFEST_PATH = HERE / CRITERIA_MANIFEST_NAME
+
+TERMINAL_SCHEMA = "poker-hybrid-router-train-cv-terminal-report/v1"
+SPARSE_COMPARISON_SCHEMA = "poker-hybrid-router-sparse-strata-comparison/v1"
+TERMINAL_SELF_CHECK_SCHEMA = "poker-hybrid-router-terminal-self-check/v1"
+CRITERIA_MANIFEST_SCHEMA = "poker-hybrid-router-criteria-manifest/v1"
+CRITERIA_MANIFEST_STATUS = "FROZEN_BEFORE_TERMINAL_EVALUATION"
+
+#: The two terminal verdicts the frozen procedure can produce.  Exactly one is
+#: written, and it is derived from the frozen criteria and nothing else.
+OUTCOME_ADMIT = "ADMIT_HYBRID_ROUTER_FOR_ANALYSIS"
+OUTCOME_RETAIN = "RETAIN_REFERENCE_HYBRID_INSUFFICIENT"
+TERMINAL_OUTCOMES: tuple[str, ...] = (OUTCOME_ADMIT, OUTCOME_RETAIN)
+
+#: The frozen criteria, in the frozen derivation order.  The report refuses a
+#: freeze that carries a different set, so the outcome can never be assembled
+#: from a partially applied procedure.
+CRITERION_MARGIN = "GLOBAL_NON_INFERIORITY_MARGIN"
+CRITERION_SPARSE_GAIN = "SPARSE_GAIN_FLOOR"
+CRITERION_SPARSE_ECE = "SPARSE_ECE_CEILING"
+CRITERION_FREQUENT_EXACT = "FREQUENT_EXACT_NON_DEGRADATION_BOUND"
+CRITERION_OOD = "OOD_ABSTENTION_CRITERION"
+TERMINAL_CRITERIA_ORDER: tuple[str, ...] = (
+    CRITERION_MARGIN,
+    CRITERION_SPARSE_GAIN,
+    CRITERION_SPARSE_ECE,
+    CRITERION_FREQUENT_EXACT,
+    CRITERION_OOD,
+)
+
+#: The strata the two sparse criteria pool, and the stratum the frequent-exact
+#: bound reads.  Both come from the frozen router, never from this report.
+SPARSE_STRATA: tuple[str, ...] = (
+    model.OOD_STRATUM_RARE_EXACT,
+    model.OOD_STRATUM_EXACT_ABSENT_IN_DOMAIN,
+)
+FREQUENT_EXACT_STRATUM = model.OOD_STRATUM_FREQUENT_EXACT
+
+#: Paired comparisons the terminal report publishes.
+PAIRED_HYBRID_MINUS_ACTIVE = f"{CHANNEL_HYBRID}_minus_{CHANNEL_ACTIVE}"
+PAIRED_HYBRID_MINUS_GENERALIZED = f"{CHANNEL_HYBRID}_minus_{CHANNEL_GENERALIZED}"
+PAIRED_ACTIVE_MINUS_GENERALIZED = f"{CHANNEL_ACTIVE}_minus_{CHANNEL_GENERALIZED}"
+
+#: The preregistered minimum sparse support the gain floor is conditioned on.
+MINIMUM_SPARSE_OBSERVATIONS = 20
+
+
+class HybridRouterTerminalError(HybridRouterCvError):
+    """Fail-closed error of the #423 T6 terminal evaluation surface."""
+
+
+def _criteria_payload(block: Mapping[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in block.items() if key != "criteria_sha256"}
+
+
+def load_frozen_criteria(
+    path: str | Path | None = None,
+    *,
+    digest_path: str | Path | None = None,
+    manifest_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Load the #423 T5 freeze, or refuse to score.
+
+    The terminal run is only meaningful against a *frozen* numeric procedure, so
+    every failure mode the acceptance criterion names is a hard error here and
+    nothing is scored first: a missing spec, an unfrozen spec, a spec without a
+    numeric criteria block, a ``.sha256`` sidecar that does not pin the bytes, a
+    criteria digest that does not verify, a criteria set that is not the
+    preregistered five, and a criteria manifest that disagrees with any of it.
+    """
+    source = Path(path) if path is not None else SPEC_PATH
+    sidecar = Path(digest_path) if digest_path is not None else source.with_suffix(".sha256")
+    manifest = Path(manifest_path) if manifest_path is not None else CRITERIA_MANIFEST_PATH
+
+    if not source.is_file():
+        raise HybridRouterTerminalError(
+            f"refused: the #423 admission spec is missing at {_relative(source)}"
+        )
+    raw = source.read_bytes()
+    digest = sha256_bytes(raw)
+    spec = json.loads(raw.decode("utf-8"))
+
+    if not sidecar.is_file():
+        raise HybridRouterTerminalError(
+            f"refused: the #423 admission spec is not digest-pinned (missing {_relative(sidecar)})"
+        )
+    pinned = sidecar.read_text(encoding="utf-8").splitlines()
+    if not pinned or pinned[0].split()[0] != digest:
+        raise HybridRouterTerminalError(
+            "refused: the frozen spec digest diverged from its .sha256 sidecar"
+        )
+
+    if spec.get("frozen") is not True:
+        raise HybridRouterTerminalError(
+            "refused: the #423 admission spec is not frozen; the terminal run is judged by "
+            "frozen numeric criteria only"
+        )
+    criteria = spec.get("frozen_criteria")
+    if not isinstance(criteria, Mapping):
+        raise HybridRouterTerminalError(
+            "refused: the #423 admission spec carries no frozen numeric criteria; the terminal "
+            "run would have to invent its margins"
+        )
+    if criteria.get("criteria_sha256") != model.stable_hash(_finalize(_criteria_payload(criteria))):
+        raise HybridRouterTerminalError(
+            "refused: the frozen criteria digest does not verify against their own payload"
+        )
+    entries = [dict(entry) for entry in (criteria.get("criteria") or ())]
+    ids = tuple(str(entry.get("id")) for entry in entries)
+    if ids != TERMINAL_CRITERIA_ORDER:
+        raise HybridRouterTerminalError(
+            "refused: the frozen criteria are not the preregistered five in order: "
+            f"{list(ids)} != {list(TERMINAL_CRITERIA_ORDER)}"
+        )
+    for entry in entries:
+        value = entry.get("value")
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise HybridRouterTerminalError(
+                f"refused: criterion {entry.get('id')} carries no numeric value"
+            )
+        if not math.isfinite(float(value)):
+            raise HybridRouterTerminalError(
+                f"refused: criterion {entry.get('id')} carries a non-finite value"
+            )
+        if entry.get("terminal_evaluation_derived") is not False:
+            raise HybridRouterTerminalError(
+                f"refused: criterion {entry.get('id')} is not marked non-terminal"
+            )
+
+    if not manifest.is_file():
+        raise HybridRouterTerminalError(
+            "refused: the frozen criteria are not bound to a criteria manifest "
+            f"(missing {_relative(manifest)})"
+        )
+    document = json.loads(manifest.read_text(encoding="utf-8"))
+    if document.get("schema") != CRITERIA_MANIFEST_SCHEMA:
+        raise HybridRouterTerminalError(
+            f"refused: the criteria manifest declares schema {document.get('schema')!r}"
+        )
+    if document.get("status") != CRITERIA_MANIFEST_STATUS:
+        raise HybridRouterTerminalError(
+            f"refused: the criteria manifest is not {CRITERIA_MANIFEST_STATUS}"
+        )
+    frozen_spec = document.get("frozen_spec") or {}
+    if frozen_spec.get("sha256") != digest:
+        raise HybridRouterTerminalError(
+            "refused: the frozen spec digest diverged from the criteria manifest"
+        )
+    if frozen_spec.get("canonical_payload_sha256") != spec.get("canonical_payload_sha256"):
+        raise HybridRouterTerminalError(
+            "refused: the frozen spec canonical digest diverged from the criteria manifest"
+        )
+    if document.get("frozen_criteria") != criteria:
+        raise HybridRouterTerminalError(
+            "refused: the frozen spec criteria diverge from the criteria manifest"
+        )
+    if document.get("frozen_criteria_sha256") != criteria.get("criteria_sha256"):
+        raise HybridRouterTerminalError(
+            "refused: the frozen criteria digest diverged from the criteria manifest"
+        )
+
+    return {
+        "path": _relative(source),
+        "sha256": digest,
+        "bytes": len(raw),
+        "sidecar": _relative(sidecar),
+        "canonical_payload_sha256": spec.get("canonical_payload_sha256"),
+        "schema": spec.get("schema"),
+        "status": spec.get("status"),
+        "frozen_at": criteria.get("frozen_at"),
+        "criteria_sha256": criteria.get("criteria_sha256"),
+        "criteria_order": list(ids),
+        "criteria": dict(criteria),
+        "manifest": {
+            "path": _relative(manifest),
+            "sha256": sha256_file(manifest),
+            "canonical_payload_sha256": document.get("canonical_payload_sha256"),
+        },
+        "derivation_binding": dict(criteria.get("derivation") or {}),
+    }
+
+
+# ---------------------------------------------------------------------------
+# mechanical application of the frozen criteria
+# ---------------------------------------------------------------------------
+
+
+def _stratum_paired(
+    artifact: Mapping[str, Any], stratum: str, comparison: str
+) -> dict[str, Any]:
+    block = (((artifact.get("per_stratum") or {}).get(stratum) or {}).get("paired") or {}).get(
+        comparison
+    )
+    if not isinstance(block, Mapping):
+        raise HybridRouterTerminalError(
+            f"the terminal score omits the paired comparison {comparison!r} on {stratum!r}"
+        )
+    return dict(block)
+
+
+def _paired_admission_support(artifact: Mapping[str, Any], comparison: str) -> dict[str, Any]:
+    block = ((artifact.get("paired") or {}).get(comparison) or {}).get("admission_support")
+    if not isinstance(block, Mapping):
+        raise HybridRouterTerminalError(
+            f"the terminal score omits the admission-support paired comparison {comparison!r}"
+        )
+    return dict(block)
+
+
+def _maybe_number(value: Any) -> float | None:
+    """A finite float, or ``None`` when the surface carries no measurement.
+
+    A missing statistic never becomes a fabricated zero: the criterion that
+    reads it fails closed instead.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    number = float(value)
+    return number if math.isfinite(number) else None
+
+
+def _weighted(weights: Mapping[str, float], values: Mapping[str, float | None]) -> float | None:
+    """Support-weighted mean over the strata that carry support, or ``None``."""
+    support = {key: float(weight) for key, weight in weights.items() if float(weight) > 0.0}
+    total = math.fsum(support.values())
+    if total <= 0.0:
+        return None
+    total_value = 0.0
+    for key, weight in support.items():
+        value = values.get(key)
+        if value is None:
+            return None
+        total_value += weight * float(value)
+    return total_value / total
+
+
+def sparse_pooled(models: Mapping[str, Any]) -> dict[str, Any]:
+    """Support-weighted sparse statistics the two sparse criteria read."""
+    weights: dict[str, float] = {}
+    hybrid_gain: dict[str, float | None] = {}
+    hybrid_ece: dict[str, float | None] = {}
+    active_ece: dict[str, float | None] = {}
+    for stratum in SPARSE_STRATA:
+        hybrid = ((models.get(CHANNEL_HYBRID) or {}).get("by_stratum") or {}).get(stratum) or {}
+        active = ((models.get(CHANNEL_ACTIVE) or {}).get("by_stratum") or {}).get(stratum) or {}
+        metrics = dict(hybrid.get("metrics") or {})
+        active_metrics = dict(active.get("metrics") or {})
+        weights[stratum] = _maybe_number(metrics.get("n")) or 0.0
+        hybrid_gain[stratum] = _maybe_number(metrics.get("gain_bits_per_decision"))
+        hybrid_ece[stratum] = _maybe_number(metrics.get("expected_calibration_error"))
+        active_ece[stratum] = _maybe_number(active_metrics.get("expected_calibration_error"))
+    return {
+        "strata": list(SPARSE_STRATA),
+        "weights": weights,
+        "sparse_decisions": int(sum(weights.values())),
+        "stratum_gain_bits_per_decision": hybrid_gain,
+        "stratum_hybrid_ece": hybrid_ece,
+        "stratum_active_ece": active_ece,
+        "gain_bits_per_decision": _weighted(weights, hybrid_gain),
+        "hybrid_ece": _weighted(weights, hybrid_ece),
+        "active_ece": _weighted(weights, active_ece),
+    }
+
+
+def _criterion_record(
+    entry: Mapping[str, Any],
+    *,
+    statistic: str,
+    comparator: str,
+    observed: Any,
+    passed: bool,
+    inputs: Mapping[str, Any],
+) -> dict[str, Any]:
+    threshold = _maybe_number(entry.get("value"))
+    if threshold is None:
+        raise HybridRouterTerminalError(
+            f"the frozen criterion {entry.get('id')} carries no numeric threshold"
+        )
+    return {
+        "id": str(entry.get("id")),
+        "t1_formula_id": entry.get("t1_formula_id"),
+        "derives": entry.get("derives"),
+        "direction": entry.get("direction"),
+        "unit": entry.get("unit"),
+        "frozen_criterion": entry.get("criterion"),
+        "threshold": threshold,
+        "comparator": comparator,
+        "statistic": statistic,
+        "observed": observed,
+        "passed": bool(passed),
+        "inputs": dict(inputs),
+    }
+
+
+def evaluate_frozen_criteria(
+    artifact: Mapping[str, Any], criteria: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Apply the frozen thresholds to the terminal score, in the frozen order.
+
+    The function never derives a threshold of its own: it reads ``value`` from
+    the frozen criteria and compares it, in the frozen direction, against the
+    statistic the terminal score measured.  A freeze that omits a criterion, or
+    that carries one the preregistered procedure does not define, is refused.
+    """
+    entries = {str(entry.get("id")): dict(entry) for entry in (criteria.get("criteria") or ())}
+    missing = [name for name in TERMINAL_CRITERIA_ORDER if name not in entries]
+    if missing:
+        raise HybridRouterTerminalError(
+            "the frozen criteria omit " + ", ".join(missing) + "; refusing to apply a partial rule"
+        )
+    unknown = sorted(set(entries) - set(TERMINAL_CRITERIA_ORDER))
+    if unknown:
+        raise HybridRouterTerminalError(
+            "the frozen criteria carry ids outside the preregistered procedure: "
+            + ", ".join(unknown)
+        )
+
+    evaluations: list[dict[str, Any]] = []
+
+    margin_entry = entries[CRITERION_MARGIN]
+    margin = _paired_admission_support(artifact, PAIRED_HYBRID_MINUS_ACTIVE)
+    margin_observed = _maybe_number(margin.get("upper_quantile_bits_per_decision"))
+    margin_threshold = _maybe_number(margin_entry.get("value"))
+    if margin_threshold is None:
+        raise HybridRouterTerminalError("the frozen margin threshold is not numeric")
+    evaluations.append(
+        _criterion_record(
+            margin_entry,
+            statistic=(
+                "one-sided upper percentile of the paired-by-hand bootstrap of "
+                "mean(log_loss_hybrid - log_loss_active) on the admission support"
+            ),
+            comparator="<=",
+            observed=margin_observed,
+            passed=bool(margin_observed is not None and margin_observed <= margin_threshold),
+            inputs={
+                "paired_unit": margin.get("paired_unit", "hand_id"),
+                "rows": margin.get("rows"),
+                "hands": margin.get("hands"),
+                "point_estimate_bits_per_decision": margin.get("point_estimate_bits_per_decision"),
+                "ci95": margin.get("ci95"),
+                "upper_quantile_level": margin.get("upper_quantile_level"),
+            },
+        )
+    )
+
+    sparse_entry = entries[CRITERION_SPARSE_GAIN]
+    pooled = sparse_pooled(artifact.get("models") or {})
+    support_ok = pooled["sparse_decisions"] >= MINIMUM_SPARSE_OBSERVATIONS
+    gain = pooled["gain_bits_per_decision"]
+    gain_threshold = _maybe_number(sparse_entry.get("value"))
+    if gain_threshold is None:
+        raise HybridRouterTerminalError("the frozen sparse gain threshold is not numeric")
+    gain_ok = gain is not None and gain >= gain_threshold
+    evaluations.append(
+        _criterion_record(
+            sparse_entry,
+            statistic=(
+                "support-weighted mean of the hybrid channel's gain_bits_per_decision over the "
+                "pooled sparse strata"
+            ),
+            comparator=">=",
+            observed={
+                "gain_bits_per_decision": gain,
+                "per_stratum": pooled["stratum_gain_bits_per_decision"],
+                "sparse_decisions": pooled["sparse_decisions"],
+                "minimum_sparse_observations": MINIMUM_SPARSE_OBSERVATIONS,
+            },
+            passed=bool(gain_ok and support_ok),
+            inputs={
+                "weights": pooled["weights"],
+                "sparse_decisions": pooled["sparse_decisions"],
+                "minimum_sparse_support_satisfied": support_ok,
+            },
+        )
+    )
+
+    ece_entry = entries[CRITERION_SPARSE_ECE]
+    ece_observed = pooled["hybrid_ece"]
+    ece_threshold = _maybe_number(ece_entry.get("value"))
+    if ece_threshold is None:
+        raise HybridRouterTerminalError("the frozen sparse ECE threshold is not numeric")
+    evaluations.append(
+        _criterion_record(
+            ece_entry,
+            statistic=(
+                "support-weighted expected calibration error of the hybrid channel over the "
+                "pooled sparse strata"
+            ),
+            comparator="<=",
+            observed={
+                "hybrid_ece": ece_observed,
+                "per_stratum_hybrid_ece": pooled["stratum_hybrid_ece"],
+                "active_sparse_ece": pooled["active_ece"],
+            },
+            passed=bool(ece_observed is not None and ece_observed <= ece_threshold),
+            inputs={
+                "weights": pooled["weights"],
+                "stratum_active_ece": pooled["stratum_active_ece"],
+            },
+        )
+    )
+
+    frequent_entry = entries[CRITERION_FREQUENT_EXACT]
+    frequent = _stratum_paired(artifact, FREQUENT_EXACT_STRATUM, PAIRED_HYBRID_MINUS_ACTIVE)
+    point = _maybe_number(frequent.get("point_estimate_bits_per_decision"))
+    ci95 = list(frequent.get("ci95") or [])
+    ci95_upper = _maybe_number(ci95[1]) if len(ci95) == 2 else None
+    frequent_threshold = _maybe_number(frequent_entry.get("value"))
+    if frequent_threshold is None:
+        raise HybridRouterTerminalError("the frozen frequent-exact bound is not numeric")
+    evaluations.append(
+        _criterion_record(
+            frequent_entry,
+            statistic=(
+                "paired-by-hand hybrid-minus-active log-loss delta on the frequent_exact stratum, "
+                "in point estimate and in paired 95% upper bound"
+            ),
+            comparator="<=",
+            observed={
+                "point_estimate_bits_per_decision": point,
+                "paired_ci95_upper_bits_per_decision": ci95_upper,
+                "upper_quantile_bits_per_decision": frequent.get(
+                    "upper_quantile_bits_per_decision"
+                ),
+            },
+            passed=bool(
+                point is not None
+                and ci95_upper is not None
+                and point <= frequent_threshold
+                and ci95_upper <= frequent_threshold
+            ),
+            inputs={
+                "paired_unit": frequent.get("paired_unit", "hand_id"),
+                "rows": frequent.get("rows"),
+                "hands": frequent.get("hands"),
+                "ci95": ci95,
+            },
+        )
+    )
+
+    ood_entry = entries[CRITERION_OOD]
+    probes = artifact.get("ood_synthetic_probes")
+    if not isinstance(probes, Mapping):
+        raise HybridRouterTerminalError("the terminal score omits the OOD probe surface")
+    abstain_rate = _maybe_number(probes.get("abstain_rate"))
+    coverage = _maybe_number(probes.get("coverage"))
+    required = _maybe_number(ood_entry.get("value"))
+    if required is None:
+        raise HybridRouterTerminalError("the frozen OOD abstention requirement is not numeric")
+    evaluations.append(
+        _criterion_record(
+            ood_entry,
+            statistic="measured abstention rate of the frozen router on the OOD probe surface",
+            comparator="==",
+            observed={
+                "abstain_rate": abstain_rate,
+                "coverage": coverage,
+                "probes": probes.get("n"),
+                "probes_abstained": probes.get("router_abstained"),
+                "probes_per_kind": {
+                    str(kind): int(entry.get("n", 0))
+                    for kind, entry in (probes.get("by_kind") or {}).items()
+                },
+            },
+            passed=bool(
+                abstain_rate is not None and abstain_rate == required and coverage == 0.0
+            ),
+            inputs={"required_abstention_rate": required, "required_coverage": 0.0},
+        )
+    )
+
+    order = [record["id"] for record in evaluations]
+    if order != list(TERMINAL_CRITERIA_ORDER):
+        raise HybridRouterTerminalError(f"the criteria were not applied in the frozen order: {order}")
+    failed = [record["id"] for record in evaluations if not record["passed"]]
+    return {
+        "criteria_order": list(TERMINAL_CRITERIA_ORDER),
+        "criteria": evaluations,
+        "failed": failed,
+        "all_passed": not failed,
+        "outcome": OUTCOME_ADMIT if not failed else OUTCOME_RETAIN,
+        "outcome_rule": (
+            f"{OUTCOME_ADMIT} iff every frozen criterion passes; otherwise {OUTCOME_RETAIN}"
+        ),
+        "thresholds_source": "frozen_hybrid_router_criteria",
+        "margins_reinvented_here": False,
+    }
+
+
+# ---------------------------------------------------------------------------
+# the terminal artifacts
+# ---------------------------------------------------------------------------
+
+
+def _deltas_block(
+    records: Sequence[Mapping[str, Any]],
+    models: Mapping[str, Any],
+    paired: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """The log-loss deltas the acceptance criterion asks for, per stratum."""
+    sparse = sparse_pooled(models)
+    sparse_weights = {stratum: float(sparse["weights"][stratum]) for stratum in SPARSE_STRATA}
+    per_stratum_delta = {
+        stratum: _maybe_number(
+            paired[PAIRED_HYBRID_MINUS_ACTIVE]["by_stratum"][stratum].get(
+                "point_estimate_bits_per_decision"
+            )
+        )
+        for stratum in SPARSE_STRATA
+    }
+    return {
+        "paired_unit": "hand_id",
+        "sign_convention": "negative favors the hybrid channel",
+        "global_log_loss_bits_per_decision": {
+            comparison: _maybe_number(
+                pair.get("global", {}).get("point_estimate_bits_per_decision")
+            )
+            for comparison, pair in paired.items()
+        },
+        "log_loss_by_stratum": {
+            stratum: {
+                channel: (
+                    (((models.get(channel) or {}).get("by_stratum") or {}).get(stratum) or {})
+                    .get("metrics", {})
+                    .get("log_loss_bits_per_decision")
+                )
+                for channel in CHANNELS
+            }
+            for stratum in (*ADMISSION_STRATA, OOD_STRATUM)
+        },
+        "sparse_log_loss_bits_per_decision": {
+            "strata": list(SPARSE_STRATA),
+            "paired_hybrid_minus_active": _weighted(sparse_weights, per_stratum_delta),
+            "per_stratum_paired_hybrid_minus_active": per_stratum_delta,
+            "hybrid_gain_bits_per_decision": sparse["gain_bits_per_decision"],
+            "hybrid_ece": sparse["hybrid_ece"],
+            "active_ece": sparse["active_ece"],
+            "weights": sparse["weights"],
+        },
+    }
+
+
+def _limper_vs_iso_block(
+    records: Sequence[Mapping[str, Any]],
+    prior: Mapping[str, float],
+    paired: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """The ``LIMPER_VS_ISO`` surface, kept separate from the strata tables."""
+    members = [row for row in records if str(row.get("family") or "") == LIMPER_VS_ISO_FAMILY]
+    return {
+        "family": LIMPER_VS_ISO_FAMILY,
+        "definition": (
+            "the limper-versus-isolation family, reported on its own surface so the pooled "
+            "strata tables never hide it"
+        ),
+        "n": len(members),
+        "hands": len({str(row["hand_id"]) for row in members}),
+        "models": {
+            channel: {
+                "model_id": CHANNEL_MODEL_ID[channel],
+                "scope": _coverage(members, channel),
+                "metrics": _metrics(members, channel, prior),
+            }
+            for channel in CHANNELS
+        },
+        "paired": {
+            comparison: dict(pair["limper_vs_iso"]) for comparison, pair in paired.items()
+        },
+    }
+
+
+def build_sparse_strata_comparison(
+    artifact: Mapping[str, Any], frozen: Mapping[str, Any]
+) -> dict[str, Any]:
+    """The side-by-side sparse strata comparison, its own content-addressed file."""
+    models = artifact.get("models") or {}
+    paired = artifact.get("paired") or {}
+    records = list(artifact.get("records") or [])
+    pooled = sparse_pooled(models)
+    by_stratum: dict[str, Any] = {}
+    for stratum in SPARSE_STRATA:
+        members = [record for record in records if record["stratum"] == stratum]
+        by_stratum[stratum] = {
+            "gate": {
+                "route_source_counts": _route_counts(members),
+                "frequent_exact_min_support": router.FREQUENT_EXACT_MIN_SUPPORT,
+                "rare_exact_min_support": router.RARE_EXACT_MIN_SUPPORT,
+            },
+            "models": {
+                channel: {
+                    "model_id": CHANNEL_MODEL_ID[channel],
+                    "scope": (
+                        ((models.get(channel) or {}).get("by_stratum") or {}).get(stratum) or {}
+                    ).get("scope"),
+                    "metrics": (
+                        ((models.get(channel) or {}).get("by_stratum") or {}).get(stratum) or {}
+                    ).get("metrics"),
+                }
+                for channel in CHANNELS
+            },
+            "paired": {
+                comparison: (
+                    ((paired.get(comparison) or {}).get("by_stratum") or {}).get(stratum)
+                )
+                for comparison in (PAIRED_HYBRID_MINUS_ACTIVE, PAIRED_HYBRID_MINUS_GENERALIZED)
+            },
+        }
+    evaluations = {
+        record["id"]: record
+        for record in ((artifact.get("criteria_evaluation") or {}).get("criteria") or [])
+    }
+    document: dict[str, Any] = {
+        "schema": SPARSE_COMPARISON_SCHEMA,
+        "kind": "sparse_strata_side_by_side_comparison",
+        "issue": 423,
+        "planner_key": "T6",
+        "generated_by": _relative(MODULE_PATH),
+        "module_sha256": sha256_file(MODULE_PATH),
+        "title": (
+            "#423 T6 sparse strata comparison: rare_exact and exact_absent_in_domain, the two "
+            "strata the generalized channel may cover"
+        ),
+        "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold",
+        "frozen_spec": {
+            "path": frozen["path"],
+            "sha256": frozen["sha256"],
+            "criteria_sha256": frozen["criteria_sha256"],
+        },
+        "outcome": artifact.get("outcome"),
+        "strata": list(SPARSE_STRATA),
+        "paired_unit": "hand_id",
+        "definition": (
+            "direct, per-stratum comparison of the active Model A reference, the calibrated "
+            "generalized channel and the hybrid router on the two sparse strata, with the "
+            "support-weighted pool the frozen sparse criteria read"
+        ),
+        "pooled": {
+            "weights": pooled["weights"],
+            "sparse_decisions": pooled["sparse_decisions"],
+            "gain_bits_per_decision": pooled["gain_bits_per_decision"],
+            "hybrid_ece": pooled["hybrid_ece"],
+            "active_ece": pooled["active_ece"],
+            "log_loss_gain_bits_per_decision": {
+                "per_stratum": pooled["stratum_gain_bits_per_decision"],
+            },
+            "criteria": {
+                criterion: evaluations.get(criterion)
+                for criterion in (CRITERION_SPARSE_GAIN, CRITERION_SPARSE_ECE)
+            },
+        },
+        "by_stratum": by_stratum,
+        "assertions": {
+            "train_only": True,
+            "validation_consumed": False,
+            "test_consumed": False,
+            "thresholds_are_frozen": True,
+            "margins_reinvented_here": False,
+        },
+    }
+    document["canonical_payload_sha256"] = model.stable_hash(_canonical_payload(_finalize(document)))
+    return document
+
+
+def _assemble_terminal_report(
+    core: Mapping[str, Any],
+    *,
+    frozen: Mapping[str, Any],
+    scope: Mapping[str, Any],
+    samples: int,
+    bootstrap_seed: int,
+) -> dict[str, Any]:
+    """Turn a cross-fitted TRAIN run into the terminal report under the freeze."""
+    records = core["records"]
+    probes = core["probes"]
+    prior = dict(core["protocol"]["prior"])
+    models = {channel: channel_block(records, channel, prior) for channel in CHANNELS}
+    paired = {
+        PAIRED_HYBRID_MINUS_ACTIVE: paired_block(
+            records, CHANNEL_HYBRID, CHANNEL_ACTIVE, samples=samples, seed=bootstrap_seed
+        ),
+        PAIRED_HYBRID_MINUS_GENERALIZED: paired_block(
+            records, CHANNEL_HYBRID, CHANNEL_GENERALIZED, samples=samples, seed=bootstrap_seed
+        ),
+        PAIRED_ACTIVE_MINUS_GENERALIZED: paired_block(
+            records, CHANNEL_ACTIVE, CHANNEL_GENERALIZED, samples=samples, seed=bootstrap_seed
+        ),
+    }
+    static_scan = verify_no_holdout_access()
+    probe_block = _probe_block(probes)
+    report: dict[str, Any] = {
+        "schema": TERMINAL_SCHEMA,
+        "kind": "train_only_cross_fitted_hybrid_router_terminal_report",
+        "issue": 423,
+        "planner_key": "T6",
+        "generated_by": _relative(MODULE_PATH),
+        "module_sha256": sha256_file(MODULE_PATH),
+        "title": (
+            "#423 T6 terminal score: the cross-fitted TRAIN comparison judged by the frozen "
+            "numeric admission criteria"
+        ),
+        "outcome": None,
+        "frozen_spec": {
+            "path": frozen["path"],
+            "sha256": frozen["sha256"],
+            "bytes": frozen["bytes"],
+            "sidecar": frozen["sidecar"],
+            "canonical_payload_sha256": frozen["canonical_payload_sha256"],
+            "schema": frozen["schema"],
+            "status": frozen["status"],
+            "frozen_at": frozen["frozen_at"],
+            "criteria_sha256": frozen["criteria_sha256"],
+            "criteria_order": list(frozen["criteria_order"]),
+            "manifest": dict(frozen["manifest"]),
+            "derivation_binding": dict(frozen["derivation_binding"]),
+        },
+        "frozen_criteria": frozen["criteria"],
+        "scope": dict(scope),
+        "guards": {
+            "train_only": True,
+            "validation_consumed": False,
+            "test_consumed": False,
+            "no_holdout_loader": static_scan["result"] == "PASS",
+            "no_holdout_access_scan": static_scan,
+            "hands_never_on_both_sides_of_a_fold": True,
+            "frozen_spec_verified_before_scoring": True,
+            "byte_stable": True,
+        },
+        "protocol": core["protocol"],
+        "folds": core["folds"],
+        "calibration_admitted_folds": core["calibration_admitted_folds"],
+        "strata": strata_block(records),
+        "models": models,
+        "per_stratum": _stratum_surface(
+            records,
+            probes,
+            prior,
+            paired={
+                PAIRED_HYBRID_MINUS_ACTIVE: paired[PAIRED_HYBRID_MINUS_ACTIVE],
+                PAIRED_HYBRID_MINUS_GENERALIZED: paired[PAIRED_HYBRID_MINUS_GENERALIZED],
+            },
+        ),
+        "paired": paired,
+        "limper_vs_iso": _limper_vs_iso_block(
+            records,
+            prior,
+            paired={
+                PAIRED_HYBRID_MINUS_ACTIVE: paired[PAIRED_HYBRID_MINUS_ACTIVE],
+                PAIRED_HYBRID_MINUS_GENERALIZED: paired[PAIRED_HYBRID_MINUS_GENERALIZED],
+            },
+        ),
+        "deltas": _deltas_block(records, models, paired),
+        "sparse": sparse_pooled(models),
+        "ood_synthetic_probes": probe_block,
+        "ood": {
+            "stratum": OOD_STRATUM,
+            "source": "synthetic_probes",
+            "abstain_rate": probe_block["abstain_rate"],
+            "coverage": probe_block["coverage"],
+            "n": probe_block["n"],
+            "probes_per_kind": {
+                str(kind): int(entry.get("n", 0))
+                for kind, entry in (probe_block.get("by_kind") or {}).items()
+            },
+        },
+        "records": records,
+        "assertions": {
+            "no_hand_on_both_sides_of_a_split": True,
+            "validation_never_read": True,
+            "test_never_read": True,
+            "frozen_spec_not_drifted": True,
+            "outcome_derived_from_frozen_criteria": True,
+            "router_abstains_on_every_ood_probe": probe_block["assertions"][
+                "router_abstains_on_every_probe"
+            ],
+        },
+    }
+    report["criteria_evaluation"] = evaluate_frozen_criteria(report, frozen["criteria"])
+    report["outcome"] = report["criteria_evaluation"]["outcome"]
+    companion = build_sparse_strata_comparison(report, frozen)
+    report["sparse_strata_comparison"] = companion
+    report["sparse_strata_comparison_binding"] = {
+        "name": SPARSE_COMPARISON_NAME,
+        "declared_path": _relative(SPARSE_COMPARISON_PATH),
+        "sha256": sha256_bytes(persisted_artifact_text(companion).encode("utf-8")),
+        "canonical_payload_sha256": companion["canonical_payload_sha256"],
+    }
+    report.pop("records")
+    report["canonical_payload_sha256"] = model.stable_hash(_canonical_payload(_finalize(report)))
+    return report
+
+
+def build_terminal_report(
+    dataset: str | Path = DEFAULT_DATASET,
+    *,
+    folds: int = CV_FOLDS,
+    seed: int = CV_SEED,
+    rule: str | router.RouteRule | None = None,
+    architecture: str | None = None,
+    method: str | None = None,
+    config: Mapping[str, Any] | None = None,
+    stride: int = 1,
+    fit_max_rows: int = calibration.CALIBRATION_FIT_MAX_ROWS,
+    probe_limit: int = PROBE_LIMIT,
+    samples: int = BOOTSTRAP_SAMPLES,
+    bootstrap_seed: int = BOOTSTRAP_SEED,
+    reference: Mapping[str, Any] | None = None,
+    spec_path: str | Path | None = None,
+    spec_digest_path: str | Path | None = None,
+    manifest_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Score TRAIN and judge the score with the frozen criteria.
+
+    The frozen spec is verified *before* a single row is read: an unfrozen spec,
+    a drifted digest, or a manifest that disagrees with the spec refuses the run
+    outright rather than producing a score nobody may judge.
+    """
+    frozen = load_frozen_criteria(
+        spec_path, digest_path=spec_digest_path, manifest_path=manifest_path
+    )
+    dataset_path = Path(dataset).resolve()
+    assert_consumed_splits(CONSUMED_SPLITS, context="build_terminal_report")
+    rows = read_train_rows(dataset_path, stride=stride)
+    core = run_cross_validation(
+        rows,
+        folds=folds,
+        seed=seed,
+        rule=rule,
+        architecture=architecture,
+        method=method,
+        config=config,
+        fit_max_rows=fit_max_rows,
+        reference=reference,
+        probe_limit=probe_limit,
+        samples=samples,
+        bootstrap_seed=bootstrap_seed,
+    )
+    scope = {
+        "dataset": _relative(dataset_path),
+        "dataset_sha256": sha256_file(dataset_path),
+        "dataset_bytes": dataset_path.stat().st_size,
+        "split": MAIN_SPLIT,
+        "rows": len(rows),
+        "hands": len({str(row["hand_id"]) for row in rows}),
+        "row_stride": int(stride),
+        "consumed_splits": list(CONSUMED_SPLITS),
+        "refused_splits": list(REFUSED_SPLITS),
+        "forbidden_splits": list(FORBIDDEN_SPLITS),
+        "validation_consumed": False,
+        "test_consumed": False,
+        "cross_validated_rows": sum(fold["holdout_rows"] for fold in core["folds"]),
+        "probe_rows": len(core["probes"]),
+    }
+    return _assemble_terminal_report(
+        core, frozen=frozen, scope=scope, samples=samples, bootstrap_seed=bootstrap_seed
+    )
+
+
+def terminal_sidecar_text(report: Mapping[str, Any], *, name: str) -> str:
+    payload = persisted_artifact_text(report)
+    return (
+        f"{sha256_bytes(payload.encode('utf-8'))}  {name}\n"
+        f"# canonical_payload_sha256 {model.stable_hash(_canonical_payload(_finalize(report)))}\n"
+        f"# scope TRAIN_ONLY_NO_VALIDATION_NO_TEST\n"
+        f"# outcome {report['outcome']}\n"
+        f"# frozen_spec_sha256 {report['frozen_spec']['sha256']}\n"
+        f"# frozen_criteria_sha256 {report['frozen_spec']['criteria_sha256']}\n"
+    )
+
+
+def sparse_sidecar_text(document: Mapping[str, Any], *, name: str) -> str:
+    payload = persisted_artifact_text(document)
+    return (
+        f"{sha256_bytes(payload.encode('utf-8'))}  {name}\n"
+        f"# canonical_payload_sha256 {model.stable_hash(_canonical_payload(_finalize(document)))}\n"
+        f"# scope TRAIN_ONLY_NO_VALIDATION_NO_TEST\n"
+        f"# criteria {CRITERION_SPARSE_GAIN},{CRITERION_SPARSE_ECE}\n"
+        f"# frozen_spec_sha256 {document['frozen_spec']['sha256']}\n"
+    )
+
+
+def write_terminal_artifacts(
+    report: Mapping[str, Any],
+    *,
+    report_path: str | Path | None = None,
+    sparse_path: str | Path | None = None,
+) -> dict[str, Path]:
+    """Persist the terminal report and its companion, each with a ``.sha256``."""
+    report_target = Path(report_path) if report_path is not None else TERMINAL_REPORT_PATH
+    sparse_target = Path(sparse_path) if sparse_path is not None else SPARSE_COMPARISON_PATH
+    report_target.parent.mkdir(parents=True, exist_ok=True)
+    sparse_target.parent.mkdir(parents=True, exist_ok=True)
+    report_target.write_text(persisted_artifact_text(report), encoding="utf-8")
+    report_target.with_suffix(".sha256").write_text(
+        terminal_sidecar_text(report, name=report_target.name), encoding="utf-8"
+    )
+    companion = report["sparse_strata_comparison"]
+    sparse_target.write_text(persisted_artifact_text(companion), encoding="utf-8")
+    sparse_target.with_suffix(".sha256").write_text(
+        sparse_sidecar_text(companion, name=sparse_target.name), encoding="utf-8"
+    )
+    return {"report": report_target, "sparse_strata_comparison": sparse_target}
+
+
+def _sidecar_pins(path: Path) -> list[str]:
+    problems: list[str] = []
+    sidecar = path.with_suffix(".sha256")
+    if not sidecar.is_file():
+        problems.append(f"missing {_relative(sidecar)}")
+        return problems
+    lines = sidecar.read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0].split()[0] != sha256_bytes(path.read_bytes()):
+        problems.append(f"{_relative(sidecar)} does not pin the persisted bytes")
+    return problems
+
+
+def _verdicts(artifact: Mapping[str, Any]) -> list[tuple[Any, ...]]:
+    """The decision-relevant projection of a criteria evaluation.
+
+    Only what the frozen procedure decides is compared -- the criterion, the
+    frozen threshold it read, the direction of the comparison and the verdict --
+    so a persisted report reproduces without depending on the rounding of the
+    measured statistics it also records.
+    """
+    records = (artifact.get("criteria_evaluation") or {}).get("criteria") or []
+    return [
+        (
+            record.get("id"),
+            record.get("threshold"),
+            record.get("comparator"),
+            record.get("passed"),
+        )
+        for record in records
+    ]
+
+
+def verify_terminal_artifacts(
+    report_path: str | Path | None = None,
+    *,
+    spec_path: str | Path | None = None,
+    spec_digest_path: str | Path | None = None,
+    manifest_path: str | Path | None = None,
+) -> list[str]:
+    """Structural verification of the persisted terminal report and companion."""
+    target = Path(report_path) if report_path is not None else TERMINAL_REPORT_PATH
+    if not target.is_file():
+        return [f"missing {_relative(target)}"]
+    problems = _sidecar_pins(target)
+    report = json.loads(target.read_bytes().decode("utf-8"))
+    if report.get("schema") != TERMINAL_SCHEMA:
+        problems.append(f"schema must be {TERMINAL_SCHEMA}")
+    if report.get("module_sha256") != sha256_file(MODULE_PATH):
+        problems.append("module_sha256 does not match the on-disk harness module")
+    if report.get("canonical_payload_sha256") != model.stable_hash(
+        _canonical_payload(_finalize(report))
+    ):
+        problems.append("canonical payload digest mismatch")
+    if report.get("outcome") not in TERMINAL_OUTCOMES:
+        problems.append(f"outcome must be one of {list(TERMINAL_OUTCOMES)}")
+
+    try:
+        frozen = load_frozen_criteria(
+            spec_path, digest_path=spec_digest_path, manifest_path=manifest_path
+        )
+    except HybridRouterTerminalError as error:
+        problems.append(str(error))
+        frozen = None
+    if frozen is not None:
+        bound = report.get("frozen_spec") or {}
+        if bound.get("sha256") != frozen["sha256"]:
+            problems.append("the report binds a frozen spec digest that has drifted")
+        if bound.get("criteria_sha256") != frozen["criteria_sha256"]:
+            problems.append("the report binds a frozen criteria digest that has drifted")
+        if (report.get("frozen_criteria") or {}) != frozen["criteria"]:
+            problems.append("the report embeds frozen criteria that diverge from the spec")
+        try:
+            expected = evaluate_frozen_criteria(report, frozen["criteria"])
+        except HybridRouterTerminalError as error:
+            problems.append(f"the frozen criteria do not apply to the report: {error}")
+        else:
+            if report.get("outcome") != expected["outcome"]:
+                problems.append(
+                    "the persisted outcome is not the one the frozen criteria derive: "
+                    f"{report.get('outcome')} != {expected['outcome']}"
+                )
+            if _verdicts(report) != _verdicts({"criteria_evaluation": expected}):
+                problems.append("the persisted criteria evaluation does not reproduce")
+
+    scope = report.get("scope") or {}
+    if scope.get("split") != MAIN_SPLIT or scope.get("consumed_splits") != list(CONSUMED_SPLITS):
+        problems.append("the terminal report must declare a TRAIN-only scope")
+    if scope.get("validation_consumed") or scope.get("test_consumed"):
+        problems.append("the terminal report claims to have consumed a holdout split")
+    guards = report.get("guards") or {}
+    if not guards.get("frozen_spec_verified_before_scoring"):
+        problems.append("the terminal report does not prove the freeze preceded the score")
+    if not guards.get("hands_never_on_both_sides_of_a_fold"):
+        problems.append("the terminal report does not prove the hand-grouped no-leak property")
+    problems.extend(_required_surface_problems(report))
+
+    binding = report.get("sparse_strata_comparison_binding") or {}
+    companion_path = target.parent / str(binding.get("name") or SPARSE_COMPARISON_NAME)
+    if not companion_path.is_file():
+        problems.append(f"missing {_relative(companion_path)}")
+    else:
+        problems.extend(_sidecar_pins(companion_path))
+        companion = json.loads(companion_path.read_text(encoding="utf-8"))
+        if sha256_bytes(companion_path.read_bytes()) != binding.get("sha256"):
+            problems.append("the sparse strata comparison does not match its recorded digest")
+        if companion.get("canonical_payload_sha256") != binding.get("canonical_payload_sha256"):
+            problems.append("the sparse strata comparison canonical digest does not match")
+        if companion != (report.get("sparse_strata_comparison") or {}):
+            problems.append("the embedded sparse strata comparison diverges from the companion file")
+        if companion.get("schema") != SPARSE_COMPARISON_SCHEMA:
+            problems.append(f"the sparse comparison schema must be {SPARSE_COMPARISON_SCHEMA}")
+        for stratum in SPARSE_STRATA:
+            if stratum not in (companion.get("by_stratum") or {}):
+                problems.append(f"the sparse strata comparison omits {stratum!r}")
+    return problems
+
+
+def check_terminal(report_path: str | Path | None = None, **kwargs: Any) -> list[str]:
+    return verify_terminal_artifacts(report_path, **kwargs)
+
+
+def _required_surface_problems(report: Mapping[str, Any]) -> list[str]:
+    """Every metric surface the acceptance criterion names, checked present."""
+    problems: list[str] = []
+    models = report.get("models") or {}
+    for channel in CHANNELS:
+        block = models.get(channel)
+        if not isinstance(block, Mapping):
+            problems.append(f"the terminal report omits channel {channel!r}")
+            continue
+        for stratum in (*ADMISSION_STRATA, OOD_STRATUM):
+            metrics = ((block.get("by_stratum") or {}).get(stratum) or {}).get("metrics")
+            if not isinstance(metrics, Mapping):
+                problems.append(f"the terminal report omits {channel}/{stratum} metrics")
+                continue
+            for key in (
+                "log_loss_bits_per_decision",
+                "brier_score",
+                "expected_calibration_error",
+                "accuracy",
+            ):
+                if key not in metrics:
+                    problems.append(f"the terminal report omits {channel}/{stratum}/{key}")
+    paired = report.get("paired") or {}
+    for comparison in (PAIRED_HYBRID_MINUS_ACTIVE, PAIRED_HYBRID_MINUS_GENERALIZED):
+        block = paired.get(comparison)
+        if not isinstance(block, Mapping):
+            problems.append(f"the terminal report omits the paired comparison {comparison!r}")
+            continue
+        if block.get("paired_unit") != "hand_id":
+            problems.append(f"the paired comparison {comparison!r} is not paired by hand_id")
+        for label in ("global", "admission_support", "limper_vs_iso"):
+            if not isinstance(block.get(label), Mapping):
+                problems.append(f"the paired comparison {comparison!r} omits {label!r}")
+    deltas = report.get("deltas") or {}
+    if not isinstance(deltas.get("global_log_loss_bits_per_decision"), Mapping):
+        problems.append("the terminal report omits the global log-loss delta")
+    if not isinstance(deltas.get("sparse_log_loss_bits_per_decision"), Mapping):
+        problems.append("the terminal report omits the sparse delta")
+    limper = report.get("limper_vs_iso") or {}
+    if not isinstance(limper.get("models"), Mapping) or not isinstance(limper.get("paired"), Mapping):
+        problems.append("the terminal report omits the separated LIMPER_VS_ISO surface")
+    ood = report.get("ood") or {}
+    if ood.get("abstain_rate") is None:
+        problems.append("the terminal report omits the OOD abstention rate")
+    return problems
+
+
+def terminal_self_check(seed: int = CV_SEED) -> dict[str, Any]:
+    """Fast, dataset-independent terminal check against the persisted freeze."""
+    frozen = load_frozen_criteria()
+    rows = []
+    for index, row in enumerate(model.synthetic_rows(900, seed)):
+        rows.append(dict(row, hand_id=f"hyb-hand-{index % 90:04d}"))
+    core = run_cross_validation(
+        rows,
+        folds=3,
+        seed=seed,
+        config=model.make_config(tuning_max_rows=300),
+        fit_max_rows=2000,
+        probe_limit=4,
+        samples=200,
+    )
+    report = _assemble_terminal_report(
+        core,
+        frozen=frozen,
+        scope={"split": MAIN_SPLIT, "rows": len(rows), "row_stride": 1},
+        samples=200,
+        bootstrap_seed=BOOTSTRAP_SEED,
+    )
+    return {
+        "schema": TERMINAL_SELF_CHECK_SCHEMA,
+        "rows": len(rows),
+        "folds": core["protocol"]["folds"],
+        "frozen_spec_sha256": frozen["sha256"],
+        "criteria_order": list(frozen["criteria_order"]),
+        "outcome": report["outcome"],
+        "criteria": [
+            {"id": record["id"], "threshold": record["threshold"], "passed": record["passed"]}
+            for record in report["criteria_evaluation"]["criteria"]
+        ],
+        "required_surface_problems": _required_surface_problems(report),
+        "validation_consumed": False,
+        "test_consumed": False,
+    }
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="#423 T4 - TRAIN-only cross-fitted hybrid router comparison and derivation"
@@ -1755,6 +2879,26 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--bootstrap-samples", type=int, default=BOOTSTRAP_SAMPLES)
     parser.add_argument("--bootstrap-seed", type=int, default=BOOTSTRAP_SEED)
     parser.add_argument("--print", dest="print_only", action="store_true", help="print, do not write")
+    parser.add_argument(
+        "--terminal",
+        action="store_true",
+        help="run the terminal score under the frozen criteria and write TRAIN_CV_ROUTER_REPORT.json",
+    )
+    parser.add_argument(
+        "--check-terminal",
+        action="store_true",
+        help="verify the persisted terminal report and sparse strata comparison",
+    )
+    parser.add_argument(
+        "--terminal-self-check",
+        action="store_true",
+        help="run the dependency-free terminal check against the persisted freeze",
+    )
+    parser.add_argument("--terminal-out", default=str(TERMINAL_REPORT_PATH))
+    parser.add_argument("--sparse-out", default=str(SPARSE_COMPARISON_PATH))
+    parser.add_argument("--spec", dest="spec_path", default=str(SPEC_PATH))
+    parser.add_argument("--spec-digest", dest="spec_digest_path", default=None)
+    parser.add_argument("--criteria-manifest", dest="manifest_path", default=str(CRITERIA_MANIFEST_PATH))
     return parser.parse_args(argv)
 
 
@@ -1773,11 +2917,62 @@ def main(argv: Sequence[str] | None = None) -> int:
         for problem in problems:
             print(problem, file=sys.stderr)
         return 1 if problems else 0
+    if args.terminal_self_check:
+        print(json.dumps(_finalize(terminal_self_check(args.seed)), sort_keys=True, indent=2))
+        return 0
+    if args.check_terminal:
+        problems = verify_terminal_artifacts(
+            args.terminal_out,
+            spec_path=args.spec_path,
+            spec_digest_path=args.spec_digest_path,
+            manifest_path=args.manifest_path,
+        )
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        return 1 if problems else 0
     config = (
         model.make_config(tuning_max_rows=args.tuning_max_rows)
         if args.tuning_max_rows is not None
         else None
     )
+    if args.terminal:
+        report = build_terminal_report(
+            args.dataset,
+            folds=args.folds,
+            seed=args.seed,
+            rule=args.rule,
+            architecture=args.architecture,
+            method=args.method,
+            config=config,
+            stride=args.stride,
+            fit_max_rows=args.calibration_fit_max_rows,
+            probe_limit=args.probe_limit,
+            samples=args.bootstrap_samples,
+            bootstrap_seed=args.bootstrap_seed,
+            spec_path=args.spec_path,
+            spec_digest_path=args.spec_digest_path,
+            manifest_path=args.manifest_path,
+        )
+        if args.print_only:
+            sys.stdout.write(persisted_artifact_text(report))
+            return 0
+        targets = write_terminal_artifacts(
+            report, report_path=args.terminal_out, sparse_path=args.sparse_out
+        )
+        print(
+            json.dumps(
+                {
+                    "report": _relative(targets["report"]),
+                    "sparse_strata_comparison": _relative(targets["sparse_strata_comparison"]),
+                    "outcome": report["outcome"],
+                    "failed_criteria": report["criteria_evaluation"]["failed"],
+                    "frozen_spec_sha256": report["frozen_spec"]["sha256"],
+                },
+                sort_keys=True,
+                indent=2,
+            )
+        )
+        return 0
     artifact = build_derivation(
         args.dataset,
         folds=args.folds,
