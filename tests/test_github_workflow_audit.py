@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from pathlib import Path
-import hashlib, json, re, shutil, sys, tempfile, unittest
+import hashlib, json, re, shutil, subprocess, sys, tempfile, unittest
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from tools import audit_github_workflows as audit
@@ -10,8 +10,11 @@ from tools import audit_active_workflow_dag as dag
 # Issue #419 ships one authoritative workflow. It must actually execute every
 # #419 suite (not merely declare them in its `paths` filters) and its path
 # filters must cover every file the issue changes. Both properties are guarded
-# here, together with a negative test proving the execution guard is not vacuous.
+# here, together with negative tests proving the guards are not vacuous: an
+# execution-only declaration, a dropped trigger pattern (drift) and a swapped
+# trigger pattern (substitution) must each be detected.
 ISSUE_419_WORKFLOW=".github/workflows/issue-419-hierarchical-exact-tree.yml"
+ISSUE_419_EVENTS=("push","pull_request")
 ISSUE_419_SUITES=(
     "tests/simulation/test_issue419_exact_tree_preflight.py",
     "tests/preflop/test_model_a_sizing_hierarchical.py",
@@ -30,6 +33,10 @@ ISSUE_419_EXTRA_SUITES=(
     "tests/training/test_issue419_hierarchical_exact_tree.py",
     "tests/test_github_workflow_audit.py",
 )
+# The #419 change surface: every path the issue actually ships must trigger the
+# authoritative runner.  `test_issue419_trigger_paths_cover_the_issue_surface`
+# cross-checks this manifest against the real branch diff when git history is
+# available, so the list can never silently rot.
 ISSUE_419_CHANGED_PATHS=(
     # production tools and the shared hierarchical provider
     "tools/preflop/model_a_sizing_hierarchical.py",
@@ -44,12 +51,25 @@ ISSUE_419_CHANGED_PATHS=(
     "tools/training/validation_order_guard.py",
     "tools/training/audit_hierarchical_candidate_contract.py",
     "tools/training/audit_hierarchical_tree_sparsity.py",
-    # candidate contract
+    "tools/audit_active_workflow_dag.py",
+    # candidate contract (the #419 contract and its #388 sibling)
     "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
+    "contracts/training/model-a-preflop-sizing-likelihood.schema.json",
     # documentation
     "docs/hierarchical-exact-context-model.md",
     "docs/hierarchical-exact-context-runtime-contract.md",
     "docs/hierarchical-exact-context-validation-protocol.md",
+    "docs/model-a-posterior-runtime.md",
+    "docs/reviewer-preflop-iso-analysis.md",
+    # decision records
+    ".project/decisions/20260925-exact-tree-367-preflight.md",
+    ".project/decisions/20260925-hierarchical-candidate-contract.md",
+    ".project/decisions/20260925-hierarchical-exact-context-model-spec.md",
+    ".project/decisions/20260925-hierarchical-exact-context-runtime-contract.md",
+    ".project/decisions/20260925-hierarchical-exact-tree-terminal-decision.md",
+    ".project/decisions/20260925-hierarchical-validation-evaluation.md",
+    ".project/decisions/20260925-hierarchical-validation-protocol.md",
+    ".project/decisions/20260926-hierarchical-validation-protocol-v2.md",
     # content-addressed #419 evidence (the directory glob must cover all of it)
     "analysis/issue419_hierarchical_tree/SUMMARY.md",
     "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json",
@@ -61,10 +81,10 @@ ISSUE_419_CHANGED_PATHS=(
     "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
     "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
     "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
-    "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
     # the suites this workflow is authoritative for (including the audit guard itself)
     *ISSUE_419_SUITES,
     *ISSUE_419_EXTRA_SUITES,
+    "tests/ci/test_consolidation_decision.py",
     # the workflow and its regenerated audit evidence
     ISSUE_419_WORKFLOW,
     "analysis/workflow_audit/workflows.json",
@@ -73,12 +93,45 @@ ISSUE_419_CHANGED_PATHS=(
     "docs/ci-workflow-dag.md",
 )
 
+# Inputs the runner consumes or executes but the issue does not itself change: an
+# edit to any of them must still re-run the authoritative surface, so they are
+# trigger-required even though they are not part of the #419 diff.
+ISSUE_419_EXTERNAL_DEPENDENCIES=(
+    "tools/audit_github_workflows.py",
+    "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+)
+ISSUE_419_TRIGGER_REQUIRED_PATHS=*ISSUE_419_CHANGED_PATHS,*ISSUE_419_EXTERNAL_DEPENDENCIES
+
 
 def issue419_executed_suites(text: str) -> set[str]:
     """Suites the workflow really runs: a `python3 <suite>` command outside a comment."""
     executable="\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
     return {suite for suite in ISSUE_419_SUITES
             if re.search(r"python3\s+"+re.escape(suite)+r"(?:\s|$)",executable)}
+
+
+def issue419_uncovered_paths(text: str, paths=ISSUE_419_TRIGGER_REQUIRED_PATHS) -> list[tuple[str, str]]:
+    """(event, path) pairs a #419 change would land on *without* triggering the runner."""
+    triggers=audit.parse_triggers(text.splitlines())
+    uncovered=[]
+    for event in ISSUE_419_EVENTS:
+        patterns=triggers.get(event,{}).get("paths",[])
+        for path in paths:
+            if not any(dag._glob(pattern,path) for pattern in patterns):
+                uncovered.append((event,path))
+    return uncovered
+
+
+def issue419_changed_paths() -> list[str] | None:
+    """The real #419 change surface, or None when git history is unavailable (shallow checkout)."""
+    try:
+        base=subprocess.check_output(["git","merge-base","origin/main","HEAD"],cwd=ROOT,text=True,
+                                     stderr=subprocess.DEVNULL).strip()
+        diff=subprocess.check_output(["git","diff","--name-only",f"{base}..HEAD"],cwd=ROOT,text=True,
+                                     stderr=subprocess.DEVNULL).split()
+    except (subprocess.CalledProcessError,FileNotFoundError):
+        return None
+    return sorted(path for path in diff if (ROOT/path).exists())
 
 HISTORICAL_EVIDENCE=(
     "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
@@ -204,13 +257,43 @@ jobs:
         triggers=audit.parse_triggers(text.splitlines())
         self.assertIn("push",triggers,ISSUE_419_WORKFLOW)
         self.assertIn("pull_request",triggers,ISSUE_419_WORKFLOW)
-        for changed in ISSUE_419_CHANGED_PATHS:
+        for changed in ISSUE_419_TRIGGER_REQUIRED_PATHS:
             self.assertTrue((ROOT/changed).exists(),f"declared #419 path is missing: {changed}")
-            for event in ("push","pull_request"):
-                with self.subTest(path=changed,event=event):
-                    patterns=triggers[event].get("paths",[])
-                    self.assertTrue(any(dag._glob(pattern,changed) for pattern in patterns),
-                                    f"{event} filters do not cover {changed}")
+        self.assertEqual([],issue419_uncovered_paths(text))
+
+    def test_issue419_trigger_paths_cover_the_issue_surface(self):
+        """Completeness: the filters must cover the real branch diff, not only a curated list."""
+        changed=issue419_changed_paths()
+        if changed is None:
+            self.skipTest("git history unavailable (shallow checkout): set fetch-depth: 0 to enforce this")
+        if not changed:
+            # The checkout tip is its own merge-base with origin/main (post-merge push):
+            # there is no changed surface to cross-check here.
+            self.skipTest("branch tip equals its merge-base with origin/main: nothing to cross-check")
+        text=(ROOT/ISSUE_419_WORKFLOW).read_text()
+        self.assertEqual([],issue419_uncovered_paths(text,changed),
+                         "the #419 change surface exposes paths the runner never triggers on")
+        # The curated manifest must stay a subset of the real surface, so it can never
+        # assert coverage for a path the issue does not actually ship.
+        fabricated=set(ISSUE_419_CHANGED_PATHS)-set(changed)
+        self.assertEqual(set(),fabricated,f"manifest claims paths outside the #419 diff: {sorted(fabricated)}")
+
+    def test_issue419_trigger_drift_and_substitution_are_detected(self):
+        """Negative guard: dropping or swapping a trigger pattern must be detected."""
+        text=(ROOT/ISSUE_419_WORKFLOW).read_text()
+        # (a) drift: the pre-hardening filters did not cover the audit chain.
+        drifted=text.replace("      - 'tests/**'\n","      - 'tests/training/test_hierarchical_*.py'\n")
+        uncovered={path for _,path in issue419_uncovered_paths(drifted)}
+        self.assertIn("tests/ci/test_consolidation_decision.py",uncovered)
+        self.assertIn("tests/simulation/test_issue419_exact_tree_preflight.py",uncovered)
+        # (b) substitution: a nearby path that looks right but is not the shipped one.
+        substituted=text.replace("      - 'tests/**'\n","      - 'tests/preflop/**'\n")
+        self.assertIn(("push","tests/training/test_hierarchical_train_fit.py"),
+                      issue419_uncovered_paths(substituted))
+        # (c) a silently-renamed evidence directory must also be flagged.
+        renamed=text.replace("'analysis/issue419_hierarchical_tree/**'","'analysis/issue419_hierarchical_trees/**'")
+        self.assertIn(("pull_request","analysis/issue419_hierarchical_tree/fit/CANDIDATE.json"),
+                      issue419_uncovered_paths(renamed))
 
     def test_issue419_workflow_executes_every_suite(self):
         """The workflow must run each of the 12 #419 suites as a real command, not a declaration."""

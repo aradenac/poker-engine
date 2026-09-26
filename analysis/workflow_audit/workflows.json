@@ -907,6 +907,7 @@
       "path": ".github/workflows/issue-419-hierarchical-exact-tree.yml",
       "path_scopes": [
         ".github",
+        ".project",
         "analysis",
         "contracts",
         "docs",
