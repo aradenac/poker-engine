@@ -287,6 +287,63 @@ class HierarchicalValidationEvaluationTests(unittest.TestCase):
     def test_check_mode_verifies_the_persisted_result(self):
         self.assertEqual(tool.check(), 0)
 
+    def test_v2_protocol_inherits_the_frozen_v1_thresholds_verbatim(self):
+        """The v2 estimate layer adds a class, never slack in the frozen rule."""
+        v2_path = (
+            ROOT / 'analysis/issue419_hierarchical_tree/validation_protocol_v2/'
+            'FROZEN_VALIDATION_PROTOCOL_V2.json'
+        )
+        v2 = json.loads(v2_path.read_text())
+        self.assertEqual(v2['revision_of'], tool.PROTOCOL_SCHEMA)
+        self.assertTrue(v2['thresholds']['inherited_verbatim_from_v1'])
+        self.assertFalse(v2['thresholds']['modified_by_this_revision'])
+        self.assertFalse(v2['thresholds']['re_selected_after_reading_validation'])
+        self.assertEqual(
+            v2['v1_provenance']['byte_sha256'], tool.EXPECTED_PROTOCOL_BYTE_SHA256
+        )
+        self.assertTrue(v2['v1_custody']['v1_bytes_unchanged'])
+        for flag in ('v1_bytes_rewritten', 'v1_artifacts_superseded'):
+            self.assertFalse(v2['relationship_to_v1'][flag], flag)
+        self.assertFalse(v2['relationship_to_v1']['changes_admission_rule'])
+        self.assertFalse(v2['relationship_to_v1']['admits_anything'])
+        self.assertTrue(
+            v2['relationship_to_v1']['v1_gates_and_thresholds_remain_the_source_of_record']
+        )
+        # The still-frozen v1 bytes the VALIDATION result pinned are on disk, and
+        # the v2 revision repeats every measurable threshold verbatim.
+        self.assertEqual(
+            guard.sha256_file(tool.PROTOCOL_PATH), tool.EXPECTED_PROTOCOL_BYTE_SHA256
+        )
+        for key in (
+            'minimum_marginal_observations',
+            'minimum_distinct_hands',
+            'minimum_identifiable_validation_decisions',
+            'minimum_identifiable_validation_hands',
+            'non_inferiority_ci_upper_bound',
+            'maximum_absolute_ece',
+            'maximum_ece_delta_vs_active',
+        ):
+            with self.subTest(threshold=key):
+                self.assertEqual(v2['thresholds'][key], tool.FROZEN_THRESHOLDS[key])
+                self.assertEqual(v2['thresholds'][key], self.result['thresholds'][key])
+        for key in (
+            'rule_id',
+            'only_support_source_level',
+            'maximum_pooling_level_for_an_exact_support_claim',
+            'maximum_pooling_level_for_a_reported_estimate',
+            'alpha_per_legal_marginal_action',
+        ):
+            with self.subTest(pooling=key):
+                self.assertEqual(v2['pooling_limits'][key], tool.FROZEN_POOLING[key])
+        self.assertEqual(
+            v2['pooling_limits']['kappa0'],
+            tool.FROZEN_POOLING['fixed_shrinkage_strength_kappa0'],
+        )
+        self.assertIn(
+            'the 20 marginal observations / 20 distinct hands thresholds',
+            v2['what_did_not_change'],
+        )
+
     # ---------------------------------------------------------------- helpers
     def test_calibration_helper_is_exact_on_a_perfectly_calibrated_sample(self):
         records = [

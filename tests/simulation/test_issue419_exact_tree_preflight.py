@@ -24,6 +24,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -111,6 +112,34 @@ def _estimate_response():
         requested_key=H.hierarchical_exact_key_from_whitelist(exact),
         legal_actions=LEGAL,
     )
+
+
+def _unresolved_response(*, observations):
+    """A node the provider cannot answer: no support and/or no admissible pooling."""
+    exact = _whitelist()
+    candidate = H.make_synthetic_hierarchical_candidate(
+        population_id="preflight-test", observations=observations
+    )
+    return H.resolve_exact_context(
+        candidate=candidate,
+        requested_key=H.hierarchical_exact_key_from_whitelist(exact),
+        legal_actions=LEGAL,
+    )
+
+
+CLOSED_TREE_CONDITIONS = dict(
+    frontier_count=0,
+    nodes_with_unresolved_raise_sizing=0,
+    manifest_unresolved_frontier_count=0,
+    tree_enumeration_complete=True,
+    manifest_tree_enumeration_complete=True,
+    substitutions_applied=0,
+    key_separation_probes_passed=True,
+    hero_ev_executed=False,
+    recommendation_computed=False,
+    rollouts_executed=0,
+    ev_values_computed=0,
+)
 
 
 class ExactTreePreflightTests(unittest.TestCase):
@@ -368,6 +397,273 @@ class ExactTreePreflightTests(unittest.TestCase):
         self.assertLess(estimator['support']['observations'], 20)
         self.assertLess(estimator['support']['distinct_hands'], 20)
 
+    def test_admissible_estimate_is_consumed_without_becoming_exact_support(self):
+        estimator = _estimate_response()
+        consumed = preflight_tool.admissibility(
+            estimator, calibration_evidence=PASSING_CALIBRATION
+        )
+        self.assertEqual(
+            consumed,
+            preflight_tool.node_closure(estimator, calibration_evidence=PASSING_CALIBRATION),
+        )
+        self.assertTrue(consumed['closes_the_node'])
+        self.assertEqual(consumed['admissibility_class'], 'EXACT_HIERARCHICAL_ESTIMATE')
+        self.assertNotEqual(consumed['admissibility_class'], H.STATUS_EXACT_EMPIRICAL_STRONG)
+        self.assertFalse(consumed['counts_as_exact_support'])
+        self.assertTrue(consumed['admissible_as_exact_context_estimate'])
+        self.assertTrue(consumed['support_is_exact_key_only'])
+        self.assertTrue(consumed['pooling_only_feeds_parameters'])
+        self.assertTrue(consumed['layer_b_gates_consulted_for_closure'])
+        self.assertTrue(consumed['probability_emitted'])
+        self.assertLess(consumed['observations'], preflight_tool.MIN_MARGINAL_OBSERVATIONS)
+        self.assertLess(consumed['distinct_hands'], preflight_tool.MIN_DISTINCT_HANDS)
+        self.assertTrue(
+            preflight_tool.is_admissible(estimator, calibration_evidence=PASSING_CALIBRATION)
+        )
+
+        # Consuming a whole tree of admissible estimates keeps every one of them in
+        # the estimate class: none is relabelled as a closed exact-support node.
+        report = preflight_tool.required_tree_closure_report(
+            closures=[consumed] * 7, **CLOSED_TREE_CONDITIONS
+        )
+        self.assertTrue(report['required_tree_complete'])
+        self.assertEqual(report['reason_codes'], [])
+        counts = report['conditions']['every_required_node_closed_by_an_admissible_answer']
+        self.assertEqual(counts['closed_as_exact_empirical_strong'], 0)
+        self.assertEqual(counts['closed_as_exact_hierarchical_estimate'], 7)
+        pooled = report['conditions']['no_pooled_estimate_is_counted_as_exact_support']
+        self.assertTrue(pooled['satisfied'])
+        self.assertEqual(pooled['pooled_closures_counted_as_exact_support'], 0)
+
+        # Relabelling the very same thin node as EXACT_EMPIRICAL_STRONG launders
+        # nothing: it keeps its L1 pooling level and its sub-threshold exact counts,
+        # so both closure paths refuse it and it is consumed as EXACT_UNRESOLVED.
+        relabelled = copy.deepcopy(estimator)
+        relabelled['status'] = H.STATUS_EXACT_EMPIRICAL_STRONG
+        relabelled['reason_code'] = H.STATUS_EXACT_EMPIRICAL_STRONG
+        refused = preflight_tool.node_closure(
+            relabelled, calibration_evidence=PASSING_CALIBRATION
+        )
+        self.assertFalse(refused['closes_the_node'])
+        self.assertEqual(refused['admissibility_class'], 'EXACT_UNRESOLVED')
+        self.assertFalse(refused['counts_as_exact_support'])
+        self.assertFalse(refused['admissible_as_exact_context_estimate'])
+        self.assertFalse(
+            preflight_tool.is_admissible(relabelled, calibration_evidence=PASSING_CALIBRATION)
+        )
+        # And an exact-support claim may never be closed while pooling at a parent
+        # level, even with every layer-B gate satisfied.
+        relabelled_level = copy.deepcopy(estimator)
+        relabelled_level['status'] = H.STATUS_EXACT_EMPIRICAL_STRONG
+        relabelled_level['support']['observations'] = preflight_tool.MIN_MARGINAL_OBSERVATIONS
+        relabelled_level['support']['distinct_hands'] = preflight_tool.MIN_DISTINCT_HANDS
+        refused_level = preflight_tool.node_closure(
+            relabelled_level, calibration_evidence=PASSING_CALIBRATION
+        )
+        self.assertFalse(refused_level['closes_the_node'])
+        self.assertFalse(refused_level['counts_as_exact_support'])
+        self.assertEqual(refused_level['admissibility_class'], 'EXACT_UNRESOLVED')
+
+    def test_empirical_support_is_exact_key_only_and_the_20_20_rule_is_not_widened(self):
+        thresholds = {
+            'minimum_marginal_observations': preflight_tool.MIN_MARGINAL_OBSERVATIONS,
+            'minimum_distinct_hands': preflight_tool.MIN_DISTINCT_HANDS,
+        }
+        self.assertEqual(
+            thresholds,
+            {'minimum_marginal_observations': 20, 'minimum_distinct_hands': 20},
+        )
+        # Every consumed node keeps its own key's support and the unchanged rule.
+        for record in self.preflight['nodes']:
+            with self.subTest(node=record['node_identity']['node_id'][:12]):
+                support = record['empirical_support']
+                self.assertEqual(support['thresholds'], thresholds)
+                self.assertEqual(support['source_key'], record['exact_key'])
+                self.assertFalse(support['borrowed_from_other_keys'])
+                self.assertEqual(
+                    support['support_isolation_rule'], H.SUPPORT_ISOLATION_RULE
+                )
+                if record['counts_as_exact_support']:
+                    self.assertEqual(record['admissibility_class'], 'EXACT_EMPIRICAL_STRONG')
+                    self.assertGreaterEqual(
+                        support['observations'], thresholds['minimum_marginal_observations']
+                    )
+                    self.assertGreaterEqual(
+                        support['distinct_hands'], thresholds['minimum_distinct_hands']
+                    )
+        provider = self.preflight['provider']['thresholds']
+        self.assertEqual(provider['minimum_marginal_observations'], 20)
+        self.assertEqual(provider['minimum_distinct_hands'], 20)
+        self.assertTrue(self.preflight['admissibility_protocol']['no_threshold_moved'])
+        self.assertFalse(
+            self.preflight['admissibility_protocol']['layer_b_gates_more_permissive_than_v1']
+        )
+
+        # v2 inherits the v1 thresholds verbatim: the estimate layer adds no slack.
+        v1 = json.loads(preflight_tool.PROTOCOL_PATH.read_text())
+        v2 = json.loads(preflight_tool.PROTOCOL_V2_PATH.read_text())
+        self.assertTrue(v2['thresholds']['inherited_verbatim_from_v1'])
+        self.assertFalse(v2['thresholds']['modified_by_this_revision'])
+        self.assertFalse(v2['thresholds']['re_selected_after_reading_validation'])
+        for key in (
+            'minimum_marginal_observations',
+            'minimum_distinct_hands',
+            'maximum_absolute_ece',
+            'maximum_ece_delta_vs_active',
+            'minimum_identifiable_validation_decisions',
+            'minimum_identifiable_validation_hands',
+            'non_inferiority_ci_upper_bound',
+        ):
+            with self.subTest(threshold=key):
+                self.assertEqual(v2['thresholds'][key], v1['thresholds'][key])
+        self.assertEqual(v2['thresholds']['minimum_marginal_observations'], 20)
+        self.assertEqual(v2['thresholds']['minimum_distinct_hands'], 20)
+        self.assertEqual(
+            v2['thresholds']['exact_claim_requires'],
+            v1['thresholds']['exact_claim_requires'],
+        )
+
+        # The 20/20 boundary is hard: one observation (or one distinct hand) below
+        # the frozen threshold stays EXACT_UNRESOLVED and never closes the node.
+        strong = _empirical_response()
+        self.assertEqual(strong['status'], H.STATUS_EXACT_EMPIRICAL_STRONG)
+        self.assertTrue(preflight_tool.is_admissible(strong))
+        self.assertEqual(strong['support']['observations'], 24)
+        for field, below_value in (('observations', 19), ('distinct_hands', 19)):
+            with self.subTest(below=field):
+                below = copy.deepcopy(strong)
+                below['support'][field] = below_value
+                closure = preflight_tool.node_closure(below)
+                self.assertFalse(closure['closes_the_node'])
+                self.assertEqual(closure['admissibility_class'], 'EXACT_UNRESOLVED')
+                self.assertFalse(closure['counts_as_exact_support'])
+                self.assertFalse(preflight_tool.is_admissible(below))
+
+    def test_absent_support_or_pooling_is_fail_closed_as_exact_unresolved(self):
+        cases = (
+            ('no_support_no_context', _unresolved_response(observations=[])),
+            (
+                'thin_support_no_admissible_pooling',
+                _unresolved_response(observations=_rows(_whitelist(), 4, 'only')),
+            ),
+        )
+        for label, response in cases:
+            with self.subTest(case=label):
+                self.assertEqual(response['status'], H.STATUS_EXACT_UNRESOLVED)
+                self.assertIsNone(response['pooling'])
+                self.assertIsNone(response['posterior'])
+                self.assertIsNone(response['uncertainty'])
+                self.assertTrue(response['unresolved_reason'])
+                # Passing layer-B calibration evidence repairs nothing: an
+                # EXACT_UNRESOLVED answer has no estimate closure path at all.
+                closure = preflight_tool.admissibility(
+                    response, calibration_evidence=PASSING_CALIBRATION
+                )
+                self.assertFalse(closure['closes_the_node'])
+                self.assertEqual(closure['admissibility_class'], 'EXACT_UNRESOLVED')
+                self.assertFalse(closure['counts_as_exact_support'])
+                self.assertFalse(closure['admissible_as_exact_context_estimate'])
+                self.assertFalse(closure['probability_emitted'])
+                self.assertIn(response['unresolved_reason'], closure['reason_codes'])
+                self.assertTrue(closure['reason_codes'])
+                self.assertFalse(
+                    preflight_tool.is_admissible(
+                        response, calibration_evidence=PASSING_CALIBRATION
+                    )
+                )
+        self.assertEqual(
+            cases[0][1]['unresolved_reason'], H.REASON_NO_EXACT_SUPPORT_NO_CONTEXT
+        )
+        self.assertEqual(
+            cases[1][1]['unresolved_reason'], H.REASON_NO_ADMISSIBLE_POOLING
+        )
+
+    def test_v1_surfaces_are_immutable_and_v2_references_them_by_digest(self):
+        # v1 evidence is re-derived from the persisted bytes on every run.
+        for name, pinned in (
+            (preflight_tool.NAME, preflight_tool.V1_PREFLIGHT_SHA256),
+            (preflight_tool.SUMMARY_NAME, preflight_tool.V1_SUMMARY_SHA256),
+            (preflight_tool.INDEX_NAME, preflight_tool.V1_INDEX_SHA256),
+        ):
+            with self.subTest(v1_artifact=name):
+                self.assertEqual(
+                    hashlib.sha256((preflight_tool.OUTPUT / name).read_bytes()).hexdigest(),
+                    pinned,
+                )
+        self.assertEqual(
+            hashlib.sha256(preflight_tool.PROTOCOL_PATH.read_bytes()).hexdigest(),
+            preflight_tool.PROTOCOL_BYTE_SHA256,
+        )
+        self.assertEqual(
+            hashlib.sha256(preflight_tool.PROTOCOL_COPY_PATH.read_bytes()).hexdigest(),
+            preflight_tool.PROTOCOL_BYTE_SHA256,
+        )
+        v1 = json.loads(preflight_tool.PROTOCOL_PATH.read_text())
+        self.assertEqual(v1['schema'], preflight_tool.PROTOCOL_SCHEMA)
+        self.assertEqual(stable_hash(v1), preflight_tool.PROTOCOL_CANONICAL_PAYLOAD_SHA256)
+
+        # v2 references v1 by digest and explicitly does not rewrite or supersede it.
+        v2_bytes = preflight_tool.PROTOCOL_V2_PATH.read_bytes()
+        v2 = json.loads(v2_bytes)
+        self.assertEqual(
+            hashlib.sha256(v2_bytes).hexdigest(), preflight_tool.PROTOCOL_V2_BYTE_SHA256
+        )
+        self.assertEqual(stable_hash(v2), preflight_tool.PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256)
+        self.assertEqual(v2['revision_of'], preflight_tool.PROTOCOL_SCHEMA)
+        self.assertEqual(v2['v1_provenance']['byte_sha256'], preflight_tool.PROTOCOL_BYTE_SHA256)
+        self.assertEqual(
+            v2['v1_provenance']['canonical_payload_sha256'],
+            preflight_tool.PROTOCOL_CANONICAL_PAYLOAD_SHA256,
+        )
+        self.assertTrue(v2['v1_custody']['v1_bytes_unchanged'])
+        self.assertTrue(v2['v1_custody']['v1_immutability_is_re_derived_not_asserted'])
+        for role in (
+            'FROZEN_V1_PROTOCOL_PAYLOAD',
+            'FROZEN_V1_PROTOCOL_CONTENT_ADDRESSED_COPY',
+        ):
+            with self.subTest(v1_surface=role):
+                row = next(
+                    entry for entry in v2['v1_custody']['v1_surfaces']
+                    if entry['role'] == role
+                )
+                self.assertEqual(row['sha256'], preflight_tool.PROTOCOL_BYTE_SHA256)
+        for flag in ('v1_bytes_rewritten', 'v1_artifacts_superseded'):
+            self.assertFalse(v2['relationship_to_v1'][flag], flag)
+        self.assertTrue(
+            v2['relationship_to_v1']['v1_gates_and_thresholds_remain_the_source_of_record']
+        )
+        self.assertFalse(v2['relationship_to_v1']['admits_anything'])
+        self.assertFalse(v2['relationship_to_v1']['changes_admission_rule'])
+
+        # The v2 preflight records both digest chains: the frozen v1 bytes and its
+        # own v2 revision, superseding only its own superseded v2 draft.
+        protocol_block = self.preflight['admissibility_protocol']
+        self.assertEqual(
+            protocol_block['protocol_v2_byte_sha256'], preflight_tool.PROTOCOL_V2_BYTE_SHA256
+        )
+        self.assertEqual(
+            protocol_block['protocol_v2_canonical_payload_sha256'],
+            preflight_tool.PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256,
+        )
+        self.assertEqual(
+            protocol_block['superseded_protocol_v2_digest'],
+            v2['amendments']['superseded_digest'],
+        )
+        custody = preflight_tool.verify_frozen_v1_preflight()
+        self.assertEqual(custody['result'], 'PASS')
+        self.assertTrue(custody['never_rewritten'])
+        self.assertEqual(
+            custody['superseded_by'],
+            preflight_tool._relative(preflight_tool.V2_OUTPUT / preflight_tool.V2_NAME),
+        )
+        # Drift in either digest chain is refused before any node is consumed.
+        with mock.patch.object(preflight_tool, 'PROTOCOL_V2_BYTE_SHA256', '0' * 64):
+            with self.assertRaises(preflight_tool.PreflightError):
+                preflight_tool.load_frozen_v2_protocol()
+        with mock.patch.object(preflight_tool, 'PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256', '0' * 64):
+            with self.assertRaises(preflight_tool.PreflightError):
+                preflight_tool.load_frozen_v2_protocol()
+
     def test_every_layer_b_gate_fails_closed_with_its_own_reason_code(self):
         estimator = _estimate_response()
         mutators = {
@@ -511,6 +807,60 @@ class ExactTreePreflightTests(unittest.TestCase):
 
         empty_tree = preflight_tool.required_tree_closure_report(closures=[], **common)
         self.assertFalse(empty_tree['required_tree_complete'])
+
+    def test_unresolved_raise_sizing_frontier_blocks_every_response_model(self):
+        empirical = preflight_tool.node_closure(_empirical_response())
+        estimate = preflight_tool.node_closure(
+            _estimate_response(), calibration_evidence=PASSING_CALIBRATION
+        )
+        self.assertEqual(empirical['admissibility_class'], 'EXACT_EMPIRICAL_STRONG')
+        self.assertEqual(estimate['admissibility_class'], 'EXACT_HIERARCHICAL_ESTIMATE')
+        self.assertTrue(empirical['closes_the_node'])
+        self.assertTrue(estimate['closes_the_node'])
+        # Whichever admissibility class closes the 38 required nodes, the seven
+        # unresolved RAISE frontiers keep the tree open with their own reason code.
+        frontier_conditions = dict(
+            CLOSED_TREE_CONDITIONS,
+            frontier_count=7,
+            nodes_with_unresolved_raise_sizing=7,
+            manifest_unresolved_frontier_count=7,
+        )
+        for label, closure in (('empirical', empirical), ('estimate', estimate)):
+            with self.subTest(response_model=label):
+                report = preflight_tool.required_tree_closure_report(
+                    closures=[closure] * 38, **frontier_conditions
+                )
+                self.assertFalse(report['required_tree_complete'])
+                self.assertIn(
+                    preflight_tool.REFUSED_UNRESOLVED_RAISE_SIZING_FRONTIER,
+                    report['reason_codes'],
+                )
+                self.assertTrue(
+                    report['conditions']['every_required_node_closed_by_an_admissible_answer'][
+                        'satisfied'
+                    ]
+                )
+                frontier = report['conditions']['no_unresolved_raise_sizing_frontier']
+                self.assertFalse(frontier['satisfied'])
+                self.assertEqual(frontier['unresolved_frontiers'], 7)
+                self.assertEqual(frontier['nodes_with_unresolved_raise_sizing'], 7)
+                self.assertEqual(frontier['manifest_unresolved_frontier_count'], 7)
+        # The delivered preflight witnesses the same blocking condition: every
+        # node is queried per exact key yet the seven frontiers stay unresolved.
+        self.assertEqual(self.preflight['sizing_frontiers_queried'], 7)
+        self.assertEqual(
+            sum(
+                1
+                for record in self.preflight['nodes']
+                if record['raise_sizing']['state'] == 'UNRESOLVED_SIZING_FRONTIER'
+            ),
+            7,
+        )
+        for frontier in self.preflight['sizing_frontiers']:
+            with self.subTest(frontier=frontier['node_id'][:12]):
+                self.assertEqual(frontier['disposition'], 'UNRESOLVED_FRONTIER_NOT_PRUNED')
+                self.assertIsNone(frontier['exactly_supported_target_bb'])
+                self.assertIsNone(frontier['admitted_target_bb'])
 
     def test_non_exact_support_or_price_or_context_substitution_is_refused(self):
         estimator = _estimate_response()

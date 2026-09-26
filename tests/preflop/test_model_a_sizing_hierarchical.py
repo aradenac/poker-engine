@@ -402,6 +402,74 @@ def test_exact_strong_requires_both_thresholds_at_l0_with_exact_support_only():
     assert unresolved["uncertainty"] is None
 
 
+def test_frozen_20_20_thresholds_are_neither_lowered_nor_widened():
+    context = _context()
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "threshold", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    validate_candidate(candidate)
+    assert candidate["thresholds"] == {
+        "minimum_marginal_observations": MIN_MARGINAL_OBSERVATIONS,
+        "minimum_distinct_hands": MIN_DISTINCT_HANDS,
+    }
+    assert candidate["thresholds"] == {
+        "minimum_marginal_observations": 20,
+        "minimum_distinct_hands": 20,
+    }
+    # A candidate that moves either frozen threshold is refused outright, so the
+    # 20/20 rule can be neither lowered nor widened.
+    for field in ("minimum_marginal_observations", "minimum_distinct_hands"):
+        for value in (19, 0, 1, MIN_MARGINAL_OBSERVATIONS + 1):
+            broken = copy.deepcopy(candidate)
+            broken["thresholds"][field] = value
+            try:
+                validate_candidate(broken)
+            except HierarchicalSizingError:
+                continue
+            raise AssertionError(f"a candidate may not move {field} to {value}")
+
+    exact = resolve_exact_context(candidate=candidate, context=context)
+    validate_response(exact)
+    assert exact["status"] == STATUS_EXACT_EMPIRICAL_STRONG
+    assert exact["pooling"]["level"] == SUPPORT_LEVEL
+    assert exact["support"]["observations"] == MIN_MARGINAL_OBSERVATIONS
+    assert exact["support"]["distinct_hands"] == MIN_DISTINCT_HANDS
+    assert exact["support"]["source_key"] == exact["requested_key"]
+
+    # One observation below the marginal threshold, and one *distinct hand* below
+    # the distinct-hand threshold, both stay unresolved: the rule is exactly
+    # 20 observations / 20 distinct hands, and neither abstention is relabelled as
+    # exact support.
+    below_observations = resolve_exact_context(
+        candidate=make_synthetic_hierarchical_candidate(
+            population_id=POPULATION,
+            observations=_rows(context, "below", MIN_MARGINAL_OBSERVATIONS - 1, 7.0),
+        ),
+        context=context,
+    )
+    validate_response(below_observations)
+    assert below_observations["status"] == STATUS_EXACT_UNRESOLVED
+    assert below_observations["support"]["observations"] == MIN_MARGINAL_OBSERVATIONS - 1
+    assert below_observations["pooling"] is None
+    assert below_observations["posterior"] is None
+
+    duplicated = _rows(context, "duplicated", MIN_MARGINAL_OBSERVATIONS, 7.0)
+    duplicated[1]["hand_id"] = duplicated[0]["hand_id"]
+    below_distinct_hands = resolve_exact_context(
+        candidate=make_synthetic_hierarchical_candidate(
+            population_id=POPULATION, observations=duplicated
+        ),
+        context=context,
+    )
+    validate_response(below_distinct_hands)
+    assert below_distinct_hands["status"] == STATUS_EXACT_UNRESOLVED
+    assert below_distinct_hands["support"]["observations"] == MIN_MARGINAL_OBSERVATIONS
+    assert below_distinct_hands["support"]["distinct_hands"] == MIN_DISTINCT_HANDS - 1
+    assert below_distinct_hands["pooling"] is None
+    assert below_distinct_hands["posterior"] is None
+
+
 def test_hierarchical_estimate_reports_pooling_provenance_and_mandatory_uncertainty():
     context = _stack_variant(100.0)
     sibling = _stack_variant(60.0)

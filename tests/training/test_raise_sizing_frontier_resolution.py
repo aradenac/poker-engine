@@ -236,6 +236,59 @@ class RaiseSizingFrontierResolutionTests(unittest.TestCase):
         )
         self.assertEqual(rederived, copy.deepcopy(self.resolution))
 
+    def test_sizing_blocker_is_independent_of_any_response_model(self):
+        sizing_reason_codes = {
+            resolution_tool.REASON_NO_STRUCTURAL_NODE,
+            resolution_tool.REASON_NO_SIZING_STAT,
+            resolution_tool.REASON_FALLBACK,
+            resolution_tool.REASON_DESCENDANTS,
+            resolution_tool.OBSERVED_RAISES_NOT_ADMITTED,
+        }
+        for frontier in self.resolution['frontiers']:
+            with self.subTest(node=frontier['node_id'][:12]):
+                # Every blocking code is a sizing/structural code: none is a
+                # response-likelihood or model-calibration code.
+                self.assertTrue(frontier['coded_reasons'])
+                self.assertLessEqual(set(frontier['coded_reasons']), sizing_reason_codes)
+                self.assertFalse(
+                    frontier['exact_support']['reference_node_evidence'][
+                        'has_continuous_sizing_block'
+                    ]
+                )
+                # The same reference nodes do carry response-likelihood state, so
+                # the sizing gap is not a property of any response model.
+                self.assertTrue(
+                    frontier['exact_support']['reference_node_evidence'][
+                        'has_response_likelihood_model'
+                    ]
+                )
+
+        self.assertEqual(self.resolution['unresolved_count'], 7)
+        self.assertEqual(self.resolution['resolved_count'], 0)
+        self.assertEqual(self.resolution['blocker_count'], 1)
+        blocker = self.resolution['blockers'][0]
+        self.assertTrue(blocker['independent_of_response_model'])
+        self.assertIn('response-likelihood', blocker['response_model_independence'])
+        self.assertTrue(blocker['necessary_for_tree_closure'])
+        self.assertFalse(blocker['sufficient_for_tree_closure'])
+        self.assertEqual(blocker['status'], 'OPEN')
+        self.assertEqual(
+            blocker['distinct_from_blocker_classes'],
+            ['INSUFFICIENT_RUNTIME_SUPPORT_CONTEXT'],
+        )
+        self.assertEqual(blocker['frontier_count'], 7)
+        self.assertFalse(self.resolution['enumeration_complete'])
+        self.assertIn(
+            'cannot be closed by one',
+            blocker['response_model_independence'],
+        )
+        # The blocker is derived from the frozen structural rule only, never from
+        # the hierarchical response model: the resolution tool does not know it.
+        source = Path(resolution_tool.__file__).read_text(encoding='utf-8')
+        self.assertNotIn('model_a_sizing_hierarchical', source)
+        for relabelling in ('EXACT_HIERARCHICAL_ESTIMATE', 'EXACT_EMPIRICAL_STRONG'):
+            self.assertNotIn(relabelling, source)
+
 
 if __name__ == '__main__':
     unittest.main()

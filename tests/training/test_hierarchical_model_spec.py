@@ -180,6 +180,64 @@ class HierarchicalModelSpecTests(unittest.TestCase):
             self.spec['runtime_support_contract']['fail_closed'],
         )
 
+    def test_two_admissibility_classes_bind_the_v2_protocol_without_relabelling_support(self):
+        codes = self.spec['runtime_support_contract']['reason_codes']
+        self.assertEqual(len(codes), 3)
+        self.assertIn('EXACT_EMPIRICAL_STRONG', codes)
+        self.assertIn('EXACT_HIERARCHICAL_ESTIMATE', codes)
+        self.assertIn('EXACT_UNRESOLVED', codes)
+        # The estimate class keeps exact-key-only counts and is never relabelled as
+        # an exact-support claim, whatever pooling level supplies its parameters.
+        estimate = codes['EXACT_HIERARCHICAL_ESTIMATE']
+        self.assertTrue(estimate['pooling_allowed_for_the_reported_estimate'])
+        self.assertIn('requested_key only', estimate['support_source'])
+        self.assertIn('never an exact-support claim', estimate['interpretation'])
+        self.assertFalse(
+            codes['EXACT_EMPIRICAL_STRONG']['pooling_allowed_for_the_reported_estimate']
+        )
+        self.assertEqual(
+            self.spec['decision_thresholds']['minimum_marginal_observations'], 20
+        )
+        self.assertEqual(self.spec['decision_thresholds']['minimum_distinct_hands'], 20)
+
+        # The frozen v2 protocol binds exactly these classes and inherits the 20/20
+        # thresholds verbatim; it adds the conditional estimate closure, not slack.
+        v2 = json.loads(
+            (
+                ROOT
+                / 'analysis/issue419_hierarchical_tree/validation_protocol_v2/'
+                'FROZEN_VALIDATION_PROTOCOL_V2.json'
+            ).read_text()
+        )
+        self.assertEqual(
+            v2['thresholds']['minimum_marginal_observations'],
+            self.spec['decision_thresholds']['minimum_marginal_observations'],
+        )
+        self.assertEqual(
+            v2['thresholds']['minimum_distinct_hands'],
+            self.spec['decision_thresholds']['minimum_distinct_hands'],
+        )
+        self.assertTrue(v2['thresholds']['inherited_verbatim_from_v1'])
+        self.assertFalse(v2['thresholds']['modified_by_this_revision'])
+        layer_b = v2['layers']['layer_b_exact_context_estimate_admissibility']
+        conditional = layer_b['counts_as_a_closed_exact_tree_node']
+        self.assertEqual(conditional['value'], 'CONDITIONAL')
+        self.assertTrue(conditional['true_iff_all_layer_b_gates_pass'])
+        self.assertFalse(conditional['default_when_a_gate_is_unevaluated'])
+        self.assertFalse(conditional['unconditionally_closes'])
+        self.assertEqual(
+            sorted(layer_b['admissibility_gate_ids']),
+            [
+                'CALIBRATION',
+                'EFFECTIVE_SAMPLE_SIZE',
+                'EXACT_KEY_IDENTITY',
+                'POOLING_LEVEL',
+                'POOLING_PROVENANCE',
+                'RAISE_SIZING_FRONTIER',
+                'UNCERTAINTY',
+            ],
+        )
+
     def test_written_without_reading_validation(self):
         boundary = self.spec['holdout_boundary']
         self.assertEqual(boundary['split_consumed'], 'TRAIN')
