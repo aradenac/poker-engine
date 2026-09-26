@@ -1,0 +1,344 @@
+{
+  "checks_after_correction": [
+    {
+      "command": "python3 tools/simulation/issue419_exact_tree_preflight.py --check",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/training/finalize_hierarchical_exact_tree_decision.py --check",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/training/write_frozen_validation_protocol_v2.py --check",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/training/audit_hierarchical_candidate_contract.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/training/fit_model_a_preflop_sizing_hierarchical.py --check",
+      "result": "OK"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_issue419_exact_tree_preflight.py",
+      "result": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/preflop/test_model_a_sizing_hierarchical.py",
+      "result": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/training/test_frozen_validation_protocol_v2.py",
+      "result": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py",
+      "result": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/test_github_workflow_audit.py",
+      "result": "PASS"
+    }
+  ],
+  "correction": {
+    "applied_against": "f9c1834b386c98e2beba648ac1b1ad6fbe0326ae",
+    "description": "The surface of 871e0bd was reversed file by file. Every frozen artifact is byte-identical to its pre-mutant revision, so nothing had to be re-registered: the pinned digests were already those of the pre-mutant bytes and only the mutant had moved away from them.",
+    "frozen_bytes_registered_to_fit_a_digest": false,
+    "frozen_bytes_rewritten": false,
+    "method": "REVERSE_PATCH_OF_THE_MUTANT_COMMIT"
+  },
+  "correction_id": "issue419-evidence-integrity-correction-v1",
+  "detection": {
+    "command": "python3 tools/simulation/issue419_exact_tree_preflight.py --check",
+    "frozen_pins_the_mutant_could_not_change": {
+      "PROTOCOL_V2_BYTE_SHA256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+      "PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de",
+      "V1_BYTE_SHA256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+      "V1_INDEX_SHA256": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be",
+      "V1_PREFLIGHT_SHA256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+      "V1_SUMMARY_SHA256": "3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df"
+    },
+    "observed_before_correction": "PreflightError: the frozen v1 preflight artifact drifted: EXACT_TREE_PREFLIGHT.json e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f != 456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+    "tool": "tools/simulation/issue419_exact_tree_preflight.py"
+  },
+  "index_discipline": {
+    "note": "This directory is a standalone content-addressed record; it is not listed by any sibling ARTIFACTS.json, so every sibling --check keeps its own closed artifact set.",
+    "registered_in_any_other_artifacts_index": false
+  },
+  "mutant_commit": {
+    "git_sha": "871e0bd9e66c978932face1accf1aaf22ac9fa1a",
+    "parent_git_sha": "f9c1834b386c98e2beba648ac1b1ad6fbe0326ae",
+    "short_sha": "871e0bd",
+    "subject": "chore(n8n): task backlog-sd5 for issue #419",
+    "task": "backlog-sd5"
+  },
+  "preserved_untouched": [
+    {
+      "note": "protocol v1 is outside the mutant surface; byte-identical to both revisions",
+      "path": "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+      "sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+    },
+    {
+      "note": "the consumed VALIDATION read is outside the mutant surface; byte-identical to both revisions",
+      "path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+      "sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68"
+    },
+    {
+      "note": "superseded v2 revision kept as declared history",
+      "path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/history/508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320.json",
+      "sha256": "508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320"
+    }
+  ],
+  "recorded_against_branch": "n8n/issue-419/task-backlog-s19",
+  "removed_mutant_objects": [
+    {
+      "object": "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f.json"
+    },
+    {
+      "object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/ec010a541636e70eae7d5158611c0a47d9ae926785f50cbf55432f32b46d8cff.json"
+    },
+    {
+      "object": "analysis/issue419_hierarchical_tree/validation_protocol_v2/sha256/db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1.json"
+    },
+    {
+      "object": "analysis/issue419_hierarchical_tree/validation_protocol_v2/sha256/c8d52e03f7d36b231d9f8bed49caa22ebdddfe2f7860327e67df65efaea3868e.md"
+    },
+    {
+      "object": "analysis/issue419_hierarchical_tree/fit/sha256/b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5.json"
+    },
+    {
+      "object": "analysis/issue419_hierarchical_tree/fit/sha256/ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c.json"
+    },
+    {
+      "object": "analysis/issue419_hierarchical_tree/contract/sha256/5d0fbcaf092f6ebb798df612b10a7e1b15940223b95f071281302b00c4f46a98.json"
+    },
+    {
+      "object": "analysis/issue419_hierarchical_tree/contract/sha256/4bb90dfef1048d453c488d103e8c93a262729ea1fdf75d644d028d1fa5c0772e.md"
+    }
+  ],
+  "restored_code_and_documentation_surface": [
+    {
+      "matches_pre_mutant_revision": true,
+      "mutant_sha256": "7dfe162eef38e77277a6339555a3554cda104bbc256965734d17dff27707fdc7",
+      "path": "tools/preflop/model_a_sizing_hierarchical.py",
+      "restored_sha256": "1cd25c17bc67c16e78d54fc105cf468e92d9dc7b27d4a5b259141715fd34be18"
+    },
+    {
+      "matches_pre_mutant_revision": true,
+      "mutant_sha256": "10606463066cef6b843612b2404b74ee1a386f9d6aab0e0bf482b71eaa6e1799",
+      "path": "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
+      "restored_sha256": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c"
+    },
+    {
+      "matches_pre_mutant_revision": true,
+      "mutant_sha256": "8cea53a67e36f70ad8d41764715f0aac4c560aa0c8d9dc58a55ff7b4b45824f5",
+      "path": "tests/preflop/test_model_a_sizing_hierarchical.py",
+      "restored_sha256": "5cf93a775fc3b47ec181163be93196ce4d6e3dc8eb996c7dc3e3fa878d5f30c7"
+    },
+    {
+      "matches_pre_mutant_revision": true,
+      "mutant_sha256": "b3c2c7538829c90357ba655f35fd66c02659982ce0bb3846c953d94da0064bc8",
+      "path": "tools/training/write_frozen_validation_protocol_v2.py",
+      "restored_sha256": "32329f08f133e4693f70da329fb18c9941226afe27f0ce5c86db7978defee9d7"
+    },
+    {
+      "matches_pre_mutant_revision": true,
+      "mutant_sha256": "31b9d5b0fe2ade932ef7360e51c9e7cac0c0814160caa12f24bd920e2e734057",
+      "path": "docs/hierarchical-exact-context-validation-protocol.md",
+      "restored_sha256": "9e42e44fdd2f00b02118344956ca359d83b63d13787738245498860719534f83"
+    },
+    {
+      "matches_pre_mutant_revision": true,
+      "mutant_sha256": "5ed1163c83b9412e08d9594366417b2ec53ea2f491cec5c71df4616dd4e81241",
+      "path": "docs/hierarchical-exact-context-runtime-contract.md",
+      "restored_sha256": "dad0f98685b9b871a4bab6e32997ee37a90d90c520b7b27ce36ad16c7a35ea39"
+    }
+  ],
+  "restored_content_addressed_objects": [
+    {
+      "object_sha256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
+      "replaced_object": "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f.json",
+      "restored_object": "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6.json"
+    },
+    {
+      "object_sha256": "3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df",
+      "replaced_object": null,
+      "restored_object": "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df.md"
+    },
+    {
+      "object_sha256": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc",
+      "replaced_object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/ec010a541636e70eae7d5158611c0a47d9ae926785f50cbf55432f32b46d8cff.json",
+      "restored_object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc.json"
+    },
+    {
+      "object_sha256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350",
+      "replaced_object": "analysis/issue419_hierarchical_tree/validation_protocol_v2/sha256/db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1.json",
+      "restored_object": "analysis/issue419_hierarchical_tree/validation_protocol_v2/sha256/74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350.json"
+    },
+    {
+      "object_sha256": "44cdc1916c5926ada8a717ef051f6ac8ab4baf40a69509b52726192185f2e36c",
+      "replaced_object": "analysis/issue419_hierarchical_tree/validation_protocol_v2/sha256/c8d52e03f7d36b231d9f8bed49caa22ebdddfe2f7860327e67df65efaea3868e.md",
+      "restored_object": "analysis/issue419_hierarchical_tree/validation_protocol_v2/sha256/44cdc1916c5926ada8a717ef051f6ac8ab4baf40a69509b52726192185f2e36c.md"
+    },
+    {
+      "object_sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
+      "replaced_object": "analysis/issue419_hierarchical_tree/fit/sha256/b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5.json",
+      "restored_object": "analysis/issue419_hierarchical_tree/fit/sha256/ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5.json"
+    },
+    {
+      "object_sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+      "replaced_object": "analysis/issue419_hierarchical_tree/fit/sha256/ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c.json",
+      "restored_object": "analysis/issue419_hierarchical_tree/fit/sha256/d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c.json"
+    },
+    {
+      "object_sha256": "d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3",
+      "replaced_object": "analysis/issue419_hierarchical_tree/contract/sha256/5d0fbcaf092f6ebb798df612b10a7e1b15940223b95f071281302b00c4f46a98.json",
+      "restored_object": "analysis/issue419_hierarchical_tree/contract/sha256/d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3.json"
+    },
+    {
+      "object_sha256": "bc03a75821365a3a7cc704f0aa7f165f50b90831e84f2dc3e5a0c47b725214fd",
+      "replaced_object": "analysis/issue419_hierarchical_tree/contract/sha256/4bb90dfef1048d453c488d103e8c93a262729ea1fdf75d644d028d1fa5c0772e.md",
+      "restored_object": "analysis/issue419_hierarchical_tree/contract/sha256/bc03a75821365a3a7cc704f0aa7f165f50b90831e84f2dc3e5a0c47b725214fd.md"
+    }
+  ],
+  "restored_frozen_evidence": [
+    {
+      "mutant_sha256": "e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6"
+    },
+    {
+      "mutant_sha256": "4fea09fc5713b9fa490effb39c557962ae1d06146710d954fb21bfd39ef25743",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight/ARTIFACTS.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be"
+    },
+    {
+      "mutant_sha256": "3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df",
+      "mutated_in_place_by_871e0bd": false,
+      "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight/SUMMARY.md",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df"
+    },
+    {
+      "mutant_sha256": "ec010a541636e70eae7d5158611c0a47d9ae926785f50cbf55432f32b46d8cff",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc"
+    },
+    {
+      "mutant_sha256": "4475d229250ef4911f26293794d2cabba5beeafb19f4c9562748c805abc70e4e",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.sha256",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "7a7169d03f7bc43df41f1bc27f05f364ac477f0a345801e229fc32027f9cbe37"
+    },
+    {
+      "mutant_sha256": "ea5b385d7c692e03a0c87f5e60c4d3f2bb3496733faba089ae84d2279069f102",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4"
+    },
+    {
+      "mutant_sha256": "db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350"
+    },
+    {
+      "mutant_sha256": "bb35802a5154022582e26ea25a9d7d10e7147005ec66bfee2b0961cfc183030d",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.sha256",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "0e07a64b2948a4ace01415a941331026525f1cd7b1d82b17640aa05979c15b23"
+    },
+    {
+      "mutant_sha256": "5b698d5ec27629ff56751eaeb73c29fa0aa6972369d7399583679f4cad5ad629",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/ARTIFACTS.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "97acf64d62c2f46709c7e488c7a9739821191f235dcb79e2ae64d4b822d444cb"
+    },
+    {
+      "mutant_sha256": "c8d52e03f7d36b231d9f8bed49caa22ebdddfe2f7860327e67df65efaea3868e",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/validation_protocol_v2/SUMMARY.md",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "44cdc1916c5926ada8a717ef051f6ac8ab4baf40a69509b52726192185f2e36c"
+    },
+    {
+      "mutant_sha256": "b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
+    },
+    {
+      "mutant_sha256": "ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
+    },
+    {
+      "mutant_sha256": "a85b36cf35093fa5ce767f5f9c6b32716535e3df9ecd216055daabcb8a182129",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/fit/ARTIFACTS.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "3b4097f8607fa4d03ad7cf86fc0e4c745a84de77e9689bdccdfc5c723a61306b"
+    },
+    {
+      "mutant_sha256": "5d0fbcaf092f6ebb798df612b10a7e1b15940223b95f071281302b00c4f46a98",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3"
+    },
+    {
+      "mutant_sha256": "4bb90dfef1048d453c488d103e8c93a262729ea1fdf75d644d028d1fa5c0772e",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/contract/SUMMARY.md",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "bc03a75821365a3a7cc704f0aa7f165f50b90831e84f2dc3e5a0c47b725214fd"
+    },
+    {
+      "mutant_sha256": "58d006f36d010d8c1ef7f5cf62b1e7dacd5b2dcc6f127fb75af517f9d440e341",
+      "mutated_in_place_by_871e0bd": true,
+      "path": "analysis/issue419_hierarchical_tree/contract/ARTIFACTS.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "0ff232b3eb6783d21ccaea1edac278d851b28df359b8642972fc5b2641c8891e"
+    },
+    {
+      "mutant_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
+      "mutated_in_place_by_871e0bd": false,
+      "path": "analysis/issue419_hierarchical_tree/FROZEN_VALIDATION_PROTOCOL.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3"
+    },
+    {
+      "mutant_sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
+      "mutated_in_place_by_871e0bd": false,
+      "path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+      "reads_back_from_pre_mutant_revision": true,
+      "restored_sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68"
+    }
+  ],
+  "schema": "poker-issue419-evidence-integrity-correction/v1",
+  "scope_boundary": {
+    "admission_rules_changed": false,
+    "frozen_evidence_rewritten": false,
+    "later_useful_commits_touched": [],
+    "note": "backlog-jf0 (v2 preflight bundle), backlog-utj (suites), backlog-fgj, backlog-ydy and backlog-3hk (workflow/audit) are predecessors or followers of the mutant and were not modified; only the surface of 871e0bd itself was reversed.",
+    "pooling_limits_changed": false,
+    "priors_changed": false,
+    "thresholds_changed": false
+  },
+  "violation": "871e0bd rewrote the frozen #419 evidence in place and re-registered the resulting digests: the frozen v1 preflight (EXACT_TREE_PREFLIGHT.json 456d85be -> e86b7c6b, ARTIFACTS.json 97e90eac -> 4fea09fc), the terminal decision (DECISION.json 9425f301 -> ec010a54, ARTIFACTS.json 08530e37 -> ea5b385d), the protocol v2 bytes (FROZEN_VALIDATION_PROTOCOL_V2.json 74b8a006 -> db1b1ab6, SUMMARY.md 44cdc191 -> c8d52e03, ARTIFACTS.json 97acf64d -> 5b698d5e), the fit evidence (TRAIN_FIT_REPORT.json ae5b7cc8 -> b1f7f5a9, CANDIDATE_MANIFEST.json d6801eb1 -> ee5907f3) and the candidate contract (CANDIDATE_CONTRACT.json d62b2dca -> 5d0fbcaf). A frozen byte is evidence: re-registering its digest makes the mutant commit the only witness of its own claim, which the review forbids."
+}

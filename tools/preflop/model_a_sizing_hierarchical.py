@@ -75,70 +75,6 @@ REASON_NO_ADMISSIBLE_POOLING = "NO_ADMISSIBLE_POOLING_LEVEL"
 REASON_RAISE_SIZING_UNRESOLVED = "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE"
 REASON_NO_EXACT_SUPPORT_NO_CONTEXT = "NO_EXACT_SUPPORT_AND_NO_CONTEXT"
 
-# Two-layer provider contract.  Layer A is the exact empirical support of the
-# requested key; layer B is the exact-context estimate admissibility.  The
-# layer-B gate ids and reason codes are byte-identical to the frozen T1
-# vocabulary (``FROZEN_VALIDATION_PROTOCOL_V2.json#layers.layer_b_*``), so a
-# response can be audited per gate without re-deriving the protocol.
-LAYER_A_EXACT_EMPIRICAL_SUPPORT = "A_EXACT_EMPIRICAL_SUPPORT"
-LAYER_B_EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY = (
-    "B_EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY"
-)
-NODE_CLOSURE_RULE_ID = "NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS"
-
-GATE_EXACT_KEY_IDENTITY = "EXACT_KEY_IDENTITY"
-GATE_POOLING_PROVENANCE = "POOLING_PROVENANCE"
-GATE_POOLING_LEVEL = "POOLING_LEVEL"
-GATE_EFFECTIVE_SAMPLE_SIZE = "EFFECTIVE_SAMPLE_SIZE"
-GATE_UNCERTAINTY = "UNCERTAINTY"
-GATE_CALIBRATION = "CALIBRATION"
-GATE_RAISE_SIZING_FRONTIER = "RAISE_SIZING_FRONTIER"
-
-# ``(order, gate_id, reason_code, applies_to)`` for the seven frozen layer-B
-# gates.  ``applies_to`` mirrors the protocol: ``POOLING_PROVENANCE`` gates the
-# estimate only, every other gate gates both answered statuses.
-LAYER_B_GATES: tuple[tuple[int, str, str, tuple[str, ...]], ...] = (
-    (
-        1,
-        GATE_EXACT_KEY_IDENTITY,
-        "REFUSED_EXACT_KEY_IDENTITY",
-        (STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE),
-    ),
-    (2, GATE_POOLING_PROVENANCE, "REFUSED_POOLING_PROVENANCE", (STATUS_EXACT_HIERARCHICAL_ESTIMATE,)),
-    (
-        3,
-        GATE_POOLING_LEVEL,
-        "REFUSED_POOLING_LEVEL",
-        (STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE),
-    ),
-    (
-        4,
-        GATE_EFFECTIVE_SAMPLE_SIZE,
-        "REFUSED_EFFECTIVE_SAMPLE_SIZE",
-        (STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE),
-    ),
-    (
-        5,
-        GATE_UNCERTAINTY,
-        "REFUSED_UNCERTAINTY",
-        (STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE),
-    ),
-    (
-        6,
-        GATE_CALIBRATION,
-        "REFUSED_CALIBRATION",
-        (STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE),
-    ),
-    (
-        7,
-        GATE_RAISE_SIZING_FRONTIER,
-        "REFUSED_RAISE_SIZING_FRONTIER",
-        (STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE),
-    ),
-)
-GATE_REASON_BY_ID = {gate_id: reason for _, gate_id, reason, _ in LAYER_B_GATES}
-GATE_ORDER_BY_ID = {gate_id: order for order, gate_id, _, _ in LAYER_B_GATES}
-
 # Frozen thresholds: they are never lowered to close the tree.
 MIN_MARGINAL_OBSERVATIONS = 20
 MIN_DISTINCT_HANDS = 20
@@ -879,326 +815,6 @@ def _uncertainty(
     }
 
 
-def _finite(value: Any) -> bool:
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return False
-    return math.isfinite(number)
-
-
-def empirical_support_block(
-    *, requested_key: str, support: Mapping[str, Any]
-) -> dict[str, Any]:
-    """Layer A: the exact-key empirical support of the requested key, only.
-
-    Every count here is re-derived from rows whose ``hierarchical_exact_key``
-    equals ``requested_key``; a pooled parent level never feeds this block.
-    """
-    observations = int(support["observations"])
-    distinct_hands = int(support["distinct_hands"])
-    meets_observations = observations >= MIN_MARGINAL_OBSERVATIONS
-    meets_hands = distinct_hands >= MIN_DISTINCT_HANDS
-    return {
-        "layer": LAYER_A_EXACT_EMPIRICAL_SUPPORT,
-        "support_granularity": EXACT_GRANULARITY,
-        "support_level": SUPPORT_LEVEL,
-        "requested_key": str(requested_key),
-        "source_key": str(requested_key),
-        "observations": observations,
-        "distinct_hands": distinct_hands,
-        "effective_sample_size": float(support["effective_sample_size"]),
-        "action_counts": dict(support["action_counts"]),
-        "denominator": int(support["denominator"]),
-        "thresholds": {
-            "minimum_marginal_observations": MIN_MARGINAL_OBSERVATIONS,
-            "minimum_distinct_hands": MIN_DISTINCT_HANDS,
-        },
-        "meets_observation_threshold": meets_observations,
-        "meets_distinct_hand_threshold": meets_hands,
-        "qualifies_as_exact_support": bool(meets_observations and meets_hands),
-        # A pooled parent level may move the *parameters* only.  These two flags
-        # pin that no pooled level ever contributes to a layer-A quantity.
-        "counts_from_pooled_level": False,
-        "borrowed_from_other_keys": False,
-        "support_isolation_rule": SUPPORT_ISOLATION_RULE,
-    }
-
-
-def pooling_provenance_block(
-    *, requested_key: str, pooling: Mapping[str, Any] | None
-) -> dict[str, Any] | None:
-    """Layer B provenance: the declared parent level that supplied the prior."""
-    if pooling is None:
-        return None
-    return {
-        "level": pooling["level"],
-        "rank": int(pooling["rank"]),
-        "purpose": pooling["purpose"],
-        "source_key": pooling["source_key"],
-        "requested_key": str(requested_key),
-        "retained_axes": list(pooling["retained_axes"]),
-        "pooled_axes": list(pooling["pooled_axes"]),
-        "source_observations": int(pooling["source_observations"]),
-        "source_distinct_hands": int(pooling["source_distinct_hands"]),
-        "source_effective_sample_size": float(pooling["source_effective_sample_size"]),
-        "weight_exact": float(pooling["weight_exact"]),
-        "weight_parent": float(pooling["weight_parent"]),
-        "parent_dominated": bool(pooling["parent_dominated"]),
-        "kappa0": float(pooling["kappa0"]),
-        "alpha_per_legal_marginal_action": float(
-            pooling["alpha_per_legal_marginal_action"]
-        ),
-        "support_source_key": pooling["support_source_key"],
-        "counts_as_exact_support": pooling["level"] == SUPPORT_LEVEL,
-        "support_isolation_rule": SUPPORT_ISOLATION_RULE,
-    }
-
-
-def effective_sample_size_block(
-    *, support: Mapping[str, Any], pooling: Mapping[str, Any] | None
-) -> dict[str, Any]:
-    """Layer A/B effective sample size, credited at the hand level."""
-    return {
-        "support_effective_sample_size": float(support["effective_sample_size"]),
-        "support_distinct_hands": int(support["distinct_hands"]),
-        "pooling_source_effective_sample_size": (
-            None
-            if pooling is None
-            else float(pooling["source_effective_sample_size"])
-        ),
-        "level_used": None if pooling is None else pooling["level"],
-        "credited_at": "DISTINCT_HANDS_NEVER_INFLATED_BY_POOLING",
-    }
-
-
-def uncertainty_is_machine_readable(uncertainty: Mapping[str, Any] | None) -> bool:
-    """A band is usable only when every reported action carries a finite band."""
-    if not isinstance(uncertainty, Mapping):
-        return False
-    actions = uncertainty.get("actions")
-    if not isinstance(actions, Mapping) or not actions:
-        return False
-    if not _finite(uncertainty.get("effective_sample_size")):
-        return False
-    for band in actions.values():
-        if not isinstance(band, Mapping):
-            return False
-        for field in ("mean", "std_error"):
-            if not _finite(band.get(field)):
-                return False
-        interval = band.get("credible_interval")
-        if not isinstance(interval, Mapping):
-            return False
-        low, high, mean = (
-            interval.get("low"),
-            interval.get("high"),
-            band.get("mean"),
-        )
-        if not (_finite(low) and _finite(high) and _finite(mean)):
-            return False
-        if not (float(low) - EPS <= float(mean) <= float(high) + EPS):
-            return False
-        if float(float(band.get("std_error"))) < -EPS:
-            return False
-    return True
-
-
-def _layer_b_gate_states(
-    *,
-    requested_key: str,
-    support: Mapping[str, Any],
-    pooling: Mapping[str, Any] | None,
-    uncertainty: Mapping[str, Any] | None,
-    raise_sizing: Mapping[str, Any],
-    status: str,
-    primary_failure_gate: str | None,
-) -> list[dict[str, Any]]:
-    """Per-gate machine-readable admissibility state, aligned with the T1 codes."""
-    strong = status == STATUS_EXACT_EMPIRICAL_STRONG
-    estimate = status == STATUS_EXACT_HIERARCHICAL_ESTIMATE
-    answered = strong or estimate
-    identity_ok = bool(
-        str(support.get("source_key")) == str(requested_key)
-        and support.get("borrowed_from_other_keys") is False
-    )
-    if pooling is not None:
-        identity_ok = identity_ok and set(NEVER_MUTUALIZABLE_AXES).issubset(
-            set(pooling.get("retained_axes") or ())
-        )
-    provenance_ok = bool(
-        pooling is not None
-        and pooling.get("level") in POOLING_LEVELS
-        and pooling.get("source_key")
-        and "source_observations" in pooling
-        and "source_distinct_hands" in pooling
-        and "retained_axes" in pooling
-        and "pooled_axes" in pooling
-    )
-    level_ok = bool(
-        pooling is not None
-        and (
-            (strong and pooling.get("level") == SUPPORT_LEVEL)
-            or (
-                estimate
-                and pooling.get("level") in POOLING_LEVELS[1:]
-            )
-        )
-    )
-    ess_ok = bool(
-        _finite(support.get("effective_sample_size"))
-        and float(support.get("effective_sample_size"))
-        == float(support.get("distinct_hands"))
-        and (
-            pooling is None
-            or (
-                _finite(pooling.get("source_effective_sample_size"))
-                and float(pooling.get("source_effective_sample_size"))
-                == float(pooling.get("source_distinct_hands"))
-            )
-        )
-    )
-    uncertainty_ok = uncertainty_is_machine_readable(uncertainty)
-    raise_ok = not bool(raise_sizing.get("unresolved"))
-
-    decisions: dict[str, tuple[bool, bool, bool | None, str]] = {
-        # gate_id -> (applicable, evaluated, satisfied, detail)
-        GATE_EXACT_KEY_IDENTITY: (
-            answered,
-            answered or primary_failure_gate == GATE_EXACT_KEY_IDENTITY,
-            identity_ok if answered else None,
-            "support.source_key == requested_key and never-mutualizable axes retained",
-        ),
-        GATE_POOLING_PROVENANCE: (
-            estimate,
-            estimate or primary_failure_gate == GATE_POOLING_PROVENANCE,
-            provenance_ok if estimate else None,
-            "pooling.level/source/counts/axes are reported for the level actually used",
-        ),
-        GATE_POOLING_LEVEL: (
-            answered,
-            answered or primary_failure_gate == GATE_POOLING_LEVEL,
-            level_ok if answered else None,
-            "EXACT_EMPIRICAL_STRONG only at L0_EXACT_KEY; an estimate pools L1..L4",
-        ),
-        GATE_EFFECTIVE_SAMPLE_SIZE: (
-            answered,
-            answered or primary_failure_gate == GATE_EFFECTIVE_SAMPLE_SIZE,
-            ess_ok if answered else None,
-            "effective sample size reported at the level used and never inflated",
-        ),
-        GATE_UNCERTAINTY: (
-            answered,
-            answered or primary_failure_gate == GATE_UNCERTAINTY,
-            uncertainty_ok if answered else None,
-            "uncertainty band and posterior reflect the level actually used",
-        ),
-        GATE_CALIBRATION: (
-            answered,
-            False,
-            None,
-            "calibration is evaluated at VALIDATION time, never at answer time",
-        ),
-        GATE_RAISE_SIZING_FRONTIER: (
-            answered,
-            answered or primary_failure_gate == GATE_RAISE_SIZING_FRONTIER,
-            raise_ok if answered else None,
-            "raise sizing is exact-support-only; an unresolved frontier stays unresolved",
-        ),
-    }
-
-    states: list[dict[str, Any]] = []
-    for order, gate_id, reason_code, applies_to in LAYER_B_GATES:
-        applicable, evaluated, satisfied, detail = decisions[gate_id]
-        if primary_failure_gate == gate_id:
-            applicable, evaluated, satisfied = True, True, False
-        states.append(
-            {
-                "order": order,
-                "gate_id": gate_id,
-                "reason_code": reason_code,
-                "status_scope": list(applies_to),
-                "applicable": bool(applicable),
-                "evaluated": bool(evaluated),
-                "satisfied": None if satisfied is None else bool(satisfied),
-                "detail": detail,
-            }
-        )
-    return states
-
-
-def admissibility_block(
-    *,
-    requested_key: str,
-    support: Mapping[str, Any],
-    pooling: Mapping[str, Any] | None,
-    uncertainty: Mapping[str, Any] | None,
-    raise_sizing: Mapping[str, Any],
-    status: str,
-    primary_failure_gate: str | None = None,
-) -> dict[str, Any]:
-    """Layer B: per-gate admissibility state plus its aligned T1 reason code."""
-    gates = _layer_b_gate_states(
-        requested_key=requested_key,
-        support=support,
-        pooling=pooling,
-        uncertainty=uncertainty,
-        raise_sizing=raise_sizing,
-        status=status,
-        primary_failure_gate=primary_failure_gate,
-    )
-    if primary_failure_gate is not None:
-        failing_gate = primary_failure_gate
-    else:
-        failing_gate = next(
-            (
-                gate["gate_id"]
-                for gate in gates
-                if gate["applicable"] and gate["evaluated"] and gate["satisfied"] is False
-            ),
-            None,
-        )
-    reason_code = None if failing_gate is None else GATE_REASON_BY_ID[failing_gate]
-    admissible = bool(
-        status in (STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE)
-        and failing_gate is None
-    )
-    return {
-        "layer": LAYER_B_EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY,
-        "node_closure_rule_id": NODE_CLOSURE_RULE_ID,
-        "status": status,
-        "answered": status
-        in (STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE),
-        "admissible": admissible,
-        "primary_failure_gate": failing_gate,
-        "reason_code": reason_code,
-        "deferred_gates": [GATE_CALIBRATION],
-        "gates": gates,
-    }
-
-
-def posterior_identity_block(
-    *,
-    status: str,
-    reason_code: str,
-    unresolved_reason: str | None,
-    reason_detail: str | None,
-    posterior: Mapping[str, float] | None,
-) -> dict[str, Any]:
-    """Machine-readable identity of the emitted (or withheld) posterior."""
-    return {
-        "status": status,
-        "reason_code": reason_code,
-        "unresolved_reason": unresolved_reason,
-        "reason_detail": reason_detail,
-        "posterior_present": posterior is not None,
-        "probability_emitted": posterior is not None,
-        "posterior_sha256": (
-            None if posterior is None else canonical_sha256(posterior)
-        ),
-    }
-
-
 def _level_diagnostics(
     *,
     rows: Sequence[Mapping[str, Any]],
@@ -1276,168 +892,6 @@ def _raise_sizing(
     }
 
 
-def _validate_two_layer_blocks(
-    response: Mapping[str, Any],
-    *,
-    requested_key: str,
-    support: Mapping[str, Any],
-    status: str,
-) -> None:
-    """Enforce the explicit two-layer serialization of one response."""
-    empirical = response.get("empirical_support")
-    if not isinstance(empirical, Mapping):
-        raise HierarchicalSizingError("empirical_support is required")
-    if empirical.get("layer") != LAYER_A_EXACT_EMPIRICAL_SUPPORT:
-        raise HierarchicalSizingError("empirical_support must be the layer-A block")
-    if empirical.get("support_level") != SUPPORT_LEVEL:
-        raise HierarchicalSizingError("empirical_support is only ever claimed at L0")
-    if str(empirical.get("source_key")) != requested_key:
-        raise HierarchicalSizingError(
-            "empirical_support.source_key must be the requested key"
-        )
-    if str(empirical.get("requested_key")) != requested_key:
-        raise HierarchicalSizingError(
-            "empirical_support.requested_key must be the requested key"
-        )
-    # A pooled level may never fill a layer-A field, and the recount must match
-    # the exact-key support exactly.
-    if empirical.get("counts_from_pooled_level") is not False:
-        raise HierarchicalSizingError(
-            "no pooled level may contribute to empirical_support"
-        )
-    if empirical.get("borrowed_from_other_keys") is not False:
-        raise HierarchicalSizingError("empirical_support may never be borrowed")
-    for field in ("observations", "distinct_hands", "effective_sample_size", "denominator"):
-        if empirical.get(field) != support.get(field):
-            raise HierarchicalSizingError(
-                f"empirical_support.{field} must equal the exact-key support"
-            )
-    if dict(empirical.get("action_counts") or {}) != dict(support.get("action_counts") or {}):
-        raise HierarchicalSizingError(
-            "empirical_support.action_counts must equal the exact-key support"
-        )
-    thresholds = empirical.get("thresholds") or {}
-    if (
-        int(thresholds.get("minimum_marginal_observations", -1))
-        != MIN_MARGINAL_OBSERVATIONS
-        or int(thresholds.get("minimum_distinct_hands", -1)) != MIN_DISTINCT_HANDS
-    ):
-        raise HierarchicalSizingError("empirical_support thresholds must be frozen")
-    qualifies = bool(
-        int(support["observations"]) >= MIN_MARGINAL_OBSERVATIONS
-        and int(support["distinct_hands"]) >= MIN_DISTINCT_HANDS
-    )
-    if bool(empirical.get("qualifies_as_exact_support")) != qualifies:
-        raise HierarchicalSizingError(
-            "empirical_support.qualifies_as_exact_support must match the 20/20 thresholds"
-        )
-
-    pooling = response.get("pooling")
-    provenance = response.get("pooling_provenance")
-    if pooling is None:
-        if provenance is not None:
-            raise HierarchicalSizingError(
-                "pooling_provenance must be null when no pooling level is used"
-            )
-    else:
-        if not isinstance(provenance, Mapping):
-            raise HierarchicalSizingError("pooling_provenance is required")
-        for field in ("level", "source_key", "retained_axes", "pooled_axes"):
-            if provenance.get(field) != pooling.get(field):
-                raise HierarchicalSizingError(
-                    f"pooling_provenance.{field} must match the used pooling level"
-                )
-        if str(provenance.get("requested_key")) != requested_key:
-            raise HierarchicalSizingError(
-                "pooling_provenance.requested_key must be the requested key"
-            )
-        for field in (
-            "source_observations",
-            "source_distinct_hands",
-            "source_effective_sample_size",
-            "weight_exact",
-            "weight_parent",
-        ):
-            if provenance.get(field) != pooling.get(field):
-                raise HierarchicalSizingError(
-                    f"pooling_provenance.{field} must match the used pooling level"
-                )
-        counts_as_exact = provenance.get("level") == SUPPORT_LEVEL
-        if bool(provenance.get("counts_as_exact_support")) != counts_as_exact:
-            raise HierarchicalSizingError(
-                "pooling_provenance.counts_as_exact_support must match its level"
-            )
-
-    ess = response.get("effective_sample_size")
-    if not isinstance(ess, Mapping):
-        raise HierarchicalSizingError("effective_sample_size is required")
-    if ess.get("support_effective_sample_size") != support.get("effective_sample_size"):
-        raise HierarchicalSizingError(
-            "effective_sample_size.support_effective_sample_size must equal support"
-        )
-    expected_pooling_ess = None if pooling is None else pooling.get("source_effective_sample_size")
-    if ess.get("pooling_source_effective_sample_size") != expected_pooling_ess:
-        raise HierarchicalSizingError(
-            "effective_sample_size.pooling_source_effective_sample_size must match pooling"
-        )
-
-    admissibility = response.get("admissibility")
-    if not isinstance(admissibility, Mapping):
-        raise HierarchicalSizingError("admissibility is required")
-    if admissibility.get("layer") != LAYER_B_EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY:
-        raise HierarchicalSizingError("admissibility must be the layer-B block")
-    if admissibility.get("node_closure_rule_id") != NODE_CLOSURE_RULE_ID:
-        raise HierarchicalSizingError("admissibility must publish the frozen closure rule")
-    if admissibility.get("status") != status:
-        raise HierarchicalSizingError("admissibility.status must equal the response status")
-    gates = admissibility.get("gates")
-    if not isinstance(gates, list):
-        raise HierarchicalSizingError("admissibility.gates is required")
-    gate_ids = [gate.get("gate_id") for gate in gates]
-    expected_ids = [gate_id for _, gate_id, _, _ in LAYER_B_GATES]
-    if gate_ids != expected_ids:
-        raise HierarchicalSizingError(
-            "admissibility gates must cover the frozen T1 gate vocabulary in order"
-        )
-    for gate, (_, gate_id, reason_code, _) in zip(gates, LAYER_B_GATES):
-        if gate.get("reason_code") != reason_code:
-            raise HierarchicalSizingError(
-                f"admissibility gate {gate_id} must carry its T1 reason code"
-            )
-    failing = admissibility.get("primary_failure_gate")
-    if status == STATUS_EXACT_UNRESOLVED:
-        if admissibility.get("admissible") is not False:
-            raise HierarchicalSizingError("an unresolved node is never admissible")
-        if failing not in GATE_REASON_BY_ID:
-            raise HierarchicalSizingError(
-                "an unresolved node must name its failing T1 gate"
-            )
-        if admissibility.get("reason_code") != GATE_REASON_BY_ID[failing]:
-            raise HierarchicalSizingError(
-                "admissibility.reason_code must be the failing gate's T1 code"
-            )
-    else:
-        if admissibility.get("admissible") is not True or failing is not None:
-            raise HierarchicalSizingError(
-                "an answered node must pass every decidable layer-B gate"
-            )
-
-    identity = response.get("posterior_identity")
-    if not isinstance(identity, Mapping):
-        raise HierarchicalSizingError("posterior_identity is required")
-    if identity.get("status") != status or identity.get("reason_code") != status:
-        raise HierarchicalSizingError("posterior_identity must carry the response status")
-    posterior_present = response.get("posterior") is not None
-    if bool(identity.get("posterior_present")) != posterior_present:
-        raise HierarchicalSizingError(
-            "posterior_identity.posterior_present must match the emitted posterior"
-        )
-    if bool(identity.get("probability_emitted")) != posterior_present:
-        raise HierarchicalSizingError(
-            "posterior_identity.probability_emitted must match the emitted posterior"
-        )
-
-
 def validate_response(response: Mapping[str, Any]) -> None:
     """Enforce the machine-readable response contract; fail closed."""
     if not isinstance(response, Mapping):
@@ -1481,9 +935,6 @@ def validate_response(response: Mapping[str, Any]) -> None:
             response.get("reason_detail")
         ):
             raise HierarchicalSizingError("an unresolved raise frontier needs a reason")
-        _validate_two_layer_blocks(
-            response, requested_key=requested_key, support=support, status=status
-        )
         return
     if not isinstance(posterior, Mapping) or not posterior:
         raise HierarchicalSizingError("a resolved decision needs a posterior")
@@ -1520,9 +971,6 @@ def validate_response(response: Mapping[str, Any]) -> None:
             raise HierarchicalSizingError(
                 "uncertainty must reflect the level actually used"
             )
-    _validate_two_layer_blocks(
-        response, requested_key=requested_key, support=support, status=status
-    )
 
 
 def resolve_exact_context(
@@ -1669,83 +1117,52 @@ def resolve_exact_context(
         },
     }
 
-    def finalize(
-        *,
-        status: str,
-        unresolved_reason: str | None = None,
-        reason_detail: str | None = None,
-        primary_failure_gate: str | None = None,
-    ) -> dict[str, Any]:
-        """Serialize the two layers explicitly for exactly one response."""
-        base["status"] = status
-        base["reason_code"] = status
-        base["reason_detail"] = reason_detail
-        if unresolved_reason is None:
-            base.pop("unresolved_reason", None)
-        else:
-            base["unresolved_reason"] = unresolved_reason
-        base["empirical_support"] = empirical_support_block(
-            requested_key=requested_key, support=base["support"]
-        )
-        base["pooling_provenance"] = pooling_provenance_block(
-            requested_key=requested_key, pooling=base["pooling"]
-        )
-        base["effective_sample_size"] = effective_sample_size_block(
-            support=base["support"], pooling=base["pooling"]
-        )
-        base["admissibility"] = admissibility_block(
-            requested_key=requested_key,
-            support=base["support"],
-            pooling=base["pooling"],
-            uncertainty=base["uncertainty"],
-            raise_sizing=base["raise_sizing"],
-            status=status,
-            primary_failure_gate=primary_failure_gate,
-        )
-        base["posterior_identity"] = posterior_identity_block(
-            status=status,
-            reason_code=status,
-            unresolved_reason=unresolved_reason,
-            reason_detail=reason_detail,
-            posterior=base["posterior"],
+    if level_whitelist is None:
+        base.update(
+            {
+                "status": STATUS_EXACT_UNRESOLVED,
+                "reason_code": STATUS_EXACT_UNRESOLVED,
+                "reason_detail": (
+                    "no exact observation carries the requested key and no public context was "
+                    "supplied, so pooling level keys cannot be established; the call fails closed "
+                    "instead of resolving a different key"
+                ),
+                "unresolved_reason": REASON_NO_EXACT_SUPPORT_NO_CONTEXT,
+            }
         )
         validate_response(base)
         return base
 
-    if level_whitelist is None:
-        return finalize(
-            status=STATUS_EXACT_UNRESOLVED,
-            reason_detail=(
-                "no exact observation carries the requested key and no public context was "
-                "supplied, so pooling level keys cannot be established; the call fails closed "
-                "instead of resolving a different key"
-            ),
-            unresolved_reason=REASON_NO_EXACT_SUPPORT_NO_CONTEXT,
-            primary_failure_gate=GATE_POOLING_LEVEL,
-        )
-
     if raise_sizing["unresolved"]:
-        return finalize(
-            status=STATUS_EXACT_UNRESOLVED,
-            reason_detail=(
-                "raise sizing for this exact context is an unresolved frontier; "
-                "no representative, legal-minimum, nearest or interpolated price is permitted"
-            ),
-            unresolved_reason=REASON_RAISE_SIZING_UNRESOLVED,
-            primary_failure_gate=GATE_RAISE_SIZING_FRONTIER,
+        base.update(
+            {
+                "status": STATUS_EXACT_UNRESOLVED,
+                "reason_code": STATUS_EXACT_UNRESOLVED,
+                "reason_detail": (
+                    "raise sizing for this exact context is an unresolved frontier; "
+                    "no representative, legal-minimum, nearest or interpolated price is permitted"
+                ),
+                "unresolved_reason": REASON_RAISE_SIZING_UNRESOLVED,
+            }
         )
+        validate_response(base)
+        return base
 
     chosen = next((row for row in diagnostics if row["qualifies"]), None)
     if chosen is None:
-        return finalize(
-            status=STATUS_EXACT_UNRESOLVED,
-            reason_detail=(
-                "no pooling level meets the frozen 20 observations / 20 distinct hands "
-                "thresholds for this exact key"
-            ),
-            unresolved_reason=REASON_NO_ADMISSIBLE_POOLING,
-            primary_failure_gate=GATE_POOLING_LEVEL,
+        base.update(
+            {
+                "status": STATUS_EXACT_UNRESOLVED,
+                "reason_code": STATUS_EXACT_UNRESOLVED,
+                "reason_detail": (
+                    "no pooling level meets the frozen 20 observations / 20 distinct hands "
+                    "thresholds for this exact key"
+                ),
+                "unresolved_reason": REASON_NO_ADMISSIBLE_POOLING,
+            }
         )
+        validate_response(base)
+        return base
 
     if chosen["level"] == SUPPORT_LEVEL:
         status = STATUS_EXACT_EMPIRICAL_STRONG
@@ -1793,33 +1210,8 @@ def resolve_exact_context(
         level_effective_sample_size=level_ess,
         confidence=float(confidence),
     )
-    # Fail closed: an answered node that cannot satisfy every layer-B gate the
-    # provider can decide (identity, provenance, level, effective sample size,
-    # uncertainty, raise sizing) is downgraded to EXACT_UNRESOLVED with the
-    # failing gate's frozen reason code.  Calibration is deferred to VALIDATION.
-    gate_check = admissibility_block(
-        requested_key=requested_key,
-        support=base["support"],
-        pooling=base["pooling"],
-        uncertainty=base["uncertainty"],
-        raise_sizing=base["raise_sizing"],
-        status=status,
-    )
-    if not gate_check["admissible"]:
-        failing_gate = gate_check["primary_failure_gate"]
-        base["posterior"] = None
-        base["uncertainty"] = None
-        base["pooling"] = None
-        return finalize(
-            status=STATUS_EXACT_UNRESOLVED,
-            reason_detail=(
-                "the answered node cannot satisfy the frozen layer-B admissibility gate "
-                f"{failing_gate}; no probability is emitted and the node stays unresolved"
-            ),
-            unresolved_reason=REASON_NO_ADMISSIBLE_POOLING,
-            primary_failure_gate=failing_gate,
-        )
-    return finalize(status=status)
+    validate_response(base)
+    return base
 
 
 def canonical_response_sha256(response: Mapping[str, Any]) -> str:

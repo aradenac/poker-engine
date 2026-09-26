@@ -56,14 +56,14 @@
   "issue": 419,
   "protected_files_before_after_sha256": {
     "after": {
-      "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "10606463066cef6b843612b2404b74ee1a386f9d6aab0e0bf482b71eaa6e1799",
+      "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c",
       "contracts/training/model-a-preflop-sizing-likelihood.schema.json": "6e16257e7e0f906ac245f674781d0fd5e092401b13f4833a592483e24581a298",
       "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
       "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
       "training/registry.json": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0"
     },
     "before": {
-      "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "10606463066cef6b843612b2404b74ee1a386f9d6aab0e0bf482b71eaa6e1799",
+      "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c",
       "contracts/training/model-a-preflop-sizing-likelihood.schema.json": "6e16257e7e0f906ac245f674781d0fd5e092401b13f4833a592483e24581a298",
       "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
       "training/populations/registry.json": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
@@ -81,7 +81,7 @@
         "pooling_source_key": "MAPSUP_fe30f71401958ef18e85:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=4|call=3|public=0c7f64e2cd6f40060dacaa533547a1152adb4ff9c2923ff2415965565e2a06c7",
         "reason_code": "EXACT_EMPIRICAL_STRONG",
         "response_schema_errors": [],
-        "response_sha256": "348c942c21f679092fe752526257e9b502dcb92733ea616b30732b3663738469",
+        "response_sha256": "e13d8124a6db57b648a6d4d8bb69e266d3cf8ba5d215b1b03db9de82e778f063",
         "status": "EXACT_EMPIRICAL_STRONG",
         "support_effective_sample_size": 20.0,
         "support_observations": 20,
@@ -96,7 +96,7 @@
         "pooling_source_key": "LEVELKEY_1_a2afda12bbec37dc12cde73143942e138693b1662fc888db07da5ae5ca7f0d88",
         "reason_code": "EXACT_HIERARCHICAL_ESTIMATE",
         "response_schema_errors": [],
-        "response_sha256": "06306526eacd54cca1430cae1b0484f6692ebf9016c9f411202c0fcac2ea93ab",
+        "response_sha256": "4e686fabfb9a9403a610d410357a4d13774053bcedbbf9671d86e32ccac12c80",
         "status": "EXACT_HIERARCHICAL_ESTIMATE",
         "support_effective_sample_size": 1.0,
         "support_observations": 1,
@@ -111,7 +111,7 @@
         "pooling_source_key": null,
         "reason_code": "EXACT_UNRESOLVED",
         "response_schema_errors": [],
-        "response_sha256": "c7b68f6026112eba872978d778d85313c83ea14a0d0db0c3c7cc1992c8e1951b",
+        "response_sha256": "7b7196fa6ca4063becef5fa18a2a0c02b4ce563fb31f9acf98f04d017296b46d",
         "status": "EXACT_UNRESOLVED",
         "support_effective_sample_size": 0.0,
         "support_observations": 0,
@@ -380,13 +380,13 @@
     "hierarchical": {
       "$id": "https://poker-engine.local/contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
       "path": "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json",
-      "sha256": "10606463066cef6b843612b2404b74ee1a386f9d6aab0e0bf482b71eaa6e1799"
+      "sha256": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c"
     }
   },
   "source_files_sha256": {
-    "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "10606463066cef6b843612b2404b74ee1a386f9d6aab0e0bf482b71eaa6e1799",
+    "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json": "7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c",
     "contracts/training/model-a-preflop-sizing-likelihood.schema.json": "6e16257e7e0f906ac245f674781d0fd5e092401b13f4833a592483e24581a298",
-    "tools/preflop/model_a_sizing_hierarchical.py": "7dfe162eef38e77277a6339555a3554cda104bbc256965734d17dff27707fdc7",
+    "tools/preflop/model_a_sizing_hierarchical.py": "1cd25c17bc67c16e78d54fc105cf468e92d9dc7b27d4a5b259141715fd34be18",
     "tools/preflop/model_a_sizing_likelihood.py": "6dec4f8e05da8b231bad1b50c9492941f27d20e0628b747a817495438243151a",
     "tools/training/audit_hierarchical_candidate_contract.py": "61b53378e2ed29b663669487689736abb5907f139a6c531eab0bc4fbcf52bdad",
     "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",

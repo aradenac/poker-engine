@@ -109,17 +109,17 @@
   "evidence_bindings": {
     "CANDIDATE_MANIFEST.json": {
       "bundle": "analysis/issue419_hierarchical_tree/fit",
-      "canonical_payload_sha256": "2efff7e3fbbb8b5a001357bbe440be7e80f79eca54766143d10858057f4ce6ac",
-      "object": "analysis/issue419_hierarchical_tree/fit/sha256/ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c.json",
+      "canonical_payload_sha256": "cec63b6e2d44b307e27353828dd442503e07f242188df98637d1a05c148a05c1",
+      "object": "analysis/issue419_hierarchical_tree/fit/sha256/d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c.json",
       "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
-      "sha256": "ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c"
+      "sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
     },
     "EXACT_TREE_PREFLIGHT.json": {
       "bundle": "analysis/issue419_hierarchical_tree/exact_tree_preflight",
-      "canonical_payload_sha256": "d027391f636b1ccc41c82b9a6b5d9a332ce44dba8ae2fb1c1ae2419eb340c217",
-      "object": "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f.json",
+      "canonical_payload_sha256": "fc08988f0a677b462e484d1964a47967783e10cd1871fe810097b7c7265a9bbd",
+      "object": "analysis/issue419_hierarchical_tree/exact_tree_preflight/sha256/456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6.json",
       "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
-      "sha256": "e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f"
+      "sha256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6"
     },
     "FROZEN_VALIDATION_PROTOCOL.json": {
       "bundle": "analysis/issue419_hierarchical_tree/validation_protocol",
@@ -151,10 +151,10 @@
     },
     "TRAIN_FIT_REPORT.json": {
       "bundle": "analysis/issue419_hierarchical_tree/fit",
-      "canonical_payload_sha256": "1924abc8e5f0b0ec53ff6e02e8791976dd79745554b281821311f302a907e46f",
-      "object": "analysis/issue419_hierarchical_tree/fit/sha256/b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5.json",
+      "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
+      "object": "analysis/issue419_hierarchical_tree/fit/sha256/ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5.json",
       "path": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
-      "sha256": "b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5"
+      "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
     },
     "VALIDATION_RESULT.json": {
       "bundle": "analysis/issue419_hierarchical_tree/validation",
@@ -217,10 +217,10 @@
       "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.sha256": "30f8244bd8dbfcbfbae279a13e9174b50df857479d9211a03de14301e0b2f41e",
       "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
       "analysis/issue419_hierarchical_tree/SUMMARY.md": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8",
-      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
       "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
-      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c",
-      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
       "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
       "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
       "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
@@ -235,10 +235,10 @@
       "analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.sha256": "30f8244bd8dbfcbfbae279a13e9174b50df857479d9211a03de14301e0b2f41e",
       "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
       "analysis/issue419_hierarchical_tree/SUMMARY.md": "737d315c6fde5d4863830952ab5bf396483bbefc47f3a4cdfcc7fe12508616e8",
-      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f",
+      "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6",
       "analysis/issue419_hierarchical_tree/fit/CANDIDATE.json": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534",
-      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c",
-      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5",
+      "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c",
+      "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5",
       "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
       "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
       "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
@@ -253,9 +253,9 @@
   },
   "required_artifacts": {
     "CANDIDATE_MANIFEST.json": {
-      "canonical_payload_sha256": "2efff7e3fbbb8b5a001357bbe440be7e80f79eca54766143d10858057f4ce6ac",
+      "canonical_payload_sha256": "cec63b6e2d44b307e27353828dd442503e07f242188df98637d1a05c148a05c1",
       "path": "analysis/issue419_hierarchical_tree/fit/CANDIDATE_MANIFEST.json",
-      "sha256": "ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c"
+      "sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
     },
     "DECISION.json": {
       "note": "self-referential: this artifact digest is recorded by the bundle index, not inside itself",
@@ -263,9 +263,9 @@
       "sha256_location": "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json"
     },
     "EXACT_TREE_PREFLIGHT.json": {
-      "canonical_payload_sha256": "d027391f636b1ccc41c82b9a6b5d9a332ce44dba8ae2fb1c1ae2419eb340c217",
+      "canonical_payload_sha256": "fc08988f0a677b462e484d1964a47967783e10cd1871fe810097b7c7265a9bbd",
       "path": "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
-      "sha256": "e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f"
+      "sha256": "456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6"
     },
     "FROZEN_VALIDATION_PROTOCOL.json": {
       "canonical_payload_sha256": "f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5",
@@ -283,9 +283,9 @@
       "sha256_location": "analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json"
     },
     "TRAIN_FIT_REPORT.json": {
-      "canonical_payload_sha256": "1924abc8e5f0b0ec53ff6e02e8791976dd79745554b281821311f302a907e46f",
+      "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
       "path": "analysis/issue419_hierarchical_tree/fit/TRAIN_FIT_REPORT.json",
-      "sha256": "b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5"
+      "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
     },
     "VALIDATION_RESULT.json": {
       "canonical_payload_sha256": "b05012719388ec803481adaebe281e70982654f55153a81679f51555e9124ba6",

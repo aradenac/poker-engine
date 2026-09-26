@@ -10,4 +10,4 @@ Active pointer unchanged: `training/registry.json` still promotes `training/mode
 
 Exact-price v1/v2 non-regression: v1 present=True, v2 present=True, both validate=True.
 
-Reproduce: `python3 tools/training/audit_hierarchical_candidate_contract.py`. Contract byte SHA256: `5d0fbcaf092f6ebb798df612b10a7e1b15940223b95f071281302b00c4f46a98`.
+Reproduce: `python3 tools/training/audit_hierarchical_candidate_contract.py`. Contract byte SHA256: `d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3`.

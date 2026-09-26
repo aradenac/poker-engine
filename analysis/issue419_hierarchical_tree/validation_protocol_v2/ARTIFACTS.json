@@ -1,13 +1,13 @@
 {
   "FROZEN_VALIDATION_PROTOCOL_V2.json": {
-    "canonical_payload_sha256": "e80732c4ea5512863c448497b89896799f24c942f744193832dabd5c568579f0",
-    "object": "sha256/db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1.json",
+    "canonical_payload_sha256": "cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de",
+    "object": "sha256/74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350.json",
     "revision_of": "69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3",
-    "sha256": "db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1"
+    "sha256": "74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350"
   },
   "SUMMARY.md": {
-    "object": "sha256/c8d52e03f7d36b231d9f8bed49caa22ebdddfe2f7860327e67df65efaea3868e.md",
-    "sha256": "c8d52e03f7d36b231d9f8bed49caa22ebdddfe2f7860327e67df65efaea3868e"
+    "object": "sha256/44cdc1916c5926ada8a717ef051f6ac8ab4baf40a69509b52726192185f2e36c.md",
+    "sha256": "44cdc1916c5926ada8a717ef051f6ac8ab4baf40a69509b52726192185f2e36c"
   },
   "history": {
     "amendment_id": "V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE",

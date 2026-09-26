@@ -81,8 +81,8 @@ separately versioned, content-addressed revision:
 
 `analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json`
 (`poker-hierarchical-frozen-validation-protocol/v2`, byte digest
-`db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1`, canonical
-payload `e80732c4ea5512863c448497b89896799f24c942f744193832dabd5c568579f0`),
+`74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350`, canonical
+payload `cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de`),
 written by `tools/training/write_frozen_validation_protocol_v2.py`. This is the
 amended v2 payload: the earlier v2 revision
 `508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320`
@@ -229,16 +229,14 @@ conjunction explicit in the v2 protocol:
 only if every frozen layer-B gate passes, so `EXACT_EMPIRICAL_STRONG` (which
 meets them at `L0_EXACT_KEY`) and an `EXACT_HIERARCHICAL_ESTIMATE` that meets
 them both close a node, while any failing gate keeps it open with a
-`REFUSED_*` reason code. The T8 preflight above is derived evidence: it embeds
-the digest of the provider source it was built from, so it is re-derived — never
-reinterpreted — whenever the provider contract changes, and its conditions and
-its `required_tree_complete = false` state are unchanged. Its
-`every_required_node_has_an_admissible_exact_answer` condition keeps the v1
-wording, and the amendment changes no threshold and no gate value. Where the
-pre-registered v1 gloss and
+`REFUSED_*` reason code. The T8 preflight above remains a byte-identical frozen
+v1 artifact and is **not** re-evaluated here: its
+`every_required_node_has_an_admissible_exact_answer` condition is the v1 wording,
+its `required_tree_complete = false` state is unchanged, and the amendment
+changes no threshold and no gate value. Where the pre-registered v1 gloss and
 the amended v2 protocol differ on the *interpretation* of node closure, the
-amended v2 protocol governs; the frozen v1 **protocol** bytes stay the source of
-record for every threshold, gate value and comparator.
+amended v2 protocol governs; the frozen v1 bytes stay the source of record for
+every threshold, gate value and comparator.
 
 The preflight itself is tracked versioned: `python3
 tools/simulation/issue419_exact_tree_preflight.py` writes the v2 bundle

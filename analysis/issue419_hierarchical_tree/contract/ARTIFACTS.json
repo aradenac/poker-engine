@@ -1,11 +1,11 @@
 {
   "CANDIDATE_CONTRACT.json": {
-    "canonical_payload_sha256": "e76bbf507a099e3011d6d6c44bbec41c0cd70f039405a3f18d155fcaf045c5a7",
-    "object": "sha256/5d0fbcaf092f6ebb798df612b10a7e1b15940223b95f071281302b00c4f46a98.json",
-    "sha256": "5d0fbcaf092f6ebb798df612b10a7e1b15940223b95f071281302b00c4f46a98"
+    "canonical_payload_sha256": "1c84f6f1159e0d91295cd3e894a811ebd2bd0f977ee1fbc7826082fd857432bf",
+    "object": "sha256/d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3.json",
+    "sha256": "d62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3"
   },
   "SUMMARY.md": {
-    "object": "sha256/4bb90dfef1048d453c488d103e8c93a262729ea1fdf75d644d028d1fa5c0772e.md",
-    "sha256": "4bb90dfef1048d453c488d103e8c93a262729ea1fdf75d644d028d1fa5c0772e"
+    "object": "sha256/bc03a75821365a3a7cc704f0aa7f165f50b90831e84f2dc3e5a0c47b725214fd.md",
+    "sha256": "bc03a75821365a3a7cc704f0aa7f165f50b90831e84f2dc3e5a0c47b725214fd"
   }
 }

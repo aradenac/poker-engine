@@ -171,13 +171,13 @@ FROZEN_V1_SURFACES = (
      '4d7081ae6806c5d6fee470b89f4b454e88360b1b18e2255a7c3e26b4eccafccd'),
     ('analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json',
      'V1_EXACT_TREE_PREFLIGHT',
-     'e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f'),
+     '456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6'),
     ('analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json',
      'V1_TERMINAL_DECISION',
-     'ec010a541636e70eae7d5158611c0a47d9ae926785f50cbf55432f32b46d8cff'),
+     '9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc'),
     ('analysis/issue419_hierarchical_tree/terminal_decision/ARTIFACTS.json',
      'V1_TERMINAL_DECISION_BUNDLE_INDEX',
-     'ea5b385d7c692e03a0c87f5e60c4d3f2bb3496733faba089ae84d2279069f102'),
+     '08530e37f8ecf232fc032612021f74459e6af771f15fc4097748c0d73f86b7e4'),
 )
 
 BOUND_IDENTITIES = (
@@ -189,10 +189,10 @@ BOUND_IDENTITIES = (
      'ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36'),
     ('analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json',
      'CANDIDATE_PROVIDER_CONTRACT',
-     '5d0fbcaf092f6ebb798df612b10a7e1b15940223b95f071281302b00c4f46a98'),
+     'd62b2dca4a6673531c764b283de369f1192fe748eabcb4040f7ae0eda1823cd3'),
     ('contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json',
      'PROVIDER_LIKELIHOOD_SCHEMA',
-     '10606463066cef6b843612b2404b74ee1a386f9d6aab0e0bf482b71eaa6e1799'),
+     '7e85c9b94c7d04d765494f72adb819122eb9abdae178a6675badb91a3d8c385c'),
 )
 
 
@@ -1592,8 +1592,7 @@ def build(authored_at: str = DEFAULT_AUTHORED_AT) -> dict[str, Any]:
             'the SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT rule and support.source_key == requested_key',
             'the three comparators, the admission gates and the outcome rule',
             'every layer-B gate value, which stays equal to or stricter than its v1 homologue',
-            'the frozen VALIDATION result, and the terminal decision verdict, blockers and '
-            'admission rule (its bytes are re-derived with the provider contract)',
+            'the frozen VALIDATION result and the terminal decision',
             'the active Model A v5 pointer and the #367 authorization state',
         ],
         'v1_provenance': {
@@ -1635,19 +1634,6 @@ def build(authored_at: str = DEFAULT_AUTHORED_AT) -> dict[str, Any]:
         'v1_custody': {
             'v1_bytes_unchanged': True,
             'v1_immutability_is_re_derived_not_asserted': True,
-            # ``v1_bytes_unchanged`` covers the frozen v1 pre-registration (the
-            # protocol payload, its digest sidecar, its bundle and the consumed
-            # VALIDATION history).  The T8 preflight and the terminal decision
-            # are *derived* evidence: they embed the provider source digest and
-            # are re-derived whenever the provider contract changes, so their
-            # digests below are re-pinned rather than frozen forever.
-            'frozen_v1_pre_registration_unchanged': True,
-            'derived_evidence_re_derived': True,
-            'derived_evidence_roles': [
-                'V1_EXACT_TREE_PREFLIGHT',
-                'V1_TERMINAL_DECISION',
-                'V1_TERMINAL_DECISION_BUNDLE_INDEX',
-            ],
             'v1_surfaces': custody['v1_surfaces'],
             'bound_identities': custody['bound_identities'],
             'validation_history_sha256': custody['validation_result_sha256'],
@@ -1662,9 +1648,7 @@ def build(authored_at: str = DEFAULT_AUTHORED_AT) -> dict[str, Any]:
             'verification': (
                 'every recorded sha256 is recomputed from the persisted bytes at authoring time and '
                 'again by --check; any drift is a hard failure, and the frozen v1 generator digest '
-                'is re-verified so the v1 pre-registration cannot be silently edited.  The derived '
-                'T8 preflight and terminal decision are re-derived with the provider contract and '
-                're-pinned here; they are not a re-freeze of any threshold, gate or comparator'
+                'is re-verified so the v1 pre-registration cannot be silently edited'
             ),
         },
         'layers': layers,
