@@ -1,0 +1,1095 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/hybrid-router-spec.schema.json",
+  "title": "Hybrid preflop response router spec and TRAIN-only preregistration procedure",
+  "description": "Contract of issue #423's hybrid router preregistration document (analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json, poker-hybrid-router-spec/v1, authored by tools/training/freeze_hybrid_router_spec.py). The document declares, machine-readable and before any closure evaluation: the three route sources (ACTIVE_STRONG_SUPPORT / GENERALIZED_SPARSE_IN_DOMAIN / OOD_ABSTAIN), the stable pre-action signals the route decision may read, the reason-code catalog reused from #421's OOD gate, the runtime contract a routed answer must satisfy, and the exact procedure that derives every admission threshold. The procedure is symbolic on purpose: the formulas consume TRAIN-only out-of-fold evidence or a future frozen admission support, never a VALIDATION or TEST evaluation. The contract is stdlib-validated in tests/training/test_freeze_hybrid_router_spec.py, consistent with the repository rule that jsonschema is not a declared dependency.",
+  "$ref": "#/$defs/spec",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "routeSource": {
+      "enum": [
+        "ACTIVE_STRONG_SUPPORT",
+        "GENERALIZED_SPARSE_IN_DOMAIN",
+        "OOD_ABSTAIN"
+      ]
+    },
+    "supportState": {
+      "enum": [
+        "STRONG_EXACT_SUPPORT",
+        "SPARSE_IN_DOMAIN",
+        "OOD_ABSTAIN"
+      ]
+    },
+    "oodStatus": {
+      "enum": [
+        "MODEL_SUPPORTED",
+        "MODEL_SUPPORTED_HIGH_UNCERTAINTY",
+        "MODEL_OOD_ABSTAIN"
+      ]
+    },
+    "uncertainty": {
+      "enum": [
+        "NONE",
+        "HIGH"
+      ]
+    },
+    "signalId": {
+      "enum": [
+        "support_exact",
+        "support_feature_level",
+        "distance_to_domain",
+        "predictive_uncertainty",
+        "extrapolation_sizing",
+        "extrapolation_stack",
+        "extrapolation_price",
+        "family",
+        "actor_position",
+        "aggressor_position"
+      ]
+    },
+    "reasonCode": {
+      "enum": [
+        "UNSEEN_CATEGORY",
+        "EXTRAPOLATION_STACK",
+        "EXTRAPOLATION_SIZING",
+        "EXTRAPOLATION_PRICE",
+        "MISSING_DOMAIN_AXIS",
+        "SPLINE_BOUNDARY_EXTRAPOLATION",
+        "DOMAIN_DISTANCE",
+        "LOW_FEATURE_SUPPORT",
+        "LOW_EXACT_CONTEXT_SUPPORT",
+        "HIGH_PREDICTIVE_ENTROPY",
+        "LOW_MODEL_NODE_SUPPORT",
+        "PREDICTIVE_UNCERTAINTY_UNAVAILABLE"
+      ]
+    },
+    "splitPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed_splits",
+        "consumed_splits",
+        "refused_splits",
+        "fail_closed_on_refused_split",
+        "refused_split_is_a_hard_error",
+        "statement"
+      ],
+      "properties": {
+        "allowed_splits": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "consumed_splits": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "refused_splits": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "fail_closed_on_refused_split": {
+          "const": true
+        },
+        "refused_split_is_a_hard_error": {
+          "const": true
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 40
+        }
+      }
+    },
+    "admissibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requires_cv_justification",
+        "cv_justified",
+        "basis",
+        "minimum_category_support",
+        "minimum_positive_gain_share"
+      ],
+      "properties": {
+        "requires_cv_justification": {
+          "type": "boolean"
+        },
+        "cv_justified": {
+          "type": "boolean"
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 20
+        },
+        "minimum_category_support": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimum_positive_gain_share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "timing",
+        "deterministic",
+        "computable_before_action",
+        "kind",
+        "definition",
+        "source_module_symbol",
+        "read_from",
+        "used_by_route_sources",
+        "used_by_formulas",
+        "decisive_for_ood",
+        "admissibility"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/signalId"
+        },
+        "timing": {
+          "const": "BEFORE_ACTION"
+        },
+        "deterministic": {
+          "const": true
+        },
+        "computable_before_action": {
+          "const": true
+        },
+        "kind": {
+          "enum": [
+            "support",
+            "domain",
+            "uncertainty",
+            "extrapolation",
+            "categorical",
+            "derived"
+          ]
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 20
+        },
+        "source_module_symbol": {
+          "type": "string",
+          "minLength": 3
+        },
+        "read_from": {
+          "type": "string",
+          "minLength": 3
+        },
+        "used_by_route_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/routeSource"
+          }
+        },
+        "used_by_formulas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "decisive_for_ood": {
+          "type": "boolean"
+        },
+        "admissibility": {
+          "$ref": "#/$defs/admissibility"
+        }
+      }
+    },
+    "routeSourceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "decision_priority",
+        "definition",
+        "model_id",
+        "probabilities_source",
+        "abstains",
+        "support_state",
+        "preconditions",
+        "routed_strata"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/routeSource"
+        },
+        "decision_priority": {
+          "type": "string",
+          "pattern": "^P[0-9]$"
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 40
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "probabilities_source": {
+          "type": "string",
+          "minLength": 10
+        },
+        "abstains": {
+          "type": "boolean"
+        },
+        "support_state": {
+          "$ref": "#/$defs/supportState"
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "signal",
+              "operator",
+              "reference"
+            ],
+            "properties": {
+              "signal": {
+                "type": "string",
+                "minLength": 3
+              },
+              "operator": {
+                "enum": [
+                  ">=",
+                  "<",
+                  "==",
+                  "is_empty",
+                  "is_not_empty",
+                  "in"
+                ]
+              },
+              "reference": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "routed_strata": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "routeDecisionRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row",
+        "when",
+        "route_source",
+        "fallback"
+      ],
+      "properties": {
+        "row": {
+          "type": "string",
+          "pattern": "^R[0-9]$"
+        },
+        "when": {
+          "type": "string",
+          "minLength": 10
+        },
+        "route_source": {
+          "$ref": "#/$defs/routeSource"
+        },
+        "fallback": {
+          "type": "boolean"
+        }
+      }
+    },
+    "reasonCatalogEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "class",
+        "abstains",
+        "definition"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "class": {
+          "enum": [
+            "hard",
+            "soft"
+          ]
+        },
+        "abstains": {
+          "type": "boolean"
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 20
+        }
+      }
+    },
+    "reasonCodes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reused_from",
+        "source_module_symbol",
+        "order",
+        "hard",
+        "soft",
+        "abstaining",
+        "catalog"
+      ],
+      "properties": {
+        "reused_from": {
+          "const": "issue-421"
+        },
+        "source_module_symbol": {
+          "type": "string",
+          "minLength": 3
+        },
+        "order": {
+          "type": "array",
+          "minItems": 12,
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "hard": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "soft": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "abstaining": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "catalog": {
+          "type": "array",
+          "minItems": 12,
+          "items": {
+            "$ref": "#/$defs/reasonCatalogEntry"
+          }
+        }
+      }
+    },
+    "runtimeField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type",
+        "required",
+        "required_when",
+        "definition"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 3
+        },
+        "type": {
+          "type": "string",
+          "minLength": 3
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "required_when": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 20
+        }
+      }
+    },
+    "runtimeContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "required_fields",
+        "fields",
+        "invariants",
+        "abstention_contract",
+        "sizing_contract",
+        "analysis_admissibility_rule"
+      ],
+      "properties": {
+        "schema": {
+          "type": "string",
+          "minLength": 10
+        },
+        "required_fields": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 9,
+          "items": {
+            "$ref": "#/$defs/runtimeField"
+          }
+        },
+        "invariants": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "string",
+            "minLength": 20
+          }
+        },
+        "abstention_contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "route_source",
+            "probabilities_present",
+            "selected_action_present",
+            "reason_codes_present",
+            "analysis_admissible"
+          ],
+          "properties": {
+            "route_source": {
+              "const": "OOD_ABSTAIN"
+            },
+            "probabilities_present": {
+              "const": false
+            },
+            "selected_action_present": {
+              "const": false
+            },
+            "reason_codes_present": {
+              "const": true
+            },
+            "analysis_admissible": {
+              "const": false
+            }
+          }
+        },
+        "sizing_contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required_actions",
+            "field",
+            "no_nearest_price_substitution",
+            "fail_closed_on_illegal_target"
+          ],
+          "properties": {
+            "required_actions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
+            },
+            "field": {
+              "type": "string",
+              "minLength": 3
+            },
+            "no_nearest_price_substitution": {
+              "const": true
+            },
+            "fail_closed_on_illegal_target": {
+              "const": true
+            }
+          }
+        },
+        "analysis_admissibility_rule": {
+          "type": "string",
+          "minLength": 40
+        }
+      }
+    },
+    "strata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reused_from",
+        "source_module_symbol",
+        "definition",
+        "support_thresholds",
+        "strata",
+        "sparse_covered_strata",
+        "ood_strata"
+      ],
+      "properties": {
+        "reused_from": {
+          "const": "issue-421"
+        },
+        "source_module_symbol": {
+          "type": "string",
+          "minLength": 3
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 40
+        },
+        "support_thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "frequent_exact_min_support",
+            "rare_exact_min_support"
+          ],
+          "properties": {
+            "frequent_exact_min_support": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "rare_exact_min_support": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "strata": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "role",
+              "routed_to",
+              "covered_by_sparse_floor"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "frequent_exact",
+                  "rare_exact",
+                  "exact_absent_in_domain",
+                  "exact_absent_out_of_domain"
+                ]
+              },
+              "role": {
+                "type": "string",
+                "minLength": 10
+              },
+              "routed_to": {
+                "$ref": "#/$defs/routeSource"
+              },
+              "covered_by_sparse_floor": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "sparse_covered_strata": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "ood_strata": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "oodGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reused_from",
+        "schema",
+        "contract_path",
+        "contract_sha256",
+        "statuses",
+        "status_definitions",
+        "hard_reason_codes",
+        "soft_reason_codes",
+        "threshold_keys",
+        "abstention_criterion_formula",
+        "high_uncertainty_rule",
+        "exact_context_absent_in_domain_decisive"
+      ],
+      "properties": {
+        "reused_from": {
+          "const": "issue-421"
+        },
+        "schema": {
+          "type": "string",
+          "minLength": 10
+        },
+        "contract_path": {
+          "type": "string",
+          "minLength": 10
+        },
+        "contract_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "statuses": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/oodStatus"
+          }
+        },
+        "status_definitions": {
+          "type": "object",
+          "minProperties": 3,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 20
+          }
+        },
+        "hard_reason_codes": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "soft_reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "threshold_keys": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "abstention_criterion_formula": {
+          "type": "string",
+          "minLength": 3
+        },
+        "high_uncertainty_rule": {
+          "type": "string",
+          "minLength": 20
+        },
+        "exact_context_absent_in_domain_decisive": {
+          "const": false
+        }
+      }
+    },
+    "constant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "value",
+        "provenance",
+        "terminal_evaluation_derived"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 3
+        },
+        "value": {
+          "type": [
+            "number",
+            "integer",
+            "boolean",
+            "string"
+          ]
+        },
+        "provenance": {
+          "type": "string",
+          "minLength": 10
+        },
+        "terminal_evaluation_derived": {
+          "const": false
+        }
+      }
+    },
+    "formulaInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "source",
+        "pointer"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "minLength": 3
+        },
+        "source": {
+          "enum": [
+            "train_out_of_fold_cv_report",
+            "frozen_admission_support",
+            "runtime_gate"
+          ]
+        },
+        "pointer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "formula": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "derives",
+        "direction",
+        "evaluation_surface",
+        "strata_scope",
+        "expression",
+        "symbols",
+        "inputs",
+        "constant_refs",
+        "criterion",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]+$"
+        },
+        "derives": {
+          "type": "string",
+          "minLength": 3
+        },
+        "direction": {
+          "enum": [
+            "lower_is_better",
+            "higher_is_better",
+            "predicate"
+          ]
+        },
+        "evaluation_surface": {
+          "enum": [
+            "TRAIN_OUT_OF_FOLD",
+            "FROZEN_ADMISSION_SUPPORT",
+            "RUNTIME_GATE"
+          ]
+        },
+        "strata_scope": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 20
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2
+          }
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/formulaInput"
+          }
+        },
+        "constant_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2
+          }
+        },
+        "criterion": {
+          "type": "string",
+          "minLength": 10
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 20
+        }
+      }
+    },
+    "procedure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preregistered",
+        "registered_before_evaluation",
+        "evaluation_basis",
+        "consumed_splits",
+        "validation_consumed",
+        "test_consumed",
+        "terminal_values_persisted",
+        "constants",
+        "derivation_order",
+        "formulas"
+      ],
+      "properties": {
+        "preregistered": {
+          "const": true
+        },
+        "registered_before_evaluation": {
+          "const": true
+        },
+        "evaluation_basis": {
+          "const": "TRAIN_only_hand_grouped_out_of_fold"
+        },
+        "consumed_splits": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "validation_consumed": {
+          "const": false
+        },
+        "test_consumed": {
+          "const": false
+        },
+        "terminal_values_persisted": {
+          "const": false
+        },
+        "constants": {
+          "type": "array",
+          "minItems": 8,
+          "items": {
+            "$ref": "#/$defs/constant"
+          }
+        },
+        "derivation_order": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "formulas": {
+          "type": "array",
+          "minItems": 8,
+          "items": {
+            "$ref": "#/$defs/formula"
+          }
+        }
+      }
+    },
+    "evidenceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "minLength": 3
+        },
+        "path": {
+          "type": "string",
+          "minLength": 3
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "issue",
+        "kind",
+        "title",
+        "status",
+        "frozen",
+        "authored_before_validation_read",
+        "terminal_evaluation_reads",
+        "purpose",
+        "split_policy",
+        "route_sources",
+        "route_decision_table",
+        "signals",
+        "reason_codes",
+        "runtime_contract",
+        "strata",
+        "ood_gate",
+        "procedure",
+        "evidence_bindings",
+        "assertions",
+        "canonical_payload_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "poker-hybrid-router-spec/v1"
+        },
+        "issue": {
+          "const": 423
+        },
+        "kind": {
+          "const": "hybrid_router_spec_and_preregistration_procedure"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 20
+        },
+        "status": {
+          "const": "SPEC_ONLY_PREREGISTERED_NOT_ADMITTED"
+        },
+        "frozen": {
+          "const": true
+        },
+        "authored_before_validation_read": {
+          "const": true
+        },
+        "terminal_evaluation_reads": {
+          "const": 0
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 40
+        },
+        "split_policy": {
+          "$ref": "#/$defs/splitPolicy"
+        },
+        "route_sources": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/routeSourceEntry"
+          }
+        },
+        "route_decision_table": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/routeDecisionRow"
+          }
+        },
+        "signals": {
+          "type": "array",
+          "minItems": 10,
+          "items": {
+            "$ref": "#/$defs/signal"
+          }
+        },
+        "reason_codes": {
+          "$ref": "#/$defs/reasonCodes"
+        },
+        "runtime_contract": {
+          "$ref": "#/$defs/runtimeContract"
+        },
+        "strata": {
+          "$ref": "#/$defs/strata"
+        },
+        "ood_gate": {
+          "$ref": "#/$defs/oodGate"
+        },
+        "procedure": {
+          "$ref": "#/$defs/procedure"
+        },
+        "evidence_bindings": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/evidenceBinding"
+          }
+        },
+        "assertions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "train_only",
+            "validation_consumed",
+            "test_consumed",
+            "byte_stable",
+            "generator_self_source_scan",
+            "terminal_numeric_values_persisted"
+          ],
+          "properties": {
+            "train_only": {
+              "const": true
+            },
+            "validation_consumed": {
+              "const": false
+            },
+            "test_consumed": {
+              "const": false
+            },
+            "byte_stable": {
+              "const": true
+            },
+            "generator_self_source_scan": {
+              "const": "PASS"
+            },
+            "terminal_numeric_values_persisted": {
+              "const": false
+            }
+          }
+        },
+        "canonical_payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  }
+}
