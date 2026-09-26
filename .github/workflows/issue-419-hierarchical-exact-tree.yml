@@ -65,6 +65,7 @@ on:
       - '.project/decisions/*exact-tree*.md'
       # content-addressed evidence
       - 'analysis/issue419_hierarchical_tree/**'
+      - 'analysis/issue419_hierarchical_tree_v2/**'
       - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
       - 'analysis/workflow_audit/workflows.json'
       - 'analysis/workflow_audit/active_workflow_dag_v2.json'
@@ -91,6 +92,7 @@ on:
       - '.project/decisions/*hierarchical*.md'
       - '.project/decisions/*exact-tree*.md'
       - 'analysis/issue419_hierarchical_tree/**'
+      - 'analysis/issue419_hierarchical_tree_v2/**'
       - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
       - 'analysis/workflow_audit/workflows.json'
       - 'analysis/workflow_audit/active_workflow_dag_v2.json'

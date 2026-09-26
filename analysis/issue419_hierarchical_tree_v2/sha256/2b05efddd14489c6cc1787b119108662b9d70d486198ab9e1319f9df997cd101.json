@@ -1,0 +1,34 @@
+{
+  "artifact": "VALIDATION_RESULT.json",
+  "bytes_copied_into_this_bundle": false,
+  "decision_rows_read_by_this_bundle": 0,
+  "digest_re_derived_from_persisted_bytes": true,
+  "hand_histories_parsed_by_this_bundle": 0,
+  "holdout_reopened_by_this_bundle": false,
+  "kind": "DIGEST_REFERENCE_NO_HOLDOUT_READ",
+  "metrics_recomputed_by_this_bundle": 0,
+  "pointers_read": [
+    "/outcome",
+    "/gate/failing_gates",
+    "/candidate",
+    "/coverage"
+  ],
+  "published_failing_gates": [
+    "coverage_floor",
+    "calibration_absolute"
+  ],
+  "published_verdict": "RETAIN_ACTIVE_REFERENCE",
+  "read_rule": "the v1 VALIDATION bytes were consumed exactly once by the frozen protocol v1 evaluation; this bundle never re-reads the holdout. The verdict and failing-gate rows quoted above are published rows of the digest-referenced artifact, the same rows the terminal decision v2 quotes",
+  "role": "T6_CONSUMED_VALIDATION_RESULT_V1",
+  "schema": "poker-hierarchical-integration-reference/v2",
+  "source": {
+    "bundle_index": "analysis/issue419_hierarchical_tree/validation/ARTIFACTS.json",
+    "byte_sha256": "0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68",
+    "canonical_payload_sha256": "b05012719388ec803481adaebe281e70982654f55153a81679f51555e9124ba6",
+    "digest_sidecar": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.sha256",
+    "path": "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
+    "schema": "poker-hierarchical-validation-result/v1"
+  },
+  "split": "VALIDATION",
+  "thresholds_re_selected_by_this_bundle": false
+}

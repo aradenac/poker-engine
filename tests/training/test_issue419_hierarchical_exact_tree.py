@@ -24,12 +24,16 @@ result.  The mandatory assertions covered are:
 12. TRAIN and VALIDATION stay strictly separated;
 13. TEST stays inaccessible;
 14. an incomplete required tree is not admitted for #367.
+15. the consolidated v2 evidence bundle is complete and content-addressed, and the
+    integration report claims no CI status without a real run ID, documents both
+    required supersessions and keeps every boundary the decisions declare.
 """
 from __future__ import annotations
 
 import copy
 import hashlib
 import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -46,6 +50,7 @@ from tools.training import fit_model_a_preflop_sizing_hierarchical as fit_tool  
 from tools.training import validate_hierarchical_validation as validation_tool  # noqa: E402
 from tools.training import finalize_hierarchical_exact_tree_decision as decision_tool  # noqa: E402
 from tools.training import validation_order_guard as guard  # noqa: E402
+from tools.training import build_hierarchical_integration_bundle_v2 as integration_tool  # noqa: E402
 from tools.simulation import issue419_exact_tree_preflight as preflight_tool  # noqa: E402
 
 FIXTURE = json.loads(
@@ -722,6 +727,308 @@ class Issue419HierarchicalExactTreeContractTests(unittest.TestCase):
         }
         for gate in self.validation["gate"]["gates"]:
             self.assertIn(gate["gate"], declared_gates)
+
+
+class Issue419IntegrationBundleV2Tests(unittest.TestCase):
+    """15 -- the consolidated v2 evidence bundle: complete, coherent, and honest.
+
+    The integration report is the artifact a reviewer reads to decide whether the
+    issue may move on, so its two failure modes are asserted directly: a bundle
+    that is not content-addressed (a member byte or digest drifting silently) and
+    a report that over-claims (a CI status without a real run ID, a hidden
+    supersession, or a boundary that is not the one the decisions declare).
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.bundle_dir = integration_tool.HERE
+        cls.report = json.loads((cls.bundle_dir / integration_tool.REPORT_JSON_NAME).read_text())
+        cls.report_md = (cls.bundle_dir / integration_tool.REPORT_NAME).read_text(encoding="utf-8")
+        cls.summary_md = (cls.bundle_dir / integration_tool.SUMMARY_NAME).read_text(encoding="utf-8")
+        cls.n8n_text = (cls.bundle_dir / integration_tool.N8N_NAME).read_text(encoding="utf-8")
+        cls.index = json.loads((cls.bundle_dir / integration_tool.INDEX_NAME).read_text())
+
+    def test_every_required_member_is_present_and_content_addressed(self):
+        for name in integration_tool.MEMBER_NAMES:
+            with self.subTest(member=name):
+                path = self.bundle_dir / name
+                self.assertTrue(path.is_file(), name)
+                entry = self.index[name]
+                digest = hashlib.sha256(path.read_bytes()).hexdigest()
+                self.assertEqual(entry["sha256"], digest)
+                self.assertEqual((ROOT / entry["object"]).read_bytes(), path.read_bytes())
+                if name.endswith(".json"):
+                    self.assertEqual(
+                        entry["canonical_payload_sha256"],
+                        integration_tool.stable_hash(json.loads(path.read_text())),
+                    )
+        self.assertEqual(set(self.index), set(integration_tool.MEMBER_NAMES))
+        objects = {
+            path.name for path in (self.bundle_dir / "sha256").iterdir() if path.is_file()
+        }
+        self.assertEqual(
+            objects,
+            {
+                self.index[name]["sha256"] + integration_tool.object_extension(name)
+                for name in integration_tool.MEMBER_NAMES
+            },
+        )
+        sidecar = (self.bundle_dir / integration_tool.DIGEST_NAME).read_text(encoding="utf-8")
+        self.assertTrue(sidecar.startswith(f'{self.index[integration_tool.REPORT_NAME]["sha256"]}'))
+
+    def test_bundle_is_reproducible_and_check_mode_passes(self):
+        rebuilt = integration_tool.build_payload()
+        files = integration_tool.bundle_files(rebuilt)
+        for name, data in files.items():
+            with self.subTest(member=name):
+                self.assertEqual((self.bundle_dir / name).read_bytes(), data, name)
+        self.assertEqual(integration_tool.check(), 0)
+        self.assertEqual(
+            self.index[integration_tool.REPORT_JSON_NAME]["canonical_payload_sha256"],
+            integration_tool.stable_hash(rebuilt),
+        )
+
+    def test_copies_are_byte_identical_to_their_authorities(self):
+        for name, source, digest in integration_tool.COPIES:
+            with self.subTest(member=name):
+                member = self.report["bundle_members"][name]
+                self.assertEqual(member["mode"], "BYTE_IDENTICAL_COPY")
+                self.assertEqual(member["source_path"], integration_tool._relative(source))
+                self.assertEqual(member["source_byte_sha256"], digest)
+                self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), digest)
+                self.assertEqual((self.bundle_dir / name).read_bytes(), source.read_bytes())
+
+    def test_references_are_digest_only_and_never_re_read_the_holdout(self):
+        for name, source, digest in integration_tool.REFERENCES:
+            with self.subTest(member=name):
+                member = self.report["bundle_members"][name]
+                self.assertEqual(member["mode"], "DIGEST_REFERENCE_NO_BYTES")
+                self.assertEqual(member["bytes_copied"], 0)
+                self.assertEqual(member["source_path"], integration_tool._relative(source))
+                self.assertEqual(member["source_byte_sha256"], digest)
+                reference = json.loads((self.bundle_dir / name).read_text())
+                self.assertEqual(reference["kind"].split("_")[0], "DIGEST")
+                self.assertEqual(reference["source"]["byte_sha256"], digest)
+                self.assertFalse(reference["bytes_copied_into_this_bundle"])
+                self.assertNotEqual((self.bundle_dir / name).read_bytes(), source.read_bytes())
+        validation = json.loads(
+            (self.bundle_dir / "VALIDATION_RESULT.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(validation["source"]["path"], integration_tool._relative(
+            integration_tool.VALIDATION_V1
+        ))
+        self.assertEqual(validation["published_verdict"], "RETAIN_ACTIVE_REFERENCE")
+        self.assertFalse(validation["holdout_reopened_by_this_bundle"])
+        self.assertEqual(validation["decision_rows_read_by_this_bundle"], 0)
+        self.assertEqual(validation["metrics_recomputed_by_this_bundle"], 0)
+        self.assertFalse(validation["thresholds_re_selected_by_this_bundle"])
+        protocol = json.loads(
+            (self.bundle_dir / "FROZEN_VALIDATION_PROTOCOL_V2.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            protocol["source"]["byte_sha256"], integration_tool.PROTOCOL_V2_BYTE_SHA256
+        )
+        self.assertEqual(
+            protocol["amendment"]["superseded_byte_sha256"],
+            integration_tool.PROTOCOL_V2_SUPERSEDED_BYTE_SHA256,
+        )
+        self.assertFalse(protocol["thresholds_moved"])
+        self.assertFalse(protocol["gates_weaker_than_v1"])
+
+    def test_n8n_output_is_conformant(self):
+        expected = {
+            "status": "BLOCKED_SCIENTIFIC",
+            "decision": "UNRESOLVED_HIERARCHICAL_TREE_GAP",
+            "candidate_id": integration_tool.CANDIDATE_ID,
+            "candidate_sha256": integration_tool.CANDIDATE_SHA256,
+            "required_tree_complete": False,
+            "validation_consumed": True,
+            "test_consumed": False,
+            "active_pointer_mutated": False,
+            "next_issue": 367,
+        }
+        block = self.report["n8n_task_result"]
+        self.assertEqual(block["status"], expected["status"])
+        self.assertIn(block["status"], {"READY_FOR_INTEGRATION", "BLOCKED_SCIENTIFIC"})
+        self.assertIn(
+            block["decision"],
+            {"ADMIT_HIERARCHICAL_EXACT_TREE_CANDIDATE", "UNRESOLVED_HIERARCHICAL_TREE_GAP"},
+        )
+        for key, value in expected.items():
+            with self.subTest(field=key):
+                self.assertEqual(block[key], value)
+        rendered = integration_tool.render_n8n_block(block)
+        self.assertEqual(rendered, self.n8n_text)
+        self.assertEqual(rendered.splitlines()[0], "N8N_TASK_RESULT")
+        for line in (
+            "status: BLOCKED_SCIENTIFIC",
+            "decision: UNRESOLVED_HIERARCHICAL_TREE_GAP",
+            f"candidate_id: {integration_tool.CANDIDATE_ID}",
+            f"candidate_sha256: {integration_tool.CANDIDATE_SHA256}",
+            "required_tree_complete: false",
+            "validation_consumed: true",
+            "test_consumed: false",
+            "active_pointer_mutated: false",
+            "next_issue: 367",
+        ):
+            self.assertIn(line, self.n8n_text, line)
+        for surface in (self.report_md, self.summary_md):
+            self.assertIn("N8N_TASK_RESULT", surface)
+            self.assertIn("next_issue: 367", surface)
+
+    def test_no_ci_status_is_claimed_without_a_real_run_id(self):
+        ci = self.report["ci_evidence"]
+        self.assertEqual(self.report["ci_proven_claims"], [])
+        self.assertEqual(ci["status"], "NOT_OBSERVED")
+        self.assertIsNone(ci["run_url_recorded"])
+        self.assertTrue(ci["no_run_exists"])
+        self.assertGreater(ci["observed_run_count"], 0)
+        for run in ci["recorded_runs"]:
+            with self.subTest(run=run["run_number"]):
+                self.assertTrue(run["url"].startswith("https://github.com/"))
+                self.assertFalse(run["executes_the_issue419_suites"])
+                self.assertIn(str(run["run_number"]), self.report_md)
+                self.assertIn(run["url"], self.report_md)
+        for run_id in ci["recorded_run_ids"]:
+            self.assertIn(str(run_id), self.report_md)
+        self.assertIn("**None.**", self.report_md)
+        self.assertIn("NON-AUTHORITATIVE", self.report_md)
+        self.assertNotIn("ci_observation.status = PASS", self.report_md)
+
+    def test_report_documents_the_two_required_supersessions(self):
+        for token in (
+            integration_tool.PROTOCOL_V2_SUPERSEDED_BYTE_SHA256,
+            integration_tool.PROTOCOL_V2_SUPERSEDED_CANONICAL_SHA256,
+            integration_tool.PROTOCOL_V2_BYTE_SHA256,
+            integration_tool.PROTOCOL_V2_CANONICAL_SHA256,
+            integration_tool.PROTOCOL_V2_AMENDMENT_ID,
+            integration_tool.PREFLIGHT_V1_PRECORRECTION_BYTE_SHA256,
+            integration_tool.PREFLIGHT_V1_BYTE_SHA256,
+            integration_tool.PREFLIGHT_V1_CANONICAL_SHA256,
+            integration_tool.PREFLIGHT_V1_INDEX_SHA256,
+            integration_tool.CORRECTION_BYTE_SHA256,
+            "V1_EXACT_TREE_PREFLIGHT_REGENERATION",
+            "SUPERSEDED_V2_PROTOCOL_PAYLOAD_508A31EC",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, self.report_md)
+        for token in (
+            integration_tool.PROTOCOL_V2_SUPERSEDED_BYTE_SHA256,
+            integration_tool.PREFLIGHT_V1_PRECORRECTION_BYTE_SHA256,
+            integration_tool.PREFLIGHT_V1_BYTE_SHA256,
+        ):
+            self.assertIn(token, self.summary_md)
+        ids = {item["supersession_id"] for item in self.report["required_supersessions"]}
+        self.assertEqual(
+            ids,
+            {
+                "SUPERSEDED_V2_PROTOCOL_PAYLOAD_508A31EC",
+                "V1_EXACT_TREE_PREFLIGHT_REGENERATION",
+            },
+        )
+        self.assertIn("MUTANT", self.report_md.upper())
+        self.assertIn("c904524", self.report_md)
+
+    def test_report_separates_ci_proof_from_local_verification(self):
+        self.assertIn("## 3. What is proven by a real CI run ID, and what is only local", self.report_md)
+        self.assertIn("### 3.1 Proven by a real CI run ID", self.report_md)
+        self.assertIn("### 3.3 Recorded local observations", self.report_md)
+        for row in self.report["recorded_local_observations"]:
+            with self.subTest(command=row["command"]):
+                self.assertIn(row["command"], self.report_md)
+        red = [
+            row for row in self.report["recorded_local_observations"]
+            if row["observed_exit_code"] != 0
+        ]
+        self.assertTrue(red, "the two red local checks must stay visible")
+        explained = {
+            code
+            for row in red
+            for code in str(row.get("explained_by", "")).split(",")
+            if code
+        }
+        finding_ids = {row["finding_id"] for row in self.report["residual_findings"]}
+        self.assertEqual(explained - finding_ids, {"EXPECTED_AFTER_THE_SINGLE_FROZEN_READ"})
+        self.assertIn("V1_PREFLIGHT_PIN_STALE", explained)
+        self.assertIn("PROTOCOL_V2_PREFLIGHT_PIN_STALE", explained)
+        finding = next(
+            row for row in self.report["residual_findings"]
+            if row["finding_id"] == "V1_PREFLIGHT_PIN_STALE"
+        )
+        self.assertFalse(finding["pin_matches_on_disk_bytes"])
+        self.assertFalse(finding["repaired_by_this_bundle"])
+        self.assertIn("V1_PREFLIGHT_PIN_STALE", self.report_md)
+        v2_finding = next(
+            row for row in self.report["residual_findings"]
+            if row["finding_id"] == "PROTOCOL_V2_PREFLIGHT_PIN_STALE"
+        )
+        self.assertFalse(v2_finding["pin_matches_on_disk_bytes"])
+        self.assertFalse(v2_finding["repaired_by_this_bundle"])
+        self.assertIn("PROTOCOL_V2_PREFLIGHT_PIN_STALE", self.report_md)
+
+    def test_boundaries_are_the_ones_the_decisions_declare(self):
+        boundaries = self.report["boundaries"]
+        self.assertTrue(boundaries["validation_consumed"])
+        self.assertEqual(boundaries["validation_read_count"], 1)
+        self.assertFalse(boundaries["holdout_reopened_by_this_bundle"])
+        self.assertEqual(boundaries["decision_rows_read_by_this_bundle"], 0)
+        self.assertEqual(boundaries["metrics_recomputed_by_this_bundle"], 0)
+        self.assertFalse(boundaries["thresholds_re_selected_by_this_bundle"])
+        self.assertFalse(boundaries["test_consumed"])
+        self.assertFalse(boundaries["test_authorized"])
+        self.assertEqual(boundaries["test_decisions_read"], 0)
+        self.assertFalse(boundaries["active_pointer_mutated"])
+        self.assertFalse(boundaries["hero_ev_executed"])
+        self.assertFalse(boundaries["recommendation_computed"])
+        self.assertEqual(boundaries["rollouts_executed"], 0)
+        self.assertFalse(boundaries["issue367_run"])
+        self.assertFalse(boundaries["issue367_authorized"])
+        self.assertEqual(boundaries["dataset_or_hand_history_opens"], [])
+        self.assertEqual(boundaries["holdout_access_scan"]["result"], "PASS")
+        self.assertEqual(boundaries["issue367_boundary_scan"]["result"], "PASS")
+        self.assertTrue(boundaries["protected_files_unchanged"])
+        self.assertEqual(
+            boundaries["active_model_reference_sha256"],
+            integration_tool.ACTIVE_MODEL_BYTE_SHA256,
+        )
+        self.assertEqual(
+            hashlib.sha256(integration_tool.ACTIVE_MODEL.read_bytes()).hexdigest(),
+            integration_tool.ACTIVE_MODEL_BYTE_SHA256,
+        )
+        # the terminal decision v2, the T4 manifest and this bundle agree
+        self.assertEqual(self.report["candidate"]["candidate_id"], H.CANDIDATE_ID)
+        self.assertEqual(
+            self.report["candidate"]["candidate_sha256"],
+            integration_tool.CANDIDATE_SHA256,
+        )
+        decision = json.loads(
+            (decision_tool.V2_BUNDLE / decision_tool.V2_NAME).read_text(encoding="utf-8")
+        )
+        self.assertEqual(decision["candidate_sha256"], self.report["candidate"]["candidate_sha256"])
+        self.assertEqual(decision["required_tree_complete"], self.report["verdict"]["required_tree_complete"])
+        self.assertTrue(self.report["boundaries"]["protected_files_before"])
+
+    def test_bundle_stays_out_of_every_upstream_index(self):
+        token = integration_tool._relative(self.bundle_dir)
+        for index in sorted(
+            (ROOT / "analysis/issue419_hierarchical_tree").rglob("ARTIFACTS.json")
+        ):
+            with self.subTest(index=index.name):
+                self.assertNotIn(token, index.read_text(encoding="utf-8"))
+        self.assertEqual(
+            integration_tool._relative(self.bundle_dir),
+            "analysis/issue419_hierarchical_tree_v2",
+        )
+
+    def test_check_mode_fails_closed_on_a_doctored_member(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            copy_dir = Path(tmp) / "bundle"
+            shutil.copytree(self.bundle_dir, copy_dir)
+            integration_tool.verify_content_address(copy_dir)
+            doctored = copy_dir / integration_tool.SUMMARY_NAME
+            doctored.write_bytes(doctored.read_bytes() + b"\n<!-- drift -->\n")
+            with self.assertRaises(integration_tool.IntegrationBundleError):
+                integration_tool.verify_content_address(copy_dir)
 
 
 if __name__ == "__main__":

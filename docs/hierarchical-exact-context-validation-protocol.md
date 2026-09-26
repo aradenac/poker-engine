@@ -223,3 +223,55 @@ Reproduce the revision with
 `python3 tools/training/write_frozen_validation_protocol_v2.py --check`.
 `tests/training/test_frozen_validation_protocol_v2.py` re-derives the v1
 immutability, the two layers, the unchanged thresholds and the consumption rule.
+
+## 9. Integration bundle v2 (T7)
+
+The terminal evidence is consolidated into one content-addressed bundle,
+`analysis/issue419_hierarchical_tree_v2/`
+(`poker-hierarchical-integration-report/v2`), written and verified by
+`tools/training/build_hierarchical_integration_bundle_v2.py`
+(`:--check`). Every member is either a **byte-identical copy** of an authority
+(`HIERARCHICAL_MODEL_SPEC.json`, `TRAIN_FIT_REPORT.json`,
+`CANDIDATE_MANIFEST.json`, `EXACT_TREE_PREFLIGHT_V2.json`, `DECISION_V2.json`)
+or a **digest reference** whose bytes are never duplicated
+(`FROZEN_VALIDATION_PROTOCOL_V2.json` →
+`74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350`;
+`VALIDATION_RESULT.json` →
+`0b92e5a78ab3ee4cb581c33be351d6b52bcf4fcd8741ab907ebd6dd32ec6ef68`). The
+bundle re-opens no holdout: it reads no decision row, recomputes no metric and
+re-selects no threshold, and `INTEGRATION_REPORT.md` states the verdict
+`BLOCKED_SCIENTIFIC` / `UNRESOLVED_HIERARCHICAL_TREE_GAP` with
+`required_tree_complete=false`, `validation_consumed=true` (the single frozen
+read), `test_consumed=false`, `active_pointer_mutated=false` and
+`next_issue=367`.
+
+The report separates two kinds of evidence on purpose. Nothing about #419 is
+proven by a real CI run ID: `ci_proven_claims` is empty, the T5 CI evidence
+records `ci_observation.status = NOT_OBSERVED`, and the five real CI runs at the
+reviewed PR head execute none of the #419 suites. Everything else is a
+non-authoritative local observation, recorded with its exit code — including the
+two that are red.
+
+Two supersessions are documented in the bundle. The superseded v2 protocol
+payload `508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320`
+(canonical `a97391d2678d66a46cc7a8d2d0893a509c9c2564a5c420f4519d21c05216dd16`)
+is replaced by the amended payload above through
+`V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE`, kept byte-for-byte under
+`validation_protocol_v2/history/`. And `exact_tree_preflight/EXACT_TREE_PREFLIGHT.json`
+was regenerated: the mutant commit `871e0bd` rewrote the frozen bytes to
+`e86b7c6b57d170c0885f46734c41302dcc15608252dfbbd66bff62c258d5c65f`, and the
+evidence-integrity correction `c904524` restored
+`456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6` (canonical
+`fc08988f0a677b462e484d1964a47967783e10cd1871fe810097b7c7265a9bbd`, index
+`97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be`). The
+residual consequence is reported rather than hidden: commit `887e46a` re-pointed
+the preflight tool's `V1_PREFLIGHT_SHA256` / `V1_INDEX_SHA256` pins **and** its
+`PROTOCOL_V2_BYTE_SHA256` / `PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256` pins to the
+pre-correction digests (`e86b7c6b…`, `4fea09fc…`, `db1b1ab6…`, `e80732c4…`
+instead of `456d85be…`, `97e90eac…`, `74b8a006…`, `cb598a9f…`), so both
+`issue419_exact_tree_preflight.py --check` and the preflight suite are red until
+their owner task repairs the pins without moving a frozen surface. The
+integration report is the authority on those two findings; this document does
+not restate their detail.
+
+The integration bundle admits nothing, promotes nothing and wires no provider.

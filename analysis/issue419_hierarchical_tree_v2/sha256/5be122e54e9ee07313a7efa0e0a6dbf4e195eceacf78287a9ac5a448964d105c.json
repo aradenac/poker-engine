@@ -1,0 +1,1303 @@
+{
+  "action_outputs": {
+    "conditional_actions": [
+      "CHECK_when_legal_free_option"
+    ],
+    "output_actions": [
+      "FOLD",
+      "CALL",
+      "RAISE",
+      "JAM"
+    ],
+    "output_kind": "probability distribution over the legal marginal action set",
+    "raise_outputs_are_not_a_single_number": "RAISE/JAM outputs are per exact target_total_bb, never aggregated into one representative size",
+    "structurally_unreachable": "only actions forbidden by the public betting engine",
+    "sum_to_one": "over the legal marginal action set only; illegal actions are absent, not zero-weighted",
+    "zero_count_policy": "observed zero counts never prune a branch and never prove zero probability; every legal continuation stays enumerated"
+  },
+  "authoring_order": {
+    "spec_written_and_hashed_before_holdout_read": true,
+    "test_read_before_spec_hash": false,
+    "validation_read_before_spec_hash": false
+  },
+  "calibration_and_log_loss": {
+    "evaluation_split_discipline": {
+      "fit_and_calibration_evidence": "TRAIN only",
+      "spec_hash_is_the_frozen_identity": true,
+      "test": "never",
+      "validation": "only through a separately frozen protocol whose own spec hash is pinned before running; this TRAIN-only spec is the frozen artifact identity"
+    },
+    "mandatory_reporting": "a pooled estimate is never scored without its pooling level; calibration must not be reported on pooled support as if it were exact support",
+    "primary_metric": {
+      "definition": "mean over decisions of -ln p_hat(observed_action | requested_key)",
+      "epsilon_clip": 1e-12,
+      "name": "multiclass_log_loss",
+      "natural_log": true
+    },
+    "secondary_metrics": [
+      {
+        "definition": "sum over legal actions of (p_hat - 1[observed])^2",
+        "name": "brier_score"
+      },
+      {
+        "definition": "expected calibration error with 10 equal-count bins per action class",
+        "name": "ece"
+      },
+      {
+        "definition": "share of decisions answered with a non-UNRESOLVED reason code",
+        "name": "coverage"
+      },
+      {
+        "definition": "mean effective sample size of answered decisions",
+        "name": "mean_effective_sample_size"
+      }
+    ],
+    "stratification": [
+      "by reason_code",
+      "by pooling.level",
+      "by observations bucket",
+      "by distinct-hands bucket"
+    ]
+  },
+  "decision_thresholds": {
+    "abstain": {
+      "behaviour": "no action is emitted; the decision stays unresolved rather than defaulting to FOLD",
+      "condition": "reason_code == EXACT_UNRESOLVED, or raise sizing unresolved for the branch"
+    },
+    "decision_rule": "argmax of the posterior distribution over the legal marginal action set",
+    "exact_claim_requires": "L0_EXACT_KEY meeting both thresholds",
+    "minimum_distinct_hands": 20,
+    "minimum_marginal_observations": 20,
+    "no_admission": "this spec authorizes no admission, no fit, no promotion and no production effect",
+    "requirement_applies_at": "the level used to report the estimate",
+    "sizing_tie_break": "lowest exact target_total_bb among tied raise targets",
+    "thresholds_basis": "#352 marginal minimum retained; distinct-hand safeguard added; unchanged by this spec",
+    "thresholds_frozen": true,
+    "tie_break": "lowest incremental cost, then fixed order FOLD, CHECK, CALL, RAISE, JAM"
+  },
+  "evidence_bindings": {
+    "baseline": {
+      "artifact_index_canonical_payload_sha256": "2d3fccc0a84e130ba483b8766ff96bc6467ad8260cfa64ae8c36e9cf662b6e2f",
+      "artifact_index_sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
+      "byte_sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
+      "canonical_payload_sha256": "2d3fccc0a84e130ba483b8766ff96bc6467ad8260cfa64ae8c36e9cf662b6e2f",
+      "path": "HIERARCHICAL_TREE_SPARSITY_BASELINE.json"
+    },
+    "issue388": {
+      "decision_byte_sha256": "7eb50d70b6a0af70e18895183303795d94951d44d5fd1971ab7d28b909c52472",
+      "decision_canonical_sha256": "87cf59a2bc258f0d86ef085232b8db6bc422413ee4086dc6c203459560abc374",
+      "required_tree_byte_sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+      "required_tree_canonical_sha256": "0ab232ae44e4157e2a47d4d3d611ac8ca9c2cdb54caf2568f256f6df35643a25",
+      "train_support_byte_sha256": "9a05ac6f5ba1e52450b8a58bb9a4f516394922bd86339b7f7a22bcdbba521053",
+      "train_support_canonical_sha256": "dc6590ae04a9fa3714e3a739d7c850a83fbde33466e2fc31ac56e16864eea1e2"
+    },
+    "reference_fixture_sha256": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+    "reference_model_sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+    "runtime_key_source_sha256": "6dec4f8e05da8b231bad1b50c9492941f27d20e0628b747a817495438243151a",
+    "spec_digest_location": "the spec digest cannot live inside the spec payload; it is recorded in HIERARCHICAL_MODEL_SPEC.sha256 and model_spec/ARTIFACTS.json",
+    "spec_generator_sha256": "e0d2f7a44c3a2adfb5f7681b3396733cc07596e747b9740c3b7ddd23f3e829ff",
+    "spec_version": "v1"
+  },
+  "granularity_decision": {
+    "chosen_granularity": {
+      "consequence": "a provider answer resolved at L3 can only ever be EXACT_HIERARCHICAL_ESTIMATE; it can never be EXACT_EMPIRICAL_STRONG",
+      "identity_and_support_granularity": "hierarchical_exact_key (L0_EXACT_KEY)",
+      "provider_granularity_used_for_parameters": "runtime_support_context_key (L3_RUNTIME_SUPPORT_CONTEXT)"
+    },
+    "decision_id": "EXACT_KEY_IDENTITY_IS_FINER_THAN_RUNTIME_PROVIDER_KEY",
+    "evidence": {
+      "audit_exact_qualified_nodes": 0,
+      "canonical_bb_facing_sb_iso5": {
+        "audit_exact_distinct_hands": 6,
+        "audit_exact_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=6857c9535b5ad4e4b8d134883db3e4f20ef8709bb72acb151490db7422bc1c55",
+        "audit_exact_observations": 6,
+        "audit_exact_qualifies": false,
+        "issue388_runtime_observations": 45,
+        "node_id": "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b",
+        "path": [
+          "SB:ISO@5"
+        ],
+        "reconciled": true,
+        "runtime_distinct_hands": 45,
+        "runtime_observations": 45,
+        "runtime_qualifies": true,
+        "runtime_support_context_key": "MAPSUP_462ab540a51d6db4db4c:family=VS_ISO|actor=BB|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+      },
+      "canonical_co_after_bb_fold": {
+        "audit_exact_distinct_hands": 4,
+        "audit_exact_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4|public=b695ec8e9c5b490e2004aef6053e7f7e5868b48a21aee6b060bf85bda0b18c2d",
+        "audit_exact_observations": 4,
+        "audit_exact_qualifies": false,
+        "issue388_runtime_observations": 14,
+        "node_id": "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+        "path": [
+          "SB:ISO@5",
+          "BB:FOLD"
+        ],
+        "reconciled": true,
+        "runtime_distinct_hands": 14,
+        "runtime_observations": 14,
+        "runtime_qualifies": false,
+        "runtime_support_context_key": "MAPSUP_c5df641ca5d3558356e8:family=LIMPER_VS_ISO|actor=CO|aggressor=SB|limpers=2|callers=0|target=5|call=4"
+      },
+      "distinct_audit_exact_keys": 38,
+      "distinct_runtime_support_context_keys": 30,
+      "enumeration_complete": false,
+      "issue388_decision": "UNRESOLVED_EXACT_TREE_GAP",
+      "issue388_status": "BLOCKED_SCIENTIFIC",
+      "nodes_total": 38,
+      "runtime_blocked_nodes": 35,
+      "runtime_keys_merging_audit_states": 8,
+      "runtime_qualified_nodes": 3,
+      "unresolved_sizing_frontier_count": 7
+    },
+    "prerequisite_for_exact_claims": "#367 must expose per-member (fine-key) counts, or resolve at the fine key, before any node may be reported EXACT_EMPIRICAL_STRONG",
+    "provider_change_performed_here": false,
+    "rejected_options": [
+      {
+        "option": "declare support at the coarse runtime key as exact",
+        "rejected_because": "it would let a key A be supported by observations of a key B, violating SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+      },
+      {
+        "option": "silently keep the coarse key and relabel the result \"exact\"",
+        "rejected_because": "silent semantic redefinition of a public contract"
+      },
+      {
+        "option": "lower the 20/20 support thresholds so the tree closes",
+        "rejected_because": "thresholds are frozen; the CO cell remains a real data blocker"
+      },
+      {
+        "option": "use a representative raise price to fill unresolved frontiers",
+        "rejected_because": "exact-support-only sizing is mandatory; unresolved stays unresolved"
+      }
+    ],
+    "risk_addressed": "RUNTIME_SUPPORT_CONTEXT_COARSE_MERGE",
+    "risk_statement": "the runtime likelihood key omits history, pot_before_bb, effective_stack_bucket, live/all-in positions, table size and raise level, so one fitted node is reusable across audit-distinct public states",
+    "status": "OPEN_FOR_367_SPEC_DOES_NOT_CHANGE_PROVIDER"
+  },
+  "hierarchy_prior_shrinkage": {
+    "base_prior": {
+      "actions": [
+        "FOLD",
+        "CALL",
+        "RAISE",
+        "JAM",
+        "CHECK_if_legal"
+      ],
+      "alpha_per_legal_marginal_action": 0.5,
+      "kind": "dirichlet",
+      "rationale": "weak uniform prior so sparse cells stay wide instead of collapsing to zero"
+    },
+    "blend": "p_hat(L_j) = (n_j * phat_j + kappa0 * p_hat(L_{j+1})) / (n_j + kappa0)",
+    "constraints": [
+      "a parent never changes actor/aggressor/target/to_call",
+      "a parent never adds support observations to the requested key",
+      "no cross-level smoothing of the support counts themselves"
+    ],
+    "estimator": "hierarchical_dirichlet_shrinkage",
+    "exact_weight": "w_exact = n0 / (n0 + kappa0), non-decreasing in n0",
+    "hierarchical_strength_kappa0": 16.0,
+    "kappa0_continuity": "kappa0=16 toward the same support_context_key marginal reproduces the #352/#388 prospective_shrinkage rule; here that parent is the explicit level L3_RUNTIME_SUPPORT_CONTEXT",
+    "levels": [
+      {
+        "drops": [],
+        "equals_runtime_provider_key": false,
+        "estimation_allowed": true,
+        "key_builder": "hierarchical_exact_key",
+        "level": "L0_EXACT_KEY",
+        "purpose": "SUPPORT_AND_IDENTITY",
+        "rank": 0,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb",
+          "effective_stack_bucket",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "support_source_allowed": true
+      },
+      {
+        "drops": [
+          "effective_stack_bucket"
+        ],
+        "equals_runtime_provider_key": false,
+        "estimation_allowed": true,
+        "key_builder": "level_key(retained_axes)",
+        "level": "L1_STACK_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 1,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb"
+        ],
+        "equals_runtime_provider_key": false,
+        "estimation_allowed": true,
+        "key_builder": "level_key(retained_axes)",
+        "level": "L2_POT_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 2,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level"
+        ],
+        "equals_runtime_provider_key": true,
+        "estimation_allowed": true,
+        "key_builder": "support_context_key (tools/preflop/model_a_sizing_likelihood.py)",
+        "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 3,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "equals_runtime_provider_key": false,
+        "estimation_allowed": true,
+        "key_builder": "level_key(retained_axes)",
+        "level": "L4_POSITION_PRICE_PRIOR",
+        "purpose": "LAST_RESORT_PARAMETERS_ONLY",
+        "rank": 4,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb"
+        ],
+        "support_source_allowed": false
+      }
+    ],
+    "no_hidden_hand_imputation": true,
+    "parent_dominated_flag_below": 0.5,
+    "recursion": "resolved bottom-up from L4; L4 prior is the base Dirichlet; a parent is only entered when the child level is below threshold"
+  },
+  "holdout_boundary": {
+    "checks": [
+      {
+        "check": "self_source_scan_for_holdout_loaders",
+        "detail": "AST scan: the spec generator uses none of the forbidden holdout loader symbols, imports no validation/holdout module and declares no validation/holdout data path",
+        "forbidden_symbols": [
+          "load_validation_records",
+          "validation_records",
+          "validation_hand_ids",
+          "VALIDATION_HANDS",
+          "load_holdout",
+          "holdout_records",
+          "build_validation_decisions",
+          "load_test_records",
+          "TEST_HANDS",
+          "test_hand_ids"
+        ],
+        "hits": [],
+        "holdout_looking_data_path_literals": [],
+        "holdout_looking_imports": [],
+        "input_whitelist_holdout_paths": [],
+        "result": "PASS"
+      },
+      {
+        "artifacts": [
+          {
+            "name": "#419 sparsity baseline",
+            "split_consumed": "TRAIN",
+            "test_consumed": false,
+            "validation_consumed": false
+          },
+          {
+            "name": "#388 train support",
+            "split_consumed": "TRAIN",
+            "test_consumed": false,
+            "validation_consumed": false
+          },
+          {
+            "name": "#388 decision",
+            "split_consumed": "TRAIN",
+            "test_consumed": false,
+            "validation_consumed": false
+          }
+        ],
+        "check": "consumed_evidence_declares_train_only",
+        "detail": "the #419 baseline, the #388 TRAIN support matrix and the #388 decision all declare split_consumed=TRAIN with validation_consumed=false and test_consumed=false; the tripwire aborts on any other declaration",
+        "result": "PASS"
+      },
+      {
+        "check": "no_hand_level_dataset_read",
+        "dataset_or_holdout_files_opened": [],
+        "detail": "the generator parses no hand-history archive and no decision JSONL; it consumes content-addressed evidence artifacts plus structural source files only. The build ran with a filesystem tripwire: any open under training/datasets/ or of a .zip/.jsonl file aborts the build, and the observed open set is exactly the declared inputs plus the pinned #388 bundle.",
+        "observed_files_opened": [
+          "analysis/issue388_exact_tree/ARTIFACTS.json",
+          "analysis/issue388_exact_tree/DECISION.json",
+          "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+          "analysis/issue388_exact_tree/SUMMARY.md",
+          "analysis/issue388_exact_tree/TRAIN_RESPONSE_TREE_SUPPORT.json",
+          "analysis/issue388_exact_tree/sha256/2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c.json",
+          "analysis/issue388_exact_tree/sha256/4566df7748e12277f9bda8f399a6f3d7114fb4cb47057027faa6157f283619aa.md",
+          "analysis/issue388_exact_tree/sha256/7eb50d70b6a0af70e18895183303795d94951d44d5fd1971ab7d28b909c52472.json",
+          "analysis/issue388_exact_tree/sha256/9a05ac6f5ba1e52450b8a58bb9a4f516394922bd86339b7f7a22bcdbba521053.json",
+          "analysis/issue419_hierarchical_tree/ARTIFACTS.json",
+          "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json",
+          "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt",
+          "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+          "tools/preflop/model_a_sizing_likelihood.py",
+          "tools/training/write_hierarchical_model_spec.py",
+          "training/models/preflop_population_model_v5.json"
+        ],
+        "result": "PASS",
+        "undeclared_files_opened": []
+      },
+      {
+        "check": "content_addressed_inputs_verified",
+        "detail": "#388 artifacts are byte-verified against their ARTIFACTS.json content addresses and the #419 baseline is bound by canonical payload hash before the spec is serialized",
+        "result": "PASS"
+      }
+    ],
+    "inputs": [
+      {
+        "kind": "evidence",
+        "path": "analysis/issue419_hierarchical_tree/HIERARCHICAL_TREE_SPARSITY_BASELINE.json",
+        "role": "TRAIN_ONLY_SPARSITY_BASELINE",
+        "sha256": "ef3995daaf5bc48a09f0785d574f7494754ad3904b87ecd2aa089b5be1b24a36",
+        "split_consumed": "TRAIN"
+      },
+      {
+        "kind": "index",
+        "path": "analysis/issue419_hierarchical_tree/ARTIFACTS.json",
+        "role": "CONTENT_ADDRESS_INDEX",
+        "sha256": "1650cdd96adb70a47e7711eb44820bc46a9afc46f290b9023c60d101d903d768",
+        "split_consumed": null
+      },
+      {
+        "kind": "structural",
+        "path": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+        "role": "STRUCTURAL_REQUIRED_TREE",
+        "sha256": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+        "split_consumed": null
+      },
+      {
+        "kind": "evidence",
+        "path": "analysis/issue388_exact_tree/TRAIN_RESPONSE_TREE_SUPPORT.json",
+        "role": "TRAIN_SUPPORT_MATRIX",
+        "sha256": "9a05ac6f5ba1e52450b8a58bb9a4f516394922bd86339b7f7a22bcdbba521053",
+        "split_consumed": "TRAIN"
+      },
+      {
+        "kind": "evidence",
+        "path": "analysis/issue388_exact_tree/DECISION.json",
+        "role": "FEASIBILITY_DECISION",
+        "sha256": "7eb50d70b6a0af70e18895183303795d94951d44d5fd1971ab7d28b909c52472",
+        "split_consumed": "TRAIN"
+      },
+      {
+        "kind": "structural",
+        "path": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+        "role": "CANONICAL_FIXTURE",
+        "sha256": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+        "split_consumed": null
+      },
+      {
+        "kind": "structural",
+        "path": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.hand.txt",
+        "role": "CANONICAL_FIXTURE_HAND",
+        "sha256": "522cc9448baa2c2ebe102295713ef1d7f2e1c1267fc26f1b135bd7d076996b65",
+        "split_consumed": null
+      },
+      {
+        "kind": "structural",
+        "path": "training/models/preflop_population_model_v5.json",
+        "role": "REFERENCE_MODEL",
+        "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "split_consumed": null
+      },
+      {
+        "kind": "source",
+        "path": "tools/preflop/model_a_sizing_likelihood.py",
+        "role": "RUNTIME_SUPPORT_KEY_CONTRACT",
+        "sha256": "6dec4f8e05da8b231bad1b50c9492941f27d20e0628b747a817495438243151a",
+        "split_consumed": null
+      },
+      {
+        "kind": "source",
+        "path": "tools/training/write_hierarchical_model_spec.py",
+        "role": "SPEC_GENERATOR_SELF",
+        "sha256": "e0d2f7a44c3a2adfb5f7681b3396733cc07596e747b9740c3b7ddd23f3e829ff",
+        "split_consumed": null
+      }
+    ],
+    "reproduce": "python3 tools/training/write_hierarchical_model_spec.py --check",
+    "spec_frozen_before_holdout_read": true,
+    "split_cardinality_metadata_read": "only the certified split cardinalities carried by TRAIN evidence provenance; no VALIDATION hand, decision, feature, label or metric is read",
+    "split_consumed": "TRAIN",
+    "test_consumed": false,
+    "validation_consumed": false,
+    "validation_decisions_read": 0,
+    "validation_hands_parsed": 0,
+    "validation_read_before_spec_hash": false
+  },
+  "issue": 419,
+  "kind": "TRAIN_ONLY_MODEL_SPEC",
+  "not_a_fit": "this artifact is a specification only; it fits no model, admits no candidate, opens no holdout and changes no runtime provider",
+  "parameter_pooling": {
+    "axes": {
+      "axis_table": [
+        {
+          "axis": "requested_key_identity",
+          "definition": "the exact requested L0 key string itself (hierarchical_exact_key)",
+          "identity_axis": true,
+          "kind": "key_identity",
+          "mutualizable_in_parameters": false,
+          "pooling_level_if_mutualizable": null,
+          "rationale": "the requested key answers \"which context was asked\"; merging it would make the answer about a different question"
+        },
+        {
+          "axis": "actor_position",
+          "definition": "position of the acting player (public)",
+          "identity_axis": true,
+          "kind": "position",
+          "mutualizable_in_parameters": false,
+          "pooling_level_if_mutualizable": null,
+          "rationale": "positions are never mutualizable per ticket point 3"
+        },
+        {
+          "axis": "aggressor_position",
+          "definition": "position of the last observed raiser/jammer (public)",
+          "identity_axis": true,
+          "kind": "position",
+          "mutualizable_in_parameters": false,
+          "pooling_level_if_mutualizable": null,
+          "rationale": "positions are never mutualizable per ticket point 3"
+        },
+        {
+          "axis": "target_total_bb",
+          "definition": "exact total preflop contribution targeted by the price being faced",
+          "identity_axis": true,
+          "kind": "price_exact",
+          "mutualizable_in_parameters": false,
+          "pooling_level_if_mutualizable": null,
+          "rationale": "exact price is never mutualizable; no representative or nearest price"
+        },
+        {
+          "axis": "to_call_bb",
+          "definition": "exact incremental chips required from the actor",
+          "identity_axis": true,
+          "kind": "price_exact",
+          "mutualizable_in_parameters": false,
+          "pooling_level_if_mutualizable": null,
+          "rationale": "exact price is never mutualizable; no representative or nearest price"
+        },
+        {
+          "axis": "effective_stack_bucket",
+          "definition": "existing policy_context effective-stack bucket of the actor",
+          "identity_axis": true,
+          "kind": "stack_bucket",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L1_STACK_POOL",
+          "rationale": "stack depth shifts strategy smoothly; usable as a shrinkage axis, never as support"
+        },
+        {
+          "axis": "pot_before_bb",
+          "definition": "exact pot before the action, in big blinds",
+          "identity_axis": true,
+          "kind": "pot_exact",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L2_POT_POOL",
+          "rationale": "pot size is a consequence of the retained price/position axes; poolable for parameters"
+        },
+        {
+          "axis": "history",
+          "definition": "ordered prior voluntary (position, action) pairs",
+          "identity_axis": true,
+          "kind": "public_sequence",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+          "rationale": "the counted family/count summary is retained at L3; the full ordered tail is not"
+        },
+        {
+          "axis": "live_positions",
+          "definition": "sorted set of positions that have not folded",
+          "identity_axis": true,
+          "kind": "public_sequence",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+          "rationale": "redundant with the retained history for the current provider granularity"
+        },
+        {
+          "axis": "all_in_positions",
+          "definition": "sorted set of all-in positions",
+          "identity_axis": true,
+          "kind": "public_sequence",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+          "rationale": "all-in state is already reflected in the retained price/family axes"
+        },
+        {
+          "axis": "table_size",
+          "definition": "seats at the table",
+          "identity_axis": true,
+          "kind": "public_sequence",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+          "rationale": "constant inside the certified 6-max population; not a support source"
+        },
+        {
+          "axis": "raise_level",
+          "definition": "structural raise level of the current betting sequence",
+          "identity_axis": true,
+          "kind": "public_sequence",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+          "rationale": "raise level is summarized by family plus exact price at the provider granularity"
+        },
+        {
+          "axis": "limper_count",
+          "definition": "limpers observed before the first raise",
+          "identity_axis": true,
+          "kind": "public_sequence",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L4_POSITION_PRICE_PRIOR",
+          "rationale": "only the last-resort prior may pool counts; never a support source"
+        },
+        {
+          "axis": "caller_count",
+          "definition": "callers already observed after the first raise",
+          "identity_axis": true,
+          "kind": "public_sequence",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L4_POSITION_PRICE_PRIOR",
+          "rationale": "only the last-resort prior may pool counts; never a support source"
+        },
+        {
+          "axis": "family",
+          "definition": "derived public family label (VS_ISO, LIMPER_VS_ISO, ...)",
+          "identity_axis": true,
+          "kind": "public_sequence",
+          "mutualizable_in_parameters": true,
+          "pooling_level_if_mutualizable": "L4_POSITION_PRICE_PRIOR",
+          "rationale": "family is a summary of the public sequence; poolable only at the last-resort prior"
+        }
+      ],
+      "level_retention_rule": "every level retains all never_mutualizable axes by construction; the union of mutualizable axes dropped along the hierarchy is the only thing that changes between levels",
+      "mutualizable": [
+        "effective_stack_bucket",
+        "pot_before_bb",
+        "history",
+        "live_positions",
+        "all_in_positions",
+        "table_size",
+        "raise_level",
+        "limper_count",
+        "caller_count",
+        "family"
+      ],
+      "mutualizable_rule": "these axes may only change the prior/parent distribution used for shrinkage; they never change the support source key and never change which observations count for the requested key",
+      "never_mutualizable": [
+        "requested_key_identity",
+        "actor_position",
+        "aggressor_position",
+        "target_total_bb",
+        "to_call_bb"
+      ],
+      "never_mutualizable_rule": "these axes are frozen for support AND for parameters at every pooling level: no level may drop, round, bucket or relabel them",
+      "unused_axes": [
+        {
+          "axis": "limper_positions",
+          "reason": "the exact key counts limpers; their positions are not a key axis in #388/#419 and are not introduced here"
+        },
+        {
+          "axis": "caller_positions",
+          "reason": "the exact key counts callers; their positions are not a key axis in #388/#419 and are not introduced here"
+        },
+        {
+          "axis": "hole_cards_reveals",
+          "reason": "private/revealed information is a label, never a key axis or a feature"
+        }
+      ]
+    },
+    "hard_constraint": "no level may drop or alter actor_position, aggressor_position, target_total_bb, to_call_bb or the requested key identity",
+    "levels": [
+      {
+        "drops": [],
+        "equals_runtime_provider_key": false,
+        "estimation_allowed": true,
+        "key_builder": "hierarchical_exact_key",
+        "level": "L0_EXACT_KEY",
+        "purpose": "SUPPORT_AND_IDENTITY",
+        "rank": 0,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb",
+          "effective_stack_bucket",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "support_source_allowed": true
+      },
+      {
+        "drops": [
+          "effective_stack_bucket"
+        ],
+        "equals_runtime_provider_key": false,
+        "estimation_allowed": true,
+        "key_builder": "level_key(retained_axes)",
+        "level": "L1_STACK_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 1,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb"
+        ],
+        "equals_runtime_provider_key": false,
+        "estimation_allowed": true,
+        "key_builder": "level_key(retained_axes)",
+        "level": "L2_POT_POOL",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 2,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level"
+        ],
+        "equals_runtime_provider_key": true,
+        "estimation_allowed": true,
+        "key_builder": "support_context_key (tools/preflop/model_a_sizing_likelihood.py)",
+        "level": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "purpose": "PARAMETERS_ONLY",
+        "rank": 3,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "support_source_allowed": false
+      },
+      {
+        "drops": [
+          "effective_stack_bucket",
+          "pot_before_bb",
+          "history",
+          "live_positions",
+          "all_in_positions",
+          "table_size",
+          "raise_level",
+          "limper_count",
+          "caller_count",
+          "family"
+        ],
+        "equals_runtime_provider_key": false,
+        "estimation_allowed": true,
+        "key_builder": "level_key(retained_axes)",
+        "level": "L4_POSITION_PRICE_PRIOR",
+        "purpose": "LAST_RESORT_PARAMETERS_ONLY",
+        "rank": 4,
+        "retains": [
+          "requested_key_identity",
+          "actor_position",
+          "aggressor_position",
+          "target_total_bb",
+          "to_call_bb"
+        ],
+        "support_source_allowed": false
+      }
+    ],
+    "levels_are_nested": true,
+    "pooling_changes_parameters_only": true
+  },
+  "predecessor_issues": [
+    388,
+    367,
+    352,
+    321,
+    96,
+    88
+  ],
+  "prohibitions": {
+    "active_pointer_mutation": false,
+    "admission": "NONE",
+    "cross_key_support_borrowing": false,
+    "future_or_private_features": false,
+    "nearest_context": false,
+    "nearest_price": false,
+    "production_effect": "NONE",
+    "representative_raise_price": false
+  },
+  "public_context_factorization": {
+    "exactness_rules": [
+      "lookup is exact string equality on the requested key; no nearest key, no fuzzy match",
+      "no numeric nearest-price or nearest-context substitution, at any level",
+      "changing any identity axis produces a different key and a different support question",
+      "the actor position and the aggressor position are always part of the identity"
+    ],
+    "hierarchical_exact_key": {
+      "composition": "support_context_key(context) + '|public=' + stable_hash(public_whitelist(context))",
+      "decimal_tokens": "exact decimal tokens as produced by the runtime contract; no rounding to a grid",
+      "equivalence": "byte-identical composition to the #388/#419 audit_exact_key; the spec does not invent new fields or a new serialization",
+      "fields": [
+        "family",
+        "actor_position",
+        "aggressor_position",
+        "limper_count",
+        "caller_count",
+        "target_total_bb",
+        "to_call_bb",
+        "table_size",
+        "raise_level",
+        "live_positions",
+        "all_in_positions",
+        "history",
+        "pot_before_bb",
+        "effective_stack_bucket"
+      ],
+      "granularity_id": "L0_EXACT_KEY",
+      "name": "hierarchical_exact_key",
+      "no_nearest": true,
+      "serialization": "family|actor|aggressor|limpers|callers|target|call from support_context_key, then '|public=<sha256-20 of the canonical public whitelist>'"
+    },
+    "public_sequence": {
+      "definition": "ordered (position, action) history plus live/all-in position sets, table size and raise level; reveals are labels, never sequence content",
+      "no_future_information": true,
+      "normalization": "action tokens normalized exactly as the runtime contract does (LIMP->CALL)"
+    },
+    "requested_key_axes": [
+      {
+        "axis": "requested_key_identity",
+        "definition": "the exact requested L0 key string itself (hierarchical_exact_key)",
+        "identity_axis": true,
+        "kind": "key_identity",
+        "mutualizable_in_parameters": false,
+        "pooling_level_if_mutualizable": null,
+        "rationale": "the requested key answers \"which context was asked\"; merging it would make the answer about a different question"
+      },
+      {
+        "axis": "actor_position",
+        "definition": "position of the acting player (public)",
+        "identity_axis": true,
+        "kind": "position",
+        "mutualizable_in_parameters": false,
+        "pooling_level_if_mutualizable": null,
+        "rationale": "positions are never mutualizable per ticket point 3"
+      },
+      {
+        "axis": "aggressor_position",
+        "definition": "position of the last observed raiser/jammer (public)",
+        "identity_axis": true,
+        "kind": "position",
+        "mutualizable_in_parameters": false,
+        "pooling_level_if_mutualizable": null,
+        "rationale": "positions are never mutualizable per ticket point 3"
+      },
+      {
+        "axis": "target_total_bb",
+        "definition": "exact total preflop contribution targeted by the price being faced",
+        "identity_axis": true,
+        "kind": "price_exact",
+        "mutualizable_in_parameters": false,
+        "pooling_level_if_mutualizable": null,
+        "rationale": "exact price is never mutualizable; no representative or nearest price"
+      },
+      {
+        "axis": "to_call_bb",
+        "definition": "exact incremental chips required from the actor",
+        "identity_axis": true,
+        "kind": "price_exact",
+        "mutualizable_in_parameters": false,
+        "pooling_level_if_mutualizable": null,
+        "rationale": "exact price is never mutualizable; no representative or nearest price"
+      },
+      {
+        "axis": "effective_stack_bucket",
+        "definition": "existing policy_context effective-stack bucket of the actor",
+        "identity_axis": true,
+        "kind": "stack_bucket",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L1_STACK_POOL",
+        "rationale": "stack depth shifts strategy smoothly; usable as a shrinkage axis, never as support"
+      },
+      {
+        "axis": "pot_before_bb",
+        "definition": "exact pot before the action, in big blinds",
+        "identity_axis": true,
+        "kind": "pot_exact",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L2_POT_POOL",
+        "rationale": "pot size is a consequence of the retained price/position axes; poolable for parameters"
+      },
+      {
+        "axis": "history",
+        "definition": "ordered prior voluntary (position, action) pairs",
+        "identity_axis": true,
+        "kind": "public_sequence",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "rationale": "the counted family/count summary is retained at L3; the full ordered tail is not"
+      },
+      {
+        "axis": "live_positions",
+        "definition": "sorted set of positions that have not folded",
+        "identity_axis": true,
+        "kind": "public_sequence",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "rationale": "redundant with the retained history for the current provider granularity"
+      },
+      {
+        "axis": "all_in_positions",
+        "definition": "sorted set of all-in positions",
+        "identity_axis": true,
+        "kind": "public_sequence",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "rationale": "all-in state is already reflected in the retained price/family axes"
+      },
+      {
+        "axis": "table_size",
+        "definition": "seats at the table",
+        "identity_axis": true,
+        "kind": "public_sequence",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "rationale": "constant inside the certified 6-max population; not a support source"
+      },
+      {
+        "axis": "raise_level",
+        "definition": "structural raise level of the current betting sequence",
+        "identity_axis": true,
+        "kind": "public_sequence",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L3_RUNTIME_SUPPORT_CONTEXT",
+        "rationale": "raise level is summarized by family plus exact price at the provider granularity"
+      },
+      {
+        "axis": "limper_count",
+        "definition": "limpers observed before the first raise",
+        "identity_axis": true,
+        "kind": "public_sequence",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L4_POSITION_PRICE_PRIOR",
+        "rationale": "only the last-resort prior may pool counts; never a support source"
+      },
+      {
+        "axis": "caller_count",
+        "definition": "callers already observed after the first raise",
+        "identity_axis": true,
+        "kind": "public_sequence",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L4_POSITION_PRICE_PRIOR",
+        "rationale": "only the last-resort prior may pool counts; never a support source"
+      },
+      {
+        "axis": "family",
+        "definition": "derived public family label (VS_ISO, LIMPER_VS_ISO, ...)",
+        "identity_axis": true,
+        "kind": "public_sequence",
+        "mutualizable_in_parameters": true,
+        "pooling_level_if_mutualizable": "L4_POSITION_PRICE_PRIOR",
+        "rationale": "family is a summary of the public sequence; poolable only at the last-resort prior"
+      }
+    ]
+  },
+  "raise_sizing_policy": {
+    "enumeration_complete": false,
+    "forbidden": [
+      "representative raise price",
+      "legal-minimum substitution",
+      "nearest-price or nearest-context substitution",
+      "target drift or interpolation between observed sizings",
+      "pruning an unresolved frontier as zero mass"
+    ],
+    "rule": "exact-support-only",
+    "supported_targets": "only target_total_bb values empirically present at the exact structural node, emitted by the #367 exact-reference translator",
+    "unresolved_frontier": {
+      "behaviour": "the branch and its required descendants remain explicitly unresolved; reason code EXACT_UNRESOLVED; the tree is not claimed complete",
+      "count_in_evidence": 7,
+      "state": "UNRESOLVED_SIZING_FRONTIER"
+    }
+  },
+  "rare_hand_class_inheritance": {
+    "forbidden": [
+      "cross-key hand-class transfer",
+      "conditioning on revealed hole cards or showdown labels",
+      "using reveal frequency as a feature or as a proxy for unrevealed behaviour",
+      "imputing a hand class from a neighbouring price or stack bucket"
+    ],
+    "inheritance_chain": [
+      "exact_hand_class_same_key",
+      "same_key_marginal",
+      "L1..L4_parameter_levels_of_the_same_key"
+    ],
+    "min_class_observations": 10,
+    "rare_hand_class_definition": "hand class with fewer than 10 observations at the requested key",
+    "reveal_policy": "reveals are descriptive labels of the observed sample only; they never enter the key, the features, the support counts or the shrinkage",
+    "rule": "a rare hand class inherits from the hand-class marginal of its OWN requested key, then from the declared hierarchical levels of that same key; never from another key"
+  },
+  "runtime_support_contract": {
+    "fail_closed": [
+      "support.source_key != requested_key -> error (COARSE_KEY_SUPPORT_LAUNDERING)",
+      "support.borrowed_from_other_keys == true -> error",
+      "a pooling level that drops a never-mutualizable axis -> error",
+      "an EXACT_EMPIRICAL_STRONG claim whose pooling level is not L0 -> error",
+      "a raise target not exactly supported at the structural node -> EXACT_UNRESOLVED",
+      "a probability vector outside the legal marginal action set -> error"
+    ],
+    "prohibitions": [
+      "no nearest price, no representative price, no nearest context",
+      "no private or future information in keys, features or reason details",
+      "no admission, fit, promotion or production effect from this contract alone"
+    ],
+    "reason_codes": {
+      "EXACT_EMPIRICAL_STRONG": {
+        "condition": "the requested fine key meets both 20/20 thresholds and the reported estimate uses pooling.level == L0_EXACT_KEY",
+        "interpretation": "exact empirical support for this exact context",
+        "pooling_allowed_for_the_reported_estimate": false,
+        "support_source": "requested_key only"
+      },
+      "EXACT_HIERARCHICAL_ESTIMATE": {
+        "condition": "the requested fine key is below threshold but a declared parent level meets both 20/20 thresholds; pooling.level and pooling.source_key are reported",
+        "interpretation": "an estimate for the exact requested context whose parameters were shrunk toward a declared parent; it is never an exact-support claim",
+        "pooling_allowed_for_the_reported_estimate": true,
+        "support_source": "requested_key only (support counts stay exact and possibly zero)"
+      },
+      "EXACT_UNRESOLVED": {
+        "condition": "no level meets both thresholds, or the raise sizing for the branch is unresolved, or the requested key violates the support isolation rule",
+        "interpretation": "no answer is emitted; the context and its descendants stay unresolved",
+        "pooling_allowed_for_the_reported_estimate": false,
+        "support_source": "requested_key only"
+      }
+    },
+    "requested_key": "hierarchical_exact_key (L0_EXACT_KEY)",
+    "response_fields": [
+      {
+        "field": "requested_key",
+        "meaning": "the exact fine key that was asked for",
+        "type": "string"
+      },
+      {
+        "field": "support.observations",
+        "meaning": "exact empirical rows whose hierarchical_exact_key == requested_key",
+        "type": "integer"
+      },
+      {
+        "field": "support.distinct_hands",
+        "meaning": "distinct hands contributing those rows",
+        "type": "integer"
+      },
+      {
+        "field": "support.effective_sample_size",
+        "meaning": "credited independence: equal to distinct_hands, because multiple decisions inside one hand are correlated and must not inflate the sample",
+        "type": "number"
+      },
+      {
+        "field": "support.source_key",
+        "meaning": "must equal requested_key; anything else is COARSE_KEY_SUPPORT_LAUNDERING",
+        "type": "string"
+      },
+      {
+        "field": "support.borrowed_from_other_keys",
+        "meaning": "always false; true is an invalid response",
+        "type": "boolean"
+      },
+      {
+        "field": "pooling.level",
+        "meaning": "L0_EXACT_KEY .. L4_POSITION_PRICE_PRIOR, the level that supplied the parent prior",
+        "type": "string"
+      },
+      {
+        "field": "pooling.source_key",
+        "meaning": "the exact key of the pooling level that was used",
+        "type": "string"
+      },
+      {
+        "field": "pooling.source_observations",
+        "meaning": "observations available at that pooling level",
+        "type": "integer"
+      },
+      {
+        "field": "pooling.source_distinct_hands",
+        "meaning": "distinct hands available at that pooling level",
+        "type": "integer"
+      },
+      {
+        "field": "pooling.source_effective_sample_size",
+        "meaning": "effective sample size of the pooling level",
+        "type": "number"
+      },
+      {
+        "field": "pooling.retained_axes",
+        "meaning": "identity axes kept at that level (always contains the never-mutualizable axes)",
+        "type": "array<string>"
+      },
+      {
+        "field": "pooling.pooled_axes",
+        "meaning": "mutualizable axes dropped at that level",
+        "type": "array<string>"
+      },
+      {
+        "field": "pooling.weight",
+        "meaning": "w_exact = n0 / (n0 + kappa0); weight of the exact level in the blend",
+        "type": "number"
+      },
+      {
+        "field": "posterior",
+        "meaning": "FOLD/CALL/RAISE/JAM (+CHECK when legal), summing to 1 over legal actions",
+        "type": "object<action,number>"
+      },
+      {
+        "field": "uncertainty",
+        "meaning": "Dirichlet credible intervals per action at a declared level (default 0.9), plus the standard error; must reflect the level actually used, not the exact level alone",
+        "type": "object"
+      },
+      {
+        "field": "raise_sizing",
+        "meaning": "exact supported targets or an explicit unresolved frontier with ids",
+        "type": "object"
+      },
+      {
+        "field": "reason_code",
+        "meaning": "EXACT_EMPIRICAL_STRONG | EXACT_HIERARCHICAL_ESTIMATE | EXACT_UNRESOLVED",
+        "type": "enum"
+      },
+      {
+        "field": "reason_detail",
+        "meaning": "human-readable cause, including the blocker for EXACT_UNRESOLVED",
+        "type": "string|null"
+      }
+    ],
+    "schema": "poker-hierarchical-support-response/v1"
+  },
+  "schema": "poker-hierarchical-exact-context-model-spec/v1",
+  "spec_frozen_date": "2026-09-25",
+  "status": "SPEC_ONLY_NOT_ADMITTED",
+  "support_isolation_rule": {
+    "corollaries": [
+      "a coarse provider key may seed a prior but may not certify support for a finer requested key",
+      "a finer key never borrows observations from its siblings",
+      "zero observations of key A stay zero even when a parent level has plenty of data"
+    ],
+    "evidence": {
+      "collision_groups_where_the_coarse_key_merges_fine_keys": 8,
+      "distinct_coarse_keys": 30,
+      "distinct_fine_keys": 38,
+      "meaning": "a coarse lookup would be supported by rows of at least two distinct requested keys, which this rule forbids"
+    },
+    "fail_closed": "a runtime answer whose support source key differs from the requested key must raise, never silently emit; it is never downgraded into an exact claim",
+    "not_a_nearest_lookup": true,
+    "pooling_effect": "pooling may change the prior/posterior of the estimate, never the support counts of the requested key",
+    "rule_id": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT",
+    "runtime_invariant": "support.source_key == requested_key",
+    "statement": "A key A may never be declared supported by observations of a different key B. Support quantities (observations, distinct hands, effective sample size) are computed exclusively from rows whose hierarchical_exact_key equals A.",
+    "support_quantities": [
+      "observations",
+      "distinct_hands",
+      "effective_sample_size"
+    ],
+    "violation_reason_code": "COARSE_KEY_SUPPORT_LAUNDERING"
+  },
+  "ten_point_coverage": [
+    {
+      "point": 1,
+      "requirement": "actor, aggressor, already-observed limpers/callers, target_total_bb, to_call_bb, effective stack bucket and the relevant public sequence are all explicit key axes",
+      "sections": [
+        "public_context_factorization",
+        "public_context_factorization.requested_key_axes"
+      ],
+      "title": "exact public factorization of contexts"
+    },
+    {
+      "point": 2,
+      "requirement": "mutualizable parameter axes are enumerated with their pooling level",
+      "sections": [
+        "parameter_pooling.axes.mutualizable"
+      ],
+      "title": "axes mutualizable inside the parameters"
+    },
+    {
+      "point": 3,
+      "requirement": "requested key identity, exact price and positions are enumerated and frozen at every level",
+      "sections": [
+        "parameter_pooling.axes.never_mutualizable"
+      ],
+      "title": "axes that are never mutualizable"
+    },
+    {
+      "point": 4,
+      "requirement": "levels, prior, shrinkage strength and recursion are explicit",
+      "sections": [
+        "hierarchy_prior_shrinkage"
+      ],
+      "title": "hierarchy, prior and shrinkage"
+    },
+    {
+      "point": 5,
+      "requirement": "rare hand classes shrink only inside the requested key; no cross-key class imputation",
+      "sections": [
+        "rare_hand_class_inheritance"
+      ],
+      "title": "information inheritance for rare hand classes"
+    },
+    {
+      "point": 6,
+      "requirement": "every legal marginal action is enumerated and zero counts never prune",
+      "sections": [
+        "action_outputs"
+      ],
+      "title": "FOLD/CALL/RAISE/JAM outputs"
+    },
+    {
+      "point": 7,
+      "requirement": "exact-support-only sizing; no representative price; unresolved frontiers survive",
+      "sections": [
+        "raise_sizing_policy"
+      ],
+      "title": "raise sizing handling"
+    },
+    {
+      "point": 8,
+      "requirement": "log-loss plus calibration metrics with explicit stratification and split discipline",
+      "sections": [
+        "calibration_and_log_loss"
+      ],
+      "title": "calibration and log-loss metrics"
+    },
+    {
+      "point": 9,
+      "requirement": "frozen observation/hand thresholds, argmax rule, tie-break and abstain behaviour",
+      "sections": [
+        "decision_thresholds"
+      ],
+      "title": "decision thresholds"
+    },
+    {
+      "point": 10,
+      "requirement": "exact empirical observations, effective sample size, pooling level/source, uncertainty and reason codes are part of the response contract",
+      "sections": [
+        "runtime_support_contract"
+      ],
+      "title": "runtime support contract"
+    }
+  ]
+}
