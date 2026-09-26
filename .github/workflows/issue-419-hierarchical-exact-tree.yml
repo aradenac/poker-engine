@@ -22,6 +22,11 @@ name: Execute issue 419 hierarchical exact tree
 #
 # This workflow is the authoritative runner: it executes each of those suites as
 # a real step (not a declaration) and then re-proves that no suite went missing.
+# The no-op guard's `required` tuple spans the union the audit declares
+# (`ISSUE_419_SUITES ∪ ISSUE_419_EXTRA_SUITES` in
+# `tests/test_github_workflow_audit.py`) plus `tests/ci/test_consolidation_decision.py`,
+# the #204 consolidation-decision mutation guard the branch modified and no other
+# workflow runs.
 # Its `paths` filters must cover every file #419 ships; that coverage, the
 # no-op guard, and the simulated drift/substitution negatives are asserted by
 # `tests/test_github_workflow_audit.py`, run as its own visible step below.
@@ -141,7 +146,8 @@ jobs:
             tests/training/test_frozen_validation_protocol.py \
             tests/training/test_frozen_validation_protocol_v2.py \
             tests/training/test_raise_sizing_frontier_resolution.py \
-            tests/training/test_issue419_hierarchical_exact_tree.py
+            tests/training/test_issue419_hierarchical_exact_tree.py \
+            tests/ci/test_consolidation_decision.py
       - name: Frozen protocol/hash drift and TRAIN/VALIDATION/TEST boundary
         run: |
           set -euo pipefail
@@ -169,6 +175,8 @@ jobs:
         run: PYTHONPATH=. python3 tests/training/test_raise_sizing_frontier_resolution.py
       - name: Aggregate #419 exact-tree contract
         run: PYTHONPATH=. python3 tests/training/test_issue419_hierarchical_exact_tree.py
+      - name: Audit decision and DAG evidence mutation guards
+        run: PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py
       - name: Prove every #419 suite is actually executed (no-op guard)
         run: |
           set -euo pipefail
@@ -192,6 +200,9 @@ jobs:
               'tests/training/test_frozen_validation_protocol.py',
               'tests/training/test_frozen_validation_protocol_v2.py',
               'tests/training/test_raise_sizing_frontier_resolution.py',
+              'tests/training/test_issue419_hierarchical_exact_tree.py',
+              'tests/test_github_workflow_audit.py',
+              'tests/ci/test_consolidation_decision.py',
           )
           missing = [suite for suite in required
                      if not re.search(r'python3\s+' + re.escape(suite) + r'(?:\s|$)', executed)]
@@ -207,9 +218,13 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          committed = json.loads(Path('analysis/workflow_audit/workflows.json').read_text(encoding='utf-8'))
-          regenerated = json.loads(Path('/tmp/workflows.inventory.json').read_text(encoding='utf-8'))
+          committed_path = Path('analysis/workflow_audit/workflows.json')
+          regenerated_path = Path('/tmp/workflows.inventory.json')
+          committed = json.loads(committed_path.read_text(encoding='utf-8'))
+          regenerated = json.loads(regenerated_path.read_text(encoding='utf-8'))
           assert committed == regenerated, 'analysis/workflow_audit/workflows.json is stale'
+          assert committed_path.read_bytes() == regenerated_path.read_bytes(), (
+              'analysis/workflow_audit/workflows.json is not byte-stable')
           print('workflow inventory: regenerable and byte-identical')
           PY
           python3 tools/audit_active_workflow_dag.py --check
