@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""#419 exact-tree #367 preflight regressions (no Hero EV, no holdout).
+"""#419 exact-tree #367 preflight v2 regressions (no Hero EV, no holdout).
 
 The preflight walks the 38 required nodes of the #388/#419 exact tree of
 scenario #321 plus its 7 raise-sizing frontiers, queries the hierarchical
 Model-A provider per exact key and records the exact key, node identity,
-empirical support, pooling provenance, uncertainty and posterior identity.
+empirical support, pooling provenance, uncertainty, posterior identity and the
+protocol-v2 node closure.
 
-These tests pin that behaviour and the boundary: no nearest-* substitution is
-applied, no Hero EV/recommendation is computed, no VALIDATION/TEST hand is read
-and ``required_tree_complete`` follows strict admissibility only.
+These tests pin the v2 admissibility rule -- ``EXACT_EMPIRICAL_STRONG`` (layer A,
+unchanged 20/20 L0 rule) *or* ``EXACT_HIERARCHICAL_ESTIMATE`` gated by the
+conjunction of the seven frozen layer-B gates -- and the boundary: no nearest-*
+substitution is applied, no Hero EV/recommendation is computed, no
+VALIDATION/TEST hand is read, the frozen v1 bundle is never rewritten and
+``required_tree_complete`` follows the strict closure conjunction only.
 """
 from __future__ import annotations
 
@@ -24,24 +28,105 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from tools.preflop import model_a_sizing_hierarchical as H  # noqa: E402
 from tools.simulation import issue419_exact_tree_preflight as preflight_tool  # noqa: E402
 from tools.training import validation_order_guard as guard  # noqa: E402
 from tools.training.audit_preflop_sizing_support import stable_hash  # noqa: E402
+
+# Synthetic public whitelists: one exact key whose own support is thin and a
+# sibling stack bucket that only the L1 parent level can pool toward.
+BASE_WHITELIST = {
+    "family": "VS_ISO",
+    "actor_position": "BB",
+    "aggressor_position": "SB",
+    "limper_count": 2,
+    "caller_count": 0,
+    "target_total_bb": 5.0,
+    "to_call_bb": 4.0,
+    "table_size": 6,
+    "raise_level": 1,
+    "live_positions": ["BB", "BTN", "CO", "SB"],
+    "all_in_positions": [],
+    "history": [
+        {"position": "CO", "action": "LIMP"},
+        {"position": "BTN", "action": "LIMP"},
+        {"position": "SB", "action": "RAISE"},
+    ],
+    "pot_before_bb": 8.0,
+    "effective_stack_bucket": "GT75_LE125",
+}
+LEGAL = ["FOLD", "CALL", "RAISE", "JAM"]
+# Explicit, test-only calibration evidence. The preflight itself never reads the
+# VALIDATION split, so the frozen CALIBRATION gate is unevaluated there.
+PASSING_CALIBRATION = {
+    "source": "TEST_ONLY_EXPLICIT_EVIDENCE",
+    "pooled_ece": 0.01,
+    "ece_delta_vs_active": 0.0,
+    "bins_meeting_minimum_support": 25,
+}
+FAILING_CALIBRATION = {**PASSING_CALIBRATION, "pooled_ece": 0.99}
+
+
+def _whitelist(**overrides):
+    whitelist = copy.deepcopy(BASE_WHITELIST)
+    whitelist.update(overrides)
+    return whitelist
+
+
+def _rows(whitelist, count, prefix, target_total_bb=5.0):
+    return [
+        {
+            "whitelist": copy.deepcopy(whitelist),
+            "hand_id": f"{prefix}-{index}",
+            "action": LEGAL[index % len(LEGAL)],
+            "target_total_bb": target_total_bb,
+        }
+        for index in range(count)
+    ]
+
+
+def _empirical_response():
+    """A synthetic L0 node with 24/24 observations and honest raise sizing."""
+    whitelist = _whitelist()
+    candidate = H.make_synthetic_hierarchical_candidate(
+        population_id="preflight-test", observations=_rows(whitelist, 24, "empirical")
+    )
+    return H.resolve_exact_context(
+        candidate=candidate,
+        requested_key=H.hierarchical_exact_key_from_whitelist(whitelist),
+        legal_actions=LEGAL,
+    )
+
+
+def _estimate_response():
+    """A synthetic node closed only by the exact-context estimate path."""
+    exact = _whitelist()
+    parent = _whitelist(effective_stack_bucket="LE40")
+    candidate = H.make_synthetic_hierarchical_candidate(
+        population_id="preflight-test",
+        observations=_rows(exact, 4, "thin") + _rows(parent, 24, "parent"),
+    )
+    return H.resolve_exact_context(
+        candidate=candidate,
+        requested_key=H.hierarchical_exact_key_from_whitelist(exact),
+        legal_actions=LEGAL,
+    )
 
 
 class ExactTreePreflightTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.output = preflight_tool.OUTPUT
+        cls.output = preflight_tool.V2_OUTPUT
         cls.index = json.loads((cls.output / preflight_tool.INDEX_NAME).read_text())
-        cls.preflight = json.loads((cls.output / preflight_tool.NAME).read_text())
-        cls.raw_bytes = (cls.output / preflight_tool.NAME).read_bytes()
+        cls.preflight = json.loads((cls.output / preflight_tool.V2_NAME).read_text())
+        cls.raw_bytes = (cls.output / preflight_tool.V2_NAME).read_bytes()
         cls.tree = json.loads(
             (ROOT / "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json").read_text()
         )
 
+    # ------------------------------------------------------------- artifact
     def test_bundle_is_content_addressed_and_canonical(self):
-        self.assertIn(preflight_tool.NAME, self.index)
+        self.assertIn(preflight_tool.V2_NAME, self.index)
         self.assertIn(preflight_tool.SUMMARY_NAME, self.index)
         for name, entry in self.index.items():
             data = (self.output / name).read_bytes()
@@ -51,12 +136,42 @@ class ExactTreePreflightTests(unittest.TestCase):
             {p.name for p in (self.output / 'sha256').iterdir()},
             {Path(entry['object']).name for entry in self.index.values()},
         )
-        entry = self.index[preflight_tool.NAME]
+        entry = self.index[preflight_tool.V2_NAME]
         self.assertEqual(entry['canonical_payload_sha256'], stable_hash(self.preflight))
-        self.assertEqual(self.preflight['schema'], preflight_tool.SCHEMA)
+        self.assertEqual(self.preflight['schema'], preflight_tool.V2_SCHEMA)
+        self.assertEqual(self.preflight['supersedes_schema'], preflight_tool.SCHEMA)
         self.assertEqual(self.preflight['issue'], 419)
         self.assertEqual(self.preflight['source_issue'], 388)
         self.assertEqual(self.preflight['scenario_issue'], 321)
+
+    def test_frozen_v1_bundle_is_re_verified_and_never_rewritten(self):
+        custody = self.preflight['frozen_v1_preflight']
+        self.assertEqual(custody['result'], 'PASS')
+        self.assertTrue(custody['never_rewritten'])
+        self.assertEqual(custody['bundle'], preflight_tool._relative(preflight_tool.OUTPUT))
+        self.assertEqual(
+            custody['artifacts'][preflight_tool.NAME], preflight_tool.V1_PREFLIGHT_SHA256
+        )
+        self.assertEqual(
+            custody['artifacts'][preflight_tool.SUMMARY_NAME], preflight_tool.V1_SUMMARY_SHA256
+        )
+        self.assertEqual(
+            custody['artifacts'][preflight_tool.INDEX_NAME], preflight_tool.V1_INDEX_SHA256
+        )
+        # The pins are re-derived from the bytes on disk, not merely asserted.
+        for name, pinned in (
+            (preflight_tool.NAME, preflight_tool.V1_PREFLIGHT_SHA256),
+            (preflight_tool.SUMMARY_NAME, preflight_tool.V1_SUMMARY_SHA256),
+            (preflight_tool.INDEX_NAME, preflight_tool.V1_INDEX_SHA256),
+        ):
+            with self.subTest(name=name):
+                self.assertEqual(
+                    hashlib.sha256((preflight_tool.OUTPUT / name).read_bytes()).hexdigest(),
+                    pinned,
+                )
+        self.assertEqual(preflight_tool.verify_frozen_v1_preflight()['result'], 'PASS')
+        # The v2 bundle never writes into the frozen v1 directory.
+        self.assertNotEqual(preflight_tool.V2_OUTPUT.resolve(), preflight_tool.OUTPUT.resolve())
 
     def test_walks_every_required_node_and_sizing_frontier_by_exact_key(self):
         nodes = self.preflight['nodes']
@@ -90,6 +205,7 @@ class ExactTreePreflightTests(unittest.TestCase):
                     'pooling_diagnostics',
                     'uncertainty',
                     'posterior_identity',
+                    'node_closure',
                 ):
                     self.assertIn(field, record)
                 self.assertIn('observations', record['empirical_support'])
@@ -114,7 +230,8 @@ class ExactTreePreflightTests(unittest.TestCase):
             frontier_paths.add(tuple(frontier['path']))
         self.assertEqual(len(frontier_paths), 7)
 
-    def test_required_tree_complete_reflects_strict_admissibility(self):
+    # ------------------------------------------------------- v2 admissibility
+    def test_required_tree_complete_reflects_the_v2_closure_conjunction(self):
         admissibility = self.preflight['admissibility']
         conditions = admissibility['conditions']
         self.assertFalse(self.preflight['required_tree_complete'])
@@ -122,35 +239,316 @@ class ExactTreePreflightTests(unittest.TestCase):
             self.preflight['required_tree_complete'],
             all(condition['satisfied'] for condition in conditions.values()),
         )
+        self.assertEqual(admissibility['rule_id'], preflight_tool.NODE_CLOSURE_RULE_ID)
         self.assertEqual(admissibility['admissible_exact_nodes'], 0)
         self.assertEqual(admissibility['blocked_nodes'], 38)
         self.assertEqual(len(admissibility['blocked_node_paths']), 38)
+        self.assertEqual(
+            admissibility['admissibility_class_counts'],
+            {'EXACT_EMPIRICAL_STRONG': 0, 'EXACT_HIERARCHICAL_ESTIMATE': 0, 'EXACT_UNRESOLVED': 38},
+        )
+        self.assertEqual(admissibility['closed_as_exact_support_nodes'], 0)
         self.assertFalse(self.preflight['required_tree']['tree_enumeration_complete'])
         self.assertEqual(self.preflight['required_tree']['required_node_count'], 38)
         self.assertEqual(self.preflight['required_tree']['unresolved_sizing_frontier_count'], 7)
         self.assertEqual(self.preflight['required_tree']['distinct_exact_keys'], 38)
         self.assertGreater(self.preflight['required_tree']['runtime_keys_merging_exact_states'], 0)
         self.assertFalse(
-            conditions['every_required_node_has_an_admissible_exact_answer']['satisfied']
+            conditions['every_required_node_closed_by_an_admissible_answer']['satisfied']
+        )
+        self.assertEqual(
+            conditions['every_required_node_closed_by_an_admissible_answer']['reason_code'],
+            preflight_tool.REFUSED_REQUIRED_NODE_OPEN,
         )
         self.assertFalse(conditions['no_unresolved_raise_sizing_frontier']['satisfied'])
         self.assertFalse(conditions['required_tree_fully_enumerated']['satisfied'])
         self.assertTrue(conditions['no_nearest_or_borrowed_substitution_applied']['satisfied'])
         self.assertTrue(conditions['no_hero_ev_or_recommendation_computed']['satisfied'])
+        self.assertTrue(conditions['no_pooled_estimate_is_counted_as_exact_support']['satisfied'])
+        # Every unsatisfied condition carries at least one reason code.
+        for name, condition in conditions.items():
+            with self.subTest(condition=name):
+                if not condition['satisfied']:
+                    self.assertTrue(condition['reason_codes'], name)
+                    self.assertTrue(condition['reason_code'], name)
+        reason_codes = self.preflight['required_tree_complete_reason_codes']
+        self.assertTrue(reason_codes)
+        for expected in (
+            preflight_tool.REFUSED_REQUIRED_NODE_OPEN,
+            preflight_tool.REFUSED_UNRESOLVED_RAISE_SIZING_FRONTIER,
+            preflight_tool.REFUSED_TREE_ENUMERATION_INCOMPLETE,
+            'NO_ADMISSIBLE_POOLING_LEVEL',
+            'RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE',
+            'REFUSED_RAISE_SIZING_FRONTIER',
+        ):
+            with self.subTest(reason_code=expected):
+                self.assertIn(expected, reason_codes)
         self.assertEqual(
             self.preflight['nodes'][0]['empirical_support']['thresholds'],
             {'minimum_marginal_observations': 20, 'minimum_distinct_hands': 20},
         )
         for record in self.preflight['nodes']:
             self.assertFalse(record['admissible_exact_answer'])
+            self.assertEqual(record['admissibility_class'], 'EXACT_UNRESOLVED')
+            self.assertFalse(record['counts_as_exact_support'])
+            self.assertTrue(record['closure_reason_codes'])
+            self.assertEqual(record['node_closure']['rule_id'], preflight_tool.NODE_CLOSURE_RULE_ID)
+            self.assertEqual(record['node_closure']['status'], 'EXACT_UNRESOLVED')
+            self.assertFalse(record['node_closure']['closes_the_node'])
+            self.assertEqual(
+                set(record['node_closure']['layer_b_gates']), set(preflight_tool.LAYER_B_GATE_IDS)
+            )
             self.assertEqual(record['posterior_identity']['status'], 'EXACT_UNRESOLVED')
             self.assertFalse(record['posterior_identity']['probability_emitted'])
             self.assertIsNone(record['posterior_identity']['posterior'])
             self.assertIsNone(record['posterior_identity']['posterior_sha256'])
             self.assertIsNone(record['pooling_provenance'])
             self.assertIsNone(record['uncertainty'])
+        # No node in this TRAIN-only preflight may claim a measured calibration.
+        protocol_block = self.preflight['admissibility_protocol']
+        self.assertEqual(protocol_block['revision'], 'v2')
+        self.assertEqual(protocol_block['amendment_id'], preflight_tool.PROTOCOL_V2_AMENDMENT_ID)
+        self.assertEqual(protocol_block['node_closure_rule_id'], preflight_tool.NODE_CLOSURE_RULE_ID)
+        self.assertIn('UNEVALUATED_PRE_VALIDATION', protocol_block['calibration_gate_status'])
+        self.assertEqual(protocol_block['calibration_thresholds']['maximum_absolute_ece'], 0.05)
+        self.assertEqual(
+            protocol_block['calibration_thresholds']['maximum_ece_delta_vs_active'], 0.02
+        )
 
-    def test_refuses_and_traces_every_nearest_substitution(self):
+    def test_is_admissible_separates_empirical_support_from_gated_estimates(self):
+        empirical = _empirical_response()
+        self.assertEqual(empirical['status'], H.STATUS_EXACT_EMPIRICAL_STRONG)
+        closure = preflight_tool.node_closure(empirical)
+        self.assertEqual(closure, preflight_tool.admissibility(empirical))
+        self.assertTrue(closure['closes_the_node'])
+        self.assertEqual(closure['admissibility_class'], 'EXACT_EMPIRICAL_STRONG')
+        self.assertTrue(closure['counts_as_exact_support'])
+        self.assertFalse(closure['admissible_as_exact_context_estimate'])
+        self.assertEqual(closure['reason_codes'], [])
+        # Layer A closes on the unchanged 20/20 rule: no calibration evidence needed.
+        self.assertTrue(preflight_tool.is_admissible(empirical))
+
+        estimator = _estimate_response()
+        self.assertEqual(estimator['status'], H.STATUS_EXACT_HIERARCHICAL_ESTIMATE)
+        self.assertEqual(estimator['pooling']['level'], 'L1_STACK_POOL')
+        self.assertEqual(estimator['support']['support_isolation_rule'], H.SUPPORT_ISOLATION_RULE)
+        # Unevaluated calibration keeps the estimate open (fail closed).
+        unevaluated = preflight_tool.node_closure(estimator)
+        self.assertFalse(unevaluated['closes_the_node'])
+        self.assertIn('REFUSED_CALIBRATION', unevaluated['reason_codes'])
+        self.assertIn('CALIBRATION', unevaluated['unevaluated_gate_ids'])
+        self.assertFalse(preflight_tool.is_admissible(estimator))
+        # With every frozen gate passing the estimate closes, but never as exact support.
+        admissible = preflight_tool.node_closure(
+            estimator, calibration_evidence=PASSING_CALIBRATION
+        )
+        self.assertEqual(
+            preflight_tool.admissibility(estimator, calibration_evidence=PASSING_CALIBRATION),
+            admissible,
+        )
+        self.assertTrue(admissible['closes_the_node'])
+        self.assertEqual(admissible['admissibility_class'], 'EXACT_HIERARCHICAL_ESTIMATE')
+        self.assertFalse(admissible['counts_as_exact_support'])
+        self.assertTrue(admissible['admissible_as_exact_context_estimate'])
+        self.assertTrue(admissible['pooling_only_feeds_parameters'])
+        self.assertTrue(admissible['support_is_exact_key_only'])
+        self.assertTrue(admissible['layer_b_gates_consulted_for_closure'])
+        self.assertEqual(admissible['reason_codes'], [])
+        self.assertTrue(
+            preflight_tool.is_admissible(estimator, calibration_evidence=PASSING_CALIBRATION)
+        )
+        # A failing calibration gate leaves the estimate open with its reason code.
+        failing = preflight_tool.node_closure(estimator, calibration_evidence=FAILING_CALIBRATION)
+        self.assertFalse(failing['closes_the_node'])
+        self.assertEqual(failing['reason_codes'], ['REFUSED_CALIBRATION'])
+        self.assertFalse(
+            preflight_tool.is_admissible(estimator, calibration_evidence=FAILING_CALIBRATION)
+        )
+        # A thin exact key never becomes exact support just because a parent qualifies.
+        self.assertLess(estimator['support']['observations'], 20)
+        self.assertLess(estimator['support']['distinct_hands'], 20)
+
+    def test_every_layer_b_gate_fails_closed_with_its_own_reason_code(self):
+        estimator = _estimate_response()
+        mutators = {
+            'EXACT_KEY_IDENTITY': (
+                lambda response: response['support'].__setitem__(
+                    'source_key', 'MAPSUP_other|public=deadbeef'
+                )
+            ),
+            'POOLING_PROVENANCE': (
+                lambda response: response['pooling'].__setitem__(
+                    'source_key', response['requested_key']
+                )
+            ),
+            'POOLING_LEVEL': (
+                lambda response: response['pooling'].__setitem__('level', 'L9_UNKNOWN')
+            ),
+            'EFFECTIVE_SAMPLE_SIZE': (
+                lambda response: response['support'].__setitem__(
+                    'effective_sample_size',
+                    float(response['support']['distinct_hands']) + 500.0,
+                )
+            ),
+            'UNCERTAINTY': (
+                lambda response: (
+                    response.__setitem__('posterior', None),
+                    response.__setitem__('uncertainty', None),
+                )
+            ),
+            'CALIBRATION': None,  # driven by the calibration evidence argument
+            'RAISE_SIZING_FRONTIER': (
+                lambda response: response['raise_sizing'].update(
+                    {'state': 'UNRESOLVED_SIZING_FRONTIER', 'unresolved': True}
+                )
+            ),
+        }
+        self.assertEqual(set(mutators), set(preflight_tool.LAYER_B_GATE_IDS))
+        for gate_id, mutator in mutators.items():
+            with self.subTest(gate=gate_id):
+                if gate_id == 'CALIBRATION':
+                    broken = estimator
+                    closure = preflight_tool.node_closure(
+                        broken, calibration_evidence=FAILING_CALIBRATION
+                    )
+                    evidence = FAILING_CALIBRATION
+                else:
+                    broken = copy.deepcopy(estimator)
+                    mutator(broken)
+                    closure = preflight_tool.node_closure(
+                        broken, calibration_evidence=PASSING_CALIBRATION
+                    )
+                    self.assertIn(gate_id, closure['failed_gate_ids'])
+                    evidence = PASSING_CALIBRATION
+                self.assertFalse(closure['closes_the_node'])
+                self.assertIn(
+                    preflight_tool.LAYER_B_GATE_REASON_CODE_BY_ID[gate_id], closure['reason_codes']
+                )
+                self.assertFalse(
+                    preflight_tool.is_admissible(broken, calibration_evidence=evidence)
+                )
+        # A borrowed/laundered support source raises the frozen violation code.
+        laundered = copy.deepcopy(estimator)
+        laundered['support']['borrowed_from_other_keys'] = True
+        identity = preflight_tool.layer_b_gate_report(
+            laundered, calibration_evidence=PASSING_CALIBRATION
+        )['EXACT_KEY_IDENTITY']
+        self.assertFalse(identity['passed'])
+        self.assertEqual(identity['violation_reason_code'], H.SUPPORT_LAUNDERING_REASON)
+
+    def test_required_tree_closure_is_true_iff_every_node_closes(self):
+        empirical = preflight_tool.node_closure(_empirical_response())
+        estimate = preflight_tool.node_closure(
+            _estimate_response(), calibration_evidence=PASSING_CALIBRATION
+        )
+        open_estimate = preflight_tool.node_closure(_estimate_response())
+        common = dict(
+            frontier_count=0,
+            nodes_with_unresolved_raise_sizing=0,
+            manifest_unresolved_frontier_count=0,
+            tree_enumeration_complete=True,
+            manifest_tree_enumeration_complete=True,
+            substitutions_applied=0,
+            key_separation_probes_passed=True,
+            hero_ev_executed=False,
+            recommendation_computed=False,
+            rollouts_executed=0,
+            ev_values_computed=0,
+        )
+        closed_tree = preflight_tool.required_tree_closure_report(
+            closures=[empirical, estimate], **common
+        )
+        self.assertTrue(closed_tree['required_tree_complete'])
+        self.assertEqual(closed_tree['reason_codes'], [])
+        self.assertTrue(all(c['satisfied'] for c in closed_tree['conditions'].values()))
+        self.assertEqual(
+            closed_tree['conditions']['every_required_node_closed_by_an_admissible_answer'][
+                'closed_as_exact_hierarchical_estimate'
+            ],
+            1,
+        )
+
+        open_tree = preflight_tool.required_tree_closure_report(
+            closures=[empirical, open_estimate], **common
+        )
+        self.assertFalse(open_tree['required_tree_complete'])
+        self.assertEqual(
+            open_tree['conditions']['every_required_node_closed_by_an_admissible_answer'][
+                'reason_code'
+            ],
+            preflight_tool.REFUSED_REQUIRED_NODE_OPEN,
+        )
+        self.assertIn('REFUSED_CALIBRATION', open_tree['reason_codes'])
+
+        for label, overrides, expected in (
+            (
+                'frontier',
+                {'frontier_count': 1},
+                preflight_tool.REFUSED_UNRESOLVED_RAISE_SIZING_FRONTIER,
+            ),
+            (
+                'substitution',
+                {'substitutions_applied': 1},
+                preflight_tool.REFUSED_SUBSTITUTION_APPLIED,
+            ),
+            (
+                'hero_ev',
+                {'hero_ev_executed': True},
+                preflight_tool.REFUSED_HERO_EV_OR_RECOMMENDATION,
+            ),
+            (
+                'enumeration',
+                {'tree_enumeration_complete': False},
+                preflight_tool.REFUSED_TREE_ENUMERATION_INCOMPLETE,
+            ),
+        ):
+            with self.subTest(case=label):
+                report = preflight_tool.required_tree_closure_report(
+                    closures=[empirical, estimate], **{**common, **overrides}
+                )
+                self.assertFalse(report['required_tree_complete'])
+                self.assertIn(expected, report['reason_codes'])
+
+        empty_tree = preflight_tool.required_tree_closure_report(closures=[], **common)
+        self.assertFalse(empty_tree['required_tree_complete'])
+
+    def test_non_exact_support_or_price_or_context_substitution_is_refused(self):
+        estimator = _estimate_response()
+        # A borrowed support source can never close the node, whatever the gates say.
+        for field, value in (
+            ('source_key', 'MAPSUP_neighbour|public=cafebabe'),
+            ('borrowed_from_other_keys', True),
+            ('support_isolation_rule', 'SUPPORT_LAUNDERING_ALLOWED'),
+        ):
+            with self.subTest(field=field):
+                broken = copy.deepcopy(estimator)
+                broken['support'][field] = value
+                closure = preflight_tool.node_closure(
+                    broken, calibration_evidence=PASSING_CALIBRATION
+                )
+                self.assertFalse(closure['closes_the_node'])
+                self.assertFalse(closure['support_is_exact_key_only'])
+                self.assertIn('REFUSED_EXACT_KEY_IDENTITY', closure['reason_codes'])
+                self.assertFalse(
+                    preflight_tool.is_admissible(broken, calibration_evidence=PASSING_CALIBRATION)
+                )
+        # An estimate relabelled as its own support source (self-pooling) is refused.
+        self_pooled = copy.deepcopy(estimator)
+        self_pooled['pooling']['source_key'] = self_pooled['requested_key']
+        closure = preflight_tool.node_closure(
+            self_pooled, calibration_evidence=PASSING_CALIBRATION
+        )
+        self.assertFalse(closure['closes_the_node'])
+        self.assertIn('REFUSED_POOLING_PROVENANCE', closure['reason_codes'])
+        # A dropped never-mutualizable axis is coarse-key support laundering.
+        dropped = copy.deepcopy(estimator)
+        dropped['pooling']['retained_axes'] = [
+            axis for axis in dropped['pooling']['retained_axes'] if axis != 'to_call_bb'
+        ]
+        closure = preflight_tool.node_closure(dropped, calibration_evidence=PASSING_CALIBRATION)
+        self.assertFalse(closure['closes_the_node'])
+        self.assertIn('REFUSED_EXACT_KEY_IDENTITY', closure['reason_codes'])
+
         audit = self.preflight['nearest_substitution_audit']
         for counter in (
             'substitutions_applied',
@@ -189,8 +587,7 @@ class ExactTreePreflightTests(unittest.TestCase):
         for frontier in self.preflight['sizing_frontiers']:
             classes = {row['substitution_class'] for row in frontier['substitution_refusals']}
             self.assertTrue(
-                {'NEAREST_PRICE', 'REPRESENTATIVE_PRICE', 'LEGAL_MINIMUM_FALLBACK'}
-                <= classes
+                {'NEAREST_PRICE', 'REPRESENTATIVE_PRICE', 'LEGAL_MINIMUM_FALLBACK'} <= classes
             )
 
     def test_no_hero_ev_no_holdout_and_no_pointer_mutation(self):
@@ -225,6 +622,7 @@ class ExactTreePreflightTests(unittest.TestCase):
         self.assertTrue(protected['unchanged'])
         self.assertEqual(protected['before'], protected['after'])
         self.assertFalse(self.preflight['reproduction']['hero_ev_runner_invoked'])
+        self.assertFalse(self.preflight['reproduction']['frozen_v1_bundle_rewritten'])
         self.assertFalse(self.preflight['provider']['authorized_for_367'])
         text = self.raw_bytes.decode()
         for forbidden in ('"ev_bb"', 'recommendation":', 'selected_alternative', 'indifference'):
@@ -236,6 +634,20 @@ class ExactTreePreflightTests(unittest.TestCase):
         self.assertEqual(
             bindings['protocol_canonical_payload_sha256'],
             preflight_tool.PROTOCOL_CANONICAL_PAYLOAD_SHA256,
+        )
+        self.assertEqual(
+            bindings['protocol_v2_byte_sha256'], preflight_tool.PROTOCOL_V2_BYTE_SHA256
+        )
+        self.assertEqual(
+            bindings['protocol_v2_byte_sha256'],
+            hashlib.sha256(preflight_tool.PROTOCOL_V2_PATH.read_bytes()).hexdigest(),
+        )
+        self.assertEqual(
+            bindings['protocol_v2_canonical_payload_sha256'],
+            preflight_tool.PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256,
+        )
+        self.assertEqual(
+            bindings['protocol_v2_amendment_id'], preflight_tool.PROTOCOL_V2_AMENDMENT_ID
         )
         self.assertEqual(
             bindings['protocol_digest_sidecar_sha256'], preflight_tool.PROTOCOL_BYTE_SHA256
@@ -266,6 +678,16 @@ class ExactTreePreflightTests(unittest.TestCase):
             self.preflight['provider']['support_isolation_rule'],
             'SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT',
         )
+        self.assertEqual(
+            self.preflight['provider']['admissibility_rule'], preflight_tool.NODE_CLOSURE_RULE_ID
+        )
+        self.assertEqual(
+            self.preflight['provider']['layer_b_gates_consulted_for_estimate_closure'],
+            list(preflight_tool.LAYER_B_GATE_IDS),
+        )
+        self.assertEqual(
+            self.preflight['provider']['layer_b_gates_consulted_for_empirical_closure'], []
+        )
         for flag in (
             'nearest_price_fallback',
             'nearest_context_fallback',
@@ -276,6 +698,31 @@ class ExactTreePreflightTests(unittest.TestCase):
         self.assertEqual(self.preflight['scenario']['root_path'], ['SB:ISO@5'])
         self.assertEqual(self.preflight['scenario']['root_actor_position'], 'BB')
         self.assertEqual(self.preflight['scenario']['hero_position'], 'SB')
+
+    def test_frozen_v2_protocol_contract_is_re_derived(self):
+        loaded = preflight_tool.load_frozen_v2_protocol()
+        self.assertEqual(loaded['protocol_v2_byte_sha256'], preflight_tool.PROTOCOL_V2_BYTE_SHA256)
+        layer_b = loaded['layer_b']
+        self.assertEqual(tuple(layer_b['admissibility_gate_ids']), preflight_tool.LAYER_B_GATE_IDS)
+        self.assertEqual(
+            tuple(layer_b['admissibility_gate_reason_codes']),
+            preflight_tool.LAYER_B_GATE_REASON_CODES,
+        )
+        self.assertEqual(layer_b['node_closure']['rule_id'], preflight_tool.NODE_CLOSURE_RULE_ID)
+        self.assertEqual(
+            layer_b['counts_as_a_closed_exact_tree_node']['value'],
+            preflight_tool.NODE_CLOSURE_VALUE,
+        )
+        self.assertTrue(
+            layer_b['counts_as_a_closed_exact_tree_node']['true_iff_all_layer_b_gates_pass']
+        )
+        self.assertFalse(
+            layer_b['counts_as_a_closed_exact_tree_node']['default_when_a_gate_is_unevaluated']
+        )
+        self.assertEqual(
+            tuple(layer_b['identity_axes_retained_at_every_level']), H.NEVER_MUTUALIZABLE_AXES
+        )
+        self.assertEqual(loaded['amendment_id'], preflight_tool.PROTOCOL_V2_AMENDMENT_ID)
 
     def test_scan_helpers_fail_closed_on_forbidden_sources(self):
         with self.assertRaises(preflight_tool.PreflightError):
@@ -291,37 +738,44 @@ class ExactTreePreflightTests(unittest.TestCase):
         self.assertEqual(preflight_tool.verify_no_holdout_access()['result'], 'PASS')
         self.assertEqual(preflight_tool.verify_no_hero_ev_execution()['result'], 'PASS')
 
-    def test_admissibility_rule_matches_frozen_thresholds(self):
-        requested = {
-            'status': 'EXACT_EMPIRICAL_STRONG',
-            'pooling': {'level': 'L0_EXACT_KEY'},
-            'requested_key': 'MAPSUP_x|public=y',
-            'support': {
-                'source_key': 'MAPSUP_x|public=y',
-                'observations': 20,
-                'distinct_hands': 20,
-            },
-        }
-        self.assertTrue(preflight_tool.is_admissible(requested))
-        thin = copy.deepcopy(requested)
-        thin['support']['observations'] = 19
-        self.assertFalse(preflight_tool.is_admissible(thin))
-        fewer_hands = copy.deepcopy(requested)
-        fewer_hands['support']['distinct_hands'] = 19
-        self.assertFalse(preflight_tool.is_admissible(fewer_hands))
-        pooled = copy.deepcopy(requested)
-        pooled['status'] = 'EXACT_HIERARCHICAL_ESTIMATE'
-        pooled['pooling']['level'] = 'L1_STACK_POOL'
-        self.assertFalse(preflight_tool.is_admissible(pooled))
-        borrowed = copy.deepcopy(requested)
-        borrowed['support']['source_key'] = 'MAPSUP_other|public=z'
-        self.assertFalse(preflight_tool.is_admissible(borrowed))
+    def test_calibration_gate_fails_closed_without_measured_evidence(self):
+        thresholds = preflight_tool.calibration_gate_thresholds(
+            preflight_tool.load_frozen_v2_protocol()['protocol']
+        )
+        unevaluated = preflight_tool.calibration_gate_decision(None, thresholds)
+        self.assertFalse(unevaluated['evaluated'])
+        self.assertFalse(unevaluated['passed'])
+        self.assertEqual(unevaluated['detail'], 'GATE_UNEVALUATED_PRE_VALIDATION')
+        self.assertEqual(unevaluated['evidence']['source'],
+                         preflight_tool.CALIBRATION_EVIDENCE_SOURCE)
+        passing = preflight_tool.calibration_gate_decision(PASSING_CALIBRATION, thresholds)
+        self.assertTrue(passing['evaluated'])
+        self.assertTrue(passing['passed'])
+        for field, value in (
+            ('pooled_ece', thresholds['maximum_absolute_ece'] + 1.0),
+            ('ece_delta_vs_active', thresholds['maximum_ece_delta_vs_active'] + 1.0),
+            ('bins_meeting_minimum_support', 0),
+        ):
+            with self.subTest(field=field):
+                broken = preflight_tool.calibration_gate_decision(
+                    {**PASSING_CALIBRATION, field: value}, thresholds
+                )
+                self.assertTrue(broken['evaluated'])
+                self.assertFalse(broken['passed'])
 
     def test_repo_guard_accepts_the_preflight_and_its_artifact(self):
         source = preflight_tool.SOURCE_PATH.read_text(encoding='utf-8')
         self.assertEqual(guard.verify_no_holdout_access(source)['result'], 'PASS')
-        artifact = preflight_tool._relative(preflight_tool.OUTPUT / preflight_tool.NAME)
-        self.assertNotIn(artifact, guard.validation_result_artifacts())
+        for artifact in (
+            preflight_tool._relative(preflight_tool.OUTPUT / preflight_tool.NAME),
+            preflight_tool._relative(preflight_tool.V2_OUTPUT / preflight_tool.V2_NAME),
+        ):
+            with self.subTest(artifact=artifact):
+                self.assertNotIn(artifact, guard.validation_result_artifacts())
+        # The order guard must still fire on the delivered VALIDATION result, and
+        # the v2 preflight must not add another offender.
+        with self.assertRaises(guard.ValidationOrderError):
+            guard.assert_validation_not_yet_consumed(ROOT)
 
     def test_hero_ev_build_scan_is_environment_independent(self):
         """A sibling test that already imported the runner must not flip the verdict."""
@@ -332,25 +786,25 @@ class ExactTreePreflightTests(unittest.TestCase):
         sys.modules[name] = stub
         try:
             artifacts, _summary = preflight_tool.build()
-            scan = artifacts[preflight_tool.NAME]['boundary']['hero_ev_scan']
+            scan = artifacts[preflight_tool.V2_NAME]['boundary']['hero_ev_scan']
             self.assertEqual(scan['forbidden_modules_imported_during_build'], [])
             self.assertFalse(scan['runner_module_imported_by_preflight'])
-            self.assertFalse(artifacts[preflight_tool.NAME]['boundary']['hero_ev_executed'])
+            self.assertFalse(artifacts[preflight_tool.V2_NAME]['boundary']['hero_ev_executed'])
             self.assertIn(name, preflight_tool.hero_ev_modules_present())
             self.assertEqual(
-                preflight_tool.serialize(artifacts[preflight_tool.NAME]), self.raw_bytes
+                preflight_tool.serialize(artifacts[preflight_tool.V2_NAME]), self.raw_bytes
             )
         finally:
             sys.modules.pop(name, None)
-        self.assertEqual(
-            preflight_tool.verify_no_hero_ev_execution()['result'], 'PASS'
-        )
+        self.assertEqual(preflight_tool.verify_no_hero_ev_execution()['result'], 'PASS')
 
     def test_bundle_reproduces_byte_identically(self):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(preflight_tool.check(), 0)
         artifacts, summary = preflight_tool.build()
-        self.assertEqual(preflight_tool.serialize(artifacts[preflight_tool.NAME]), self.raw_bytes)
+        self.assertEqual(
+            preflight_tool.serialize(artifacts[preflight_tool.V2_NAME]), self.raw_bytes
+        )
         self.assertEqual(summary, artifacts[preflight_tool.SUMMARY_NAME])
 
 

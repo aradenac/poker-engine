@@ -11,13 +11,39 @@ posterior identity.
 
 It is a *preflight*: it never runs the #367 Hero EV runner, never computes a
 rollout, an EV or a recommendation, never consumes VALIDATION/TEST and never
-mutates an active model pointer.  ``required_tree_complete`` is true only when
-every required node carries an answer admissible under the frozen protocol
-(``L0_EXACT_KEY`` meeting the 20-observation / 20-distinct-hands thresholds) and
-no raise-sizing frontier stays unresolved.  A fail-closed node is never repaired
-by lowering a threshold, by borrowing another key's support, or by a
-nearest-price / nearest-context / representative-price / interpolation
-substitution: every such substitution is refused and traced.
+mutates an active model pointer.
+
+The admissibility rule implemented here is the **protocol v2** rule
+(``FROZEN_VALIDATION_PROTOCOL_V2.json``, amendment
+``V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE``): a required node is admissible
+
+* either as ``EXACT_EMPIRICAL_STRONG`` -- the unchanged layer-A definition
+  (``L0_EXACT_KEY`` meeting both the 20-observation and the 20-distinct-hands
+  thresholds, supported only by its own exact key); it is *never* counted as
+  exact support for any other key;
+* or as ``EXACT_HIERARCHICAL_ESTIMATE`` -- the exact key identity is preserved,
+  the counted support stays exact-key-only, pooling only feeds the Dirichlet
+  prior, and every frozen layer-B admissibility gate
+  (``EXACT_KEY_IDENTITY``, ``POOLING_PROVENANCE``, ``POOLING_LEVEL``,
+  ``EFFECTIVE_SAMPLE_SIZE``, ``UNCERTAINTY``, ``CALIBRATION``,
+  ``RAISE_SIZING_FRONTIER``) passes.
+
+``required_tree_complete`` is true only when every required node is closed *and*
+no raise-sizing frontier stays unresolved; otherwise it is false and carries
+reason codes.  A fail-closed node is never repaired by lowering a threshold, by
+borrowing another key's support, or by a nearest-price / nearest-context /
+representative-price / interpolation substitution: every such substitution is
+refused and traced.
+
+Crucially this is a *pre-validation* preflight: it consumes no VALIDATION split,
+so the frozen ``CALIBRATION`` gate has no measured evidence and therefore fails
+closed as ``GATE_UNEVALUATED_PRE_VALIDATION`` for every estimate answer.  That
+is deliberate -- an unevaluated layer-B gate may never close a node.
+
+The tool writes its bundle to ``analysis/issue419_hierarchical_tree/
+exact_tree_preflight_v2/``.  The superseded ``v1`` bundle
+(``exact_tree_preflight/``) is a frozen, pinned v1 surface: it is re-verified
+byte-for-byte here and is never rewritten.
 """
 from __future__ import annotations
 
@@ -43,11 +69,82 @@ from tools.training import fit_model_a_preflop_sizing_hierarchical as fit_tool  
 from tools.training.audit_preflop_sizing_support import stable_hash  # noqa: E402
 
 HERE = ROOT / 'analysis/issue419_hierarchical_tree'
+# ``OUTPUT``/``NAME``/``SCHEMA`` name the *frozen* v1 preflight bundle.  Other
+# #419 tools (the terminal decision and its tests) still bind to those names, so
+# they keep pointing at the frozen v1 bytes; they are re-verified, never
+# rewritten, by this v2 tool.
 OUTPUT = HERE / 'exact_tree_preflight'
 NAME = 'EXACT_TREE_PREFLIGHT.json'
 SUMMARY_NAME = 'SUMMARY.md'
 INDEX_NAME = 'ARTIFACTS.json'
 SOURCE_PATH = Path(__file__).resolve()
+
+# The v2 preflight bundle this tool produces: schema v2, protocol-v2
+# admissibility (conditional exact-context estimate node closure).
+V2_OUTPUT = HERE / 'exact_tree_preflight_v2'
+V2_NAME = 'EXACT_TREE_PREFLIGHT_V2.json'
+V2_SCHEMA = 'poker-issue419-exact-tree-preflight/v2'
+
+# Pinned bytes of the frozen v1 preflight bundle: the superseded revision is
+# immutable evidence and must hash back to these digests on every run.
+V1_PREFLIGHT_SHA256 = '456d85be57b910d3a56cb0160ba0ba35c988f7f69da9f965f0a887aaac473ae6'
+V1_SUMMARY_SHA256 = '3b87d9bcc366c35e97bde6a4be350704a0cf2eecadb464d5ac321298443778df'
+V1_INDEX_SHA256 = '97e90eac0a9302f1d0b304fa698f5179c7c0ee98ad52ebe307a911d9ccbfa5be'
+V1_BYTE_SHA256 = '69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3'
+
+# Frozen protocol v2 (protocol v1 + amendment V2_AMENDMENT_1) and its
+# machine-readable layer-B admissibility gates.
+PROTOCOL_V2_PATH = HERE / 'validation_protocol_v2' / 'FROZEN_VALIDATION_PROTOCOL_V2.json'
+PROTOCOL_V2_SCHEMA = 'poker-hierarchical-frozen-validation-protocol/v2'
+PROTOCOL_V2_STATUS = 'AUTHORED_AFTER_VALIDATION_READ_NO_THRESHOLD_CHANGE'
+PROTOCOL_V2_BYTE_SHA256 = (
+    '74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350'
+)
+PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256 = (
+    'cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de'
+)
+PROTOCOL_V2_AMENDMENT_ID = 'V2_AMENDMENT_1_CONDITIONAL_NODE_CLOSURE'
+NODE_CLOSURE_RULE_ID = 'NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS'
+NODE_CLOSURE_VALUE = 'CONDITIONAL'
+
+LAYER_B_GATE_IDS = (
+    'EXACT_KEY_IDENTITY',
+    'POOLING_PROVENANCE',
+    'POOLING_LEVEL',
+    'EFFECTIVE_SAMPLE_SIZE',
+    'UNCERTAINTY',
+    'CALIBRATION',
+    'RAISE_SIZING_FRONTIER',
+)
+LAYER_B_GATE_REASON_CODES = (
+    'REFUSED_EXACT_KEY_IDENTITY',
+    'REFUSED_POOLING_PROVENANCE',
+    'REFUSED_POOLING_LEVEL',
+    'REFUSED_EFFECTIVE_SAMPLE_SIZE',
+    'REFUSED_UNCERTAINTY',
+    'REFUSED_CALIBRATION',
+    'REFUSED_RAISE_SIZING_FRONTIER',
+)
+LAYER_B_GATE_REASON_CODE_BY_ID = dict(zip(LAYER_B_GATE_IDS, LAYER_B_GATE_REASON_CODES))
+
+MAX_POOLING_DEPTH = 4
+MAX_POOLING_LEVEL_FOR_ESTIMATE = 'L4_POSITION_PRICE_PRIOR'
+POOLING_PROVENANCE_FIELDS = (
+    'level',
+    'source_key',
+    'source_observations',
+    'source_distinct_hands',
+    'retained_axes',
+    'pooled_axes',
+)
+CALIBRATION_EVIDENCE_SOURCE = 'UNAVAILABLE_IN_THIS_TRAIN_ONLY_PREFLIGHT'
+
+# Layer-B gate reason codes used at the tree level when a closure condition fails.
+REFUSED_REQUIRED_NODE_OPEN = 'REFUSED_REQUIRED_NODE_OPEN'
+REFUSED_UNRESOLVED_RAISE_SIZING_FRONTIER = 'REFUSED_UNRESOLVED_RAISE_SIZING_FRONTIER'
+REFUSED_TREE_ENUMERATION_INCOMPLETE = 'REFUSED_TREE_ENUMERATION_INCOMPLETE'
+REFUSED_SUBSTITUTION_APPLIED = 'REFUSED_SUBSTITUTION_APPLIED'
+REFUSED_HERO_EV_OR_RECOMMENDATION = 'REFUSED_HERO_EV_OR_RECOMMENDATION'
 
 PROTOCOL_PATH = HERE / 'FROZEN_VALIDATION_PROTOCOL.json'
 PROTOCOL_COPY_PATH = HERE / 'validation_protocol' / 'FROZEN_VALIDATION_PROTOCOL.json'
@@ -293,6 +390,149 @@ def protected_hashes() -> dict[str, str]:
     return {path: sha256_file(ROOT / path) for path in PROTECTED_FILES}
 
 
+def verify_frozen_v1_preflight() -> dict[str, Any]:
+    """Re-derive the frozen v1 preflight digests; the v1 bundle is never rewritten."""
+    expected = {
+        NAME: V1_PREFLIGHT_SHA256,
+        SUMMARY_NAME: V1_SUMMARY_SHA256,
+        INDEX_NAME: V1_INDEX_SHA256,
+    }
+    digests: dict[str, str] = {}
+    for name, pinned in expected.items():
+        path = OUTPUT / name
+        if not path.is_file():
+            raise PreflightError(f'the frozen v1 preflight artifact is missing: {path}')
+        actual = sha256_file(path)
+        if actual != pinned:
+            raise PreflightError(
+                f'the frozen v1 preflight artifact drifted: {name} {actual} != {pinned}'
+            )
+        digests[name] = actual
+    return {
+        'check': 'frozen_v1_preflight_bytes_re_derived',
+        'result': 'PASS',
+        'bundle': _relative(OUTPUT),
+        'artifacts': digests,
+        'never_rewritten': True,
+        'superseded_by': _relative(V2_OUTPUT / V2_NAME),
+        'reason': (
+            'the v1 preflight is pinned as an immutable v1 surface by '
+            'FROZEN_VALIDATION_PROTOCOL_V2.json custody and by the T9/T10 terminal decision; this '
+            'tool re-verifies those bytes and writes only the v2 bundle'
+        ),
+    }
+
+
+def calibration_gate_thresholds(protocol_v2: Mapping[str, Any]) -> dict[str, Any]:
+    """The frozen CALIBRATION gate values, read from the v2 protocol, never re-selected."""
+    dimension = protocol_v2['layers']['layer_b_exact_context_estimate_admissibility'][
+        'admissibility_gates_by_dimension'
+    ]['calibration']
+    thresholds = protocol_v2['thresholds']
+    return {
+        'gate_id': dimension['gate_id'],
+        'maximum_absolute_ece': float(dimension['maximum_absolute_ece']),
+        'maximum_ece_delta_vs_active': float(dimension['maximum_ece_delta_vs_active']),
+        'minimum_bin_support_for_a_calibration_claim': int(
+            dimension['minimum_bin_support_for_a_calibration_claim']
+        ),
+        'bins_per_action_class': int(dimension['bins_per_action_class']),
+        'report_pooling_level_always': bool(dimension['report_pooling_level_always']),
+        'protocol_threshold_maximum_absolute_ece': float(thresholds['maximum_absolute_ece']),
+        'protocol_threshold_maximum_ece_delta_vs_active': float(
+            thresholds['maximum_ece_delta_vs_active']
+        ),
+    }
+
+
+def load_frozen_v2_protocol() -> dict[str, Any]:
+    """Verify the frozen v2 protocol identity and its layer-B gate contract."""
+    protocol_bytes = PROTOCOL_V2_PATH.read_bytes()
+    actual_byte_sha = hashlib.sha256(protocol_bytes).hexdigest()
+    if actual_byte_sha != PROTOCOL_V2_BYTE_SHA256:
+        raise PreflightError(f'frozen protocol v2 byte hash drifted: {actual_byte_sha}')
+    protocol = json.loads(protocol_bytes)
+    if protocol.get('schema') != PROTOCOL_V2_SCHEMA:
+        raise PreflightError('unexpected frozen protocol v2 schema')
+    if protocol.get('status') != PROTOCOL_V2_STATUS:
+        raise PreflightError('unexpected frozen protocol v2 status')
+    if stable_hash(protocol) != PROTOCOL_V2_CANONICAL_PAYLOAD_SHA256:
+        raise PreflightError('frozen protocol v2 canonical payload hash drifted')
+    if protocol['v1_provenance']['byte_sha256'] != PROTOCOL_BYTE_SHA256:
+        raise PreflightError('protocol v2 does not reference the frozen v1 protocol bytes')
+
+    layer_b = protocol['layers']['layer_b_exact_context_estimate_admissibility']
+    if tuple(layer_b['admissibility_gate_ids']) != LAYER_B_GATE_IDS:
+        raise PreflightError('the v2 layer-B gate ids drifted')
+    if tuple(layer_b['admissibility_gate_reason_codes']) != LAYER_B_GATE_REASON_CODES:
+        raise PreflightError('the v2 layer-B gate reason codes drifted')
+    if [row['gate_id'] for row in layer_b['admissibility_gates']] != list(LAYER_B_GATE_IDS):
+        raise PreflightError('the v2 machine-readable gate order drifted')
+    if [row['reason_code'] for row in layer_b['admissibility_gates']] != list(
+        LAYER_B_GATE_REASON_CODES
+    ):
+        raise PreflightError('the v2 machine-readable gate reason codes drifted')
+    if tuple(layer_b['identity_axes_retained_at_every_level']) != H.NEVER_MUTUALIZABLE_AXES:
+        raise PreflightError('the v2 never-mutualizable identity axes drifted')
+
+    closure = layer_b['node_closure']
+    conditional = layer_b['counts_as_a_closed_exact_tree_node']
+    if closure['rule_id'] != NODE_CLOSURE_RULE_ID:
+        raise PreflightError('the v2 node-closure rule id drifted')
+    if conditional['value'] != NODE_CLOSURE_VALUE:
+        raise PreflightError('the v2 node closure must stay CONDITIONAL')
+    if conditional['true_iff_all_layer_b_gates_pass'] is not True:
+        raise PreflightError('the v2 closure must be the conjunction of every layer-B gate')
+    if conditional['false_if_any_layer_b_gate_fails'] is not True:
+        raise PreflightError('a failing layer-B gate must keep the node open')
+    if conditional['default_when_a_gate_is_unevaluated'] is not False:
+        raise PreflightError('an unevaluated layer-B gate must fail closed')
+    if conditional['unconditionally_closes'] is not False:
+        raise PreflightError('an exact-context estimate can never close unconditionally')
+    if closure['unresolved_node_closure'] is not False:
+        raise PreflightError('an EXACT_UNRESOLVED node never closes')
+    if protocol['amendments']['current_amendment_id'] != PROTOCOL_V2_AMENDMENT_ID:
+        raise PreflightError('the v2 amendment id drifted')
+    if protocol['amendments']['no_gate_value_moved'] is not True:
+        raise PreflightError('the v2 amendment must move no gate value')
+    if protocol['amendments']['no_threshold_moved'] is not True:
+        raise PreflightError('the v2 amendment must move no threshold')
+    if protocol['gates']['layer_b_gates_more_permissive_than_v1'] is not False:
+        raise PreflightError('a layer-B gate may never be more permissive than v1')
+    if protocol['thresholds']['minimum_marginal_observations'] != MIN_MARGINAL_OBSERVATIONS:
+        raise PreflightError('the v2 observation threshold drifted')
+    if protocol['thresholds']['minimum_distinct_hands'] != MIN_DISTINCT_HANDS:
+        raise PreflightError('the v2 distinct-hand threshold drifted')
+    pooling_gate = next(
+        row for row in layer_b['admissibility_gates'] if row['gate_id'] == 'POOLING_LEVEL'
+    )
+    comparisons = {row['field']: row['value'] for row in pooling_gate['comparisons']}
+    if int(comparisons['maximum_pooling_depth']) != MAX_POOLING_DEPTH:
+        raise PreflightError('the v2 maximum pooling depth drifted')
+    if int(comparisons['maximum_level_for_a_reported_estimate_rank']) != MAX_POOLING_DEPTH:
+        raise PreflightError('the v2 maximum reported estimate level rank drifted')
+    if comparisons['exact_claim_requires_level'] != SUPPORT_LEVEL:
+        raise PreflightError('the v2 exact claim level drifted')
+    if (
+        protocol['pooling_limits']['maximum_pooling_level_for_a_reported_estimate']
+        != MAX_POOLING_LEVEL_FOR_ESTIMATE
+    ):
+        raise PreflightError('the v2 maximum reported estimate level drifted')
+    if protocol['pooling_limits']['only_support_source_level'] != SUPPORT_LEVEL:
+        raise PreflightError('the v2 only support source level must stay L0_EXACT_KEY')
+
+    return {
+        'protocol': protocol,
+        'protocol_v2_byte_sha256': actual_byte_sha,
+        'protocol_v2_canonical_payload_sha256': stable_hash(protocol),
+        'layer_b': layer_b,
+        'node_closure': closure,
+        'calibration_thresholds': calibration_gate_thresholds(protocol),
+        'amendment_id': protocol['amendments']['current_amendment_id'],
+        'superseded_digest': protocol['amendments']['superseded_digest'],
+    }
+
+
 def _manifest_rows(tree: Mapping[str, Any]) -> list[dict[str, Any]]:
     """Independent re-derivation of the frozen 38-node requirement manifest."""
     rows = []
@@ -448,15 +688,514 @@ def resolve_exact(
     return context, response
 
 
-def is_admissible(response: Mapping[str, Any]) -> bool:
-    """Admissible per the frozen protocol: L0_EXACT_KEY meeting both 20/20 thresholds."""
+def _gate(
+    gate_id: str,
+    *,
+    applicable: bool,
+    evaluated: bool,
+    passed: bool,
+    detail: str,
+    evidence: Mapping[str, Any] | None = None,
+    violation_reason_code: str | None = None,
+) -> dict[str, Any]:
+    return {
+        'gate_id': gate_id,
+        'reason_code': LAYER_B_GATE_REASON_CODE_BY_ID[gate_id],
+        'applies_to_answer': bool(applicable),
+        'evaluated': bool(evaluated),
+        'passed': bool(passed),
+        'violation_reason_code': violation_reason_code,
+        'detail': detail,
+        'evidence': dict(evidence or {}),
+    }
+
+
+def calibration_gate_decision(
+    calibration_evidence: Mapping[str, Any] | None,
+    thresholds: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Evaluate the frozen CALIBRATION gate; missing evidence fails closed.
+
+    The measured pooled ECE lives in the frozen VALIDATION result, which this
+    TRAIN-only preflight never reads.  Absent explicit evidence the gate is
+    ``evaluated: false`` and therefore refused -- an unevaluated layer-B gate may
+    never close a node (``default_when_a_gate_is_unevaluated: false``).
+    """
+    maximum_ece = float(thresholds['maximum_absolute_ece'])
+    maximum_delta = float(thresholds['maximum_ece_delta_vs_active'])
+    minimum_bins = int(thresholds['minimum_bin_support_for_a_calibration_claim'])
+    pinned = {
+        'maximum_absolute_ece': maximum_ece,
+        'maximum_ece_delta_vs_active': maximum_delta,
+        'minimum_bin_support_for_a_calibration_claim': minimum_bins,
+        'bins_per_action_class': int(thresholds['bins_per_action_class']),
+        'report_pooling_level_always': bool(thresholds['report_pooling_level_always']),
+    }
+    if calibration_evidence is None:
+        return {
+            'evaluated': False,
+            'passed': False,
+            'detail': 'GATE_UNEVALUATED_PRE_VALIDATION',
+            'thresholds': pinned,
+            'evidence': {
+                'source': CALIBRATION_EVIDENCE_SOURCE,
+                'reason': (
+                    'this preflight consumes no VALIDATION split, so the frozen absolute/relative '
+                    'calibration gate has no measured evidence and stays open (fail closed)'
+                ),
+                'pooled_ece': None,
+                'ece_delta_vs_active': None,
+                'bins_meeting_minimum_support': None,
+            },
+        }
+    pooled_ece = calibration_evidence.get('pooled_ece')
+    delta = calibration_evidence.get('ece_delta_vs_active')
+    bins = calibration_evidence.get('bins_meeting_minimum_support')
+    checks = {
+        'pooled_ece_within_maximum_absolute': (
+            pooled_ece is not None and float(pooled_ece) <= maximum_ece
+        ),
+        'ece_delta_within_maximum_vs_active': (
+            delta is not None and float(delta) <= maximum_delta
+        ),
+        'bins_meet_minimum_support': (bins is not None and int(bins) >= minimum_bins),
+    }
+    return {
+        'evaluated': True,
+        'passed': all(checks.values()),
+        'detail': 'GATE_EVALUATED',
+        'thresholds': pinned,
+        'checks': checks,
+        'evidence': {
+            'source': str(calibration_evidence.get('source') or 'EXPLICIT_CALIBRATION_EVIDENCE'),
+            'pooled_ece': None if pooled_ece is None else float(pooled_ece),
+            'ece_delta_vs_active': None if delta is None else float(delta),
+            'bins_meeting_minimum_support': None if bins is None else int(bins),
+        },
+    }
+
+
+def layer_b_gate_report(
+    response: Mapping[str, Any],
+    *,
+    calibration_evidence: Mapping[str, Any] | None = None,
+    calibration_thresholds: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Machine-readable verdict for every frozen layer-B admissibility gate.
+
+    ``RAISE_SIZING_FRONTIER`` is a property of the *branch*, so it is evaluated
+    for every status (including ``EXACT_UNRESOLVED``).  The remaining gates are
+    only applicable when an answer is emitted; for an unresolved node they are
+    reported as not applicable instead of being counted as failures.
+    """
+    status = str(response['status'])
+    answered = status != H.STATUS_EXACT_UNRESOLVED
     support = response['support']
+    pooling = response.get('pooling')
+    raise_sizing = response.get('raise_sizing') or {}
+    uncertainty = response.get('uncertainty')
+    posterior = response.get('posterior')
+    requested_key = str(response['requested_key'])
+    thresholds = dict(
+        calibration_thresholds
+        if calibration_thresholds is not None
+        else {
+            'maximum_absolute_ece': 0.05,
+            'maximum_ece_delta_vs_active': 0.02,
+            'minimum_bin_support_for_a_calibration_claim': MIN_DISTINCT_HANDS,
+            'bins_per_action_class': 10,
+            'report_pooling_level_always': True,
+        }
+    )
+
+    # --- EXACT_KEY_IDENTITY -------------------------------------------------
+    identity_checks = {
+        'support_source_key_equals_requested_key': str(support['source_key']) == requested_key,
+        'support_not_borrowed_from_other_keys': support['borrowed_from_other_keys'] is False,
+        'support_isolation_rule_declared': (
+            support['support_isolation_rule'] == H.SUPPORT_ISOLATION_RULE
+        ),
+    }
+    retained_axes: list[str] = []
+    pooled_axes: list[str] = []
+    if isinstance(pooling, Mapping):
+        retained_axes = list(pooling['retained_axes'])
+        pooled_axes = list(pooling['pooled_axes'])
+        identity_checks['never_mutualizable_axes_retained'] = (
+            set(H.NEVER_MUTUALIZABLE_AXES) <= set(retained_axes)
+        )
+        identity_checks['never_mutualizable_axes_not_pooled'] = not (
+            set(H.NEVER_MUTUALIZABLE_AXES) & set(pooled_axes)
+        )
+    identity_passed = all(identity_checks.values())
+    gates: dict[str, Any] = {
+        'EXACT_KEY_IDENTITY': _gate(
+            'EXACT_KEY_IDENTITY',
+            applicable=True,
+            evaluated=True,
+            passed=identity_passed,
+            detail=(
+                'support.source_key == requested_key, no cross-key borrowing and every '
+                'never-mutualizable axis retained'
+            ),
+            violation_reason_code=None if identity_passed else H.SUPPORT_LAUNDERING_REASON,
+            evidence={
+                'requested_key': requested_key,
+                'support_source_key': support['source_key'],
+                'borrowed_from_other_keys': bool(support['borrowed_from_other_keys']),
+                'never_mutualizable_axes': list(H.NEVER_MUTUALIZABLE_AXES),
+                'retained_axes': retained_axes,
+                'pooled_axes': pooled_axes,
+                'checks': identity_checks,
+            },
+        ),
+    }
+
+    # --- POOLING_PROVENANCE (estimate answers only) -------------------------
+    missing_provenance: list[str] = []
+    provenance_checks: dict[str, bool] = {}
+    if status == H.STATUS_EXACT_HIERARCHICAL_ESTIMATE:
+        if not isinstance(pooling, Mapping):
+            missing_provenance = list(POOLING_PROVENANCE_FIELDS)
+        else:
+            missing_provenance = [
+                field for field in POOLING_PROVENANCE_FIELDS if pooling.get(field) is None
+            ]
+            provenance_checks['pooling_source_key_names_a_parent'] = (
+                str(pooling['source_key']) != requested_key
+            )
+            provenance_checks['pooling_level_is_a_parent_level'] = (
+                str(pooling['level']) != SUPPORT_LEVEL
+            )
+    gates['POOLING_PROVENANCE'] = _gate(
+        'POOLING_PROVENANCE',
+        applicable=(status == H.STATUS_EXACT_HIERARCHICAL_ESTIMATE),
+        evaluated=True,
+        passed=not missing_provenance and all(provenance_checks.values()),
+        detail=(
+            'an exact-context estimate reports the pooling level, its source key, its source counts '
+            'and the retained/pooled axes, and pools toward a declared parent -- never toward itself'
+        ),
+        evidence={
+            'required_fields': list(POOLING_PROVENANCE_FIELDS),
+            'missing_fields': missing_provenance,
+            'pooling_level_reported': bool(isinstance(pooling, Mapping)),
+            'checks': provenance_checks,
+        },
+    )
+
+    # --- POOLING_LEVEL ------------------------------------------------------
+    level = str(pooling['level']) if isinstance(pooling, Mapping) else None
+    level_rank = None
+    if level in H.POOLING_LEVELS:
+        level_rank = int(H.LEVEL_SPEC_BY_NAME[level]['rank'])
+    if status == H.STATUS_EXACT_EMPIRICAL_STRONG:
+        level_passed = level == SUPPORT_LEVEL
+    elif answered:
+        level_passed = bool(
+            level in H.POOLING_LEVELS and level_rank is not None and level_rank <= MAX_POOLING_DEPTH
+        )
+    else:
+        level_passed = False
+    gates['POOLING_LEVEL'] = _gate(
+        'POOLING_LEVEL',
+        applicable=answered,
+        evaluated=answered,
+        passed=level_passed,
+        detail=(
+            'a declared pooling level, EXACT_EMPIRICAL_STRONG only at L0_EXACT_KEY and no reported '
+            'estimate deeper than L4_POSITION_PRICE_PRIOR'
+        ),
+        evidence={
+            'pooling_level': level,
+            'pooling_level_rank': level_rank,
+            'exact_claim_requires_level': SUPPORT_LEVEL,
+            'maximum_level_for_a_reported_estimate': MAX_POOLING_LEVEL_FOR_ESTIMATE,
+            'maximum_pooling_depth': MAX_POOLING_DEPTH,
+        },
+    )
+
+    # --- EFFECTIVE_SAMPLE_SIZE ---------------------------------------------
+    support_ess = float(support['effective_sample_size'])
+    support_hands = int(support['distinct_hands'])
+    support_observations = int(support['observations'])
+    ess_checks = {
+        'effective_sample_size_credited_at_hand_level': support_ess == float(support_hands),
+    }
+    if isinstance(pooling, Mapping):
+        ess_checks['pooling_source_ess_credited_at_hand_level'] = (
+            float(pooling['source_effective_sample_size'])
+            == float(pooling['source_distinct_hands'])
+        )
+        ess_checks['effective_sample_size_not_inflated_by_pooling'] = (
+            support_ess <= float(support_hands)
+        )
+        ess_checks['pooling_source_meets_minimum_thresholds'] = bool(
+            int(pooling['source_observations']) >= MIN_MARGINAL_OBSERVATIONS
+            and int(pooling['source_distinct_hands']) >= MIN_DISTINCT_HANDS
+        )
+    if status == H.STATUS_EXACT_EMPIRICAL_STRONG:
+        ess_checks['exact_support_meets_minimum_thresholds'] = bool(
+            support_observations >= MIN_MARGINAL_OBSERVATIONS
+            and support_hands >= MIN_DISTINCT_HANDS
+        )
+    gates['EFFECTIVE_SAMPLE_SIZE'] = _gate(
+        'EFFECTIVE_SAMPLE_SIZE',
+        applicable=answered,
+        evaluated=answered,
+        passed=all(ess_checks.values()),
+        detail=(
+            'support.effective_sample_size is credited at the hand level, never inflated by pooling, '
+            'and the level actually used meets the frozen 20/20 thresholds'
+        ),
+        evidence={
+            'support_observations': support_observations,
+            'support_distinct_hands': support_hands,
+            'support_effective_sample_size': support_ess,
+            'pooling_source_observations': (
+                None if not isinstance(pooling, Mapping) else int(pooling['source_observations'])
+            ),
+            'pooling_source_distinct_hands': (
+                None if not isinstance(pooling, Mapping) else int(pooling['source_distinct_hands'])
+            ),
+            'pooling_source_effective_sample_size': (
+                None
+                if not isinstance(pooling, Mapping)
+                else float(pooling['source_effective_sample_size'])
+            ),
+            'checks': ess_checks,
+        },
+    )
+
+    # --- UNCERTAINTY --------------------------------------------------------
+    uncertainty_checks = {
+        'posterior_reported': isinstance(posterior, Mapping) and bool(posterior),
+        'uncertainty_reported': isinstance(uncertainty, Mapping) and bool(uncertainty),
+    }
+    if isinstance(posterior, Mapping) and isinstance(uncertainty, Mapping):
+        uncertainty_checks['uncertainty_covers_every_reported_action'] = (
+            set(posterior) == set(uncertainty.get('actions') or {})
+        )
+        uncertainty_checks['uncertainty_reports_the_level_actually_used'] = bool(
+            uncertainty.get('level_used') == level
+        )
+    gates['UNCERTAINTY'] = _gate(
+        'UNCERTAINTY',
+        applicable=answered,
+        evaluated=answered,
+        passed=all(uncertainty_checks.values()),
+        detail=(
+            'the posterior and the uncertainty band are reported, cover every action and reflect the '
+            'level actually used; an estimate is never shown without its pooling level'
+        ),
+        evidence={
+            'posterior_present': isinstance(posterior, Mapping) and bool(posterior),
+            'uncertainty_present': isinstance(uncertainty, Mapping) and bool(uncertainty),
+            'uncertainty_level_used': (
+                None if not isinstance(uncertainty, Mapping) else uncertainty.get('level_used')
+            ),
+            'pooling_level': level,
+            'checks': uncertainty_checks,
+        },
+    )
+
+    # --- CALIBRATION --------------------------------------------------------
+    calibration = calibration_gate_decision(calibration_evidence, thresholds)
+    calibration['gate_id'] = 'CALIBRATION'
+    calibration['reason_code'] = LAYER_B_GATE_REASON_CODE_BY_ID['CALIBRATION']
+    calibration['applies_to_answer'] = answered
+    calibration['violation_reason_code'] = None
+    calibration['evidence'] = {
+        **calibration['evidence'],
+        'reason_code': response.get('reason_code'),
+        'pooling_level': level,
+        'uncertainty_present': isinstance(uncertainty, Mapping) and bool(uncertainty),
+    }
+    gates['CALIBRATION'] = calibration
+
+    # --- RAISE_SIZING_FRONTIER (branch property: every status) --------------
+    raise_checks = {
+        'unresolved_frontier_closes_the_node': False,
+        'raise_sizing_resolved': not bool(raise_sizing.get('unresolved')),
+        'state_is_not_an_unresolved_frontier': (
+            str(raise_sizing.get('state')) != 'UNRESOLVED_SIZING_FRONTIER'
+        ),
+        'exact_support_only': bool(raise_sizing.get('exact_support_only')),
+        'nearest_price_not_used': not bool(raise_sizing.get('nearest_price_used')),
+        'representative_price_not_used': not bool(raise_sizing.get('representative_price_used')),
+        'interpolation_not_used': not bool(raise_sizing.get('interpolation_used')),
+    }
+    raise_passed = all(
+        value for key, value in raise_checks.items() if key != 'unresolved_frontier_closes_the_node'
+    )
+    gates['RAISE_SIZING_FRONTIER'] = _gate(
+        'RAISE_SIZING_FRONTIER',
+        applicable=True,
+        evaluated=True,
+        passed=raise_passed,
+        detail=(
+            'raise sizing is exact-support-only: a raise target is emitted only when the exact '
+            'structural node supports it and no representative, nearest, interpolated, legal-minimum '
+            'or pruned price fills an unresolved frontier'
+        ),
+        evidence={
+            'raise_sizing_state': raise_sizing.get('state'),
+            'supported_targets': list(raise_sizing.get('supported_targets') or []),
+            'checks': raise_checks,
+        },
+    )
+    return gates
+
+
+def node_closure(
+    response: Mapping[str, Any],
+    *,
+    calibration_evidence: Mapping[str, Any] | None = None,
+    calibration_thresholds: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Protocol-v2 admissibility: empirical support *or* gated exact-context estimate.
+
+    * ``EXACT_EMPIRICAL_STRONG`` closes on the unchanged layer-A definition
+      (``L0_EXACT_KEY`` meeting both 20/20 thresholds, exact-key-only support).
+    * ``EXACT_HIERARCHICAL_ESTIMATE`` closes if and only if every frozen layer-B
+      gate passes; the counted support stays exact-key-only and pooling only
+      feeds the prior, so an estimate is never counted as exact support.
+    * ``EXACT_UNRESOLVED`` never closes.
+    """
+    gates = layer_b_gate_report(
+        response,
+        calibration_evidence=calibration_evidence,
+        calibration_thresholds=calibration_thresholds,
+    )
+    status = str(response['status'])
+    support = response['support']
+    pooling = response.get('pooling')
+    requested_key = str(response['requested_key'])
+    observations = int(support['observations'])
+    distinct_hands = int(support['distinct_hands'])
+
+    identity_ok = gates['EXACT_KEY_IDENTITY']['passed'] is True
+    thresholds_met = bool(
+        observations >= MIN_MARGINAL_OBSERVATIONS and distinct_hands >= MIN_DISTINCT_HANDS
+    )
+    support_is_exact_key_only = bool(
+        str(support['source_key']) == requested_key
+        and support['borrowed_from_other_keys'] is False
+        and support['support_isolation_rule'] == H.SUPPORT_ISOLATION_RULE
+    )
+    level = None if not isinstance(pooling, Mapping) else str(pooling['level'])
+    pooling_only_parameters = bool(
+        not isinstance(pooling, Mapping) or level != SUPPORT_LEVEL
+    )
+
+    empirical_closes = bool(
+        status == H.STATUS_EXACT_EMPIRICAL_STRONG
+        and level == SUPPORT_LEVEL
+        and identity_ok
+        and support_is_exact_key_only
+        and thresholds_met
+    )
+    applicable_gates = [gate for gate in gates.values() if gate['applies_to_answer']]
+    failed_gate_ids = [
+        gate['gate_id'] for gate in applicable_gates if gate['evaluated'] and not gate['passed']
+    ]
+    unevaluated_gate_ids = [
+        gate['gate_id'] for gate in applicable_gates if not gate['evaluated']
+    ]
+    estimate_closes = bool(
+        status == H.STATUS_EXACT_HIERARCHICAL_ESTIMATE
+        and identity_ok
+        and support_is_exact_key_only
+        and pooling_only_parameters
+        and not failed_gate_ids
+        and not unevaluated_gate_ids
+    )
+    closed = bool(empirical_closes or estimate_closes)
+
+    # Reason codes explain an *open* node only: a closed node has nothing to
+    # refuse, so a gate that is not consulted by its closure path (e.g. the
+    # unevaluated calibration gate on the layer-A empirical path) is not a reason
+    # code for it.
+    reason_codes: list[str] = []
+    if not closed:
+        for gate_id in failed_gate_ids + unevaluated_gate_ids:
+            code = LAYER_B_GATE_REASON_CODE_BY_ID[gate_id]
+            if code not in reason_codes:
+                reason_codes.append(code)
+        unresolved_reason = response.get('unresolved_reason')
+        if status == H.STATUS_EXACT_UNRESOLVED and unresolved_reason:
+            if str(unresolved_reason) not in reason_codes:
+                reason_codes.append(str(unresolved_reason))
+        if not reason_codes:
+            reason_codes.append('REFUSED_NODE_NOT_ADMISSIBLE')
+
+    if closed:
+        admissibility_class = 'EXACT_EMPIRICAL_STRONG' if empirical_closes else 'EXACT_HIERARCHICAL_ESTIMATE'
+    else:
+        admissibility_class = 'EXACT_UNRESOLVED'
+
+    return {
+        'rule_id': NODE_CLOSURE_RULE_ID,
+        'status': status,
+        'admissibility_class': admissibility_class,
+        'closed': closed,
+        'closes_the_node': closed,
+        'counts_as_exact_support': bool(empirical_closes),
+        'admissible_as_exact_context_estimate': bool(estimate_closes),
+        'empirical_support_rule': (
+            'LAYER_A_L0_EXACT_KEY_20_20_UNCHANGED (admissible_node_consumption_rule.admissible_when[0])'
+        ),
+        'estimate_rule': f'{NODE_CLOSURE_RULE_ID} (every frozen layer-B gate must pass)',
+        'layer_b_gates_consulted_for_closure': bool(
+            status == H.STATUS_EXACT_HIERARCHICAL_ESTIMATE
+        ),
+        'layer_b_gates': gates,
+        'failed_gate_ids': failed_gate_ids,
+        'unevaluated_gate_ids': unevaluated_gate_ids,
+        'support_is_exact_key_only': support_is_exact_key_only,
+        'pooling_only_feeds_parameters': pooling_only_parameters,
+        'observations': observations,
+        'distinct_hands': distinct_hands,
+        'reason_codes': reason_codes,
+        'posterior_present': response.get('posterior') is not None,
+        'probability_emitted': response.get('posterior') is not None,
+    }
+
+
+def is_admissible(
+    response: Mapping[str, Any],
+    *,
+    calibration_evidence: Mapping[str, Any] | None = None,
+    calibration_thresholds: Mapping[str, Any] | None = None,
+) -> bool:
+    """True only when the node answer is admissible under protocol v2."""
     return bool(
-        response['status'] == H.STATUS_EXACT_EMPIRICAL_STRONG
-        and response['pooling']['level'] == SUPPORT_LEVEL
-        and support['source_key'] == response['requested_key']
-        and int(support['observations']) >= MIN_MARGINAL_OBSERVATIONS
-        and int(support['distinct_hands']) >= MIN_DISTINCT_HANDS
+        admissibility(
+            response,
+            calibration_evidence=calibration_evidence,
+            calibration_thresholds=calibration_thresholds,
+        )['closes_the_node']
+    )
+
+
+def admissibility(
+    response: Mapping[str, Any],
+    *,
+    calibration_evidence: Mapping[str, Any] | None = None,
+    calibration_thresholds: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """The structured protocol-v2 admissibility verdict for one node answer.
+
+    The verdict names the admissibility *class* explicitly -- layer-A
+    ``EXACT_EMPIRICAL_STRONG`` support, the layer-B gated
+    ``EXACT_HIERARCHICAL_ESTIMATE``, or ``EXACT_UNRESOLVED`` -- together with the
+    per-gate report, the refused gate reason codes and whether the answer may be
+    counted as exact support.  ``is_admissible`` is the boolean view of it.
+    """
+    return node_closure(
+        response,
+        calibration_evidence=calibration_evidence,
+        calibration_thresholds=calibration_thresholds,
     )
 
 
@@ -684,9 +1423,17 @@ def node_record(
     response: Mapping[str, Any],
     coarse_group: Mapping[str, Any] | None,
     tree_targets: Sequence[float],
+    *,
+    calibration_evidence: Mapping[str, Any] | None = None,
+    calibration_thresholds: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     raise_sizing = response['raise_sizing']
     legal = fit_tool.legal_actions(node)
+    closure = node_closure(
+        response,
+        calibration_evidence=calibration_evidence,
+        calibration_thresholds=calibration_thresholds,
+    )
     return {
         'index': index,
         'exact_key': response['requested_key'],
@@ -712,6 +1459,7 @@ def node_record(
         'pooling_diagnostics': pooling_diagnostics(response),
         'uncertainty': uncertainty_record(response),
         'posterior_identity': posterior_identity(response),
+        'node_closure': closure,
         'raise_sizing': {
             'policy': raise_sizing['policy'],
             'state': raise_sizing['state'],
@@ -723,7 +1471,12 @@ def node_record(
             'representative_price_used': bool(raise_sizing['representative_price_used']),
             'interpolation_used': bool(raise_sizing['interpolation_used']),
         },
-        'admissible_exact_answer': is_admissible(response),
+        'admissible_exact_answer': closure['closes_the_node'],
+        'admissibility_class': closure['admissibility_class'],
+        'counts_as_exact_support': closure['counts_as_exact_support'],
+        'closure_reason_codes': list(closure['reason_codes']),
+        'failed_layer_b_gate_ids': list(closure['failed_gate_ids']),
+        'unevaluated_layer_b_gate_ids': list(closure['unevaluated_gate_ids']),
         'substitution_refusals': node_refusals(node, response, coarse_group, tree_targets),
     }
 
@@ -918,12 +1671,175 @@ def nearest_substitution_probes(
     return probes
 
 
+def required_tree_closure_report(
+    *,
+    closures: Sequence[Mapping[str, Any]],
+    frontier_count: int,
+    nodes_with_unresolved_raise_sizing: int,
+    manifest_unresolved_frontier_count: int,
+    tree_enumeration_complete: bool,
+    manifest_tree_enumeration_complete: bool,
+    substitutions_applied: int,
+    key_separation_probes_passed: bool,
+    hero_ev_executed: bool,
+    recommendation_computed: bool,
+    rollouts_executed: int,
+    ev_values_computed: int,
+) -> dict[str, Any]:
+    """The protocol-v2 tree-closure conjunction, with a reason code per failure.
+
+    ``required_tree_complete`` is true only when *every* required node is closed
+    by an admissible answer -- ``EXACT_EMPIRICAL_STRONG`` at L0 with both 20/20
+    thresholds, or ``EXACT_HIERARCHICAL_ESTIMATE`` with every frozen layer-B gate
+    passing -- and no required branch keeps an unresolved raise-sizing frontier.
+    This function is pure: it is driven by the per-node closures, so the
+    fail-closed behaviour is testable without any provider call.
+    """
+    total_nodes = len(closures)
+    closed_nodes = [closure for closure in closures if closure['closes_the_node']]
+    open_nodes = [closure for closure in closures if not closure['closes_the_node']]
+    open_reason_codes = sorted(
+        {code for closure in open_nodes for code in closure['reason_codes']}
+    )
+    failed_gate_ids = sorted({gate for closure in closures for gate in closure['failed_gate_ids']})
+    unevaluated_gate_ids = sorted(
+        {gate for closure in closures for gate in closure['unevaluated_gate_ids']}
+    )
+    estimate_closures = [
+        closure
+        for closure in closed_nodes
+        if closure['admissibility_class'] == 'EXACT_HIERARCHICAL_ESTIMATE'
+    ]
+    pooled_counted_as_exact = [
+        closure
+        for closure in closed_nodes
+        if closure['admissibility_class'] == 'EXACT_HIERARCHICAL_ESTIMATE'
+        and closure['counts_as_exact_support']
+    ]
+
+    every_node_closed = len(closed_nodes) == total_nodes and total_nodes > 0
+    no_frontier = bool(
+        frontier_count == 0
+        and nodes_with_unresolved_raise_sizing == 0
+        and manifest_unresolved_frontier_count == 0
+    )
+    fully_enumerated = bool(tree_enumeration_complete and manifest_tree_enumeration_complete)
+    no_substitution = bool(substitutions_applied == 0 and key_separation_probes_passed)
+    no_hero_ev = bool(
+        hero_ev_executed is False
+        and recommendation_computed is False
+        and rollouts_executed == 0
+        and ev_values_computed == 0
+    )
+    no_pooled_as_exact = not pooled_counted_as_exact
+
+    conditions: dict[str, dict[str, Any]] = {
+        'every_required_node_closed_by_an_admissible_answer': {
+            'satisfied': bool(every_node_closed),
+            'reason_code': None if every_node_closed else REFUSED_REQUIRED_NODE_OPEN,
+            'reason_codes': [] if every_node_closed else open_reason_codes,
+            'admissible_nodes': len(closed_nodes),
+            'open_nodes': len(open_nodes),
+            'total_nodes': total_nodes,
+            'closed_as_exact_empirical_strong': sum(
+                1 for closure in closed_nodes if closure['counts_as_exact_support']
+            ),
+            'closed_as_exact_hierarchical_estimate': len(estimate_closures),
+            'failed_layer_b_gate_ids': failed_gate_ids,
+            'unevaluated_layer_b_gate_ids': unevaluated_gate_ids,
+            'rule': (
+                'each required node must be admissible *and* pass every frozen gate: '
+                'EXACT_EMPIRICAL_STRONG at L0_EXACT_KEY with both the 20-observation and '
+                '20-distinct-hands thresholds met, or EXACT_HIERARCHICAL_ESTIMATE with every frozen '
+                f'layer-B gate passing ({NODE_CLOSURE_RULE_ID})'
+            ),
+        },
+        'no_unresolved_raise_sizing_frontier': {
+            'satisfied': no_frontier,
+            'reason_code': None if no_frontier else REFUSED_UNRESOLVED_RAISE_SIZING_FRONTIER,
+            'reason_codes': [] if no_frontier else [REFUSED_UNRESOLVED_RAISE_SIZING_FRONTIER],
+            'unresolved_frontiers': int(frontier_count),
+            'nodes_with_unresolved_raise_sizing': int(nodes_with_unresolved_raise_sizing),
+            'manifest_unresolved_frontier_count': int(manifest_unresolved_frontier_count),
+            'rule': 'a RAISE frontier without an exactly supported target keeps the tree open',
+        },
+        'required_tree_fully_enumerated': {
+            'satisfied': fully_enumerated,
+            'reason_code': None if fully_enumerated else REFUSED_TREE_ENUMERATION_INCOMPLETE,
+            'reason_codes': [] if fully_enumerated else [REFUSED_TREE_ENUMERATION_INCOMPLETE],
+            'required_tree_enumeration_complete': bool(tree_enumeration_complete),
+            'manifest_tree_enumeration_complete': bool(manifest_tree_enumeration_complete),
+            'rule': 'the #388 enumeration must be complete, not only its node list',
+        },
+        'no_nearest_or_borrowed_substitution_applied': {
+            'satisfied': no_substitution,
+            'reason_code': None if no_substitution else REFUSED_SUBSTITUTION_APPLIED,
+            'reason_codes': [] if no_substitution else [REFUSED_SUBSTITUTION_APPLIED],
+            'substitutions_applied': int(substitutions_applied),
+            'key_separation_probes_passed': bool(key_separation_probes_passed),
+            'substitution_classes_refused': list(SUBSTITUTION_CLASSES),
+            'rule': (
+                'no nearest-price, nearest-context, representative, interpolated or borrowed support'
+            ),
+        },
+        'no_hero_ev_or_recommendation_computed': {
+            'satisfied': no_hero_ev,
+            'reason_code': None if no_hero_ev else REFUSED_HERO_EV_OR_RECOMMENDATION,
+            'reason_codes': [] if no_hero_ev else [REFUSED_HERO_EV_OR_RECOMMENDATION],
+            'hero_ev_executed': bool(hero_ev_executed),
+            'recommendation_computed': bool(recommendation_computed),
+            'rollouts_executed': int(rollouts_executed),
+            'ev_values_computed': int(ev_values_computed),
+            'rule': 'the #367 real ISO EV runner is neither imported nor executed',
+        },
+        'no_pooled_estimate_is_counted_as_exact_support': {
+            'satisfied': no_pooled_as_exact,
+            'reason_code': None if no_pooled_as_exact else 'REFUSED_POOLED_SUPPORT_AS_EXACT',
+            'reason_codes': [] if no_pooled_as_exact else ['REFUSED_POOLED_SUPPORT_AS_EXACT'],
+            'pooled_closures_counted_as_exact_support': len(pooled_counted_as_exact),
+            'rule': (
+                'an exact-context estimate supplies parameters only and is never counted as exact '
+                'support for the requested key'
+            ),
+        },
+    }
+    required_tree_complete = all(condition['satisfied'] for condition in conditions.values())
+    reason_codes: list[str] = []
+    for condition in conditions.values():
+        if condition['reason_code'] and condition['reason_code'] not in reason_codes:
+            reason_codes.append(condition['reason_code'])
+        for code in condition['reason_codes']:
+            if code not in reason_codes:
+                reason_codes.append(code)
+    for code in open_reason_codes:
+        if code not in reason_codes:
+            reason_codes.append(code)
+    return {
+        'rule_id': NODE_CLOSURE_RULE_ID,
+        'required_tree_complete': bool(required_tree_complete),
+        'reason_codes': sorted(reason_codes),
+        'conditions': conditions,
+        'admissible_nodes': len(closed_nodes),
+        'open_nodes': len(open_nodes),
+        'total_nodes': total_nodes,
+        'open_node_reason_codes': open_reason_codes,
+        'open_node_indices': [
+            index
+            for index, closure in enumerate(closures)
+            if not closure['closes_the_node']
+        ],
+    }
+
+
 def build() -> tuple[dict[str, Any], str]:
     holdout_scan = verify_no_holdout_access()
     hero_ev_scan = verify_no_hero_ev_execution()
     protected_before = protected_hashes()
     hero_ev_modules_before = set(hero_ev_modules_present())
     with hand_history_tripwire() as opened:
+        v1_custody = verify_frozen_v1_preflight()
+        protocol_v2 = load_frozen_v2_protocol()
+        calibration_thresholds = protocol_v2['calibration_thresholds']
         inputs = load_pinned_inputs()
         tree = inputs['tree']
         candidate = inputs['candidate']
@@ -943,6 +1859,7 @@ def build() -> tuple[dict[str, Any], str]:
                     response,
                     groups[node['runtime_support_context_key']],
                     tree_targets,
+                    calibration_thresholds=calibration_thresholds,
                 )
             )
 
@@ -979,62 +1896,26 @@ def build() -> tuple[dict[str, Any], str]:
         reason = record['posterior_identity']['unresolved_reason'] or 'NONE'
         reason_counts[reason] = reason_counts.get(reason, 0) + 1
 
-    every_node_admissible = len(admissible) == len(records)
-    no_frontier = (
-        len(frontiers) == 0
-        and not unresolved_frontier_nodes
-        and int(inputs['manifest']['unresolved_sizing_frontier_count']) == 0
+    substitutions_applied = 0
+    key_separation_probes_passed = all(probe['keys_distinct'] for probe in probes)
+    closure_report = required_tree_closure_report(
+        closures=[record['node_closure'] for record in records],
+        frontier_count=len(frontiers),
+        nodes_with_unresolved_raise_sizing=len(unresolved_frontier_nodes),
+        manifest_unresolved_frontier_count=int(
+            inputs['manifest']['unresolved_sizing_frontier_count']
+        ),
+        tree_enumeration_complete=bool(tree['enumeration_complete']),
+        manifest_tree_enumeration_complete=bool(inputs['manifest']['tree_enumeration_complete']),
+        substitutions_applied=substitutions_applied,
+        key_separation_probes_passed=key_separation_probes_passed,
+        hero_ev_executed=False,
+        recommendation_computed=False,
+        rollouts_executed=0,
+        ev_values_computed=0,
     )
-    fully_enumerated = bool(tree['enumeration_complete']) and bool(
-        inputs['manifest']['tree_enumeration_complete']
-    )
-    no_substitution = not any(probe.get('base_support_reused_for_probe') for probe in probes)
-    no_hero_ev = bool(
-        hero_ev_scan['hero_ev_executed'] is False
-        and hero_ev_scan['recommendation_computed'] is False
-        and hero_ev_scan['rollouts_executed'] == 0
-        and hero_ev_scan['ev_values_computed'] == 0
-    )
-    conditions = {
-        'every_required_node_has_an_admissible_exact_answer': {
-            'satisfied': every_node_admissible,
-            'admissible_nodes': len(admissible),
-            'total_nodes': len(records),
-            'rule': (
-                'each required node must resolve EXACT_EMPIRICAL_STRONG at L0_EXACT_KEY with both '
-                'the 20-observation and the 20-distinct-hands thresholds met'
-            ),
-        },
-        'no_unresolved_raise_sizing_frontier': {
-            'satisfied': no_frontier,
-            'unresolved_frontiers': len(frontiers),
-            'nodes_with_unresolved_raise_sizing': len(unresolved_frontier_nodes),
-            'rule': 'a RAISE frontier without an exactly supported target keeps the tree open',
-        },
-        'required_tree_fully_enumerated': {
-            'satisfied': fully_enumerated,
-            'required_tree_enumeration_complete': bool(tree['enumeration_complete']),
-            'manifest_tree_enumeration_complete': bool(
-                inputs['manifest']['tree_enumeration_complete']
-            ),
-            'rule': 'the #388 enumeration must be complete, not only its node list',
-        },
-        'no_nearest_or_borrowed_substitution_applied': {
-            'satisfied': bool(no_substitution),
-            'substitution_classes_refused': list(SUBSTITUTION_CLASSES),
-            'probes_executed': len(probes),
-            'rule': (
-                'no nearest-price, nearest-context, representative, interpolated or borrowed support'
-            ),
-        },
-        'no_hero_ev_or_recommendation_computed': {
-            'satisfied': bool(no_hero_ev),
-            'hero_ev_executed': False,
-            'recommendation_computed': False,
-            'rule': 'the #367 real ISO EV runner is neither imported nor executed',
-        },
-    }
-    required_tree_complete = all(condition['satisfied'] for condition in conditions.values())
+    conditions = closure_report['conditions']
+    required_tree_complete = closure_report['required_tree_complete']
 
     refusals_total = sum(len(record['substitution_refusals']) for record in records) + sum(
         len(frontier['substitution_refusals']) for frontier in frontiers
@@ -1046,12 +1927,47 @@ def build() -> tuple[dict[str, Any], str]:
 
     root = inputs['root']
     preflight = {
-        'schema': SCHEMA,
+        'schema': V2_SCHEMA,
+        'supersedes_schema': SCHEMA,
         'issue': ISSUE,
         'source_issue': SOURCE_ISSUE,
         'scenario_issue': SCENARIO_ISSUE,
         'kind': 'EXACT_TREE_367_PREFLIGHT_NO_HERO_EV',
         'required_tree_complete': required_tree_complete,
+        'required_tree_complete_reason_codes': list(closure_report['reason_codes']),
+        'admissibility_protocol': {
+            'revision': 'v2',
+            'amendment_id': protocol_v2['amendment_id'],
+            'node_closure_rule_id': NODE_CLOSURE_RULE_ID,
+            'node_closure_value': NODE_CLOSURE_VALUE,
+            'protocol_v2_schema': protocol_v2['protocol']['schema'],
+            'protocol_v2_byte_sha256': protocol_v2['protocol_v2_byte_sha256'],
+            'protocol_v2_canonical_payload_sha256': protocol_v2[
+                'protocol_v2_canonical_payload_sha256'
+            ],
+            'layer_b_gate_ids': list(LAYER_B_GATE_IDS),
+            'layer_b_gate_reason_codes': list(LAYER_B_GATE_REASON_CODES),
+            'empirical_closure_rule': (
+                'EXACT_EMPIRICAL_STRONG (layer A, unchanged): pooling.level == L0_EXACT_KEY, both '
+                'the 20-observation and 20-distinct-hands thresholds met, support.source_key == '
+                'requested_key and no support borrowed across keys'
+            ),
+            'estimate_closure_rule': (
+                f'EXACT_HIERARCHICAL_ESTIMATE closes the node if and only if every frozen layer-B '
+                f'gate passes ({NODE_CLOSURE_RULE_ID}); support stays exact-key-only and pooling '
+                'only feeds the prior'
+            ),
+            'calibration_gate_status': (
+                'UNEVALUATED_PRE_VALIDATION: this preflight consumes no VALIDATION split, so the '
+                'frozen absolute/relative calibration gate has no measured evidence and fails '
+                'closed (REFUSED_CALIBRATION, default_when_a_gate_is_unevaluated=false)'
+            ),
+            'calibration_thresholds': dict(protocol_v2['calibration_thresholds']),
+            'no_gate_value_moved': True,
+            'no_threshold_moved': True,
+            'layer_b_gates_more_permissive_than_v1': False,
+            'superseded_protocol_v2_digest': protocol_v2['superseded_digest'],
+        },
         'key_contract': {
             'exact_key': 'hierarchical_exact_key == #388 audit_exact_key (L0_EXACT_KEY)',
             'runtime_support_context_key': 'support_context_key (L3_RUNTIME_SUPPORT_CONTEXT)',
@@ -1099,6 +2015,10 @@ def build() -> tuple[dict[str, Any], str]:
                 'posterior and no uncertainty band'
             ),
             'exact_context_granularity': candidate['exact_context_granularity'],
+            'admissibility_rule': NODE_CLOSURE_RULE_ID,
+            'admissibility_protocol_revision': 'v2',
+            'layer_b_gates_consulted_for_estimate_closure': list(LAYER_B_GATE_IDS),
+            'layer_b_gates_consulted_for_empirical_closure': [],
             'authorized_for_367': False,
             'authorization_basis': (
                 'FROZEN_VALIDATION_PROTOCOL.issue367_rule.authorized_at_freeze=false'
@@ -1153,8 +2073,29 @@ def build() -> tuple[dict[str, Any], str]:
         },
         'admissibility': {
             'conditions': conditions,
+            'rule_id': NODE_CLOSURE_RULE_ID,
+            'required_tree_complete': required_tree_complete,
+            'required_tree_complete_reason_codes': list(closure_report['reason_codes']),
+            'open_node_reason_codes': list(closure_report['open_node_reason_codes']),
+            'open_node_indices': list(closure_report['open_node_indices']),
             'status_counts': status_counts,
             'unresolved_reason_counts': reason_counts,
+            'admissibility_class_counts': {
+                'EXACT_EMPIRICAL_STRONG': sum(
+                    1 for record in records if record['admissibility_class'] == 'EXACT_EMPIRICAL_STRONG'
+                ),
+                'EXACT_HIERARCHICAL_ESTIMATE': sum(
+                    1
+                    for record in records
+                    if record['admissibility_class'] == 'EXACT_HIERARCHICAL_ESTIMATE'
+                ),
+                'EXACT_UNRESOLVED': sum(
+                    1 for record in records if record['admissibility_class'] == 'EXACT_UNRESOLVED'
+                ),
+            },
+            'closed_as_exact_support_nodes': sum(
+                1 for record in records if record['counts_as_exact_support']
+            ),
             'admissible_exact_nodes': len(admissible),
             'blocked_nodes': len(records) - len(admissible),
             'blocked_node_paths': [
@@ -1162,11 +2103,19 @@ def build() -> tuple[dict[str, Any], str]:
                 for record in records
                 if not record['admissible_exact_answer']
             ],
+            'blocked_node_reason_codes': {
+                ':'.join(record['node_identity']['path']): list(record['closure_reason_codes'])
+                for record in records
+                if not record['admissible_exact_answer']
+            },
             'rule': (
-                'required_tree_complete is true only when every condition holds; a fail-closed node is '
-                'reported as EXACT_UNRESOLVED and is never repaired by lowering a frozen threshold'
+                'required_tree_complete is true only when every required node is closed by an '
+                'admissible answer and every frozen gate passes; otherwise it is false and carries '
+                'reason codes. A fail-closed node is reported as EXACT_UNRESOLVED and is never '
+                'repaired by lowering a frozen threshold'
             ),
         },
+        'frozen_v1_preflight': v1_custody,
         'boundary': {
             'split_consumed': 'TRAIN',
             'validation_consumed': False,
@@ -1209,6 +2158,12 @@ def build() -> tuple[dict[str, Any], str]:
         'evidence_bindings': {
             'protocol_byte_sha256': inputs['protocol_byte_sha256'],
             'protocol_canonical_payload_sha256': stable_hash(inputs['protocol']),
+            'protocol_v2_byte_sha256': protocol_v2['protocol_v2_byte_sha256'],
+            'protocol_v2_canonical_payload_sha256': protocol_v2[
+                'protocol_v2_canonical_payload_sha256'
+            ],
+            'protocol_v2_amendment_id': protocol_v2['amendment_id'],
+            'protocol_v2_revision_of': protocol_v2['protocol']['revision_of'],
             'protocol_digest_sidecar_sha256': PROTOCOL_DIGEST_PATH.read_text().split()[0],
             'protocol_copy_byte_sha256': hashlib.sha256(PROTOCOL_COPY_PATH.read_bytes()).hexdigest(),
             'protocol_status': inputs['protocol']['status'],
@@ -1257,10 +2212,18 @@ def build() -> tuple[dict[str, Any], str]:
                 'sha256': sha256_file(Path(baseline_tool.__file__)),
                 'role': 'SPARSITY_BASELINE_TOOL',
             },
+            'protocol_v2': {
+                'path': _relative(PROTOCOL_V2_PATH),
+                'sha256': sha256_file(PROTOCOL_V2_PATH),
+                'role': 'FROZEN_PROTOCOL_V2_ADMISSIBILITY_GATES',
+            },
         },
         'reproduction': {
             'command': 'python3 tools/simulation/issue419_exact_tree_preflight.py',
             'check_command': 'python3 tools/simulation/issue419_exact_tree_preflight.py --check',
+            'bundle': _relative(V2_OUTPUT),
+            'frozen_v1_bundle': _relative(OUTPUT),
+            'frozen_v1_bundle_rewritten': False,
             'hero_ev_runner': 'tools/simulation/run_issue367_real_iso_ev.py',
             'hero_ev_runner_invoked': False,
             'deterministic': True,
@@ -1268,15 +2231,16 @@ def build() -> tuple[dict[str, Any], str]:
         },
     }
     summary = render_summary(preflight)
-    return {NAME: preflight, SUMMARY_NAME: summary}, summary
+    return {V2_NAME: preflight, SUMMARY_NAME: summary}, summary
 
 
 def render_summary(preflight: Mapping[str, Any]) -> str:
     conditions = preflight['admissibility']['conditions']
     admissible = preflight['admissibility']['admissible_exact_nodes']
     total = preflight['nodes_queried']
+    reason_codes = preflight['required_tree_complete_reason_codes']
     lines = [
-        '# #419 - exact-tree #367 preflight (no Hero EV)',
+        '# #419 - exact-tree #367 preflight v2 (no Hero EV)',
         '',
         f"Required nodes walked: **{total}**; sizing frontiers walked: "
         f"**{preflight['sizing_frontiers_queried']}**. Every node was answered by exact string "
@@ -1284,20 +2248,38 @@ def render_summary(preflight: Mapping[str, Any]) -> str:
         '`audit_exact_key`).',
         '',
         f"`required_tree_complete = {str(preflight['required_tree_complete']).lower()}` - "
-        f"{admissible} of {total} required nodes carry an admissible exact answer "
-        '(`EXACT_EMPIRICAL_STRONG` at `L0_EXACT_KEY` with both the 20-observation and '
-        '20-distinct-hands thresholds met).',
+        f"{admissible} of {total} required nodes are closed by an admissible answer. A node is "
+        'admissible either as `EXACT_EMPIRICAL_STRONG` (layer A: `L0_EXACT_KEY` with both the '
+        '20-observation and 20-distinct-hands thresholds met, exact-key support only) or as '
+        '`EXACT_HIERARCHICAL_ESTIMATE` with every frozen layer-B gate passing '
+        f"(`{preflight['admissibility_protocol']['node_closure_rule_id']}`).",
         '',
     ]
     for name, condition in conditions.items():
         verdict = 'satisfied' if condition['satisfied'] else 'NOT satisfied'
-        lines.append(f'- `{name}`: {verdict}')
+        suffix = ''
+        if not condition['satisfied'] and condition['reason_code']:
+            suffix = f" (`{condition['reason_code']}`)"
+        lines.append(f'- `{name}`: {verdict}{suffix}')
     lines += [
+        '',
+        'Tree-closure reason codes: '
+        + (', '.join(f'`{code}`' for code in reason_codes) if reason_codes else 'none')
+        + '.',
         '',
         'Status counts over the 38 nodes: '
         + ', '.join(
             f"`{status}`={count}"
             for status, count in sorted(preflight['admissibility']['status_counts'].items())
+        )
+        + '.',
+        '',
+        'Admissibility classes: '
+        + ', '.join(
+            f"`{name}`={count}"
+            for name, count in sorted(
+                preflight['admissibility']['admissibility_class_counts'].items()
+            )
         )
         + '.',
         '',
@@ -1309,6 +2291,9 @@ def render_summary(preflight: Mapping[str, Any]) -> str:
             )
         )
         + '.',
+        '',
+        'Layer-B calibration gate: '
+        f"{preflight['admissibility_protocol']['calibration_gate_status']}.",
         '',
         'No nearest-price, nearest-context, representative-price, interpolated-price, legal-minimum '
         'or cross-key-support substitution was applied: '
@@ -1330,7 +2315,13 @@ def render_summary(preflight: Mapping[str, Any]) -> str:
         '#367 consumption at freeze time.',
         '',
         f"Frozen protocol: `{preflight['evidence_bindings']['protocol_byte_sha256']}`; required tree: "
-        f"`{preflight['evidence_bindings']['required_tree_sha256']}`.",
+        f"`{preflight['evidence_bindings']['required_tree_sha256']}`. Frozen protocol v2 (amendment "
+        f"`{preflight['evidence_bindings']['protocol_v2_amendment_id']}`): "
+        f"`{preflight['evidence_bindings']['protocol_v2_byte_sha256']}`.",
+        '',
+        'The superseded v1 preflight bundle '
+        f"(`{preflight['frozen_v1_preflight']['bundle']}`) is re-verified byte-for-byte and never "
+        'rewritten.',
         '',
         'Reproduce: `python3 tools/simulation/issue419_exact_tree_preflight.py`; verify: '
         '`python3 tools/simulation/issue419_exact_tree_preflight.py --check`. '
@@ -1341,8 +2332,8 @@ def render_summary(preflight: Mapping[str, Any]) -> str:
 
 
 def persist(artifacts: Mapping[str, Any]) -> dict[str, Any]:
-    OUTPUT.mkdir(parents=True, exist_ok=True)
-    objects = OUTPUT / 'sha256'
+    V2_OUTPUT.mkdir(parents=True, exist_ok=True)
+    objects = V2_OUTPUT / 'sha256'
     objects.mkdir(exist_ok=True)
     index: dict[str, Any] = {}
     referenced: set[str] = set()
@@ -1355,10 +2346,10 @@ def persist(artifacts: Mapping[str, Any]) -> dict[str, Any]:
         if not markdown:
             entry['canonical_payload_sha256'] = stable_hash(value)
         index[name] = entry
-        (OUTPUT / name).write_bytes(data)
+        (V2_OUTPUT / name).write_bytes(data)
         (objects / (digest + extension)).write_bytes(data)
         referenced.add(digest + extension)
-    (OUTPUT / INDEX_NAME).write_text(json.dumps(index, sort_keys=True, indent=2) + '\n')
+    (V2_OUTPUT / INDEX_NAME).write_text(json.dumps(index, sort_keys=True, indent=2) + '\n')
     for path in objects.iterdir():
         if path.is_file() and path.name not in referenced:
             path.unlink()
@@ -1366,24 +2357,31 @@ def persist(artifacts: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def check() -> int:
+    custody = verify_frozen_v1_preflight()
     artifacts, _summary = build()
     problems: list[str] = []
     for name, value in artifacts.items():
         expected = str(value).encode() if name.endswith('.md') else serialize(value)
-        if (OUTPUT / name).read_bytes() != expected:
+        if (V2_OUTPUT / name).read_bytes() != expected:
             problems.append(f'{name} differs from a fresh preflight')
-    index = _load(OUTPUT / INDEX_NAME)
+    index = _load(V2_OUTPUT / INDEX_NAME)
     for name, entry in index.items():
-        data = (OUTPUT / name).read_bytes()
+        data = (V2_OUTPUT / name).read_bytes()
         if hashlib.sha256(data).hexdigest() != entry['sha256']:
             problems.append(f'{name} byte hash does not match {INDEX_NAME}')
-        if data != (OUTPUT / entry['object']).read_bytes():
+        if data != (V2_OUTPUT / entry['object']).read_bytes():
             problems.append(f'{name} content-addressed copy mismatch')
     if problems:
         for problem in problems:
             print(problem, file=sys.stderr)
         return 1
-    print(json.dumps({'schema': SCHEMA, 'check': 'PASS', 'artifacts': sorted(index)}, indent=2))
+    print(json.dumps({
+        'schema': V2_SCHEMA,
+        'check': 'PASS',
+        'bundle': _relative(V2_OUTPUT),
+        'artifacts': sorted(index),
+        'frozen_v1_preflight': custody['artifacts'],
+    }, indent=2))
     return 0
 
 
@@ -1399,20 +2397,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         return check()
     artifacts, _summary = build()
     index = persist(artifacts)
-    preflight = artifacts[NAME]
+    preflight = artifacts[V2_NAME]
     print(json.dumps({
-        'schema': SCHEMA,
-        'bundle': _relative(OUTPUT),
+        'schema': V2_SCHEMA,
+        'bundle': _relative(V2_OUTPUT),
         'required_tree_complete': preflight['required_tree_complete'],
+        'required_tree_complete_reason_codes': preflight[
+            'required_tree_complete_reason_codes'
+        ],
         'nodes_queried': preflight['nodes_queried'],
         'sizing_frontiers_queried': preflight['sizing_frontiers_queried'],
         'admissible_exact_nodes': preflight['admissibility']['admissible_exact_nodes'],
+        'admissibility_class_counts': preflight['admissibility']['admissibility_class_counts'],
         'status_counts': preflight['admissibility']['status_counts'],
         'refusals_recorded': preflight['nearest_substitution_audit']['refusals_recorded'],
         'hero_ev_executed': preflight['boundary']['hero_ev_executed'],
         'validation_consumed': preflight['boundary']['validation_consumed'],
         'test_consumed': preflight['boundary']['test_consumed'],
-        'artifact_sha256': index[NAME]['sha256'],
+        'frozen_v1_preflight_sha256': preflight['frozen_v1_preflight']['artifacts'][NAME],
+        'artifact_sha256': index[V2_NAME]['sha256'],
     }, indent=2))
     return 0
 

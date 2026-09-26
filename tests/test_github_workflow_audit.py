@@ -59,6 +59,7 @@ ISSUE_419_CHANGED_PATHS=(
     "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
     "analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json",
     "analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json",
+    "analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json",
     "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
     "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
     # the suites this workflow is authoritative for (including the audit guard itself)

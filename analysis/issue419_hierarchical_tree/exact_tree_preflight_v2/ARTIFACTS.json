@@ -1,0 +1,11 @@
+{
+  "EXACT_TREE_PREFLIGHT_V2.json": {
+    "canonical_payload_sha256": "5153759aa7f8f048c0f0cbde8a933991ca7fae4ab07ba1f2edf41f6abf879e72",
+    "object": "sha256/9d9cede166983a67cb64af7514e69a1f022790a66b45fb7a77f0f6b79d5569ef.json",
+    "sha256": "9d9cede166983a67cb64af7514e69a1f022790a66b45fb7a77f0f6b79d5569ef"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/7706c3421baf312ebdefa4ed8f0cabcf43258197acf862e8bfa2fe6c046c3408.md",
+    "sha256": "7706c3421baf312ebdefa4ed8f0cabcf43258197acf862e8bfa2fe6c046c3408"
+  }
+}

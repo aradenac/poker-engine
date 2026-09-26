@@ -17,6 +17,7 @@ change and no production effect. It records semantics, not an admission.
 | `analysis/issue419_hierarchical_tree/HIERARCHICAL_MODEL_SPEC.json` | `poker-hierarchical-exact-context-model-spec/v1` | identity axes, pooling levels, thresholds, reason codes, support-isolation rule, granularity decision |
 | `analysis/issue419_hierarchical_tree/contract/CANDIDATE_CONTRACT.json` + `contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json` | `poker-model-a-preflop-sizing-hierarchical-likelihood/v1` | candidate-only provider contract and the three reported statuses |
 | `analysis/issue419_hierarchical_tree/exact_tree_preflight/EXACT_TREE_PREFLIGHT.json` | `poker-issue419-exact-tree-preflight/v1` | `required_tree_complete` and its admissibility conditions |
+| `analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json` | `poker-issue419-exact-tree-preflight/v2` | the protocol-v2 preflight: layer-A empirical support *or* layer-B gated exact-context estimate closure, per-node gate report and tree-closure reason codes. The v1 bundle above is re-verified byte-for-byte and never rewritten |
 | `analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json` | `poker-raise-sizing-frontier-resolution/v1` | unresolved RAISE sizing frontiers |
 | `analysis/issue419_hierarchical_tree/validation/VALIDATION_RESULT.json` | `poker-hierarchical-validation-result/v1` | frozen VALIDATION verdict |
 | `analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json` | `poker-hierarchical-frozen-validation-protocol/v2` | versioned revision splitting exact empirical support from exact-context estimate admissibility; references the v1 digests |
@@ -236,6 +237,33 @@ changes no threshold and no gate value. Where the pre-registered v1 gloss and
 the amended v2 protocol differ on the *interpretation* of node closure, the
 amended v2 protocol governs; the frozen v1 bytes stay the source of record for
 every threshold, gate value and comparator.
+
+The preflight itself is tracked versioned: `python3
+tools/simulation/issue419_exact_tree_preflight.py` writes the v2 bundle
+`analysis/issue419_hierarchical_tree/exact_tree_preflight_v2/EXACT_TREE_PREFLIGHT_V2.json`
+(`poker-issue419-exact-tree-preflight/v2`) and re-verifies the frozen v1 bytes
+instead of rewriting them. Its
+`required_tree_complete` is true only when every one of the 38 required nodes is
+closed *and* every frozen gate passes; otherwise it is false and carries a
+`required_tree_complete_reason_codes` list plus a per-node `node_closure` block.
+A node is admissible either as `EXACT_EMPIRICAL_STRONG` (layer A, unchanged:
+`L0_EXACT_KEY` with both the 20-observation and 20-distinct-hands thresholds
+met, `support.source_key == requested_key`, no borrowed support) or as
+`EXACT_HIERARCHICAL_ESTIMATE` with the exact key identity preserved, the counted
+support still exact-key-only and every one of the seven frozen layer-B gates
+passing: `EXACT_KEY_IDENTITY`, `POOLING_PROVENANCE`, `POOLING_LEVEL`,
+`EFFECTIVE_SAMPLE_SIZE`, `UNCERTAINTY`, `CALIBRATION`, `RAISE_SIZING_FRONTIER`.
+An exact-context estimate is never counted as exact support.
+
+The v2 preflight is TRAIN-only and consumes no VALIDATION split, so the frozen
+`CALIBRATION` gate has no measured evidence: it is reported as
+`GATE_UNEVALUATED_PRE_VALIDATION` and fails closed with `REFUSED_CALIBRATION`,
+because `default_when_a_gate_is_unevaluated = false`. A
+`required_tree_complete = true` therefore also requires the calibration gate to
+be evaluated and passing, which can only happen after the frozen VALIDATION
+evaluation. The v2 preflight reports the same state as the v1 preflight at this
+revision: 38 of 38 nodes stay `EXACT_UNRESOLVED` (0 closed),
+`required_tree_complete = false`.
 
 Beyond the preflight, a #367 consumption of the candidate is governed by
 `ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE`. It becomes **authorized** only
