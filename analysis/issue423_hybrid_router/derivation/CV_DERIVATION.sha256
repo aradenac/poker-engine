@@ -1,0 +1,4 @@
+2d27442e78b07a9d78761d35e28c214551cdb4ba5c475267b13667abb292ef39  CV_DERIVATION.json
+# canonical_payload_sha256 e50f03748826134ce2cabf0b42ed8c43dca18d3c1e5eb672a308a1a3285114cd
+# scope TRAIN_ONLY_NO_VALIDATION_NO_TEST
+# statistic paired_by_hand_log_loss_delta_hybrid_minus_active
