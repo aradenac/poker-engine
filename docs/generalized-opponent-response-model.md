@@ -3,15 +3,25 @@
 Issue #421. The machine-readable source of truth is
 `analysis/issue421_generalized_response/GENERALIZED_RESPONSE_MODEL_SPEC.json`
 (`poker-generalized-response-model-spec/v1`), content-addressed as
-`analysis/issue421_generalized_response/sha256/21a16986dd9410c044b1593ffc2426d0fb3fcbaf7b0e1aac25544e5dcb646816.json`
+`analysis/issue421_generalized_response/sha256/4d392697e80c08e263b5329e35fc21b4ac208f4dedb6d33e5b7c58e2630c408c.json`
 and pinned by
 `analysis/issue421_generalized_response/GENERALIZED_RESPONSE_MODEL_SPEC.sha256`.
 The ten required artifacts are bound by
 `analysis/issue421_generalized_response/ARTIFACTS.json`; the human summary is
 `analysis/issue421_generalized_response/SUMMARY.md`
-(`f797f789734bdffe7a1082068a3bfc1fe05f081f6669d134a153f0d6e7f23193`). This
+(`4c73491a207206fa618e39e506965a55d5c781e012731df919127cc858f43de6`). This
 document explains the spec and the cycle; it is not itself normative. The JSON
 wins, and the spec digest is recorded outside its own payload.
+
+Provenance is environment-independent: every recorded path — including
+`evidence_bindings.runtime_module_path` and every `registry_source` embedded in
+`ISSUE367_PREFLIGHT.json` (object digest
+`68b014cd05e0b99104b93ed0579c5ee205989c8308129ff5209f6f22f2d3687e`) — is a
+repository-relative POSIX path, never an absolute host path, so the regenerated
+digests are reproducible across hosts and worktrees. The runtime module it pins
+(`tools/preflop/generalized_response_runtime.py`) hashes to
+`e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538`. The
+terminal decision is unchanged: `RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT`.
 
 Reproduce: `python3 tools/training/build_issue421_evidence_bundle.py`.
 Verify: `python3 tools/training/build_issue421_evidence_bundle.py --check`.

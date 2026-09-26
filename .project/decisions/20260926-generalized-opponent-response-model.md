@@ -66,16 +66,34 @@ dans `analysis/issue421_generalized_response/sha256/`, indexés par
 
 | artefact | SHA256 octets |
 | --- | --- |
-| GENERALIZED_RESPONSE_MODEL_SPEC.json | `21a16986dd9410c044b1593ffc2426d0fb3fcbaf7b0e1aac25544e5dcb646816` |
+| GENERALIZED_RESPONSE_MODEL_SPEC.json | `4d392697e80c08e263b5329e35fc21b4ac208f4dedb6d33e5b7c58e2630c408c` |
 | TRAIN_CV_REPORT.json | `43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff` |
 | CANDIDATE_MANIFEST.json | `06f8380ea898d41efc9f7dbe65968292fd1277fe750229e0059b4df5918f8fea` |
 | FROZEN_VALIDATION_PROTOCOL.json | `ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5` |
 | VALIDATION_RESULT.json | `6a8f02b6ea92d2906f9681684f572926601d6bab7bd78bb14bc8efd424f516c3` |
 | OOD_CALIBRATION_REPORT.json | `a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71` |
 | RAISE_SIZING_MODEL_REPORT.json | `955b926a5d19efe4998abfeae416792f85284d167cfaf9306315cb639320e9f6` |
-| ISSUE367_PREFLIGHT.json | `16d8b75d2c96d2c7512cff807a6b8154bdc70591d33c778761ac539c05be1ad0` |
+| ISSUE367_PREFLIGHT.json | `68b014cd05e0b99104b93ed0579c5ee205989c8308129ff5209f6f22f2d3687e` |
 | DECISION.json | `8783fbc871853821270ed5fe92cda22a8e69c229af557383894c883d507211ea` |
-| SUMMARY.md | `f797f789734bdffe7a1082068a3bfc1fe05f081f6669d134a153f0d6e7f23193` |
+| SUMMARY.md | `4c73491a207206fa618e39e506965a55d5c781e012731df919127cc858f43de6` |
+
+Les copies `sha256/<digest>.json|.md` sont régénérées avec ces digests et les
+objets devenus orphelins (l'ancien `16d8b75d….json`, ainsi que les copies
+obsolètes de la spec et du résumé) sont purgés : aucun digest n'est édité à la
+main.
+
+## Provenance indépendante de l'environnement
+
+Depuis le correctif de provenance du runtime, chaque chemin enregistré par la
+preflight est un chemin POSIX relatif au dépôt, jamais un chemin absolu d'hôte :
+`evidence_bindings.runtime_module_path` (`tools/preflop/generalized_response_runtime.py`,
+`e390a199857a00357969c51ec87af2b2f5e799384a3aa4858c0762a70411b538`) et chaque
+`registry_source` (`analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json`)
+sont désormais identiques sur tout hôte et dans tout worktree. Les artefacts
+régénérés ne contiennent plus aucune occurrence de `/home/`, et
+`evidence_bindings.runtime_module_sha256` est recalculé depuis le module gelé au
+lieu d'être hérité d'une exécution précédente. La décision terminale reste
+inchangée : `RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT`.
 
 `GENERALIZED_RESPONSE_MODEL_SPEC.json` est la pièce que le ticket exigeait et
 qu'aucune autre tâche n'émettait : une projection déterministe des preuves
