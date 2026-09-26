@@ -1,0 +1,64 @@
+{
+  "consumer_report_sha256": {
+    "multiple_sizings.json": "cad8e759bc30076216261b7e5deaa193d7afc53668c7de70a75cdd74d1c54936",
+    "ood_unsupported.json": "5dd1e6e9f5c8edc85b4424a8a344458d22c04833c78addd9796e7eabb82565a4",
+    "robust_recommendation.json": "c32f336714e323ba809119ebcecb253c9fba5aa8b92a138a18e434923c2aff50",
+    "sparse_high_uncertainty.json": "8398c5b6c66add2ed9ec170b5c2be68bbdbffc4e637794c68dc1cdcb93fc7c5d",
+    "too_close.json": "572981c40bc55977b8099e6110f8069d38643df43335b3b718bc2d57db7e379c"
+  },
+  "forbidden_alternative_leak_fields_scanned": [
+    "ev_bb",
+    "paired_delta_vs_best_bb",
+    "posterior_refs",
+    "route",
+    "source",
+    "support",
+    "uncertainty"
+  ],
+  "forbidden_features_scanned": [
+    "confidence",
+    "ev_bb",
+    "hero_ev",
+    "hero_recommendation",
+    "model_a",
+    "model_a_ev",
+    "model_a_policy",
+    "model_a_recommendation",
+    "recommendation",
+    "recommended_action",
+    "recommended_sizing",
+    "route",
+    "uncertainty"
+  ],
+  "forbidden_hits": [],
+  "forbidden_hits_by_fixture": {
+    "multiple_sizings.json": [],
+    "ood_unsupported.json": [],
+    "robust_recommendation.json": [],
+    "sparse_high_uncertainty.json": [],
+    "too_close.json": []
+  },
+  "hero_ev_consumed": false,
+  "independence_clean": true,
+  "information_boundary_all_false": true,
+  "information_boundary_all_false_by_fixture": {
+    "multiple_sizings.json": true,
+    "ood_unsupported.json": true,
+    "robust_recommendation.json": true,
+    "sparse_high_uncertainty.json": true,
+    "too_close.json": true
+  },
+  "issue": 425,
+  "model_a_consumed": false,
+  "projected_request_sha256": {
+    "multiple_sizings.json": "5ab4af636a375cd8190e69214dcd036941307a810d26a97d8b2a2e4dac6b3e37",
+    "ood_unsupported.json": "5a565574356ee04fc5a782c03425f1ab060dca98823229ed9f1a0f6d04da38b3",
+    "robust_recommendation.json": "36961522662dcc36e6f38ba9379ab012b8d6a0e6b7c49ccc805b7f1c0b7e5d14",
+    "sparse_high_uncertainty.json": "32f938f2180f7645fa515c2ae39c821067b8f7c981bc1347a830807fc8c37d62",
+    "too_close.json": "ee13b3263c65a562360aa830a447d7e36bae519fc2e6213406ea4221417c1e18"
+  },
+  "recommendation_consumed": false,
+  "route_as_predictive_target": false,
+  "run_id": "20260926_issue425_model_b_robustness_consumer_v1",
+  "schema": "hero-model-b-robustness-consumer-independence-proof/v1"
+}

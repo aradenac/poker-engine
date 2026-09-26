@@ -1,0 +1,81 @@
+{
+  "active_model_b_changed": false,
+  "artifacts": {
+    "FIXTURE_OUTPUTS.json": "7729dedb321c8126792010b4077fc6e3ff64ebc4fe8694f1d94011109cf311ce",
+    "INDEPENDENCE_PROOF.json": "7280e2706f616ff34e38393955f838a8a00b548210c5eba961207b6661949815",
+    "PROVENANCE.json": "9e5393c0fb77ec28ff69ab273d425c9717e5867bef2964415c3e32c34dd308d7",
+    "SUMMARY.md": "073831b23f4e8796bed31029046f71498314443b822c2eaab37bb4998a874bbc"
+  },
+  "automatic_promotion": false,
+  "determinism": {
+    "guarantee": "two regenerations over the same inputs are byte-identical",
+    "regeneration_command": "PYTHONPATH=. python3 tools/simulation/build_issue425_robustness_consumer_run.py --out-dir training/runs/20260926_issue425_model_b_robustness_consumer_v1",
+    "verified_by": "tests/simulation/test_issue425_robustness_consumer_run.py",
+    "verify_command": "PYTHONPATH=. python3 tools/simulation/build_issue425_robustness_consumer_run.py --verify-determinism"
+  },
+  "dod": {
+    "artifacts_present": true,
+    "deterministic_sha256_verified": true,
+    "expected_statuses_matched": true,
+    "fixture_outputs_complete": true,
+    "flags_recorded": true,
+    "independence_clean": true,
+    "issue_315_remains_open_documented": true,
+    "json_readable": true,
+    "real_sensitivity_not_executed_documented": true,
+    "regeneration_command_provided": true
+  },
+  "expectations": {
+    "all_match": true,
+    "missing_expectation": [],
+    "missing_fixture": []
+  },
+  "expected_statuses": {
+    "multiple_sizings.json": "SENSITIVE",
+    "ood_unsupported.json": "OOD_UNTESTABLE",
+    "robust_recommendation.json": "CONSISTENT",
+    "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
+    "too_close.json": "TOO_CLOSE"
+  },
+  "fixture_count": 5,
+  "hero_ev_consumed": false,
+  "independence": {
+    "forbidden_hits": [],
+    "information_boundary_all_false": true
+  },
+  "issue": 425,
+  "model_a_consumed": false,
+  "next_issue": 315,
+  "observed_statuses": {
+    "multiple_sizings.json": "SENSITIVE",
+    "ood_unsupported.json": "OOD_UNTESTABLE",
+    "robust_recommendation.json": "CONSISTENT",
+    "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
+    "too_close.json": "TOO_CLOSE"
+  },
+  "parent_closed": false,
+  "parent_issue": 315,
+  "production_effect": "NONE",
+  "real_hero_results_consumed": false,
+  "real_issue_314_consumed": false,
+  "real_issue_367_consumed": false,
+  "real_sensitivity_executed": false,
+  "recommendation_consumed": false,
+  "run_dir": "training/runs/20260926_issue425_model_b_robustness_consumer_v1",
+  "run_id": "20260926_issue425_model_b_robustness_consumer_v1",
+  "schema": "hero-model-b-robustness-consumer-run-result/v1",
+  "status": "READY_FOR_INTEGRATION",
+  "status_vocabulary": [
+    "READY_FOR_INTEGRATION",
+    "NEEDS_FIXES"
+  ],
+  "statuses": {
+    "CONSISTENT": 1,
+    "INSUFFICIENT_SUPPORT": 1,
+    "OOD_UNTESTABLE": 1,
+    "SENSITIVE": 1,
+    "TOO_CLOSE": 1
+  },
+  "test_consumed": false,
+  "validation_consumed": false
+}

@@ -1,0 +1,622 @@
+{
+  "consumer_report_schema": "hero-model-b-robustness-consumer-report/v1",
+  "fixture_count": 5,
+  "fixtures": [
+    {
+      "decision_id": "synthetic-robustness-multiple-sizings-001",
+      "fixture": "multiple_sizings.json",
+      "reason_codes": [
+        "SUPPORT_STATUS_SENSITIVE"
+      ],
+      "report_sha256": "cad8e759bc30076216261b7e5deaa193d7afc53668c7de70a75cdd74d1c54936",
+      "request_sha256": "5ab4af636a375cd8190e69214dcd036941307a810d26a97d8b2a2e4dac6b3e37",
+      "status": "SENSITIVE"
+    },
+    {
+      "decision_id": "synthetic-robustness-ood-unsupported-001",
+      "fixture": "ood_unsupported.json",
+      "reason_codes": [
+        "SUPPORT_OOD",
+        "SUPPORT_STATUS_OOD"
+      ],
+      "report_sha256": "5dd1e6e9f5c8edc85b4424a8a344458d22c04833c78addd9796e7eabb82565a4",
+      "request_sha256": "5a565574356ee04fc5a782c03425f1ab060dca98823229ed9f1a0f6d04da38b3",
+      "status": "OOD_UNTESTABLE"
+    },
+    {
+      "decision_id": "synthetic-robustness-robust-recommendation-001",
+      "fixture": "robust_recommendation.json",
+      "reason_codes": [
+        "CONSISTENT_ACROSS_ENVIRONMENTS"
+      ],
+      "report_sha256": "c32f336714e323ba809119ebcecb253c9fba5aa8b92a138a18e434923c2aff50",
+      "request_sha256": "36961522662dcc36e6f38ba9379ab012b8d6a0e6b7c49ccc805b7f1c0b7e5d14",
+      "status": "CONSISTENT"
+    },
+    {
+      "decision_id": "synthetic-robustness-sparse-high-uncertainty-001",
+      "fixture": "sparse_high_uncertainty.json",
+      "reason_codes": [
+        "CI95_WIDTH_EXCEEDS_POLICY",
+        "SUPPORT_STATUS_INSUFFICIENT"
+      ],
+      "report_sha256": "8398c5b6c66add2ed9ec170b5c2be68bbdbffc4e637794c68dc1cdcb93fc7c5d",
+      "request_sha256": "32f938f2180f7645fa515c2ae39c821067b8f7c981bc1347a830807fc8c37d62",
+      "status": "INSUFFICIENT_SUPPORT"
+    },
+    {
+      "decision_id": "synthetic-robustness-too-close-001",
+      "fixture": "too_close.json",
+      "reason_codes": [
+        "ADVANTAGE_WITHIN_TOLERANCE",
+        "PAIRED_DELTA_WITHIN_TOLERANCE",
+        "SUPPORT_STATUS_TOO_CLOSE"
+      ],
+      "report_sha256": "572981c40bc55977b8099e6110f8069d38643df43335b3b718bc2d57db7e379c",
+      "request_sha256": "ee13b3263c65a562360aa830a447d7e36bae519fc2e6213406ea4221417c1e18",
+      "status": "TOO_CLOSE"
+    }
+  ],
+  "issue": 425,
+  "reports": [
+    {
+      "fixture": "multiple_sizings.json",
+      "report": {
+        "classification_evidence": {
+          "advantage_bb": 0.17999999999999994,
+          "alternative_count": 5,
+          "best_alternative_id": "ISO@5",
+          "boundary_violations": [],
+          "ci95_width_exceeding_alternatives": [],
+          "comparison": "PAIRED_ALTERNATIVES",
+          "decision_id": "synthetic-robustness-multiple-sizings-001",
+          "declared_statuses": {
+            "FOLD": "CONSISTENT",
+            "ISO@4": "SENSITIVE",
+            "ISO@5": "SENSITIVE",
+            "ISO@6": "SENSITIVE",
+            "OVERLIMP@1": "CONSISTENT"
+          },
+          "environment_aggregation": "ENVELOPE_ONLY",
+          "ev_invalid_alternatives": [],
+          "ev_missing_alternatives": [],
+          "information_boundary_present": true,
+          "input_schema": "hero-model-b-robustness-input/v1",
+          "invalid_alternatives": [],
+          "invalid_uncertainty_alternatives": [],
+          "missing_uncertainty_alternatives": [],
+          "ood_alternatives": [],
+          "policy": {
+            "max_ci95_width_bb": 1.0,
+            "require_provenance": true,
+            "require_uncertainty": true,
+            "too_close_tolerance_bb": 0.05
+          },
+          "provenance_present": true,
+          "ranked_alternatives": [
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@5",
+              "declared_status": "SENSITIVE",
+              "ev_bb": 1.28,
+              "paired_delta_vs_best_bb": 0.0,
+              "sizing": 5.0
+            },
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@4",
+              "declared_status": "SENSITIVE",
+              "ev_bb": 1.1,
+              "paired_delta_vs_best_bb": -0.18,
+              "sizing": 4.0
+            },
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@6",
+              "declared_status": "SENSITIVE",
+              "ev_bb": 0.91,
+              "paired_delta_vs_best_bb": -0.37,
+              "sizing": 6.0
+            },
+            {
+              "action": "OVERLIMP",
+              "alternative_id": "OVERLIMP@1",
+              "declared_status": "CONSISTENT",
+              "ev_bb": 0.26,
+              "paired_delta_vs_best_bb": -1.02,
+              "sizing": 1.0
+            },
+            {
+              "action": "FOLD",
+              "alternative_id": "FOLD",
+              "declared_status": "CONSISTENT",
+              "ev_bb": -0.02,
+              "paired_delta_vs_best_bb": -1.3,
+              "sizing": null
+            }
+          ],
+          "reason_codes_by_status": {
+            "CONSISTENT": [],
+            "INSUFFICIENT_SUPPORT": [],
+            "OOD_UNTESTABLE": [],
+            "SENSITIVE": [
+              "SUPPORT_STATUS_SENSITIVE"
+            ],
+            "TOO_CLOSE": []
+          },
+          "schema": "model-b-hero-robustness-status/v1",
+          "second_best_alternative_id": "ISO@4",
+          "sensitive_alternatives": [
+            "ISO@4",
+            "ISO@5",
+            "ISO@6"
+          ],
+          "stability": null,
+          "support_missing_alternatives": [],
+          "too_close_alternatives": [],
+          "unsupported_alternatives": []
+        },
+        "decision_id": "synthetic-robustness-multiple-sizings-001",
+        "independence": {
+          "forbidden_hits": [],
+          "information_boundary_all_false": true,
+          "request_has_forbidden_features": false
+        },
+        "reason_codes": [
+          "SUPPORT_STATUS_SENSITIVE"
+        ],
+        "schema": "hero-model-b-robustness-consumer-report/v1",
+        "sensitivity": {
+          "issue_340_identity": {
+            "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+            "production_effect": "NONE",
+            "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+            "source_issue": 340,
+            "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+            "test_consumed_by_this_harness": false,
+            "upstream_validation_evidence_referenced": true,
+            "validation_data_consumed_by_this_harness": false,
+            "workflow_run_id": 35446229547
+          },
+          "report_sha256": "cad8e759bc30076216261b7e5deaa193d7afc53668c7de70a75cdd74d1c54936",
+          "request_sha256": "5ab4af636a375cd8190e69214dcd036941307a810d26a97d8b2a2e4dac6b3e37"
+        },
+        "status": "SENSITIVE"
+      }
+    },
+    {
+      "fixture": "ood_unsupported.json",
+      "report": {
+        "classification_evidence": {
+          "advantage_bb": 0.35,
+          "alternative_count": 3,
+          "best_alternative_id": "ISO@6",
+          "boundary_violations": [],
+          "ci95_width_exceeding_alternatives": [],
+          "comparison": "PAIRED_ALTERNATIVES",
+          "decision_id": "synthetic-robustness-ood-unsupported-001",
+          "declared_statuses": {
+            "ISO@5": "OOD_UNTESTABLE",
+            "ISO@6": "OOD_UNTESTABLE",
+            "OVERLIMP@1": "OOD_UNTESTABLE"
+          },
+          "environment_aggregation": "ENVELOPE_ONLY",
+          "ev_invalid_alternatives": [],
+          "ev_missing_alternatives": [],
+          "information_boundary_present": true,
+          "input_schema": "hero-model-b-robustness-input/v1",
+          "invalid_alternatives": [],
+          "invalid_uncertainty_alternatives": [],
+          "missing_uncertainty_alternatives": [],
+          "ood_alternatives": [
+            "ISO@5",
+            "ISO@6",
+            "OVERLIMP@1"
+          ],
+          "policy": {
+            "max_ci95_width_bb": 1.0,
+            "require_provenance": true,
+            "require_uncertainty": true,
+            "too_close_tolerance_bb": 0.05
+          },
+          "provenance_present": true,
+          "ranked_alternatives": [
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@6",
+              "declared_status": "OOD_UNTESTABLE",
+              "ev_bb": 0.95,
+              "paired_delta_vs_best_bb": 0.0,
+              "sizing": 6.0
+            },
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@5",
+              "declared_status": "OOD_UNTESTABLE",
+              "ev_bb": 0.6,
+              "paired_delta_vs_best_bb": -0.35,
+              "sizing": 5.0
+            },
+            {
+              "action": "OVERLIMP",
+              "alternative_id": "OVERLIMP@1",
+              "declared_status": "OOD_UNTESTABLE",
+              "ev_bb": 0.25,
+              "paired_delta_vs_best_bb": -0.7,
+              "sizing": 1.0
+            }
+          ],
+          "reason_codes_by_status": {
+            "CONSISTENT": [],
+            "INSUFFICIENT_SUPPORT": [],
+            "OOD_UNTESTABLE": [
+              "SUPPORT_OOD",
+              "SUPPORT_STATUS_OOD"
+            ],
+            "SENSITIVE": [],
+            "TOO_CLOSE": []
+          },
+          "schema": "model-b-hero-robustness-status/v1",
+          "second_best_alternative_id": "ISO@5",
+          "sensitive_alternatives": [],
+          "stability": null,
+          "support_missing_alternatives": [],
+          "too_close_alternatives": [],
+          "unsupported_alternatives": []
+        },
+        "decision_id": "synthetic-robustness-ood-unsupported-001",
+        "independence": {
+          "forbidden_hits": [],
+          "information_boundary_all_false": true,
+          "request_has_forbidden_features": false
+        },
+        "reason_codes": [
+          "SUPPORT_OOD",
+          "SUPPORT_STATUS_OOD"
+        ],
+        "schema": "hero-model-b-robustness-consumer-report/v1",
+        "sensitivity": {
+          "issue_340_identity": {
+            "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+            "production_effect": "NONE",
+            "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+            "source_issue": 340,
+            "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+            "test_consumed_by_this_harness": false,
+            "upstream_validation_evidence_referenced": true,
+            "validation_data_consumed_by_this_harness": false,
+            "workflow_run_id": 35446229547
+          },
+          "report_sha256": "5dd1e6e9f5c8edc85b4424a8a344458d22c04833c78addd9796e7eabb82565a4",
+          "request_sha256": "5a565574356ee04fc5a782c03425f1ab060dca98823229ed9f1a0f6d04da38b3"
+        },
+        "status": "OOD_UNTESTABLE"
+      }
+    },
+    {
+      "fixture": "robust_recommendation.json",
+      "report": {
+        "classification_evidence": {
+          "advantage_bb": 0.34999999999999987,
+          "alternative_count": 3,
+          "best_alternative_id": "ISO@5",
+          "boundary_violations": [],
+          "ci95_width_exceeding_alternatives": [],
+          "comparison": "PAIRED_ALTERNATIVES",
+          "decision_id": "synthetic-robustness-robust-recommendation-001",
+          "declared_statuses": {
+            "ISO@4": "CONSISTENT",
+            "ISO@5": "CONSISTENT",
+            "ISO@6": "CONSISTENT"
+          },
+          "environment_aggregation": "ENVELOPE_ONLY",
+          "ev_invalid_alternatives": [],
+          "ev_missing_alternatives": [],
+          "information_boundary_present": true,
+          "input_schema": "hero-model-b-robustness-input/v1",
+          "invalid_alternatives": [],
+          "invalid_uncertainty_alternatives": [],
+          "missing_uncertainty_alternatives": [],
+          "ood_alternatives": [],
+          "policy": {
+            "max_ci95_width_bb": 1.0,
+            "require_provenance": true,
+            "require_uncertainty": true,
+            "too_close_tolerance_bb": 0.05
+          },
+          "provenance_present": true,
+          "ranked_alternatives": [
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@5",
+              "declared_status": "CONSISTENT",
+              "ev_bb": 1.42,
+              "paired_delta_vs_best_bb": 0.0,
+              "sizing": 5.0
+            },
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@4",
+              "declared_status": "CONSISTENT",
+              "ev_bb": 1.07,
+              "paired_delta_vs_best_bb": -0.35,
+              "sizing": 4.0
+            },
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@6",
+              "declared_status": "CONSISTENT",
+              "ev_bb": 0.72,
+              "paired_delta_vs_best_bb": -0.7,
+              "sizing": 6.0
+            }
+          ],
+          "reason_codes_by_status": {
+            "CONSISTENT": [
+              "CONSISTENT_ACROSS_ENVIRONMENTS"
+            ],
+            "INSUFFICIENT_SUPPORT": [],
+            "OOD_UNTESTABLE": [],
+            "SENSITIVE": [],
+            "TOO_CLOSE": []
+          },
+          "schema": "model-b-hero-robustness-status/v1",
+          "second_best_alternative_id": "ISO@4",
+          "sensitive_alternatives": [],
+          "stability": null,
+          "support_missing_alternatives": [],
+          "too_close_alternatives": [],
+          "unsupported_alternatives": []
+        },
+        "decision_id": "synthetic-robustness-robust-recommendation-001",
+        "independence": {
+          "forbidden_hits": [],
+          "information_boundary_all_false": true,
+          "request_has_forbidden_features": false
+        },
+        "reason_codes": [
+          "CONSISTENT_ACROSS_ENVIRONMENTS"
+        ],
+        "schema": "hero-model-b-robustness-consumer-report/v1",
+        "sensitivity": {
+          "issue_340_identity": {
+            "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+            "production_effect": "NONE",
+            "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+            "source_issue": 340,
+            "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+            "test_consumed_by_this_harness": false,
+            "upstream_validation_evidence_referenced": true,
+            "validation_data_consumed_by_this_harness": false,
+            "workflow_run_id": 35446229547
+          },
+          "report_sha256": "c32f336714e323ba809119ebcecb253c9fba5aa8b92a138a18e434923c2aff50",
+          "request_sha256": "36961522662dcc36e6f38ba9379ab012b8d6a0e6b7c49ccc805b7f1c0b7e5d14"
+        },
+        "status": "CONSISTENT"
+      }
+    },
+    {
+      "fixture": "sparse_high_uncertainty.json",
+      "report": {
+        "classification_evidence": {
+          "advantage_bb": 0.06,
+          "alternative_count": 3,
+          "best_alternative_id": "ISO@4",
+          "boundary_violations": [],
+          "ci95_width_exceeding_alternatives": [
+            "ISO@4",
+            "ISO@5"
+          ],
+          "comparison": "PAIRED_ALTERNATIVES",
+          "decision_id": "synthetic-robustness-sparse-high-uncertainty-001",
+          "declared_statuses": {
+            "ISO@4": "INSUFFICIENT_SUPPORT",
+            "ISO@5": "INSUFFICIENT_SUPPORT",
+            "ISO@6": "INSUFFICIENT_SUPPORT"
+          },
+          "environment_aggregation": "ENVELOPE_ONLY",
+          "ev_invalid_alternatives": [],
+          "ev_missing_alternatives": [],
+          "information_boundary_present": true,
+          "input_schema": "hero-model-b-robustness-input/v1",
+          "invalid_alternatives": [],
+          "invalid_uncertainty_alternatives": [],
+          "missing_uncertainty_alternatives": [],
+          "ood_alternatives": [],
+          "policy": {
+            "max_ci95_width_bb": 1.0,
+            "require_provenance": true,
+            "require_uncertainty": true,
+            "too_close_tolerance_bb": 0.05
+          },
+          "provenance_present": true,
+          "ranked_alternatives": [
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@4",
+              "declared_status": "INSUFFICIENT_SUPPORT",
+              "ev_bb": 0.48,
+              "paired_delta_vs_best_bb": 0.0,
+              "sizing": 4.0
+            },
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@5",
+              "declared_status": "INSUFFICIENT_SUPPORT",
+              "ev_bb": 0.42,
+              "paired_delta_vs_best_bb": -0.06,
+              "sizing": 5.0
+            },
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@6",
+              "declared_status": "INSUFFICIENT_SUPPORT",
+              "ev_bb": 0.36,
+              "paired_delta_vs_best_bb": -0.12,
+              "sizing": 6.0
+            }
+          ],
+          "reason_codes_by_status": {
+            "CONSISTENT": [],
+            "INSUFFICIENT_SUPPORT": [
+              "CI95_WIDTH_EXCEEDS_POLICY",
+              "SUPPORT_STATUS_INSUFFICIENT"
+            ],
+            "OOD_UNTESTABLE": [],
+            "SENSITIVE": [],
+            "TOO_CLOSE": []
+          },
+          "schema": "model-b-hero-robustness-status/v1",
+          "second_best_alternative_id": "ISO@5",
+          "sensitive_alternatives": [],
+          "stability": null,
+          "support_missing_alternatives": [],
+          "too_close_alternatives": [],
+          "unsupported_alternatives": [
+            "ISO@4",
+            "ISO@5",
+            "ISO@6"
+          ]
+        },
+        "decision_id": "synthetic-robustness-sparse-high-uncertainty-001",
+        "independence": {
+          "forbidden_hits": [],
+          "information_boundary_all_false": true,
+          "request_has_forbidden_features": false
+        },
+        "reason_codes": [
+          "CI95_WIDTH_EXCEEDS_POLICY",
+          "SUPPORT_STATUS_INSUFFICIENT"
+        ],
+        "schema": "hero-model-b-robustness-consumer-report/v1",
+        "sensitivity": {
+          "issue_340_identity": {
+            "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+            "production_effect": "NONE",
+            "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+            "source_issue": 340,
+            "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+            "test_consumed_by_this_harness": false,
+            "upstream_validation_evidence_referenced": true,
+            "validation_data_consumed_by_this_harness": false,
+            "workflow_run_id": 35446229547
+          },
+          "report_sha256": "8398c5b6c66add2ed9ec170b5c2be68bbdbffc4e637794c68dc1cdcb93fc7c5d",
+          "request_sha256": "32f938f2180f7645fa515c2ae39c821067b8f7c981bc1347a830807fc8c37d62"
+        },
+        "status": "INSUFFICIENT_SUPPORT"
+      }
+    },
+    {
+      "fixture": "too_close.json",
+      "report": {
+        "classification_evidence": {
+          "advantage_bb": 0.010000000000000009,
+          "alternative_count": 2,
+          "best_alternative_id": "ISO@5",
+          "boundary_violations": [],
+          "ci95_width_exceeding_alternatives": [],
+          "comparison": "PAIRED_ALTERNATIVES",
+          "decision_id": "synthetic-robustness-too-close-001",
+          "declared_statuses": {
+            "ISO@4": "TOO_CLOSE",
+            "ISO@5": "TOO_CLOSE"
+          },
+          "environment_aggregation": "ENVELOPE_ONLY",
+          "ev_invalid_alternatives": [],
+          "ev_missing_alternatives": [],
+          "information_boundary_present": true,
+          "input_schema": "hero-model-b-robustness-input/v1",
+          "invalid_alternatives": [],
+          "invalid_uncertainty_alternatives": [],
+          "missing_uncertainty_alternatives": [],
+          "ood_alternatives": [],
+          "policy": {
+            "max_ci95_width_bb": 1.0,
+            "require_provenance": true,
+            "require_uncertainty": true,
+            "too_close_tolerance_bb": 0.05
+          },
+          "provenance_present": true,
+          "ranked_alternatives": [
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@5",
+              "declared_status": "TOO_CLOSE",
+              "ev_bb": 1.18,
+              "paired_delta_vs_best_bb": 0.0,
+              "sizing": 5.0
+            },
+            {
+              "action": "ISO",
+              "alternative_id": "ISO@4",
+              "declared_status": "TOO_CLOSE",
+              "ev_bb": 1.17,
+              "paired_delta_vs_best_bb": -0.01,
+              "sizing": 4.0
+            }
+          ],
+          "reason_codes_by_status": {
+            "CONSISTENT": [],
+            "INSUFFICIENT_SUPPORT": [],
+            "OOD_UNTESTABLE": [],
+            "SENSITIVE": [],
+            "TOO_CLOSE": [
+              "ADVANTAGE_WITHIN_TOLERANCE",
+              "PAIRED_DELTA_WITHIN_TOLERANCE",
+              "SUPPORT_STATUS_TOO_CLOSE"
+            ]
+          },
+          "schema": "model-b-hero-robustness-status/v1",
+          "second_best_alternative_id": "ISO@4",
+          "sensitive_alternatives": [],
+          "stability": null,
+          "support_missing_alternatives": [],
+          "too_close_alternatives": [
+            "ISO@4",
+            "ISO@5"
+          ],
+          "unsupported_alternatives": []
+        },
+        "decision_id": "synthetic-robustness-too-close-001",
+        "independence": {
+          "forbidden_hits": [],
+          "information_boundary_all_false": true,
+          "request_has_forbidden_features": false
+        },
+        "reason_codes": [
+          "ADVANTAGE_WITHIN_TOLERANCE",
+          "PAIRED_DELTA_WITHIN_TOLERANCE",
+          "SUPPORT_STATUS_TOO_CLOSE"
+        ],
+        "schema": "hero-model-b-robustness-consumer-report/v1",
+        "sensitivity": {
+          "issue_340_identity": {
+            "candidate_artifact_sha256": "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
+            "production_effect": "NONE",
+            "reference_artifact_sha256": "31e3e6401e30fd2e82926e2abefb904080dcab325430f0153702e5392a2f9915",
+            "source_issue": 340,
+            "source_issue_319_report_hash": "5db39f3e461431f2c3cba9417cdf96f5b53437304b166e1886b3f2d9764c7f99",
+            "test_consumed_by_this_harness": false,
+            "upstream_validation_evidence_referenced": true,
+            "validation_data_consumed_by_this_harness": false,
+            "workflow_run_id": 35446229547
+          },
+          "report_sha256": "572981c40bc55977b8099e6110f8069d38643df43335b3b718bc2d57db7e379c",
+          "request_sha256": "ee13b3263c65a562360aa830a447d7e36bae519fc2e6213406ea4221417c1e18"
+        },
+        "status": "TOO_CLOSE"
+      }
+    }
+  ],
+  "run_id": "20260926_issue425_model_b_robustness_consumer_v1",
+  "schema": "hero-model-b-robustness-consumer-fixture-outputs/v1",
+  "statuses": {
+    "CONSISTENT": 1,
+    "INSUFFICIENT_SUPPORT": 1,
+    "OOD_UNTESTABLE": 1,
+    "SENSITIVE": 1,
+    "TOO_CLOSE": 1
+  }
+}
