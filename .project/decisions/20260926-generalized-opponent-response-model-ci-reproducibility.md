@@ -183,7 +183,7 @@ qui rendent tout contournement coûteux et hors périmètre :
 | contrainte | valeur gelée | épinglée dans |
 | --- | --- | --- |
 | module modèle `tools/preflop/generalized_response_model.py` | `sha256 92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3` | `CANDIDATE_MANIFEST.json` (`runtime_format/module_sha256`), `FROZEN_VALIDATION_PROTOCOL.json` (`code/inputs[2]`, rôle `CANDIDATE_MODEL_AND_RUNTIME`), `GENERALIZED_RESPONSE_MODEL_SPEC.json` (`model_identity/runtime_module_sha256`), `IN_WINDOW_PREDICTION_REFERENCE.json` (`model_module_sha256`) |
-| module runtime `tools/preflop/generalized_response_runtime.py` | `sha256 af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361` | `ISSUE367_PREFLIGHT.json` (`evidence_bindings/runtime_module_sha256` + `model/provenance/runtime/module_sha256` sur chacun des 38 nœuds et 7 frontières) |
+| module runtime `tools/preflop/generalized_response_runtime.py` | `sha256 36591c2905bf61c186ad65832d9499151cf24a0e221c2ded7c3f15bd412f48e4` (valeur **courante** de `ISSUE367_PREFLIGHT.json` ; au diagnostic `@0783c9d` c'était `af585fa50e04be4c848dc77db1bd28417eb536eee486aa0cfd5fcd4f95e6e361`, déplacée par `backlog-k78`, cf. §8) | `ISSUE367_PREFLIGHT.json` (`evidence_bindings/runtime_module_sha256` + `model/provenance/runtime/module_sha256` sur chacun des 38 nœuds et 7 frontières) |
 | interpréteur | `.python-version` = `3.11.9` | `.python-version` ; `reproducibility/environment.lock.json` (`python.version`) ; `reproducibility/container-base.lock.json` (tarball `Python-3.11.9.tar.xz`, `sha256 9b1e896523fc510691126c864406d9360a3d1e986acbda59cda57b5abda45b87`) ; `reproducibility/Dockerfile.science` (`ARG PYTHON_VERSION=3.11.9`) ; `requirements.lock.txt` |
 | evidence adressée par contenu | `CANDIDATE_MANIFEST`, `FROZEN_VALIDATION_PROTOCOL`, `ISSUE367_PREFLIGHT`, `DECISION`, `VALIDATION_RESULT`, `GENERALIZED_RESPONSE_MODEL_SPEC` | sidecars `*.sha256`, copies `sha256/<digest>.…`, `ARTIFACTS.json`, `SUMMARY.md` |
 
@@ -255,8 +255,9 @@ quantifiée sur la grille décimale fixe du runtime. Mesures sur les neuf sondes
 
 - écart maximal par probabilité, de la référence pré-canonique à la référence
   régénérée : `1.0758061108617767e-12` (sonde `short_stack_raise_15bb`, action
-  `FOLD`) — au plus un pas de la grille à douze décimales, c'est-à-dire l'ordre
-  de l'ULP ~ 1 en relatif sur un vecteur qui somme à `1.0` ;
+  `FOLD`) — soit légèrement plus d'un pas de la grille à douze décimales, borné
+  par ≤ 2 pas (`2e-12`) ; l'écart qui dépend de l'interpréteur, lui, reste
+  ≤ 1 ulp (cf. §8.3) ;
 - écart maximal des probabilités *runtime* de la référence remplacée (§7.2) à la
   référence régénérée : `0.0` — elles étaient déjà sur la grille ;
 - la distribution ne bouge pas : l'action sélectionnée, les sizings sélectionnés
@@ -1062,3 +1063,169 @@ reproduisible par `git show <commit>:<chemin>`.
 - écrite par le générateur officiel
   (`--write-in-window-reference`), jamais éditée à la main ; les sections §7.1 et
   §7.2 restent l'unique copie des octets antérieurs.
+
+## 8. Changement de représentation (`backlog-of2`, T5) — delta, preuve historique, invariance
+
+Cette section clôt T5 : elle consolide *ce qui a changé* au re-pin
+`backlog-bvi` (T3), *pourquoi*, et prouve que **rien de gelé ne bouge**. Elle
+est documentaire : elle ne réécrit aucun artefact d'evidence et ne prétend rien
+sur l'état CI/push.
+
+### 8.1 Ce qui a changé
+
+Un seul objet d'evidence — la référence in-window, fichier **supplémentaire**
+hors des dix artefacts obligatoires — a été réécrit, par son générateur
+officiel : `analysis/issue421_generalized_response/IN_WINDOW_PREDICTION_REFERENCE.json`.
+Sa **représentation** change — la sonde *modèle* de chacune des neuf entrées est
+désormais capturée à travers le *même* helper de canonicalisation que le runtime
+(`runtime.canonical_prediction`, la surface qu'un consommateur lit), donc
+quantifiée sur la grille décimale fixe à douze décimales et re-clôturée par
+`math.fsum`, au lieu des flottants bruts du module gelé. Le module gelé
+`tools/preflop/generalized_response_model.py` (`92d7ac94…`), le runtime
+`tools/preflop/generalized_response_runtime.py` (`36591c29…`), l'identité de
+candidat (`generalized-adverse-response-candidate-v1`, payload canonique
+`c3f3573f…`, octets `ea93e8c3…`) et l'interpréteur restent identiques.
+
+### 8.2 Pourquoi (indépendance interpréteur, à delta borné)
+
+Le rouge CI analysé en §1–3 ne venait pas du modèle mais de la sémantique
+d'`sum()` dépendante de l'interpréteur (compensée de Neumaier depuis CPython
+3.12, naïve jusqu'à 3.11). Le module gelé ne peut pas être édité (§5,
+alternative 2), mais la *représentation enregistrée* est une variable libre :
+la quantifier sur la grille décimale fixe et re-clôturer par
+`math.fsum`/`math.nextafter` rend la surface indépendante de l'interpréteur sans
+toucher au contrat de prédiction (`probabilities`/`P(...)`/`legal_actions`/
+`sizing`/`support`). Le re-pin d'interpréteur (§5, alternative 1) a été rejeté :
+le correctif porte sur la représentation, pas sur l'environnement.
+
+### 8.3 Delta explicite
+
+| quantité | delta | mesure |
+| --- | --- | --- |
+| sensibilité interpréteur éliminée (`sum` compensé vs naïf) | **≤ 1 ulp** | `max abs(delta) = 2.220446049250313e-16 = math.ulp(1.0)` (§3) |
+| re-quantification du re-pin, probabilités *modèle* | ≤ 2 pas de grille (`2e-12`) | `1.0758061108617767e-12` = 1.076 pas (sonde `short_stack_raise_15bb`, action `FOLD`) |
+| re-quantification du re-pin, probabilités *runtime* | `0.0` | déjà sur la grille à douze décimales |
+| clôture canonique (`math.fsum` + `math.nextafter`) | ≤ 1 ulp (observé) | sur les neuf sondes l'ancre n'est déplacée que d'un `nextafter` (la boucle en autorise au plus 4) pour que `probability_sum` lise exactement `1.0` |
+
+Autrement dit : l'écart qui *dépend de l'interpréteur* est au plus d'une ULP
+(`2.220446049250313e-16 = math.ulp(1.0)`), et l'écart de représentation introduit
+par le re-pin est borné par deux pas de la grille décimale fixe (`≤ 2e-12`,
+mesuré `1.0758061108617767e-12`) ; dans les deux cas l'action
+sélectionnée, les sizings sélectionnés et générés, le verdict `sizing_window`,
+`probability_sum == 1.0` et `illegal_mass == 0.0` sont strictement identiques,
+sonde par sonde.
+
+### 8.4 Preuve historique conservée
+
+Les octets des deux états antérieurs de la référence restent consignés
+**verbatim**, avec leur taille et leur `sha256`, en §7.1 (`60bb723b…`, 13904
+octets, `@0783c9d`) et §7.2 (`7737a0c4…`, 13978 octets, `@fea622d`). Ils sont
+reproduisibles octet pour octet par `git show <commit>:<chemin>` ; le re-pin ne
+les réécrit pas et ne les remplace pas. Recoupés depuis ce record (les blocs
+`json` conservés, saut de ligne final inclus), ils redonnent exactement
+`60bb723b…`/13904 octets et `7737a0c4…`/13978 octets.
+
+### 8.5 Preuve d'invariance des artefacts gelés
+
+Le re-pin `backlog-bvi` ne touche, sous `analysis/`, que la référence :
+
+```bash
+git diff --name-only b56ed9e^ b56ed9e
+```
+
+`analysis/issue421_generalized_response/IN_WINDOW_PREDICTION_REFERENCE.json` est
+le **seul** chemin modifié sous `analysis/**` par cet incrément. Les dix
+artefacts exigés — `TRAIN_CV_REPORT.json` (`43d9ffff…`),
+`CANDIDATE_MANIFEST.json` (`06f8380e…`), `FROZEN_VALIDATION_PROTOCOL.json`
+(`ff91421b…`), `VALIDATION_RESULT.json` (`6a8f02b6…`),
+`OOD_CALIBRATION_REPORT.json` (`a8f1b181…`), `RAISE_SIZING_MODEL_REPORT.json`
+(`955b926a…`), `ISSUE367_PREFLIGHT.json` (`415d65df…`), `DECISION.json`
+(`8783fbc8…`) et `GENERALIZED_RESPONSE_MODEL_SPEC.json` (`7f7dde23…`) — ainsi
+que `SUMMARY.md` (`bbe2a44d…`) sont byte-identiques (digests recalculés). En
+particulier :
+
+- **Evidence TRAIN/CV** : `TRAIN_CV_REPORT.json` inchangé ; aucune main
+  re-splitée, aucun fold recomputé, aucune sélection rejouée.
+- **Evidence VALIDATION** : `FROZEN_VALIDATION_PROTOCOL.json` et
+  `VALIDATION_RESULT.json` inchangés ; `validation_consumed` reste `true` avec
+  `validation_reads = 1` — la lecture one-shot n'est pas rouverte.
+- **Candidat** : `CANDIDATE_MANIFEST.json` et les octets du candidat
+  (`ea93e8c3…`) inchangés ; le candidat reste non admis, non promu et non câblé
+  à #367.
+- **Décision terminale** : `DECISION.json` inchangé —
+  `RETAIN_REFERENCE_GENERALIZATION_INSUFFICIENT` (8/10) ; `test_consumed=false`,
+  `active_pointer_mutated=false`, `issue367_authorized=false`, #367 non exécuté.
+
+### 8.6 Vérification exhaustive des digests cités (`docs/` et `.project/decisions/`)
+
+Recherche exhaustive des jetons 64-hex dans `docs/**/*.md` et
+`.project/decisions/*.md`, puis recalcul (lecture seule) :
+
+```bash
+python3 - <<'PY'
+import hashlib, json, re, subprocess
+from pathlib import Path
+
+hexre = re.compile(r"\b[0-9a-f]{64}\b")
+tracked = [Path(p) for p in subprocess.run(
+    ["git", "ls-files"], capture_output=True, text=True, check=True
+).stdout.splitlines()]
+
+# Bytes currently on disk...
+current = {hashlib.sha256(p.read_bytes()).hexdigest() for p in tracked}
+# ...plus every digest a frozen artifact *declares* today: `.sha256` sidecars,
+# the ARTIFACTS.json cross-references/index and the in-window reference entries.
+declared = set()
+for p in tracked:
+    if p.name.endswith(".sha256"):
+        declared.update(re.findall(
+            r"canonical_payload_sha256 ([0-9a-f]{64})", p.read_text(errors="ignore")
+        ))
+index = json.loads(Path("analysis/issue421_generalized_response/ARTIFACTS.json").read_text())
+for check in index["digest_verification"]["cross_reference_checks"]:
+    declared.add(check["declared"])
+for entry in list(index["artifacts"].values()) + list(index["supporting_evidence"].values()):
+    for key in ("sha256", "canonical_payload_sha256"):
+        if entry.get(key):
+            declared.add(entry[key])
+reference = json.loads(Path(
+    "analysis/issue421_generalized_response/IN_WINDOW_PREDICTION_REFERENCE.json"
+).read_text())
+declared.add(reference["entries_sha256"])
+declared -= current
+
+cited = {}
+for f in sorted(Path("docs").glob("*.md")) + sorted(Path(".project/decisions").glob("*.md")):
+    for i, line in enumerate(f.read_text().splitlines(), 1):
+        for token in hexre.findall(line):
+            cited.setdefault(token, []).append(f"{f}:{i}")
+
+current_cited = [h for h in cited if h in current]
+declared_cited = [h for h in cited if h not in current and h in declared]
+other = [h for h in cited if h not in current and h not in declared]
+print(len(cited), "distinct;", len(current_cited), "current-file;",
+      len(declared_cited), "declared-current;", len(other), "historical/embedded")
+PY
+```
+
+Résultat : **120** digests distincts cités ; **50** correspondent au `sha256`
+d'un fichier suivi **courant**, **7** à un digest **courant déclaré** par un
+artefact gelé (sidecars `.sha256`, index `ARTIFACTS.json`, payload canonique du
+candidat, `entries_sha256` de la référence), et **63** sont des digests
+**historiques ou embarqués** (révisions runtime antérieures
+`e390a199`/`af585fa5`, `entries_sha256`/sondes à l'intérieur des blocs de
+référence conservés en §7.1/§7.2), tous explicitement étiquetés comme tels. Dans
+la documentation #421, un seul jeton **présenté comme courant** était périmé :
+la ligne « module runtime » de la table §4, qui citait `af585fa5…` (valeur au
+diagnostic `@0783c9d`) alors que `ISSUE367_PREFLIGHT.json` pinne `36591c29…`
+depuis `backlog-k78` ; elle est corrigée en §4 et rappelée ici. Les digests des
+issues closes antérieures (#394, #419, audits CI) sont des instantanés
+historiques liés à leur propre HEAD et ne sont pas réécrits par cette tâche.
+
+### 8.7 Frontière
+
+Le seul diff de T5 est du texte (dont un jeton périmé corrigé) dans ce decision
+record et dans `docs/generalized-opponent-response-model.md` ; aucun artefact
+d'evidence, aucun digest d'objet et aucun module gelé n'est modifié. Cette
+section **n'affirme aucun état CI ni push** : le `SUCCESS` du run CI #421 reste
+une **porte externe** non observée ici, et aucune promotion n'est implicite.

@@ -157,7 +157,13 @@ captured through the runtime's own canonicalisation helper
 anything from the frozen floats, so the recorded model probabilities sit on that
 grid too instead of pinning the last bits of the frozen module's `sum`. The
 reference also pins the candidate identity it was captured from (candidate id,
-canonical payload digest and candidate byte digest). Regenerate
+canonical payload digest and candidate byte digest). The frozen file itself
+hashes to
+`873e429b72bf81ab180b416811480bff04863aed10d699791d39524a952b8312`
+(13969 bytes); the two byte-images it replaced are preserved verbatim, with
+their `sha256` and size, in the T1 reproducibility record
+(`.project/decisions/20260926-generalized-opponent-response-model-ci-reproducibility.md`).
+Regenerate
 the reference with
 `python3 tests/preflop/test_generalized_response_sizing.py --write-in-window-reference`
 (it re-captures the canonical surface; the entry digest is

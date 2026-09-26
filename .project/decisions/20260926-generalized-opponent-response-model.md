@@ -122,8 +122,11 @@ capturée à travers le *même* helper de canonicalisation que le runtime
 (`canonical_prediction`), au lieu des flottants bruts du module gelé
 (`92d7ac94…`, inchangé). Le runtime, son identité de candidat et l'interpréteur
 ne changent pas ; seules les représentations enregistrées changent, chacune
-quantifiée sur la grille décimale fixe (l'écart par probabilité est au plus d'un
-pas de grille, ≤ 1 ulp du vecteur émis), la distribution, l'action sélectionnée,
+quantifiée sur la grille décimale fixe (l'écart par probabilité est borné par la
+précision de la représentation enregistrée — mesuré ≤ `1.0758061108617767e-12`,
+soit ≤ 2 pas de la grille à douze décimales —, tandis que l'écart qui dépend de
+l'interpréteur, seule quantité éliminée, est ≤ 1 ulp
+`2.220446049250313e-16`), la distribution, l'action sélectionnée,
 les sizings et le verdict `sizing_window` restant identiques. Les entrées
 passent à `a48c280c9cd7607d06752fedb0fa264ec9b082fdf2529b8dfee594219937cb79` ;
 les octets de la référence antérieure sont conservés comme preuve historique
@@ -150,9 +153,11 @@ holdout. Son digest propre vit dans
 `GENERALIZED_RESPONSE_MODEL_SPEC.sha256` et dans l'index, jamais dans son payload.
 
 Tous les digests persistés sont recalculés depuis les octets persistés et
-comparés aux valeurs déclarées : 5 sidecars `.sha256` et 36 références croisées
-inter-artefacts (manifeste, protocole, résultat de validation, décision,
-preflight), toutes concordantes
+comparés aux valeurs déclarées : les 5 sidecars `.sha256` contrôlés par l'index
+(`digest_verification.sidecar_checks` : manifeste, protocole, résultat de
+validation, preflight, décision), le sidecar propre de la spec
+(`GENERALIZED_RESPONSE_MODEL_SPEC.sha256`, dont le digest est tenu hors de son
+payload) et 36 références croisées inter-artefacts, toutes concordantes
 (`digest_verification.all_recomputed_digests_match_persisted = true`). Le cas
 #352 (digest self-reporté non revérifié) ne se reproduit pas ; un écart est
 fail-closed à la génération comme sous `--check`.
