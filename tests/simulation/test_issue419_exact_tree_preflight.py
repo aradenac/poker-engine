@@ -11,8 +11,11 @@ These tests pin the v2 admissibility rule -- ``EXACT_EMPIRICAL_STRONG`` (layer A
 unchanged 20/20 L0 rule) *or* ``EXACT_HIERARCHICAL_ESTIMATE`` gated by the
 conjunction of the seven frozen layer-B gates -- and the boundary: no nearest-*
 substitution is applied, no Hero EV/recommendation is computed, no
-VALIDATION/TEST hand is read, the frozen v1 bundle is never rewritten and
-``required_tree_complete`` follows the strict closure conjunction only.
+VALIDATION/TEST hand is read, ``required_tree_complete`` follows the strict
+closure conjunction only, and the superseded v1 bundle is byte-pinned and
+declared superseded instead of being regenerated: its payload embeds the digest of
+the superseded v1 tool, so a byte-identical re-derivation is impossible and the
+``v1`` revision is never written.
 """
 from __future__ import annotations
 
@@ -114,8 +117,8 @@ def _estimate_response():
     )
 
 
-def _unresolved_response(*, observations):
-    """A node the provider cannot answer: no support and/or no admissible pooling."""
+def _response_with(observations):
+    """Whatever the provider answers for one exact key given these TRAIN observations."""
     exact = _whitelist()
     candidate = H.make_synthetic_hierarchical_candidate(
         population_id="preflight-test", observations=observations
@@ -125,6 +128,11 @@ def _unresolved_response(*, observations):
         requested_key=H.hierarchical_exact_key_from_whitelist(exact),
         legal_actions=LEGAL,
     )
+
+
+def _unresolved_response(*, observations):
+    """A node the provider cannot answer: no support and/or no admissible pooling."""
+    return _response_with(observations)
 
 
 CLOSED_TREE_CONDITIONS = dict(
@@ -333,12 +341,35 @@ class ExactTreePreflightTests(unittest.TestCase):
             self.assertIsNone(record['posterior_identity']['posterior_sha256'])
             self.assertIsNone(record['pooling_provenance'])
             self.assertIsNone(record['uncertainty'])
-        # No node in this TRAIN-only preflight may claim a measured calibration.
+        # The frozen CALIBRATION gate is never re-measured here: it is *attested*
+        # from the digest-referenced, already-consumed v1 VALIDATION bytes, and it
+        # fails closed on that frozen measurement without re-opening the holdout.
         protocol_block = self.preflight['admissibility_protocol']
         self.assertEqual(protocol_block['revision'], 'v2')
         self.assertEqual(protocol_block['amendment_id'], preflight_tool.PROTOCOL_V2_AMENDMENT_ID)
         self.assertEqual(protocol_block['node_closure_rule_id'], preflight_tool.NODE_CLOSURE_RULE_ID)
-        self.assertIn('UNEVALUATED_PRE_VALIDATION', protocol_block['calibration_gate_status'])
+        self.assertIn(
+            'ATTESTED_FROM_FROZEN_V1_VALIDATION_BYTES', protocol_block['calibration_gate_status']
+        )
+        calibration_gate = protocol_block['calibration_gate']
+        self.assertTrue(calibration_gate['evaluated'])
+        self.assertFalse(calibration_gate['passed'])
+        attestation = calibration_gate['evidence']['attestation']
+        self.assertEqual(
+            attestation['source_artifact'],
+            preflight_tool._relative(preflight_tool.V1_VALIDATION_RESULT_PATH),
+        )
+        self.assertEqual(
+            attestation['source_byte_sha256'], preflight_tool.V1_VALIDATION_RESULT_SHA256
+        )
+        self.assertTrue(attestation['validation_result_referenced_by_digest'])
+        self.assertFalse(attestation['holdout_reopened_by_this_preflight'])
+        self.assertFalse(attestation['validation_consumed_by_this_preflight'])
+        self.assertFalse(attestation['validation_split_re_evaluated'])
+        self.assertFalse(attestation['thresholds_re_selected'])
+        self.assertFalse(attestation['hardcoded_verdict'])
+        self.assertEqual(attestation['validation_decision_rows_read'], 0)
+        self.assertEqual(attestation['hand_histories_parsed'], 0)
         self.assertEqual(protocol_block['calibration_thresholds']['maximum_absolute_ece'], 0.05)
         self.assertEqual(
             protocol_block['calibration_thresholds']['maximum_ece_delta_vs_active'], 0.02
@@ -538,6 +569,115 @@ class ExactTreePreflightTests(unittest.TestCase):
                 self.assertEqual(closure['admissibility_class'], 'EXACT_UNRESOLVED')
                 self.assertFalse(closure['counts_as_exact_support'])
                 self.assertFalse(preflight_tool.is_admissible(below))
+
+    def test_admissibility_rule_matches_frozen_thresholds(self):
+        """The preflight rule is the frozen two-class v2 rule, not a widened v1 rule.
+
+        Layer A is the *unchanged* ``EXACT_EMPIRICAL_STRONG`` definition (20
+        observations and 20 distinct hands at ``L0_EXACT_KEY``, exact-key-only
+        support).  Layer B adds the ``EXACT_HIERARCHICAL_ESTIMATE`` class, which
+        closes a node only when every frozen gate passes -- and even then it never
+        becomes or counts as empirical support.
+        """
+        protocol_v2 = preflight_tool.load_frozen_v2_protocol()
+        thresholds = protocol_v2['calibration_thresholds']
+        self.assertEqual(
+            preflight_tool.MIN_MARGINAL_OBSERVATIONS,
+            int(protocol_v2['protocol']['thresholds']['minimum_marginal_observations']),
+        )
+        self.assertEqual(
+            preflight_tool.MIN_DISTINCT_HANDS,
+            int(protocol_v2['protocol']['thresholds']['minimum_distinct_hands']),
+        )
+        self.assertEqual(protocol_v2['protocol']['thresholds']['minimum_marginal_observations'], 20)
+        self.assertEqual(protocol_v2['protocol']['thresholds']['minimum_distinct_hands'], 20)
+
+        # (A) layer A closes on the frozen 20/20 L0 rule with no calibration claim.
+        empirical = _empirical_response()
+        self.assertEqual(empirical['status'], H.STATUS_EXACT_EMPIRICAL_STRONG)
+        self.assertEqual(empirical['pooling']['level'], 'L0_EXACT_KEY')
+        self.assertTrue(preflight_tool.is_admissible(empirical))
+        layer_a = preflight_tool.admissibility(empirical)
+        self.assertEqual(layer_a['admissibility_class'], 'EXACT_EMPIRICAL_STRONG')
+        self.assertTrue(layer_a['counts_as_exact_support'])
+        self.assertFalse(layer_a['admissible_as_exact_context_estimate'])
+
+        # The 20/20 boundary is hard in both directions and is never widened.
+        exactly_twenty = _response_with(_rows(_whitelist(), 20, 'boundary'))
+        self.assertEqual(exactly_twenty['status'], H.STATUS_EXACT_EMPIRICAL_STRONG)
+        self.assertEqual(exactly_twenty['support']['observations'], 20)
+        self.assertEqual(exactly_twenty['support']['distinct_hands'], 20)
+        self.assertTrue(preflight_tool.is_admissible(exactly_twenty))
+        for field in ('observations', 'distinct_hands'):
+            with self.subTest(threshold=field):
+                below = copy.deepcopy(exactly_twenty)
+                below['support'][field] = 19
+                closure = preflight_tool.node_closure(below)
+                self.assertFalse(closure['closes_the_node'])
+                self.assertEqual(closure['admissibility_class'], 'EXACT_UNRESOLVED')
+                self.assertFalse(closure['counts_as_exact_support'])
+
+        # (B) layer B closes the thin exact key only with every frozen gate passing.
+        estimator = _estimate_response()
+        self.assertEqual(estimator['status'], H.STATUS_EXACT_HIERARCHICAL_ESTIMATE)
+        self.assertLess(estimator['support']['observations'], preflight_tool.MIN_MARGINAL_OBSERVATIONS)
+        self.assertLess(estimator['support']['distinct_hands'], preflight_tool.MIN_DISTINCT_HANDS)
+        closed = preflight_tool.admissibility(
+            estimator, calibration_evidence=PASSING_CALIBRATION
+        )
+        self.assertTrue(closed['closes_the_node'])
+        self.assertEqual(closed['admissibility_class'], 'EXACT_HIERARCHICAL_ESTIMATE')
+        self.assertFalse(closed['counts_as_exact_support'])
+        self.assertTrue(closed['admissible_as_exact_context_estimate'])
+        self.assertEqual(closed['reason_codes'], [])
+        self.assertEqual(
+            set(closed['layer_b_gates']), set(preflight_tool.LAYER_B_GATE_IDS)
+        )
+
+        # Every refusal the frozen rule demands stays a refusal.
+        refusals = {
+            'price_or_context_substitution': (
+                lambda response: response['support'].__setitem__(
+                    'source_key', 'MAPSUP_other|public=deadbeef'
+                )
+            ),
+            'non_exact_support': (
+                lambda response: response['support'].__setitem__('borrowed_from_other_keys', True)
+            ),
+            'missing_uncertainty': (
+                lambda response: (
+                    response.__setitem__('uncertainty', None),
+                    response.__setitem__('posterior', None),
+                )
+            ),
+        }
+        for label, mutator in refusals.items():
+            with self.subTest(refusal=label):
+                broken = copy.deepcopy(estimator)
+                mutator(broken)
+                closure = preflight_tool.admissibility(
+                    broken, calibration_evidence=PASSING_CALIBRATION
+                )
+                self.assertFalse(closure['closes_the_node'])
+                self.assertEqual(closure['admissibility_class'], 'EXACT_UNRESOLVED')
+                self.assertFalse(closure['counts_as_exact_support'])
+                self.assertTrue(closure['reason_codes'])
+                self.assertFalse(
+                    preflight_tool.is_admissible(
+                        broken, calibration_evidence=PASSING_CALIBRATION
+                    )
+                )
+        failing_calibration = preflight_tool.admissibility(
+            estimator, calibration_evidence=FAILING_CALIBRATION
+        )
+        self.assertFalse(failing_calibration['closes_the_node'])
+        self.assertEqual(failing_calibration['reason_codes'], ['REFUSED_CALIBRATION'])
+        self.assertEqual(thresholds['maximum_absolute_ece'], 0.05)
+        self.assertEqual(thresholds['maximum_ece_delta_vs_active'], 0.02)
+        self.assertEqual(
+            thresholds['minimum_bin_support_for_a_calibration_claim'],
+            preflight_tool.MIN_DISTINCT_HANDS,
+        )
 
     def test_absent_support_or_pooling_is_fail_closed_as_exact_unresolved(self):
         cases = (
@@ -978,7 +1118,123 @@ class ExactTreePreflightTests(unittest.TestCase):
         for forbidden in ('"ev_bb"', 'recommendation":', 'selected_alternative', 'indifference'):
             self.assertNotIn(forbidden, text)
 
-    def test_pins_protocol_provider_tree_and_fixture_identities(self):
+    def test_v1_preflight_byte_pin_supersession_and_identity_pins(self):
+        """Replaces the old byte-identical regeneration and v1 identity pin tests.
+
+        The superseded v1 bundle records ``code.provider.sha256`` and
+        ``code.preflight_tool.sha256`` of sources that changed after the v1 freeze,
+        so rebuilding v1 byte-identically is impossible by construction.  v1 is
+        therefore byte-pinned against the recorded digests and explicitly declared
+        superseded by the content-addressed v2 bundle, which is the only revision
+        that is re-derived (and is still verified to reproduce byte-identically).
+        """
+        custody = preflight_tool.verify_frozen_v1_preflight()
+        self.assertEqual(custody['result'], 'PASS')
+        self.assertTrue(custody['never_rewritten'])
+        self.assertEqual(custody['revision'], 'v1')
+        recorded = {
+            preflight_tool.NAME: preflight_tool.V1_PREFLIGHT_SHA256,
+            preflight_tool.SUMMARY_NAME: preflight_tool.V1_SUMMARY_SHA256,
+            preflight_tool.INDEX_NAME: preflight_tool.V1_INDEX_SHA256,
+        }
+        # The byte pin is re-derived from the persisted bytes, never merely asserted.
+        for name, pinned in recorded.items():
+            with self.subTest(v1_artifact=name):
+                self.assertEqual(len(pinned), 64)
+                self.assertEqual(
+                    hashlib.sha256((preflight_tool.OUTPUT / name).read_bytes()).hexdigest(),
+                    pinned,
+                )
+                self.assertEqual(custody['artifacts'][name], pinned)
+        self.assertEqual(
+            custody['bundle'], preflight_tool._relative(preflight_tool.OUTPUT)
+        )
+        self.assertEqual(
+            custody['superseded_by'],
+            preflight_tool._relative(preflight_tool.V2_OUTPUT / preflight_tool.V2_NAME),
+        )
+        self.assertNotEqual(
+            preflight_tool.V2_OUTPUT.resolve(), preflight_tool.OUTPUT.resolve()
+        )
+
+        # The frozen v2 protocol custody table pins the very same v1 bytes.
+        protocol_v2 = json.loads(preflight_tool.PROTOCOL_V2_PATH.read_text())
+        custody_row = next(
+            row
+            for row in protocol_v2['v1_custody']['v1_surfaces']
+            if row['role'] == preflight_tool.V1_CUSTODY_ROLE
+        )
+        self.assertEqual(custody_row['sha256'], preflight_tool.V1_PREFLIGHT_SHA256)
+        self.assertEqual(
+            preflight_tool.load_frozen_v2_protocol()['v1_preflight_custody_pin'],
+            preflight_tool.V1_PREFLIGHT_SHA256,
+        )
+
+        # The recorded supersession is explicit, and it explains *why* v1 cannot be
+        # regenerated: the v1 payload names sources that no longer have those bytes.
+        declared = self.preflight['frozen_v1_preflight']['supersession']
+        self.assertEqual(declared, preflight_tool.V1_SUPERSESSION)
+        self.assertFalse(declared['regeneration_possible'])
+        self.assertEqual(declared['superseded_revision'], 'v1')
+        self.assertEqual(declared['superseding_revision'], 'v2')
+        # The pre-refresh v1 revision is recorded as history only: it is neither
+        # on disk nor restorable, and the pin kept here is the current frozen v1.
+        self.assertEqual(len(declared['predecessor_byte_sha256']), 64)
+        self.assertNotEqual(
+            declared['predecessor_byte_sha256'], preflight_tool.V1_PREFLIGHT_SHA256
+        )
+        self.assertEqual(
+            hashlib.sha256((preflight_tool.OUTPUT / preflight_tool.NAME).read_bytes()).hexdigest(),
+            preflight_tool.V1_PREFLIGHT_SHA256,
+        )
+        self.assertEqual(
+            declared['superseding_bundle'],
+            preflight_tool._relative(preflight_tool.V2_OUTPUT),
+        )
+        self.assertEqual(
+            self.preflight['frozen_v1_preflight']['protocol_v2_custody_pin'],
+            preflight_tool.V1_PREFLIGHT_SHA256,
+        )
+        v1 = json.loads((preflight_tool.OUTPUT / preflight_tool.NAME).read_text())
+        self.assertEqual(
+            v1['code']['provider']['sha256'], declared['v1_records_provider_sha256']
+        )
+        self.assertEqual(
+            v1['code']['preflight_tool']['sha256'],
+            declared['v1_records_preflight_tool_sha256'],
+        )
+        # The v1 tool digest is the reason v1 can never be regenerated: it is not
+        # the live tool any more (the provider digest happens to be unchanged).
+        v1_bindings = custody['v1_code_bindings']
+        self.assertTrue(v1_bindings['provider_unchanged_since_v1'])
+        self.assertFalse(v1_bindings['preflight_tool_unchanged_since_v1'])
+        self.assertEqual(
+            v1_bindings['live_preflight_tool_sha256'], hashlib.sha256(
+                preflight_tool.SOURCE_PATH.read_bytes()
+            ).hexdigest()
+        )
+        self.assertEqual(
+            v1_bindings['live_provider_sha256'], self.preflight['code']['provider']['sha256']
+        )
+        self.assertEqual(
+            declared['regeneration_possible'],
+            v1_bindings['provider_unchanged_since_v1']
+            and v1_bindings['preflight_tool_unchanged_since_v1'],
+        )
+        self.assertNotEqual(
+            v1['code']['preflight_tool']['sha256'],
+            self.preflight['code']['preflight_tool']['sha256'],
+        )
+        # v1 is never written: the tool refuses the v1 revision outright.
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            self.assertEqual(preflight_tool.main(['--revision', 'v1']), 2)
+        self.assertIn('REFUSED_REVISION_V1', stderr.getvalue())
+        # The v2 bundle this test pins still reproduces byte-identically.
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(preflight_tool.check(), 0)
+
+        # ------------------------------------------------- identity pins (v2)
         bindings = self.preflight['evidence_bindings']
         self.assertEqual(bindings['protocol_byte_sha256'], preflight_tool.PROTOCOL_BYTE_SHA256)
         self.assertEqual(
@@ -1074,6 +1330,55 @@ class ExactTreePreflightTests(unittest.TestCase):
         )
         self.assertEqual(loaded['amendment_id'], preflight_tool.PROTOCOL_V2_AMENDMENT_ID)
 
+    def test_revision_v2_is_the_only_write_path_and_reproduces_the_bundle(self):
+        """``--revision v2`` rewrites the v2 bundle and only the v2 bundle.
+
+        The superseded v1 revision is byte-pinned evidence, so the CLI refuses to
+        write it and the recorded v1 bytes survive a v2 write untouched.
+        """
+        v1_before = {
+            name: hashlib.sha256((preflight_tool.OUTPUT / name).read_bytes()).hexdigest()
+            for name in (
+                preflight_tool.NAME,
+                preflight_tool.SUMMARY_NAME,
+                preflight_tool.INDEX_NAME,
+            )
+        }
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            self.assertEqual(preflight_tool.main(['--revision', 'v2']), 0)
+        reported = json.loads(stdout.getvalue())
+        self.assertEqual(reported['bundle'], preflight_tool._relative(preflight_tool.V2_OUTPUT))
+        self.assertEqual(reported['schema'], preflight_tool.V2_SCHEMA)
+        self.assertEqual(
+            reported['frozen_v1_preflight_sha256'], preflight_tool.V1_PREFLIGHT_SHA256
+        )
+        # The write is idempotent: the bundle still reproduces byte-identically and
+        # never leaks into the frozen v1 directory.
+        self.assertEqual((self.output / preflight_tool.V2_NAME).read_bytes(), self.raw_bytes)
+        self.assertEqual(
+            {
+                name: hashlib.sha256((preflight_tool.OUTPUT / name).read_bytes()).hexdigest()
+                for name in v1_before
+            },
+            v1_before,
+        )
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(preflight_tool.check(), 0)
+
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            self.assertEqual(preflight_tool.main(['--revision', 'v1']), 2)
+        self.assertIn('REFUSED_REVISION_V1', stderr.getvalue())
+        # A refused v1 revision must not have written anything.
+        self.assertEqual(
+            {
+                name: hashlib.sha256((preflight_tool.OUTPUT / name).read_bytes()).hexdigest()
+                for name in v1_before
+            },
+            v1_before,
+        )
+
     def test_scan_helpers_fail_closed_on_forbidden_sources(self):
         with self.assertRaises(preflight_tool.PreflightError):
             preflight_tool.verify_no_holdout_access('import load_test_records\n')
@@ -1147,15 +1452,6 @@ class ExactTreePreflightTests(unittest.TestCase):
         finally:
             sys.modules.pop(name, None)
         self.assertEqual(preflight_tool.verify_no_hero_ev_execution()['result'], 'PASS')
-
-    def test_bundle_reproduces_byte_identically(self):
-        with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(preflight_tool.check(), 0)
-        artifacts, summary = preflight_tool.build()
-        self.assertEqual(
-            preflight_tool.serialize(artifacts[preflight_tool.V2_NAME]), self.raw_bytes
-        )
-        self.assertEqual(summary, artifacts[preflight_tool.SUMMARY_NAME])
 
 
 if __name__ == '__main__':
