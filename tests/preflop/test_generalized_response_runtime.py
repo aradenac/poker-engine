@@ -33,7 +33,26 @@ MANIFEST_PATH = ROOT / "analysis/issue421_generalized_response/CANDIDATE_MANIFES
 MODEL_DIR = ROOT / "analysis/issue421_generalized_response/model"
 OOD_REPORT_PATH = ROOT / "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json"
 
+#: The provenance value every repository-local resolution must report.
+MANIFEST_REGISTRY_SOURCE = "analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json"
+
 PRICE_AXES = {"to_call_bb", "pot_before_bb", "effective_stack_bb"}
+
+
+def json_string_leaves(node: object, path: str = "$") -> list[tuple[str, str]]:
+    """Every string value of a JSON document, addressed by its dotted path."""
+    found: list[tuple[str, str]] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            found.extend(json_string_leaves(value, f"{path}.{key}"))
+            if isinstance(key, str):
+                found.append((f"{path}.{key}<key>", key))
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            found.extend(json_string_leaves(value, f"{path}[{index}]"))
+    elif isinstance(node, str):
+        found.append((path, node))
+    return found
 
 
 def base_context(**overrides: object) -> dict:
@@ -117,6 +136,63 @@ class RuntimeIdentityTests(RuntimeFixtures):
         self.assertEqual(digests, {self.candidate_sha256})
         self.assertEqual(by_hash.entry["candidate_id"], self.candidate_id)
         self.assertEqual(by_path.candidate, by_id.candidate)
+
+    def test_registry_source_is_repo_relative_for_every_resolution_mode(self) -> None:
+        expected_artifact = self.runtime.entry["path"]
+        handles = {
+            "by_id": runtime.GeneralizedResponseRuntime(candidate_id=self.candidate_id),
+            "by_hash": runtime.GeneralizedResponseRuntime(self.candidate_sha256),
+            "by_expected_hash": runtime.GeneralizedResponseRuntime(
+                expected_candidate_sha256=self.candidate_sha256
+            ),
+            "by_default_id": runtime.GeneralizedResponseRuntime(),
+            "by_relative_path": runtime.GeneralizedResponseRuntime(expected_artifact),
+            "by_model_directory_path": runtime.GeneralizedResponseRuntime(
+                MODEL_DIR / Path(expected_artifact).name
+            ),
+        }
+        for label, handle in handles.items():
+            self.assertEqual(handle.entry["registry_source"], MANIFEST_REGISTRY_SOURCE, label)
+            self.assertFalse(Path(handle.entry["registry_source"]).is_absolute(), label)
+            self.assertEqual(handle.entry["path"], expected_artifact, label)
+            self.assertFalse(Path(handle.entry["path"]).is_absolute(), label)
+            # No behaviour change: identity and digests are untouched by the
+            # provenance normalisation.
+            self.assertEqual(handle.entry["candidate_id"], self.candidate_id, label)
+            self.assertEqual(handle.candidate_sha256, self.candidate_sha256, label)
+            self.assertEqual(
+                handle.candidate["canonical_payload_sha256"], self.candidate_sha256, label
+            )
+            self.assertEqual(
+                handle.entry["artifact_sha256"], self.runtime.entry["artifact_sha256"], label
+            )
+
+    def test_repo_relative_normalises_paths_without_leaking_the_host(self) -> None:
+        self.assertEqual(runtime._repo_relative(MANIFEST_PATH), MANIFEST_REGISTRY_SOURCE)
+        self.assertEqual(
+            runtime._repo_relative(MANIFEST_REGISTRY_SOURCE), MANIFEST_REGISTRY_SOURCE
+        )
+        self.assertEqual(
+            runtime._repo_relative(MODEL_DIR), "analysis/issue421_generalized_response/model"
+        )
+        with tempfile.TemporaryDirectory() as folder:
+            outside = runtime._repo_relative(Path(folder) / "CANDIDATE_MANIFEST.json")
+        self.assertFalse(outside.startswith("/"), outside)
+        self.assertNotIn(str(runtime.ROOT), outside)
+        self.assertNotIn("\\", outside)
+
+    def test_directory_candidates_report_a_repo_relative_registry_source(self) -> None:
+        registry = runtime.candidate_registry()
+        directory_candidates = [
+            entry for entry in registry.values() if entry.get("role") == "DIRECTORY_CANDIDATE"
+        ]
+        self.assertTrue(directory_candidates, "the model directory holds candidate artifacts")
+        for entry in directory_candidates:
+            self.assertEqual(
+                entry["registry_source"], "analysis/issue421_generalized_response/model"
+            )
+            self.assertFalse(Path(entry["registry_source"]).is_absolute())
+            self.assertFalse(Path(entry["path"]).is_absolute())
 
     def test_expected_hash_mismatch_fails_closed_without_evaluating(self) -> None:
         with self.assertRaises(runtime.GeneralizedResponseRuntimeError) as caught:
@@ -236,6 +312,19 @@ class DecisionContractTests(RuntimeFixtures):
             runtime.decision_canonical_sha256(document),
         )
         self.assertEqual(len(document["decision_canonical_sha256"]), 64)
+
+    def test_the_decision_document_carries_no_absolute_host_path(self) -> None:
+        document = runtime.resolve_generalized_response(
+            base_context(target_total_bb=3.0), action="RAISE"
+        )
+        self.assertEqual(
+            document["provenance"]["candidate"]["registry_source"], MANIFEST_REGISTRY_SOURCE
+        )
+        encoded = json.dumps(document, sort_keys=True)
+        self.assertNotIn(str(runtime.ROOT), encoded)
+        self.assertNotIn("/home/", encoded)
+        absolute = [item for item in json_string_leaves(document) if item[1].startswith("/")]
+        self.assertEqual(absolute, [])
 
     def test_provenance_declares_direct_evaluation_and_no_substitution(self) -> None:
         document = self._decision(target_total_bb=3.0)

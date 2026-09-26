@@ -63,6 +63,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import sys
 from functools import lru_cache
 from pathlib import Path
@@ -214,6 +215,29 @@ def _read_json(path: str | Path) -> Any:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def _repo_relative(path: str | Path) -> str:
+    """Environment-independent POSIX form of ``path``.
+
+    A path inside :data:`ROOT` becomes its repository-relative POSIX path
+    (``analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json``), so a
+    provenance field records the same value on every host and in every
+    worktree.  A path outside the repository is normalised to a POSIX-relative
+    form anchored at :data:`ROOT`: the frozen bundle never embeds an absolute
+    host path, whatever the caller resolved.
+    """
+    resolved = Path(path)
+    if not resolved.is_absolute():
+        resolved = ROOT / resolved
+    resolved = resolved.resolve()
+    try:
+        return resolved.relative_to(ROOT).as_posix()
+    except ValueError:
+        try:
+            return Path(os.path.relpath(resolved, ROOT)).as_posix()
+        except ValueError:  # pragma: no cover - a path on another Windows drive
+            return resolved.as_posix()
+
+
 def _round(value: Any, digits: int = 6) -> float | None:
     if value is None:
         return None
@@ -253,7 +277,7 @@ def candidate_registry(manifest_path: str | None = None) -> dict[str, dict[str, 
         selected = manifest.get("candidate")
         if isinstance(selected, Mapping) and selected.get("candidate_id"):
             entry = _entry_from_manifest_candidate(
-                selected, role="SELECTED_CANDIDATE", registry_source=str(target)
+                selected, role="SELECTED_CANDIDATE", registry_source=_repo_relative(target)
             )
             registry[str(selected["candidate_id"])] = entry
         alternatives = (manifest.get("architecture") or {}).get("alternative_architectures") or []
@@ -263,7 +287,7 @@ def candidate_registry(manifest_path: str | None = None) -> dict[str, dict[str, 
             entry = _entry_from_manifest_candidate(
                 alternative,
                 role="ALTERNATE_ARCHITECTURE_COMPARATOR",
-                registry_source=str(target),
+                registry_source=_repo_relative(target),
                 fallback_id=f"alternate:{alternative['architecture']}",
             )
             registry.setdefault(str(entry["candidate_id"]), entry)
@@ -276,13 +300,13 @@ def candidate_registry(manifest_path: str | None = None) -> dict[str, dict[str, 
                 "candidate_id": candidate_id,
                 "role": "DIRECTORY_CANDIDATE",
                 "architecture": document.get("architecture"),
-                "path": str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
+                "path": _repo_relative(path),
                 "canonical_payload_sha256": digest,
                 "artifact_sha256": sha256_file(path),
                 "seed": document.get("seed"),
                 "status": document.get("status"),
                 "model_family": document.get("model_family"),
-                "registry_source": str(DEFAULT_MODEL_DIR),
+                "registry_source": _repo_relative(DEFAULT_MODEL_DIR),
             },
         )
     return registry
@@ -445,13 +469,13 @@ def resolve_candidate_reference(
             "candidate_id": f"path#{str(digest)[:12]}",
             "role": "PATH_CANDIDATE",
             "architecture": document.get("architecture"),
-            "path": str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),
+            "path": _repo_relative(path),
             "canonical_payload_sha256": digest,
             "artifact_sha256": sha256_file(path),
             "seed": document.get("seed"),
             "status": document.get("status"),
             "model_family": document.get("model_family"),
-            "registry_source": str(path),
+            "registry_source": _repo_relative(path),
         }
         if matches:
             frozen_path = _candidate_path_of(entry)
@@ -463,7 +487,7 @@ def resolve_candidate_reference(
                 )
         _check_expected(entry, expected_sha256)
         _finalize_candidate(document, entry)
-        entry["path"] = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+        entry["path"] = _repo_relative(path)
         entry["artifact_sha256"] = sha256_file(path)
         return document, entry
 
@@ -493,7 +517,7 @@ def _resolve_entry(
         raise GeneralizedResponseRuntimeError(
             FAIL_CLOSED_CANDIDATE_INVALID, f"{path} is not a candidate object"
         )
-    frozen["path"] = str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+    frozen["path"] = _repo_relative(path)
     _check_expected(frozen, expected_sha256)
     _finalize_candidate(document, frozen)
     return document, frozen
@@ -536,13 +560,13 @@ def frozen_validation_outcome(report_path: str | None = None) -> dict[str, Any]:
     target = Path(report_path) if report_path else DEFAULT_VALIDATION_RESULT_PATH
     if not target.exists():
         return {
-            "path": str(target.relative_to(ROOT)) if target.is_relative_to(ROOT) else str(target),
+            "path": _repo_relative(target),
             "available": False,
             "outcome": None,
         }
     document = _read_json(target)
     return {
-        "path": str(target.relative_to(ROOT)) if target.is_relative_to(ROOT) else str(target),
+        "path": _repo_relative(target),
         "available": True,
         "schema": document.get("schema"),
         "outcome": document.get("outcome"),
@@ -590,9 +614,7 @@ class GeneralizedResponseRuntime:
                     FAIL_CLOSED_CALIBRATION_UNAVAILABLE,
                     f"the frozen OOD calibration is unavailable at {report}: {error}",
                 ) from error
-            self.calibration_path = (
-                str(report.relative_to(ROOT)) if report.is_relative_to(ROOT) else str(report)
-            )
+            self.calibration_path = _repo_relative(report)
             self.calibration_sha256 = sha256_file(report)
         self.candidate_sha256 = str(self.candidate["canonical_payload_sha256"])
 
