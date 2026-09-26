@@ -55,10 +55,19 @@ Contract surface
   per-request support/uncertainty, a deterministic legal generation grid and a
   fail-closed policy that never substitutes a nearest price or a nearest
   context (see :func:`raise_sizing_report`);
+* :func:`ood_gate_decision` -> the frozen OOD/uncertainty verdict of one public
+  context, one of ``MODEL_SUPPORTED``, ``MODEL_SUPPORTED_HIGH_UNCERTAINTY`` or
+  ``MODEL_OOD_ABSTAIN``, combining never-seen categories, sizing/stack
+  extrapolation, density/local support, robust domain distance and predictive
+  uncertainty (see :func:`build_ood_calibration_report` for the TRAIN-only
+  cross-validated thresholds and ``OOD_CALIBRATION_REPORT.json``);
 * :func:`compare_candidates` -> architecture-vs-architecture comparison on the
   same rows;
 * ``contracts/training/generalized-response-model.schema.json`` -> the contract
-  for every produced/persisted document.
+  for every produced/persisted document;
+* ``contracts/training/generalized-response-ood-gate.schema.json`` -> the
+  contract of the OOD gate decision, its frozen calibration and the calibration
+  report.
 
 Only the Python standard library is used (arithmetic, ``bisect``, ``hashlib``,
 ``json``/``math``; no numpy/sklearn/scipy/pandas).
@@ -3226,6 +3235,1293 @@ def write_raise_sizing_report(
 
 
 # ---------------------------------------------------------------------------
+# OOD / uncertainty gate (T6, #421)
+#
+# ``predict`` always answers; the gate is the *independent*, machine-readable
+# verdict that says whether that answer may be used.  It combines four signal
+# families into exactly one status:
+#
+# 1. never-seen categories -- a single-feature node label the calibration never
+#    observed (``UNSEEN_CATEGORY``);
+# 2. extrapolation -- a queried sizing / stack (or price) outside the calibrated
+#    TRAIN domain (``EXTRAPOLATION_SIZING`` / ``EXTRAPOLATION_STACK`` /
+#    ``EXTRAPOLATION_PRICE``);
+# 3. density / local support -- a rare feature label, an exact context cell
+#    never observed in TRAIN, a robust distance past the TRAIN core or a value
+#    past the model's outermost spline knot (``LOW_FEATURE_SUPPORT`` /
+#    ``LOW_EXACT_CONTEXT_SUPPORT`` / ``DOMAIN_DISTANCE`` /
+#    ``SPLINE_BOUNDARY_EXTRAPOLATION``);
+# 4. predictive uncertainty -- the normalized entropy of the model's legal
+#    distribution and the fitted node support the prediction actually used
+#    (``HIGH_PREDICTIVE_ENTROPY`` / ``LOW_MODEL_NODE_SUPPORT``).
+#
+# Only (1) and (2) can produce an abstention.  An exact context that was never
+# observed while every one of its single-feature labels *was* observed is **not**
+# OOD by definition: the exact-cell support is reported, and it can raise the
+# status to ``MODEL_SUPPORTED_HIGH_UNCERTAINTY``, but it never produces
+# ``MODEL_OOD_ABSTAIN``.
+#
+# The thresholds are calibrated on TRAIN only, through a hand-grouped
+# cross-validation of the TRAIN rows (never VALIDATION, never TEST); the report
+# records ``validation_consumed=false`` / ``test_consumed=false`` and the
+# calibration refuses to consume any other split.
+# ---------------------------------------------------------------------------
+
+OOD_GATE_SCHEMA = "poker-generalized-response-ood-gate/v1"
+OOD_CALIBRATION_SCHEMA = "poker-generalized-response-ood-calibration/v1"
+OOD_REPORT_SCHEMA = "poker-generalized-response-ood-calibration-report/v1"
+OOD_CONTRACT_PATH = ROOT / "contracts/training/generalized-response-ood-gate.schema.json"
+DEFAULT_OOD_REPORT_PATH = ROOT / "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json"
+
+#: The three stable, machine-readable statuses of the gate.
+STATUS_MODEL_SUPPORTED = "MODEL_SUPPORTED"
+STATUS_MODEL_SUPPORTED_HIGH_UNCERTAINTY = "MODEL_SUPPORTED_HIGH_UNCERTAINTY"
+STATUS_MODEL_OOD_ABSTAIN = "MODEL_OOD_ABSTAIN"
+OOD_STATUSES: tuple[str, ...] = (
+    STATUS_MODEL_SUPPORTED,
+    STATUS_MODEL_SUPPORTED_HIGH_UNCERTAINTY,
+    STATUS_MODEL_OOD_ABSTAIN,
+)
+OOD_STATUS_DEFINITIONS: dict[str, str] = {
+    STATUS_MODEL_SUPPORTED: (
+        "the context is inside the calibrated TRAIN domain, every category was observed, the "
+        "local support is above the calibrated floor and the predictive uncertainty is below the "
+        "calibrated ceiling: the answer may be used as a supported model output"
+    ),
+    STATUS_MODEL_SUPPORTED_HIGH_UNCERTAINTY: (
+        "the context stays inside the calibrated TRAIN domain and no category is unseen, but at "
+        "least one uncertainty signal is in its calibrated tail (rare feature label, exact cell "
+        "never observed in TRAIN, robust domain distance, spline-knot boundary, high predictive "
+        "entropy or low fitted node support): the answer is still emitted, but it must be "
+        "reported as a high-uncertainty output"
+    ),
+    STATUS_MODEL_OOD_ABSTAIN: (
+        "the context is out of the calibrated distribution: a never-observed category or a "
+        "queried sizing / stack / price outside the calibrated TRAIN domain. The gate abstains "
+        "and no model answer may be used"
+    ),
+}
+
+#: Deterministic review order of the reason codes.
+OOD_REASON_ORDER: tuple[str, ...] = (
+    "UNSEEN_CATEGORY",
+    "EXTRAPOLATION_STACK",
+    "EXTRAPOLATION_SIZING",
+    "EXTRAPOLATION_PRICE",
+    "MISSING_DOMAIN_AXIS",
+    "SPLINE_BOUNDARY_EXTRAPOLATION",
+    "DOMAIN_DISTANCE",
+    "LOW_FEATURE_SUPPORT",
+    "LOW_EXACT_CONTEXT_SUPPORT",
+    "HIGH_PREDICTIVE_ENTROPY",
+    "LOW_MODEL_NODE_SUPPORT",
+    "PREDICTIVE_UNCERTAINTY_UNAVAILABLE",
+)
+#: Reason codes that abstain; every other reason only raises the uncertainty.
+OOD_HARD_REASONS: tuple[str, ...] = (
+    "UNSEEN_CATEGORY",
+    "EXTRAPOLATION_STACK",
+    "EXTRAPOLATION_SIZING",
+    "EXTRAPOLATION_PRICE",
+    "MISSING_DOMAIN_AXIS",
+)
+OOD_SOFT_REASONS: tuple[str, ...] = tuple(
+    reason for reason in OOD_REASON_ORDER if reason not in OOD_HARD_REASONS
+)
+
+#: Single-feature node labels deciding the in-domain / never-seen-category
+#: surface: the seven categorical blocks of the model plus the two coarse
+#: buckets the interaction blocks already index plus one pot bucket.
+OOD_FEATURE_BLOCKS: tuple[str, ...] = CATEGORICAL_BLOCKS + (
+    "to_call_bucket",
+    "effective_stack_bucket",
+    "pot_bucket",
+)
+OOD_POT_BUCKET_EDGES: tuple[float, ...] = (2.5, 6.0, 15.0, 40.0)
+OOD_COARSE_SOURCE: dict[str, str] = {
+    "to_call_bucket": "to_call_bb",
+    "effective_stack_bucket": "effective_stack_bb",
+}
+OOD_PRICE_AXES: tuple[str, ...] = ("to_call_bb", "pot_before_bb", "effective_stack_bb")
+OOD_SIZING_AXIS = "sizing_ratio"
+OOD_NUMERIC_AXES: tuple[str, ...] = OOD_PRICE_AXES + (OOD_SIZING_AXIS,)
+#: Hard extrapolation reason of each numeric axis.
+OOD_AXIS_EXTRAPOLATION_REASON: dict[str, str] = {
+    "to_call_bb": "EXTRAPOLATION_PRICE",
+    "pot_before_bb": "EXTRAPOLATION_PRICE",
+    "effective_stack_bb": "EXTRAPOLATION_STACK",
+    OOD_SIZING_AXIS: "EXTRAPOLATION_SIZING",
+}
+
+#: Strata of the out-of-fold gate evaluation.
+OOD_STRATUM_FREQUENT_EXACT = "frequent_exact"
+OOD_STRATUM_RARE_EXACT = "rare_exact"
+OOD_STRATUM_EXACT_ABSENT_IN_DOMAIN = "exact_absent_in_domain"
+OOD_STRATUM_EXACT_ABSENT_OUT_OF_DOMAIN = "exact_absent_out_of_domain"
+OOD_STRATA: tuple[str, ...] = (
+    OOD_STRATUM_FREQUENT_EXACT,
+    OOD_STRATUM_RARE_EXACT,
+    OOD_STRATUM_EXACT_ABSENT_IN_DOMAIN,
+    OOD_STRATUM_EXACT_ABSENT_OUT_OF_DOMAIN,
+)
+OOD_FREQUENT_EXACT_MIN_SUPPORT = 20
+
+#: Calibration protocol.
+OOD_CALIBRATION_SEED = 421
+OOD_CALIBRATION_FOLDS = 5
+OOD_CALIBRATION_MAX_ROWS = 24000
+OOD_CALIBRATION_TUNING_ROWS = 3000
+#: Tail quantiles of the TRAIN-only out-of-fold signal distributions.
+OOD_HIGH_TAIL = 0.95
+OOD_LOW_TAIL = 0.05
+#: Documented, deterministic fallbacks when a signal array is empty.  The three
+#: density signals are expressed as *shares* of the calibration rows so a
+#: threshold calibrated on a cross-validation fold stays comparable with a
+#: frozen calibration built from the whole TRAIN split.
+OOD_FALLBACK_THRESHOLDS: dict[str, float] = {
+    "min_feature_share": 0.0,
+    "min_exact_context_share": 0.0,
+    "min_model_node_support_per_row": 0.0,
+    "normalized_entropy": 0.9,
+    "domain_distance": 1.0,
+    "extrapolation_margin": 0.0,
+}
+
+
+def _ood_pot_bucket(value: Any) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return MISSING
+    if not math.isfinite(number):
+        return MISSING
+    axis = [_transform(edge) for edge in OOD_POT_BUCKET_EDGES]
+    return f"P{bisect.bisect_right(axis, _transform(number))}"
+
+
+def ood_feature_levels(context: Mapping[str, Any]) -> dict[str, str]:
+    """One node label per single-feature block (the gate's in-domain surface).
+
+    The surface is the seven categorical blocks of the model plus the two coarse
+    buckets the model's interaction blocks already index -- evaluated on the
+    model's own ``log1p`` edges, so a label here is a node label the model really
+    uses -- plus one documented pot bucket.  The bucket values match the T4
+    cross-validation surface; the T4 report buckets on the raw axis, this gate on
+    the model's transformed axis.
+    """
+    levels = {block: categorical_node(block, context) for block in CATEGORICAL_BLOCKS}
+    for block, source in OOD_COARSE_SOURCE.items():
+        levels[block] = _coarse_bucket(block, context.get(source))
+    levels["pot_bucket"] = _ood_pot_bucket(context.get("pot_before_bb"))
+    return levels
+
+
+def ood_exact_context_key(context: Mapping[str, Any]) -> str:
+    """Exact context signature: the ordered single-feature node labels."""
+    levels = ood_feature_levels(context)
+    return "|".join(levels[block] for block in OOD_FEATURE_BLOCKS)
+
+
+def _ood_axis_values(context: Mapping[str, Any]) -> dict[str, float | None]:
+    """Queried numeric axes; ``sizing_ratio`` is ``None`` when no target is asked."""
+
+    def number(field: str) -> float | None:
+        raw = context.get(field)
+        if raw is None:
+            return None
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            return None
+        return value if math.isfinite(value) else None
+
+    values: dict[str, float | None] = {axis: number(axis) for axis in OOD_PRICE_AXES}
+    target = context.get("target_total_bb")
+    if target is None:
+        target = context.get("raise_target_total_bb")
+    ratio: float | None = None
+    if target is not None:
+        target_value = number("target_total_bb")
+        if target_value is None:
+            target_value = number("raise_target_total_bb")
+        to_call, pot = values["to_call_bb"], values["pot_before_bb"]
+        if target_value is not None and to_call is not None and pot is not None:
+            denominator = pot + to_call
+            if denominator > EPS:
+                ratio = min(max(target_value, 0.0) / denominator, MAX_SIZING_RATIO)
+    values[OOD_SIZING_AXIS] = ratio
+    return values
+
+
+def _ood_spline_knot_max(axis: str, config: Mapping[str, Any]) -> float | None:
+    if axis == OOD_SIZING_AXIS:
+        knots = [float(value) for value in config["sizing_axis_knots"]]
+    elif axis in config["spline_knots"]:
+        knots = [float(value) for value in config["spline_knots"][axis]]
+    else:
+        return None
+    return max(knots) if knots else None
+
+
+def _quantile(sorted_values: Sequence[float], level: float) -> float | None:
+    """Linear-interpolation quantile of an already sorted sequence."""
+    if not sorted_values:
+        return None
+    if len(sorted_values) == 1:
+        return float(sorted_values[0])
+    position = (len(sorted_values) - 1) * min(max(float(level), 0.0), 1.0)
+    low = int(math.floor(position))
+    high = min(low + 1, len(sorted_values) - 1)
+    weight = position - low
+    return float(sorted_values[low]) * (1.0 - weight) + float(sorted_values[high]) * weight
+
+
+def _assert_ood_train_only(rows: Iterable[Mapping[str, Any]]) -> None:
+    """The gate calibrates on TRAIN only; any other split fails closed."""
+    for row in rows:
+        split = _row_split(row)
+        if split != "TRAIN":
+            raise GeneralizedResponseModelError(
+                "the OOD gate calibrates on TRAIN only; refused a "
+                f"{split or '<EMPTY>'} row (VALIDATION and TEST are never consumed)"
+            )
+
+
+def _ood_domain_stats(
+    rows: Sequence[Mapping[str, Any]], config: Mapping[str, Any]
+) -> dict[str, dict[str, Any]]:
+    """TRAIN envelope + robust core + spline boundary of every numeric axis."""
+    observed: dict[str, list[float]] = {axis: [] for axis in OOD_NUMERIC_AXES}
+    for row in rows:
+        values = _ood_axis_values(row)
+        for axis in OOD_NUMERIC_AXES:
+            value = values.get(axis)
+            if value is not None:
+                observed[axis].append(float(value))
+    domain: dict[str, dict[str, Any]] = {}
+    for axis in OOD_NUMERIC_AXES:
+        values = sorted(observed[axis])
+        domain[axis] = {
+            "observations": len(values),
+            "trained_min": _round(values[0]) if values else None,
+            "trained_max": _round(values[-1]) if values else None,
+            "core_low": _round(_quantile(values, OOD_LOW_TAIL)),
+            "core_high": _round(_quantile(values, OOD_HIGH_TAIL)),
+            "spline_knot_max": _round(_ood_spline_knot_max(axis, config)),
+        }
+    return domain
+
+
+def _ood_category_counts(rows: Sequence[Mapping[str, Any]]) -> dict[str, dict[str, int]]:
+    counts: dict[str, dict[str, int]] = {block: {} for block in OOD_FEATURE_BLOCKS}
+    for row in rows:
+        for block, label in ood_feature_levels(row).items():
+            counts[block][label] = counts[block].get(label, 0) + 1
+    return counts
+
+
+def _ood_exact_context_support(rows: Sequence[Mapping[str, Any]]) -> dict[str, int]:
+    support: dict[str, int] = {}
+    for row in rows:
+        key = ood_exact_context_key(row)
+        support[key] = support.get(key, 0) + 1
+    return support
+
+
+def _ood_axis_distance(value: float, stats: Mapping[str, Any]) -> float:
+    """Robust excursion past the TRAIN core, in core widths (0 inside the core)."""
+    core_low, core_high = stats.get("core_low"), stats.get("core_high")
+    if core_low is None or core_high is None:
+        return 0.0
+    core_low, core_high = float(core_low), float(core_high)
+    scale = core_high - core_low
+    if scale <= EPS:
+        return 0.0
+    if value < core_low:
+        return (core_low - value) / scale
+    if value > core_high:
+        return (value - core_high) / scale
+    return 0.0
+
+
+def _candidate_of(model: Any) -> Mapping[str, Any] | None:
+    """Accept a candidate mapping, a ``ResponseModel`` wrapper, or ``None``."""
+    if model is None:
+        return None
+    candidate = getattr(model, "candidate", None)
+    if candidate is not None:
+        return candidate
+    if isinstance(model, Mapping):
+        return model
+    raise GeneralizedResponseModelError(
+        "the OOD gate needs a fitted candidate, a ResponseModel, or None"
+    )
+
+
+def _ood_evaluate(
+    calibration: Mapping[str, Any],
+    model: Any,
+    context: Mapping[str, Any],
+    *,
+    config: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Raw signal bundle of one context: hard reasons, soft reasons, signals."""
+    del config  # the frozen calibration carries every statistic the gate needs
+    if not isinstance(context, Mapping):
+        raise TypeError("context must be a mapping")
+    thresholds = dict(calibration["thresholds"])
+    margin = float(thresholds.get("extrapolation_margin") or 0.0)
+
+    levels = ood_feature_levels(context)
+    category_counts = calibration["category_counts"]
+    unseen = sorted(
+        block for block, label in levels.items() if label not in set(category_counts.get(block) or {})
+    )
+    total_rows = max(int((calibration.get("provenance") or {}).get("rows") or 0), 0)
+    if total_rows <= 0:
+        total_rows = max(
+            [sum(counts.values()) for counts in category_counts.values()] or [0]
+        )
+    feature_support = {
+        block: int((category_counts.get(block) or {}).get(levels[block], 0))
+        for block in OOD_FEATURE_BLOCKS
+    }
+    feature_share = {
+        block: (count / total_rows if total_rows > 0 else 0.0)
+        for block, count in feature_support.items()
+    }
+    min_block = min(feature_support, key=lambda block: (feature_support[block], block))
+
+    query = _ood_axis_values(context)
+    axes: dict[str, dict[str, Any]] = {}
+    domain_distance = 0.0
+    for axis in OOD_NUMERIC_AXES:
+        stats = dict(calibration["domain"].get(axis) or {})
+        value = query.get(axis)
+        entry: dict[str, Any] = {
+            "queried": value is not None,
+            "value": _round(value),
+            "trained_min": stats.get("trained_min"),
+            "trained_max": stats.get("trained_max"),
+            "core_low": stats.get("core_low"),
+            "core_high": stats.get("core_high"),
+            "spline_knot_max": stats.get("spline_knot_max"),
+            "extrapolation": False,
+            "spline_boundary": False,
+            "domain_distance": 0.0,
+        }
+        if value is not None:
+            low, high = stats.get("trained_min"), stats.get("trained_max")
+            if low is not None and float(value) < float(low) - margin - 1e-9:
+                entry["extrapolation"] = True
+            elif high is not None and float(value) > float(high) + margin + 1e-9:
+                entry["extrapolation"] = True
+            knot = stats.get("spline_knot_max")
+            if knot is not None and float(value) > float(knot) + 1e-9:
+                entry["spline_boundary"] = True
+            entry["domain_distance"] = _round(_ood_axis_distance(float(value), stats), 9)
+            domain_distance = max(domain_distance, float(entry["domain_distance"] or 0.0))
+        axes[axis] = entry
+
+    hard: set[str] = set()
+    soft: set[str] = set()
+    if unseen:
+        hard.add("UNSEEN_CATEGORY")
+    for axis, entry in axes.items():
+        if entry["queried"] and entry["extrapolation"]:
+            hard.add(OOD_AXIS_EXTRAPOLATION_REASON[axis])
+        if entry["queried"] and entry["spline_boundary"]:
+            soft.add("SPLINE_BOUNDARY_EXTRAPOLATION")
+        if axis != OOD_SIZING_AXIS and not entry["queried"]:
+            hard.add("MISSING_DOMAIN_AXIS")
+    if domain_distance > float(thresholds.get("domain_distance") or 0.0):
+        soft.add("DOMAIN_DISTANCE")
+    if feature_share[min_block] < float(thresholds.get("min_feature_share") or 0.0):
+        soft.add("LOW_FEATURE_SUPPORT")
+
+    signature = ood_exact_context_key(context)
+    exact_support = int((calibration.get("exact_context_support") or {}).get(signature, 0))
+    exact_share = exact_support / total_rows if total_rows > 0 else 0.0
+    if exact_share < float(thresholds.get("min_exact_context_share") or 0.0):
+        # Deliberately a *soft* signal: an exact context absent from TRAIN is
+        # never OOD by itself, it only lowers the confidence of the answer.
+        soft.add("LOW_EXACT_CONTEXT_SUPPORT")
+
+    candidate = _candidate_of(model)
+    predictive: dict[str, Any] | None = None
+    if candidate is None:
+        soft.add("PREDICTIVE_UNCERTAINTY_UNAVAILABLE")
+    else:
+        response = predict(candidate, context)
+        probabilities = response["probabilities"]
+        positive = [value for value in probabilities.values() if value > 0.0]
+        entropy = -math.fsum(value * math.log(value) for value in positive)
+        normalized = entropy / math.log(len(positive)) if len(positive) > 1 else 0.0
+        ordered = sorted(probabilities.values(), reverse=True)
+        fit_rows = int((candidate.get("fit_summary") or {}).get("rows") or 0)
+        node_support_per_row = (
+            int(response["support"]) / fit_rows if fit_rows > 0 else 0.0
+        )
+        predictive = {
+            "legal_actions": response["legal_actions"],
+            "normalized_entropy": _round(normalized, 9),
+            "max_probability": _round(max(probabilities.values()), 9),
+            "probability_margin": _round(
+                ordered[0] - ordered[1] if len(ordered) > 1 else ordered[0], 9
+            ),
+            "model_node_support": int(response["support"]),
+            "model_node_support_per_row": _round(node_support_per_row, 12),
+            "fit_rows": fit_rows,
+        }
+        if normalized >= float(thresholds.get("normalized_entropy") or 0.0):
+            soft.add("HIGH_PREDICTIVE_ENTROPY")
+        if node_support_per_row < float(thresholds.get("min_model_node_support_per_row") or 0.0):
+            soft.add("LOW_MODEL_NODE_SUPPORT")
+
+    def ordered_reasons(reasons: set[str]) -> list[str]:
+        return [reason for reason in OOD_REASON_ORDER if reason in reasons]
+
+    return {
+        "hard_reasons": ordered_reasons(hard),
+        "soft_reasons": ordered_reasons(soft),
+        "signals": {
+            "feature_levels": levels,
+            "unseen_categories": {block: levels[block] for block in unseen},
+            "axes": axes,
+            "domain_distance": _round(domain_distance, 9),
+            "local_support": {
+                "feature_support": feature_support,
+                "feature_share": {block: _round(value, 12) for block, value in feature_share.items()},
+                "min_feature_block": min_block,
+                "min_feature_support": feature_support[min_block],
+                "min_feature_share": _round(feature_share[min_block], 12),
+                "min_feature_share_threshold": _round(
+                    float(thresholds.get("min_feature_share") or 0.0), 12
+                ),
+            },
+            "exact_context": {
+                "signature": signature,
+                "support": exact_support,
+                "share": _round(exact_share, 12),
+                "seen_in_calibration": exact_support > 0,
+                "min_share_threshold": _round(
+                    float(thresholds.get("min_exact_context_share") or 0.0), 12
+                ),
+                "decisive": False,
+                "rule": (
+                    "an exact context absent from TRAIN while every single-feature label is "
+                    "in-domain is not OOD by definition: this field is reported, never treated "
+                    "as an abstention cause"
+                ),
+            },
+            "predictive_uncertainty": predictive,
+        },
+    }
+
+
+def ood_gate_decision(
+    model: Any,
+    context: Mapping[str, Any],
+    *,
+    calibration: Mapping[str, Any] | None = None,
+    report_path: str | Path | None = None,
+    config: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Frozen OOD / uncertainty verdict of one public context.
+
+    ``model`` may be a fitted candidate, a :class:`ResponseModel` or ``None``
+    (then the predictive-uncertainty family is reported as unavailable and the
+    status can never be ``MODEL_SUPPORTED``).  ``calibration`` is the frozen
+    calibration document; when omitted it is loaded from ``report_path`` (by
+    default :data:`DEFAULT_OOD_REPORT_PATH`).
+    """
+    resolved = calibration if calibration is not None else load_ood_calibration(report_path)
+    evaluation = _ood_evaluate(resolved, model, context, config=config)
+    hard, soft = evaluation["hard_reasons"], evaluation["soft_reasons"]
+    if hard:
+        status = STATUS_MODEL_OOD_ABSTAIN
+    elif soft:
+        status = STATUS_MODEL_SUPPORTED_HIGH_UNCERTAINTY
+    else:
+        status = STATUS_MODEL_SUPPORTED
+    return {
+        "schema": OOD_GATE_SCHEMA,
+        "status": status,
+        "supported": status != STATUS_MODEL_OOD_ABSTAIN,
+        "abstain": status == STATUS_MODEL_OOD_ABSTAIN,
+        "high_uncertainty": status == STATUS_MODEL_SUPPORTED_HIGH_UNCERTAINTY,
+        "decided_by": "frozen_combination_of_domain_signals",
+        "reasons": hard + soft,
+        "hard_reasons": hard,
+        "soft_reasons": soft,
+        "status_definition": OOD_STATUS_DEFINITIONS[status],
+        "signals": evaluation["signals"],
+        "thresholds": dict(resolved["thresholds"]),
+        "calibration": {
+            "schema": resolved.get("schema"),
+            "canonical_payload_sha256": resolved.get("canonical_payload_sha256"),
+            "consumed_splits": list((resolved.get("provenance") or {}).get("consumed_splits") or []),
+        },
+        "validation_consumed": False,
+        "test_consumed": False,
+    }
+
+
+def _ood_probe_context(row: Mapping[str, Any], **overrides: Any) -> dict[str, Any]:
+    probe = dict(row)
+    probe["split"] = "TRAIN"
+    probe.update(overrides)
+    return probe
+
+
+def _ood_novel_in_domain_probe(
+    rows: Sequence[Mapping[str, Any]],
+    category_counts: Mapping[str, Mapping[str, int]],
+    exact_context_support: Mapping[str, int],
+) -> dict[str, Any] | None:
+    """Deterministic context whose labels are all known but whose exact cell never was."""
+    known = {block: set(counts) for block, counts in category_counts.items()}
+    materialized = list(rows)
+    outer = materialized[:512]
+    stride = max(1, len(materialized) // 512)
+    inner = materialized[::stride]
+    for left in outer:
+        for right in inner:
+            candidate = dict(left)
+            for field in OOD_PRICE_AXES:
+                candidate[field] = right.get(field)
+            candidate["target_total_bb"] = None
+            candidate["observed_sizing_bb"] = None
+            levels = ood_feature_levels(candidate)
+            if any(levels[block] not in known[block] for block in OOD_FEATURE_BLOCKS):
+                continue
+            if exact_context_support.get(ood_exact_context_key(candidate), 0) == 0:
+                return candidate
+    return None
+
+
+def _ood_fold_of(identity: str, seed: int, folds: int) -> int:
+    return int(stable_hash(f"grm-ood/{int(seed)}/{identity}")[:8], 16) % int(folds)
+
+
+def _ood_status_counts(statuses: Sequence[str]) -> dict[str, Any]:
+    counts = {status: 0 for status in OOD_STATUSES}
+    for status in statuses:
+        counts[status] += 1
+    total = len(statuses)
+    return {
+        "n": total,
+        "counts": counts,
+        "shares": {
+            status: (_round(count / total) if total else None) for status, count in counts.items()
+        },
+    }
+
+
+def _ood_stratum(exact_support: int, feature_in_domain: bool) -> str:
+    if exact_support >= OOD_FREQUENT_EXACT_MIN_SUPPORT:
+        return OOD_STRATUM_FREQUENT_EXACT
+    if exact_support > 0:
+        return OOD_STRATUM_RARE_EXACT
+    return OOD_STRATUM_EXACT_ABSENT_IN_DOMAIN if feature_in_domain else OOD_STRATUM_EXACT_ABSENT_OUT_OF_DOMAIN
+
+
+def _ood_sample_rows(
+    rows: Sequence[Mapping[str, Any]], seed: int, folds: int, max_rows: int
+) -> tuple[list[dict[str, Any]], dict[int, list[dict[str, Any]]], int]:
+    total = len(rows)
+    stride = max(1, total // max(int(max_rows), 1))
+    sample = list(rows)[::stride][: int(max_rows)]
+    folds = max(int(folds), 2)
+    buckets: dict[int, list[dict[str, Any]]] = {index: [] for index in range(folds)}
+    for index, row in enumerate(sample):
+        buckets[_ood_fold_of(_row_identity(row, index), seed, folds)].append(row)
+    return sample, buckets, stride
+
+
+def _ood_calibrate_thresholds(
+    rows: Sequence[Mapping[str, Any]],
+    config: Mapping[str, Any],
+    *,
+    seed: int,
+    folds: int,
+    max_rows: int,
+    tuning_max_rows: int,
+    architectures: Sequence[str],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Hand-grouped TRAIN-only cross-validation of the gate signal distributions.
+
+    Each fold refits the model on the fit-fold rows and evaluates the *fit-fold*
+    calibration on the held-out rows, so both the predictions and the domain
+    statistics behind them are genuinely out of fold.  The thresholds are then
+    read off the pooled out-of-fold TRAIN signal distributions.
+    """
+    folds = max(int(folds), 2)
+    sample, buckets, stride = _ood_sample_rows(rows, seed, folds, max_rows)
+    records: list[dict[str, Any]] = []
+    fold_summaries: list[dict[str, Any]] = []
+    for fold_index in range(folds):
+        holdout = buckets[fold_index]
+        fit_rows = [row for index, bucket in buckets.items() if index != fold_index for row in bucket]
+        if not holdout or not fit_rows:
+            fold_summaries.append(
+                {"fold": fold_index, "fit_rows": len(fit_rows), "holdout_rows": len(holdout), "skipped": True}
+            )
+            continue
+        fit_support = _ood_exact_context_support(fit_rows)
+        fold_calibration = {
+            "schema": OOD_CALIBRATION_SCHEMA,
+            "domain": _ood_domain_stats(fit_rows, config),
+            "category_counts": _ood_category_counts(fit_rows),
+            "exact_context_support": fit_support,
+            "thresholds": {**OOD_FALLBACK_THRESHOLDS, "domain_distance": float("inf")},
+            "provenance": {
+                "consumed_splits": ["TRAIN"],
+                "rows": len(fit_rows),
+                "validation_consumed": False,
+                "test_consumed": False,
+            },
+        }
+        models = [
+            fit(
+                fit_rows,
+                seed,
+                architecture=architecture,
+                config=make_config(tuning_max_rows=tuning_max_rows),
+            )
+            for architecture in architectures
+        ]
+        for row in holdout:
+            for architecture, candidate in zip(architectures, models):
+                evaluation = _ood_evaluate(fold_calibration, candidate, row)
+                signals = evaluation["signals"]
+                records.append(
+                    {
+                        "architecture": architecture,
+                        "fold": fold_index,
+                        "stratum": _ood_stratum(
+                            int(signals["exact_context"]["support"]),
+                            not signals["unseen_categories"],
+                        ),
+                        "hard_reasons": list(evaluation["hard_reasons"]),
+                        "signals": {
+                            "normalized_entropy": signals["predictive_uncertainty"]["normalized_entropy"],
+                            "model_node_support_per_row": signals["predictive_uncertainty"][
+                                "model_node_support_per_row"
+                            ],
+                            "min_feature_share": signals["local_support"]["min_feature_share"],
+                            "exact_context_share": signals["exact_context"]["share"],
+                            "domain_distance": signals["domain_distance"],
+                        },
+                    }
+                )
+        fold_summaries.append(
+            {
+                "fold": fold_index,
+                "fit_rows": len(fit_rows),
+                "holdout_rows": len(holdout),
+                "skipped": False,
+                "fit_exact_contexts": len(fit_support),
+            }
+        )
+
+    # Thresholds are read off the rows that are in-domain for their own fit fold
+    # only: the tails must describe supported decisions, not the abstentions.
+    in_domain = [record for record in records if not record["hard_reasons"]]
+    signal_keys = (
+        "normalized_entropy",
+        "model_node_support_per_row",
+        "min_feature_share",
+        "exact_context_share",
+        "domain_distance",
+    )
+    observed: dict[str, list[float]] = {
+        key: sorted(
+            float(record["signals"][key])
+            for record in in_domain
+            if record["signals"][key] is not None
+        )
+        for key in signal_keys
+    }
+
+    def tail(key: str, level: float) -> float:
+        values = observed[key]
+        if not values:
+            return float(OOD_FALLBACK_THRESHOLDS[key])
+        return float(_quantile(values, level))
+
+    thresholds = {
+        "min_feature_share": _round(tail("min_feature_share", OOD_LOW_TAIL), 12),
+        "min_exact_context_share": _round(tail("exact_context_share", OOD_LOW_TAIL), 12),
+        "min_model_node_support_per_row": _round(
+            tail("model_node_support_per_row", OOD_LOW_TAIL), 12
+        ),
+        "normalized_entropy": _round(tail("normalized_entropy", OOD_HIGH_TAIL), 9),
+        "domain_distance": _round(tail("domain_distance", OOD_HIGH_TAIL), 9),
+        "extrapolation_margin": float(OOD_FALLBACK_THRESHOLDS["extrapolation_margin"]),
+    }
+    evidence = {
+        "protocol": {
+            "kind": "train_only_hand_grouped_cross_validation",
+            "consumed_splits": ["TRAIN"],
+            "validation_consumed": False,
+            "test_consumed": False,
+            "fold_assignment": f"int(stable_hash('grm-ood/{int(seed)}/<hand_id>')[:8], 16) % {folds}",
+            "group_key": "hand_id",
+            "folds": folds,
+            "seed": int(seed),
+            "architectures": list(architectures),
+            "sample_rows": len(sample),
+            "stride": stride,
+            "high_tail": OOD_HIGH_TAIL,
+            "low_tail": OOD_LOW_TAIL,
+            "threshold_rule": (
+                "soft thresholds are read off the pooled out-of-fold TRAIN signal distributions of "
+                "the rows that are in-domain for their own fit fold: high tail (95th percentile) "
+                "for the normalized entropy and the robust domain distance, low tail (5th "
+                "percentile) for the feature-, exact-context- and fitted-node-support share floors"
+            ),
+        },
+        "folds": fold_summaries,
+        "records": len(records),
+        "signal_quantiles": {
+            key: {
+                "n": len(observed[key]),
+                "min": _round(_quantile(observed[key], 0.0), 12),
+                "p05": _round(_quantile(observed[key], OOD_LOW_TAIL), 12),
+                "median": _round(_quantile(observed[key], 0.5), 12),
+                "p95": _round(_quantile(observed[key], OOD_HIGH_TAIL), 12),
+                "max": _round(_quantile(observed[key], 1.0), 12),
+            }
+            for key in signal_keys
+        },
+    }
+    return thresholds, evidence
+
+
+def _ood_out_of_fold(
+    rows: Sequence[Mapping[str, Any]],
+    config: Mapping[str, Any],
+    calibration: Mapping[str, Any],
+    *,
+    seed: int,
+    folds: int,
+    max_rows: int,
+    tuning_max_rows: int,
+    architectures: Sequence[str],
+) -> dict[str, Any]:
+    """Frozen-threshold status coverage on genuinely held-out TRAIN decisions."""
+    folds = max(int(folds), 2)
+    sample, buckets, stride = _ood_sample_rows(rows, seed, folds, max_rows)
+    statuses: list[str] = []
+    reasons: dict[str, int] = {}
+    by_stratum: dict[str, list[str]] = {stratum: [] for stratum in OOD_STRATA}
+    absent_in_domain = {
+        "rows": 0,
+        "abstained": 0,
+        "abstained_without_extrapolation": 0,
+        "abstain_reason_counts": {},
+        "statuses": {status: 0 for status in OOD_STATUSES},
+    }
+    for fold_index in range(folds):
+        holdout = buckets[fold_index]
+        fit_rows = [row for index, bucket in buckets.items() if index != fold_index for row in bucket]
+        if not holdout or not fit_rows:
+            continue
+        fold_calibration = {
+            "schema": OOD_CALIBRATION_SCHEMA,
+            "domain": _ood_domain_stats(fit_rows, config),
+            "category_counts": _ood_category_counts(fit_rows),
+            "exact_context_support": _ood_exact_context_support(fit_rows),
+            "thresholds": calibration["thresholds"],
+            "provenance": {
+                "consumed_splits": ["TRAIN"],
+                "rows": len(fit_rows),
+                "validation_consumed": False,
+                "test_consumed": False,
+            },
+        }
+        candidate = fit(
+            fit_rows,
+            seed,
+            architecture=architectures[0],
+            config=make_config(tuning_max_rows=tuning_max_rows),
+        )
+        for row in holdout:
+            decision = ood_gate_decision(candidate, row, calibration=fold_calibration)
+            status = decision["status"]
+            statuses.append(status)
+            for reason in decision["reasons"]:
+                reasons[reason] = reasons.get(reason, 0) + 1
+            stratum = _ood_stratum(
+                int(decision["signals"]["exact_context"]["support"]),
+                not decision["signals"]["unseen_categories"],
+            )
+            by_stratum[stratum].append(status)
+            if stratum == OOD_STRATUM_EXACT_ABSENT_IN_DOMAIN:
+                absent_in_domain["rows"] += 1
+                absent_in_domain["statuses"][status] += 1
+                if status == STATUS_MODEL_OOD_ABSTAIN:
+                    absent_in_domain["abstained"] += 1
+                    for reason in decision["reasons"]:
+                        bucket = absent_in_domain["abstain_reason_counts"]
+                        bucket[reason] = bucket.get(reason, 0) + 1
+                    if not any(
+                        reason in set(OOD_HARD_REASONS)
+                        and reason.startswith("EXTRAPOLATION_")
+                        for reason in decision["reasons"]
+                    ):
+                        # The acceptance rule under test: a never-observed exact
+                        # context must not, on its own, cause an abstention.
+                        absent_in_domain["abstained_without_extrapolation"] += 1
+    pooled = _ood_status_counts(statuses)
+    pooled["abstain_reason_counts"] = dict(sorted(reasons.items()))
+    pooled["by_stratum"] = {
+        stratum: _ood_status_counts(values) for stratum, values in sorted(by_stratum.items())
+    }
+    absent_in_domain["abstain_reason_counts"] = dict(
+        sorted(absent_in_domain["abstain_reason_counts"].items())
+    )
+    pooled["exact_context_absent_in_domain"] = absent_in_domain
+    pooled["reference_architecture"] = architectures[0]
+    pooled["folds"] = folds
+    pooled["rows"] = len(sample)
+    pooled["stride"] = stride
+    return pooled
+
+
+def _ood_report_checks(
+    rows: Sequence[Mapping[str, Any]],
+    reference_candidate: Mapping[str, Any],
+    calibration: Mapping[str, Any],
+    category_counts: Mapping[str, Mapping[str, int]],
+    exact_context_support: Mapping[str, int],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Deterministic acceptance probes of the frozen calibration."""
+    reference = rows[0]
+    unseen_probe = _ood_probe_context(reference, family="NEVER_OBSERVED_FAMILY_421")
+    stack_high = float((calibration["domain"]["effective_stack_bb"] or {}).get("trained_max") or 100.0)
+    stack_probe = _ood_probe_context(reference, effective_stack_bb=stack_high * 2.0 + 10.0)
+    ratio_high = float((calibration["domain"][OOD_SIZING_AXIS] or {}).get("trained_max") or 1.0)
+    aggressive = next((row for row in rows if row.get("target_total_bb") is not None), reference)
+    denominator = float(aggressive.get("pot_before_bb") or 0.0) + float(aggressive.get("to_call_bb") or 0.0)
+    sizing_probe = _ood_probe_context(
+        aggressive, target_total_bb=round((ratio_high * 2.0 + 1.0) * max(denominator, 1.0), 6)
+    )
+    novel = _ood_novel_in_domain_probe(rows, category_counts, exact_context_support)
+    probes: dict[str, Any] = {}
+    for name, probe in (
+        ("never_seen_category", unseen_probe),
+        ("stack_extrapolation", stack_probe),
+        ("sizing_extrapolation", sizing_probe),
+        ("exact_context_absent_in_domain", novel),
+    ):
+        if probe is None:
+            probes[name] = {"available": False}
+            continue
+        decision = ood_gate_decision(reference_candidate, probe, calibration=calibration)
+        probes[name] = {
+            "available": True,
+            "status": decision["status"],
+            "abstain": decision["abstain"],
+            "reasons": decision["reasons"],
+            "exact_context_support": int(decision["signals"]["exact_context"]["support"]),
+            "unseen_categories": decision["signals"]["unseen_categories"],
+            "context": {
+                key: probe.get(key)
+                for key in (
+                    "family",
+                    "actor_position",
+                    "aggressor_position",
+                    "to_call_bb",
+                    "pot_before_bb",
+                    "effective_stack_bb",
+                    "target_total_bb",
+                    "raise_level",
+                    "limper_count",
+                    "caller_count",
+                )
+            },
+        }
+    checks = {
+        "never_seen_category_abstains": bool(
+            probes["never_seen_category"].get("status") == STATUS_MODEL_OOD_ABSTAIN
+            and "UNSEEN_CATEGORY" in probes["never_seen_category"].get("reasons", [])
+        ),
+        "stack_extrapolation_abstains": bool(
+            probes["stack_extrapolation"].get("status") == STATUS_MODEL_OOD_ABSTAIN
+            and "EXTRAPOLATION_STACK" in probes["stack_extrapolation"].get("reasons", [])
+        ),
+        "sizing_extrapolation_abstains": bool(
+            probes["sizing_extrapolation"].get("status") == STATUS_MODEL_OOD_ABSTAIN
+            and "EXTRAPOLATION_SIZING" in probes["sizing_extrapolation"].get("reasons", [])
+        ),
+        "exact_context_absent_in_domain_is_not_ood": bool(
+            probes["exact_context_absent_in_domain"].get("available")
+            and probes["exact_context_absent_in_domain"].get("status") != STATUS_MODEL_OOD_ABSTAIN
+            and probes["exact_context_absent_in_domain"].get("abstain") is False
+        ),
+        "thresholds_calibrated_on_train_only": True,
+        "validation_not_consumed": True,
+        "test_not_consumed": True,
+    }
+    return checks, probes
+
+
+def build_ood_calibration_report(
+    rows: Iterable[Mapping[str, Any]],
+    *,
+    config: Mapping[str, Any] | None = None,
+    seed: int = OOD_CALIBRATION_SEED,
+    folds: int = OOD_CALIBRATION_FOLDS,
+    max_rows: int = OOD_CALIBRATION_MAX_ROWS,
+    tuning_max_rows: int = OOD_CALIBRATION_TUNING_ROWS,
+    architectures: Sequence[str] = ARCHITECTURES,
+    dataset_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Build the frozen, TRAIN-only OOD/uncertainty gate calibration report."""
+    merged = make_config(**dict(config)) if isinstance(config, Mapping) else make_config()
+    for architecture in architectures:
+        if architecture not in ARCHITECTURES:
+            raise GeneralizedResponseModelError(f"unknown architecture {architecture!r}")
+    materialized = order_rows(rows)
+    if not materialized:
+        raise GeneralizedResponseModelError("no TRAIN rows supplied to the OOD calibration")
+    _assert_ood_train_only(materialized)
+
+    # Frozen domain surface: the whole supplied TRAIN set (cheap, no fitting).
+    domain = _ood_domain_stats(materialized, merged)
+    category_counts = _ood_category_counts(materialized)
+    exact_context_support = _ood_exact_context_support(materialized)
+    thresholds, evidence = _ood_calibrate_thresholds(
+        materialized,
+        merged,
+        seed=seed,
+        folds=folds,
+        max_rows=max_rows,
+        tuning_max_rows=tuning_max_rows,
+        architectures=architectures,
+    )
+    # Frozen floors: one observed TRAIN decision is the smallest density that
+    # counts as evidence, so a never-observed feature label or exact cell always
+    # falls below the calibrated floor and lands in the high-uncertainty band.
+    support_floor = 1.0 / len(materialized)
+    thresholds["min_feature_share"] = _round(
+        max(float(thresholds["min_feature_share"]), support_floor), 12
+    )
+    thresholds["min_exact_context_share"] = _round(
+        max(float(thresholds["min_exact_context_share"]), support_floor), 12
+    )
+    thresholds["support_floor_share"] = _round(support_floor, 12)
+
+    calibration: dict[str, Any] = {
+        "schema": OOD_CALIBRATION_SCHEMA,
+        "gate_schema": OOD_GATE_SCHEMA,
+        "statuses": list(OOD_STATUSES),
+        "status_definitions": dict(OOD_STATUS_DEFINITIONS),
+        "reason_codes": {
+            "hard": list(OOD_HARD_REASONS),
+            "soft": list(OOD_SOFT_REASONS),
+            "order": list(OOD_REASON_ORDER),
+        },
+        "feature_blocks": list(OOD_FEATURE_BLOCKS),
+        "numeric_axes": list(OOD_NUMERIC_AXES),
+        "domain": domain,
+        "category_counts": {
+            block: dict(sorted(counts.items())) for block, counts in category_counts.items()
+        },
+        "exact_context_support": dict(sorted(exact_context_support.items())),
+        "exact_context_diagnostic_only": True,
+        "thresholds": thresholds,
+        "provenance": {
+            "consumed_splits": ["TRAIN"],
+            "validation_consumed": False,
+            "test_consumed": False,
+            "rows": len(materialized),
+            "distinct_exact_contexts": len(exact_context_support),
+            "seed": int(seed),
+            "folds": int(folds),
+            "architectures": list(architectures),
+            "threshold_calibration": "train_only_hand_grouped_cross_validation",
+            "module": str(Path(__file__).resolve().relative_to(ROOT)),
+            "module_sha256": _sha256_file(Path(__file__)),
+            "contract": (
+                str(OOD_CONTRACT_PATH.relative_to(ROOT)) if OOD_CONTRACT_PATH.exists() else None
+            ),
+            "contract_sha256": (
+                _sha256_file(OOD_CONTRACT_PATH) if OOD_CONTRACT_PATH.exists() else None
+            ),
+            "config": merged,
+        },
+    }
+    calibration["canonical_payload_sha256"] = canonical_candidate_sha256(calibration)
+    # One reference candidate for the acceptance probes, fitted on a
+    # deterministic stride of the TRAIN rows (cheap, and never sees VALIDATION).
+    probe_rows, _, _ = _ood_sample_rows(materialized, seed, max(int(folds), 2), max_rows)
+    reference_candidate = fit(
+        probe_rows,
+        seed,
+        architecture=architectures[0],
+        config=make_config(tuning_max_rows=tuning_max_rows),
+    )
+    checks, probes = _ood_report_checks(
+        materialized, reference_candidate, calibration, category_counts, exact_context_support
+    )
+    report: dict[str, Any] = {
+        "schema": OOD_REPORT_SCHEMA,
+        "kind": "train_only_ood_uncertainty_gate_calibration",
+        "statuses": list(OOD_STATUSES),
+        "status_definitions": dict(OOD_STATUS_DEFINITIONS),
+        "gate_rules": {
+            "combination": (
+                "status = MODEL_OOD_ABSTAIN when any hard reason fires (never-observed category or "
+                "extrapolation outside the calibrated TRAIN domain); otherwise "
+                "MODEL_SUPPORTED_HIGH_UNCERTAINTY when any soft reason fires (density / local "
+                "support, robust domain distance, spline-knot boundary, predictive uncertainty); "
+                "otherwise MODEL_SUPPORTED"
+            ),
+            "hard_reasons": list(OOD_HARD_REASONS),
+            "soft_reasons": list(OOD_SOFT_REASONS),
+            "never_seen_category_abstains": True,
+            "sizing_extrapolation_abstains": True,
+            "stack_extrapolation_abstains": True,
+            "exact_context_absent_is_not_ood": (
+                "the exact-context cell support is reported as a diagnostic and can only raise the "
+                "status to MODEL_SUPPORTED_HIGH_UNCERTAINTY; a context whose exact cell was never "
+                "observed while every single-feature label is in-domain is never abstained"
+            ),
+            "thresholds_calibrated_on": ["TRAIN", "CV"],
+            "numeric_axes": {
+                "to_call_bb": (
+                    "absolute price to call, in bb; domain measured on every TRAIN decision and "
+                    "hard-failed by EXTRAPOLATION_PRICE when the query leaves the TRAIN hull"
+                ),
+                "pot_before_bb": (
+                    "pot before the decision, in bb; domain measured on every TRAIN decision and "
+                    "hard-failed by EXTRAPOLATION_PRICE when the query leaves the TRAIN hull"
+                ),
+                "effective_stack_bb": (
+                    "effective stack, in bb; domain measured on every TRAIN decision and "
+                    "hard-failed by EXTRAPOLATION_STACK when the query leaves the TRAIN hull"
+                ),
+                OOD_SIZING_AXIS: (
+                    "queried target_total_bb / (pot_before_bb + to_call_bb); the axis is only "
+                    "queried when a raise target is supplied, its domain is measured on the "
+                    "observed aggressive TRAIN rows and a query outside it hard-fails with "
+                    "EXTRAPOLATION_SIZING"
+                ),
+            },
+            "soft_signal_union_note": (
+                "every soft signal is calibrated at its own TRAIN out-of-fold tail (95th "
+                "percentile on the high side, 5th percentile on the low side), so the union of "
+                "the soft signals flags more than 5% of the in-domain decisions; the measured "
+                "out-of-fold rate is reported under out_of_fold.shares"
+            ),
+            "validation_consumed": False,
+            "test_consumed": False,
+        },
+        "calibration": calibration,
+        "calibration_evidence": evidence,
+        "scope": {
+            "consumed_splits": ["TRAIN"],
+            "validation_consumed": False,
+            "test_consumed": False,
+            "rows_consumed": len(materialized),
+            "cv_rows": evidence["protocol"]["sample_rows"],
+        },
+        "probes": probes,
+        "acceptance_checks": checks,
+        "provenance": {
+            "module_sha256": calibration["provenance"]["module_sha256"],
+            "contract": calibration["provenance"]["contract"],
+            "contract_sha256": calibration["provenance"]["contract_sha256"],
+            "config": merged,
+            "reference_candidate_architecture": reference_candidate["architecture"],
+            "reference_candidate_canonical_payload_sha256": reference_candidate[
+                "canonical_payload_sha256"
+            ],
+        },
+    }
+    if dataset_path is not None:
+        resolved = Path(dataset_path)
+        if resolved.exists():
+            label = str(resolved)
+            try:
+                label = str(resolved.relative_to(ROOT))
+            except ValueError:
+                label = str(resolved)
+            report["provenance"]["dataset"] = label
+            report["provenance"]["dataset_sha256"] = _sha256_file(resolved)
+    report["out_of_fold"] = _ood_out_of_fold(
+        materialized,
+        merged,
+        calibration,
+        seed=seed,
+        folds=folds,
+        max_rows=max_rows,
+        tuning_max_rows=tuning_max_rows,
+        architectures=architectures,
+    )
+    report["gate_rules"]["measured_out_of_fold_status_shares"] = report["out_of_fold"]["shares"]
+    return report
+
+
+def validate_ood_calibration(calibration: Mapping[str, Any]) -> list[str]:
+    """Fail-closed structural validation of a frozen gate calibration."""
+    errors: list[str] = []
+
+    def require(condition: bool, message: str) -> None:
+        if not condition:
+            errors.append(message)
+
+    require(isinstance(calibration, Mapping), "calibration must be an object")
+    if not isinstance(calibration, Mapping):
+        return errors
+    require(
+        calibration.get("schema") == OOD_CALIBRATION_SCHEMA,
+        f"schema must be {OOD_CALIBRATION_SCHEMA}",
+    )
+    require(
+        list(calibration.get("statuses") or []) == list(OOD_STATUSES),
+        "statuses must be the three frozen statuses",
+    )
+    domain = calibration.get("domain")
+    require(isinstance(domain, Mapping), "domain must be an object")
+    if isinstance(domain, Mapping):
+        for axis in OOD_NUMERIC_AXES:
+            require(axis in domain, f"domain must carry the {axis} axis")
+    counts = calibration.get("category_counts")
+    require(isinstance(counts, Mapping), "category_counts must be an object")
+    if isinstance(counts, Mapping):
+        for block in OOD_FEATURE_BLOCKS:
+            require(block in counts and bool(counts[block]), f"category_counts must cover {block}")
+    require(
+        isinstance(calibration.get("exact_context_support"), Mapping),
+        "exact_context_support must be an object",
+    )
+    require(
+        calibration.get("exact_context_diagnostic_only") is True,
+        "exact_context_support must be declared diagnostic-only",
+    )
+    thresholds = calibration.get("thresholds")
+    require(isinstance(thresholds, Mapping), "thresholds must be an object")
+    if isinstance(thresholds, Mapping):
+        for key in (
+            "min_feature_share",
+            "min_exact_context_share",
+            "min_model_node_support_per_row",
+            "normalized_entropy",
+            "domain_distance",
+        ):
+            require(key in thresholds, f"thresholds must carry {key}")
+    provenance = calibration.get("provenance")
+    require(isinstance(provenance, Mapping), "provenance must be an object")
+    if isinstance(provenance, Mapping):
+        require(provenance.get("consumed_splits") == ["TRAIN"], "consumed_splits must be TRAIN only")
+        require(provenance.get("validation_consumed") is False, "validation_consumed must be false")
+        require(provenance.get("test_consumed") is False, "test_consumed must be false")
+    digest = calibration.get("canonical_payload_sha256")
+    require(
+        isinstance(digest, str)
+        and len(digest) == 64
+        and all(character in "0123456789abcdef" for character in digest),
+        "canonical_payload_sha256 must be a lowercase sha256",
+    )
+    if isinstance(digest, str) and len(digest) == 64:
+        require(
+            digest == canonical_candidate_sha256(calibration),
+            "canonical_payload_sha256 does not match the calibration payload",
+        )
+    return errors
+
+
+def validate_ood_decision(decision: Mapping[str, Any]) -> list[str]:
+    """Fail-closed structural validation of a gate decision."""
+    errors: list[str] = []
+
+    def require(condition: bool, message: str) -> None:
+        if not condition:
+            errors.append(message)
+
+    require(isinstance(decision, Mapping), "decision must be an object")
+    if not isinstance(decision, Mapping):
+        return errors
+    require(decision.get("schema") == OOD_GATE_SCHEMA, f"schema must be {OOD_GATE_SCHEMA}")
+    status = decision.get("status")
+    require(status in OOD_STATUSES, f"status must be one of {list(OOD_STATUSES)}")
+    require(
+        decision.get("abstain") is (status == STATUS_MODEL_OOD_ABSTAIN),
+        "abstain must match the status",
+    )
+    require(
+        decision.get("supported") is (status != STATUS_MODEL_OOD_ABSTAIN),
+        "supported must match the status",
+    )
+    reasons = decision.get("reasons")
+    require(isinstance(reasons, list), "reasons must be a list")
+    if isinstance(reasons, list):
+        unknown = [reason for reason in reasons if reason not in OOD_REASON_ORDER]
+        require(not unknown, f"reasons must be known reason codes, got {unknown}")
+        if status == STATUS_MODEL_OOD_ABSTAIN:
+            require(
+                bool(set(reasons) & set(OOD_HARD_REASONS)),
+                "an abstention must carry at least one hard reason",
+            )
+        else:
+            require(
+                not (set(reasons) & set(OOD_HARD_REASONS)),
+                f"{status} must not carry a hard reason",
+            )
+    require(decision.get("validation_consumed") is False, "validation_consumed must be false")
+    require(decision.get("test_consumed") is False, "test_consumed must be false")
+    signals = decision.get("signals")
+    require(isinstance(signals, Mapping), "signals must be an object")
+    if isinstance(signals, Mapping):
+        exact = signals.get("exact_context")
+        require(isinstance(exact, Mapping), "signals.exact_context must be an object")
+        if isinstance(exact, Mapping):
+            require(exact.get("decisive") is False, "the exact-context signal must stay non-decisive")
+    return errors
+
+
+def load_ood_calibration(path: str | Path | None = None) -> dict[str, Any]:
+    """Load and validate the frozen calibration from the persisted report."""
+    target = Path(path) if path is not None else DEFAULT_OOD_REPORT_PATH
+    if not target.exists():
+        raise GeneralizedResponseModelError(
+            f"no OOD calibration report at {target}; run --ood-calibration-report"
+        )
+    document = json.loads(target.read_text(encoding="utf-8"))
+    calibration = document.get("calibration") if isinstance(document, Mapping) else None
+    if not isinstance(calibration, Mapping):
+        raise GeneralizedResponseModelError(f"{target} does not carry a calibration document")
+    errors = validate_ood_calibration(calibration)
+    if errors:
+        raise GeneralizedResponseModelError("invalid OOD calibration: " + "; ".join(errors))
+    return dict(calibration)
+
+
+def write_ood_calibration_report(
+    report: Mapping[str, Any], path: str | Path = DEFAULT_OOD_REPORT_PATH
+) -> dict[str, Any]:
+    """Persist the calibration report byte-reproducibly and return its identity."""
+    target = Path(path)
+    if target.parent and not target.parent.exists():
+        target.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(report, sort_keys=True, indent=2, ensure_ascii=True) + "\n"
+    target.write_text(payload, encoding="utf-8")
+    return {
+        "path": str(target),
+        "sha256": sha256_bytes(payload.encode("utf-8")),
+        "bytes": len(payload.encode("utf-8")),
+        "schema": report.get("schema"),
+        "calibration_canonical_payload_sha256": (
+            report.get("calibration") or {}
+        ).get("canonical_payload_sha256"),
+    }
+
+
+# ---------------------------------------------------------------------------
 # persistence and validation
 # ---------------------------------------------------------------------------
 
@@ -3417,6 +4713,14 @@ class ResponseModel:
         """NLL/CRPS of one queried raise target under the conditional density."""
         return score_raise_sizing(self.candidate, context, target_total_bb, **kwargs)
 
+    def ood_gate(self, context: Mapping[str, Any], **kwargs: Any) -> dict[str, Any]:
+        """Frozen OOD / uncertainty verdict: MODEL_SUPPORTED, HIGH_UNCERTAINTY or ABSTAIN."""
+        return ood_gate_decision(self.candidate, context, **kwargs)
+
+    def ood_status(self, context: Mapping[str, Any], **kwargs: Any) -> str:
+        """Just the machine-readable status of :meth:`ood_gate`."""
+        return str(self.ood_gate(context, **kwargs)["status"])
+
 
 # ---------------------------------------------------------------------------
 # CLI and dependency-free self-check
@@ -3514,6 +4818,35 @@ def _cli_sizing_report(args: argparse.Namespace) -> int:
     )
     persisted = write_raise_sizing_report(report, args.sizing_report_out)
     print(json.dumps({"persisted": persisted, "guarantees": report["guarantees"]}, indent=2, sort_keys=True))
+    return 0
+
+
+def _cli_ood_calibration_report(args: argparse.Namespace) -> int:
+    dataset_path = Path(args.dataset).resolve()
+    rows = read_dataset_rows(dataset_path, splits=("TRAIN",))
+    config = make_config(tuning_max_rows=args.tuning_max_rows, holdout_modulus=args.holdout_modulus)
+    report = build_ood_calibration_report(
+        rows,
+        config=config,
+        seed=args.seed,
+        folds=args.ood_folds,
+        max_rows=args.ood_max_rows,
+        tuning_max_rows=args.ood_tuning_rows,
+        dataset_path=dataset_path,
+    )
+    persisted = write_ood_calibration_report(report, args.ood_report_out)
+    print(
+        json.dumps(
+            {
+                "persisted": persisted,
+                "acceptance_checks": report["acceptance_checks"],
+                "thresholds": report["calibration"]["thresholds"],
+                "out_of_fold": report["out_of_fold"]["shares"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
     return 0
 
 
@@ -3691,6 +5024,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--sizing-metrics-split", default="", help="optional fold restriction for the metrics")
     parser.add_argument("--sizing-steps", type=int, default=SIZING_QUADRATURE_STEPS)
+    parser.add_argument(
+        "--ood-calibration-report",
+        action="store_true",
+        help="calibrate the OOD/uncertainty gate on TRAIN and persist OOD_CALIBRATION_REPORT.json",
+    )
+    parser.add_argument("--ood-report-out", default=str(DEFAULT_OOD_REPORT_PATH))
+    parser.add_argument("--ood-folds", type=int, default=OOD_CALIBRATION_FOLDS)
+    parser.add_argument("--ood-max-rows", type=int, default=OOD_CALIBRATION_MAX_ROWS)
+    parser.add_argument("--ood-tuning-rows", type=int, default=OOD_CALIBRATION_TUNING_ROWS)
     return parser.parse_args(argv)
 
 
@@ -3703,7 +5045,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _cli_fit(args)
     if args.sizing_report:
         return _cli_sizing_report(args)
-    print("nothing to do: pass --self-check or --fit")
+    if args.ood_calibration_report:
+        return _cli_ood_calibration_report(args)
+    print("nothing to do: pass --self-check, --fit, --sizing-report or --ood-calibration-report")
     return 2
 
 

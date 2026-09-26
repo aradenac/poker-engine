@@ -560,7 +560,7 @@
   "dataset": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
   "dataset_sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
   "eval_split": "VALIDATION",
-  "module_sha256": "a224a99300ed78fadf072ad2161f6bb9b5c6310c0e84da4149d2ae149135f31f",
+  "module_sha256": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3",
   "persisted": [
     {
       "architecture": "regularized_multinomial_spline",

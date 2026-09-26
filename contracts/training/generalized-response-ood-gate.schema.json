@@ -1,0 +1,511 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/generalized-response-ood-gate.schema.json",
+  "title": "Generalized preflop response OOD / uncertainty gate contract",
+  "description": "Contract of issue #421's OOD / uncertainty gate (tools/preflop/generalized_response_model.py, T6). One file covers the three documents the gate produces: the machine-readable decision of one public context, the frozen TRAIN-only calibration it consumes, and the calibration report persisted as analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json. The statuses are stable: MODEL_SUPPORTED, MODEL_SUPPORTED_HIGH_UNCERTAINTY and MODEL_OOD_ABSTAIN. A never-observed single-feature category and a sizing / stack / price extrapolation outside the calibrated TRAIN domain abstain; an exact context that was never observed while every single-feature label is in-domain is not OOD by definition. The contract is stdlib-validated in tests/preflop/test_generalized_response_ood.py, consistent with the repository rule that jsonschema is not a declared dependency.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/oodGateDecision"
+    },
+    {
+      "$ref": "#/$defs/calibration"
+    },
+    {
+      "$ref": "#/$defs/oodCalibrationReport"
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "status": {
+      "enum": [
+        "MODEL_SUPPORTED",
+        "MODEL_SUPPORTED_HIGH_UNCERTAINTY",
+        "MODEL_OOD_ABSTAIN"
+      ]
+    },
+    "reasonCode": {
+      "enum": [
+        "UNSEEN_CATEGORY",
+        "EXTRAPOLATION_STACK",
+        "EXTRAPOLATION_SIZING",
+        "EXTRAPOLATION_PRICE",
+        "MISSING_DOMAIN_AXIS",
+        "SPLINE_BOUNDARY_EXTRAPOLATION",
+        "DOMAIN_DISTANCE",
+        "LOW_FEATURE_SUPPORT",
+        "LOW_EXACT_CONTEXT_SUPPORT",
+        "HIGH_PREDICTIVE_ENTROPY",
+        "LOW_MODEL_NODE_SUPPORT",
+        "PREDICTIVE_UNCERTAINTY_UNAVAILABLE"
+      ]
+    },
+    "hardReasonCode": {
+      "enum": [
+        "UNSEEN_CATEGORY",
+        "EXTRAPOLATION_STACK",
+        "EXTRAPOLATION_SIZING",
+        "EXTRAPOLATION_PRICE",
+        "MISSING_DOMAIN_AXIS"
+      ]
+    },
+    "featureBlock": {
+      "enum": [
+        "family",
+        "actor_position",
+        "aggressor_position",
+        "caller_count",
+        "limper_count",
+        "raise_level",
+        "live_position_count",
+        "to_call_bucket",
+        "effective_stack_bucket",
+        "pot_bucket"
+      ]
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min_feature_share",
+        "min_exact_context_share",
+        "min_model_node_support_per_row",
+        "normalized_entropy",
+        "domain_distance",
+        "extrapolation_margin"
+      ],
+      "properties": {
+        "min_feature_share": {
+          "type": "number",
+          "minimum": 0
+        },
+        "min_exact_context_share": {
+          "type": "number",
+          "minimum": 0
+        },
+        "min_model_node_support_per_row": {
+          "type": "number",
+          "minimum": 0
+        },
+        "normalized_entropy": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "domain_distance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "extrapolation_margin": {
+          "type": "number",
+          "minimum": 0
+        },
+        "support_floor_share": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "consumed_splits",
+        "validation_consumed",
+        "test_consumed"
+      ],
+      "properties": {
+        "consumed_splits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validation_consumed": {
+          "const": false
+        },
+        "test_consumed": {
+          "const": false
+        }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "gate_schema",
+        "statuses",
+        "status_definitions",
+        "reason_codes",
+        "feature_blocks",
+        "numeric_axes",
+        "domain",
+        "category_counts",
+        "exact_context_support",
+        "exact_context_diagnostic_only",
+        "thresholds",
+        "provenance",
+        "canonical_payload_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "poker-generalized-response-ood-calibration/v1"
+        },
+        "gate_schema": {
+          "const": "poker-generalized-response-ood-gate/v1"
+        },
+        "statuses": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/status"
+          }
+        },
+        "status_definitions": {
+          "type": "object",
+          "required": [
+            "MODEL_SUPPORTED",
+            "MODEL_SUPPORTED_HIGH_UNCERTAINTY",
+            "MODEL_OOD_ABSTAIN"
+          ]
+        },
+        "reason_codes": {
+          "type": "object",
+          "required": [
+            "hard",
+            "soft",
+            "order"
+          ]
+        },
+        "feature_blocks": {
+          "type": "array",
+          "minItems": 10,
+          "items": {
+            "$ref": "#/$defs/featureBlock"
+          }
+        },
+        "numeric_axes": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "string"
+          }
+        },
+        "domain": {
+          "type": "object",
+          "required": [
+            "to_call_bb",
+            "pot_before_bb",
+            "effective_stack_bb",
+            "sizing_ratio"
+          ]
+        },
+        "category_counts": {
+          "type": "object"
+        },
+        "exact_context_support": {
+          "type": "object"
+        },
+        "exact_context_diagnostic_only": {
+          "const": true
+        },
+        "thresholds": {
+          "$ref": "#/$defs/thresholds"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "canonical_payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "oodGateDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "status",
+        "supported",
+        "abstain",
+        "high_uncertainty",
+        "decided_by",
+        "reasons",
+        "hard_reasons",
+        "soft_reasons",
+        "status_definition",
+        "signals",
+        "thresholds",
+        "calibration",
+        "validation_consumed",
+        "test_consumed"
+      ],
+      "properties": {
+        "schema": {
+          "const": "poker-generalized-response-ood-gate/v1"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "supported": {
+          "type": "boolean"
+        },
+        "abstain": {
+          "type": "boolean"
+        },
+        "high_uncertainty": {
+          "type": "boolean"
+        },
+        "decided_by": {
+          "const": "frozen_combination_of_domain_signals"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "hard_reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/hardReasonCode"
+          }
+        },
+        "soft_reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "status_definition": {
+          "type": "string"
+        },
+        "signals": {
+          "type": "object",
+          "required": [
+            "feature_levels",
+            "unseen_categories",
+            "axes",
+            "domain_distance",
+            "local_support",
+            "exact_context",
+            "predictive_uncertainty"
+          ],
+          "properties": {
+            "unseen_categories": {
+              "type": "object"
+            },
+            "axes": {
+              "type": "object",
+              "required": [
+                "to_call_bb",
+                "pot_before_bb",
+                "effective_stack_bb",
+                "sizing_ratio"
+              ]
+            },
+            "domain_distance": {
+              "type": "number",
+              "minimum": 0
+            },
+            "local_support": {
+              "type": "object"
+            },
+            "exact_context": {
+              "type": "object",
+              "required": [
+                "signature",
+                "support",
+                "seen_in_calibration",
+                "decisive"
+              ],
+              "properties": {
+                "signature": {
+                  "type": "string"
+                },
+                "support": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "seen_in_calibration": {
+                  "type": "boolean"
+                },
+                "decisive": {
+                  "const": false
+                }
+              }
+            }
+          }
+        },
+        "thresholds": {
+          "$ref": "#/$defs/thresholds"
+        },
+        "calibration": {
+          "type": "object",
+          "required": [
+            "schema",
+            "canonical_payload_sha256",
+            "consumed_splits"
+          ],
+          "properties": {
+            "schema": {
+              "const": "poker-generalized-response-ood-calibration/v1"
+            },
+            "canonical_payload_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "consumed_splits": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "validation_consumed": {
+          "const": false
+        },
+        "test_consumed": {
+          "const": false
+        }
+      }
+    },
+    "oodCalibrationReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "kind",
+        "statuses",
+        "status_definitions",
+        "gate_rules",
+        "calibration",
+        "calibration_evidence",
+        "scope",
+        "probes",
+        "acceptance_checks",
+        "out_of_fold",
+        "provenance"
+      ],
+      "properties": {
+        "schema": {
+          "const": "poker-generalized-response-ood-calibration-report/v1"
+        },
+        "kind": {
+          "const": "train_only_ood_uncertainty_gate_calibration"
+        },
+        "statuses": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/status"
+          }
+        },
+        "status_definitions": {
+          "type": "object"
+        },
+        "gate_rules": {
+          "type": "object",
+          "required": [
+            "combination",
+            "hard_reasons",
+            "soft_reasons",
+            "never_seen_category_abstains",
+            "sizing_extrapolation_abstains",
+            "stack_extrapolation_abstains",
+            "exact_context_absent_is_not_ood",
+            "thresholds_calibrated_on",
+            "validation_consumed",
+            "test_consumed"
+          ],
+          "properties": {
+            "validation_consumed": {
+              "const": false
+            },
+            "test_consumed": {
+              "const": false
+            }
+          }
+        },
+        "calibration": {
+          "$ref": "#/$defs/calibration"
+        },
+        "calibration_evidence": {
+          "type": "object",
+          "required": [
+            "protocol",
+            "folds",
+            "records"
+          ]
+        },
+        "scope": {
+          "type": "object",
+          "required": [
+            "consumed_splits",
+            "validation_consumed",
+            "test_consumed",
+            "rows_consumed",
+            "cv_rows"
+          ],
+          "properties": {
+            "consumed_splits": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "validation_consumed": {
+              "const": false
+            },
+            "test_consumed": {
+              "const": false
+            }
+          }
+        },
+        "probes": {
+          "type": "object"
+        },
+        "acceptance_checks": {
+          "type": "object",
+          "required": [
+            "never_seen_category_abstains",
+            "stack_extrapolation_abstains",
+            "sizing_extrapolation_abstains",
+            "exact_context_absent_in_domain_is_not_ood",
+            "thresholds_calibrated_on_train_only",
+            "validation_not_consumed",
+            "test_not_consumed"
+          ]
+        },
+        "out_of_fold": {
+          "type": "object",
+          "required": [
+            "n",
+            "counts",
+            "shares",
+            "by_stratum",
+            "exact_context_absent_in_domain"
+          ],
+          "properties": {
+            "by_stratum": {
+              "type": "object",
+              "required": [
+                "frequent_exact",
+                "rare_exact",
+                "exact_absent_in_domain",
+                "exact_absent_out_of_domain"
+              ]
+            }
+          }
+        },
+        "provenance": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

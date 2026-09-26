@@ -1068,7 +1068,7 @@
     "dataset_sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
     "exact_tree": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
     "frontier_resolution": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
-    "module_sha256": "a224a99300ed78fadf072ad2161f6bb9b5c6310c0e84da4149d2ae149135f31f"
+    "module_sha256": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3"
   },
   "rows_consumed": 105698,
   "schema": "poker-generalized-response-raise-sizing-report/v1",
