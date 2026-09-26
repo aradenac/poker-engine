@@ -5,17 +5,17 @@
     "sha256": "c78ae3c434d5f41e50567a131bdfb2b89982243379818709abeb0e5ec2385534"
   },
   "CANDIDATE_MANIFEST.json": {
-    "canonical_payload_sha256": "cec63b6e2d44b307e27353828dd442503e07f242188df98637d1a05c148a05c1",
-    "object": "sha256/d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c.json",
-    "sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
+    "canonical_payload_sha256": "2efff7e3fbbb8b5a001357bbe440be7e80f79eca54766143d10858057f4ce6ac",
+    "object": "sha256/ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c.json",
+    "sha256": "ee5907f35ee171d0a0690ec5ec902a87aee3643ac7099c2d405ca49531ff664c"
   },
   "SUMMARY.md": {
     "object": "sha256/8774dba57c7e831890cacc2fb9e1263ecf669d22797fa775e15221d263e5c84e.md",
     "sha256": "8774dba57c7e831890cacc2fb9e1263ecf669d22797fa775e15221d263e5c84e"
   },
   "TRAIN_FIT_REPORT.json": {
-    "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
-    "object": "sha256/ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5.json",
-    "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
+    "canonical_payload_sha256": "1924abc8e5f0b0ec53ff6e02e8791976dd79745554b281821311f302a907e46f",
+    "object": "sha256/b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5.json",
+    "sha256": "b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5"
   }
 }

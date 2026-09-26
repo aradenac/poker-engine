@@ -1,6 +1,6 @@
 # FROZEN_VALIDATION_PROTOCOL_v2 (hierarchical exact-context, #419)
 
-`poker-hierarchical-frozen-validation-protocol/v2` (`FROZEN_VALIDATION_PROTOCOL_REVISION`), revision 2, issue 419, authored `2026-09-26T00:00:00Z` (`AUTHORED_AFTER_VALIDATION_READ_NO_THRESHOLD_CHANGE`). Content-addressed here; the payload digest is `74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350` (canonical payload `cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de`).
+`poker-hierarchical-frozen-validation-protocol/v2` (`FROZEN_VALIDATION_PROTOCOL_REVISION`), revision 2, issue 419, authored `2026-09-26T00:00:00Z` (`AUTHORED_AFTER_VALIDATION_READ_NO_THRESHOLD_CHANGE`). Content-addressed here; the payload digest is `db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1` (canonical payload `e80732c4ea5512863c448497b89896799f24c942f744193832dabd5c568579f0`).
 
 It revises `poker-hierarchical-frozen-validation-protocol/v1` (`69c99a8b37589f1687b7e980344c9a79d69bbcd45be0a53ffd59bfea0ab583b3`, canonical `f283ce8dac9fbcfb5485eeb360217af4425fe947f249de652b03d96a13d40db5`) additively: the v1 bytes are unchanged and stay the source of record for thresholds, gates and comparators.
 

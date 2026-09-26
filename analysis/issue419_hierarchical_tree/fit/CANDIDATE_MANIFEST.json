@@ -163,7 +163,7 @@
       },
       {
         "path": "tools/preflop/model_a_sizing_hierarchical.py",
-        "sha256": "1cd25c17bc67c16e78d54fc105cf468e92d9dc7b27d4a5b259141715fd34be18"
+        "sha256": "7dfe162eef38e77277a6339555a3554cda104bbc256965734d17dff27707fdc7"
       },
       {
         "path": "tools/preflop/model_a_sizing_likelihood.py",
@@ -252,9 +252,9 @@
     "validation_decisions_read": 0
   },
   "fit_report": {
-    "canonical_payload_sha256": "1a27b69e554b7fffcc734f3a8f7f8d6684e057e665feb7c64d43db930ae0f903",
+    "canonical_payload_sha256": "1924abc8e5f0b0ec53ff6e02e8791976dd79745554b281821311f302a907e46f",
     "path": "TRAIN_FIT_REPORT.json",
-    "sha256": "ae5b7cc84a8a7a38cd5d832810bf90ecc82aa03cfc4915fc9b33162dbad056b5"
+    "sha256": "b1f7f5a9746d9adb048d9cdea025af8d7bcce73a03d1624e4c2af36824202dd5"
   },
   "holdout_boundary": {
     "holdout_access_scan": "PASS",

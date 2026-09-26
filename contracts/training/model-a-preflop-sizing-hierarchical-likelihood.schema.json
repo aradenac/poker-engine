@@ -465,10 +465,15 @@
         "reason_code",
         "reason_detail",
         "support",
+        "empirical_support",
         "pooling",
+        "pooling_provenance",
+        "effective_sample_size",
         "pooling_diagnostics",
         "posterior",
         "uncertainty",
+        "admissibility",
+        "posterior_identity",
         "raise_sizing",
         "information_boundary",
         "granularity"
@@ -544,6 +549,9 @@
               "const": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
             }
           }
+        },
+        "empirical_support": {
+          "$ref": "#/$defs/empiricalSupport"
         },
         "pooling": {
           "type": [
@@ -642,6 +650,115 @@
               "const": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
             }
           }
+        },
+        "pooling_provenance": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "level",
+            "rank",
+            "purpose",
+            "source_key",
+            "requested_key",
+            "retained_axes",
+            "pooled_axes",
+            "source_observations",
+            "source_distinct_hands",
+            "source_effective_sample_size",
+            "weight_exact",
+            "weight_parent",
+            "parent_dominated",
+            "kappa0",
+            "alpha_per_legal_marginal_action",
+            "support_source_key",
+            "counts_as_exact_support",
+            "support_isolation_rule"
+          ],
+          "properties": {
+            "level": {
+              "enum": [
+                "L0_EXACT_KEY",
+                "L1_STACK_POOL",
+                "L2_POT_POOL",
+                "L3_RUNTIME_SUPPORT_CONTEXT",
+                "L4_POSITION_PRICE_PRIOR"
+              ]
+            },
+            "rank": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "purpose": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_key": {
+              "type": "string",
+              "minLength": 1
+            },
+            "requested_key": {
+              "$ref": "#/$defs/exactKey"
+            },
+            "retained_axes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/axis"
+              }
+            },
+            "pooled_axes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/axis"
+              }
+            },
+            "source_observations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "source_distinct_hands": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "source_effective_sample_size": {
+              "type": "number",
+              "minimum": 0
+            },
+            "weight_exact": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "weight_parent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "parent_dominated": {
+              "type": "boolean"
+            },
+            "kappa0": {
+              "const": 16.0
+            },
+            "alpha_per_legal_marginal_action": {
+              "const": 0.5
+            },
+            "support_source_key": {
+              "$ref": "#/$defs/exactKey"
+            },
+            "counts_as_exact_support": {
+              "type": "boolean"
+            },
+            "support_isolation_rule": {
+              "const": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+            }
+          }
+        },
+        "effective_sample_size": {
+          "$ref": "#/$defs/effectiveSampleSize"
         },
         "pooling_diagnostics": {
           "type": "array",
@@ -804,6 +921,12 @@
             }
           }
         },
+        "admissibility": {
+          "$ref": "#/$defs/admissibility"
+        },
+        "posterior_identity": {
+          "$ref": "#/$defs/posteriorIdentity"
+        },
         "raise_sizing": {
           "type": "object",
           "additionalProperties": false,
@@ -926,6 +1049,299 @@
               "const": false
             }
           }
+        }
+      }
+    },
+    "empiricalSupport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer",
+        "support_granularity",
+        "support_level",
+        "requested_key",
+        "source_key",
+        "observations",
+        "distinct_hands",
+        "effective_sample_size",
+        "action_counts",
+        "denominator",
+        "thresholds",
+        "meets_observation_threshold",
+        "meets_distinct_hand_threshold",
+        "qualifies_as_exact_support",
+        "counts_from_pooled_level",
+        "borrowed_from_other_keys",
+        "support_isolation_rule"
+      ],
+      "properties": {
+        "layer": {
+          "const": "A_EXACT_EMPIRICAL_SUPPORT"
+        },
+        "support_granularity": {
+          "const": "hierarchical_exact_key"
+        },
+        "support_level": {
+          "const": "L0_EXACT_KEY"
+        },
+        "requested_key": {
+          "$ref": "#/$defs/exactKey"
+        },
+        "source_key": {
+          "$ref": "#/$defs/exactKey"
+        },
+        "observations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "distinct_hands": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effective_sample_size": {
+          "type": "number",
+          "minimum": 0
+        },
+        "action_counts": {
+          "$ref": "#/$defs/counts"
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["minimum_marginal_observations", "minimum_distinct_hands"],
+          "properties": {
+            "minimum_marginal_observations": {
+              "const": 20
+            },
+            "minimum_distinct_hands": {
+              "const": 20
+            }
+          }
+        },
+        "meets_observation_threshold": {
+          "type": "boolean"
+        },
+        "meets_distinct_hand_threshold": {
+          "type": "boolean"
+        },
+        "qualifies_as_exact_support": {
+          "type": "boolean"
+        },
+        "counts_from_pooled_level": {
+          "const": false
+        },
+        "borrowed_from_other_keys": {
+          "const": false
+        },
+        "support_isolation_rule": {
+          "const": "SUPPORT_ISOLATION_NO_KEY_BORROWS_SUPPORT"
+        }
+      }
+    },
+    "effectiveSampleSize": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "support_effective_sample_size",
+        "support_distinct_hands",
+        "pooling_source_effective_sample_size",
+        "level_used",
+        "credited_at"
+      ],
+      "properties": {
+        "support_effective_sample_size": {
+          "type": "number",
+          "minimum": 0
+        },
+        "support_distinct_hands": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pooling_source_effective_sample_size": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "level_used": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "credited_at": {
+          "const": "DISTINCT_HANDS_NEVER_INFLATED_BY_POOLING"
+        }
+      }
+    },
+    "admissibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer",
+        "node_closure_rule_id",
+        "status",
+        "answered",
+        "admissible",
+        "primary_failure_gate",
+        "reason_code",
+        "deferred_gates",
+        "gates"
+      ],
+      "properties": {
+        "layer": {
+          "const": "B_EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY"
+        },
+        "node_closure_rule_id": {
+          "const": "NODE_CLOSES_IFF_ALL_FROZEN_LAYER_B_GATES_PASS"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "answered": {
+          "type": "boolean"
+        },
+        "admissible": {
+          "type": "boolean"
+        },
+        "primary_failure_gate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deferred_gates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "gates": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "order",
+              "gate_id",
+              "reason_code",
+              "status_scope",
+              "applicable",
+              "evaluated",
+              "satisfied",
+              "detail"
+            ],
+            "properties": {
+              "order": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 7
+              },
+              "gate_id": {
+                "enum": [
+                  "EXACT_KEY_IDENTITY",
+                  "POOLING_PROVENANCE",
+                  "POOLING_LEVEL",
+                  "EFFECTIVE_SAMPLE_SIZE",
+                  "UNCERTAINTY",
+                  "CALIBRATION",
+                  "RAISE_SIZING_FRONTIER"
+                ]
+              },
+              "reason_code": {
+                "enum": [
+                  "REFUSED_EXACT_KEY_IDENTITY",
+                  "REFUSED_POOLING_PROVENANCE",
+                  "REFUSED_POOLING_LEVEL",
+                  "REFUSED_EFFECTIVE_SAMPLE_SIZE",
+                  "REFUSED_UNCERTAINTY",
+                  "REFUSED_CALIBRATION",
+                  "REFUSED_RAISE_SIZING_FRONTIER"
+                ]
+              },
+              "status_scope": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/status"
+                }
+              },
+              "applicable": {
+                "type": "boolean"
+              },
+              "evaluated": {
+                "type": "boolean"
+              },
+              "satisfied": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "posteriorIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason_code",
+        "unresolved_reason",
+        "reason_detail",
+        "posterior_present",
+        "probability_emitted",
+        "posterior_sha256"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "reason_code": {
+          "$ref": "#/$defs/status"
+        },
+        "unresolved_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason_detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "posterior_present": {
+          "type": "boolean"
+        },
+        "probability_emitted": {
+          "type": "boolean"
+        },
+        "posterior_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

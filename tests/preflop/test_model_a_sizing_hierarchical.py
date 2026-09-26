@@ -22,11 +22,18 @@ from tools.preflop.context_contract import build_context  # noqa: E402
 from tools.preflop.model_a_sizing_hierarchical import (  # noqa: E402
     ALPHA_PER_LEGAL_ACTION,
     CANDIDATE_ID,
+    GATE_POOLING_LEVEL,
+    GATE_REASON_BY_ID,
+    GATE_UNCERTAINTY,
     KAPPA0,
+    LAYER_A_EXACT_EMPIRICAL_SUPPORT,
+    LAYER_B_EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY,
+    LAYER_B_GATES,
     LEVEL_SPECS,
     MIN_DISTINCT_HANDS,
     MIN_MARGINAL_OBSERVATIONS,
     NEVER_MUTUALIZABLE_AXES,
+    NODE_CLOSURE_RULE_ID,
     POOLING_LEVELS,
     REASON_NO_ADMISSIBLE_POOLING,
     REASON_NO_EXACT_SUPPORT_NO_CONTEXT,
@@ -38,17 +45,22 @@ from tools.preflop.model_a_sizing_hierarchical import (  # noqa: E402
     SUPPORT_LEVEL,
     HierarchicalSizingError,
     SupportIsolationError,
+    admissibility_block,
     assert_support_isolation,
     canonical_candidate_sha256,
     canonical_response_sha256,
+    effective_sample_size_block,
+    empirical_support_block,
     hierarchical_exact_key,
     hierarchical_exact_key_from_whitelist,
     hierarchical_public_whitelist,
     level_key,
     level_keys,
     make_synthetic_hierarchical_candidate,
+    pooling_provenance_block,
     resolve_exact_context,
     runtime_exact_preflop_node_key,
+    uncertainty_is_machine_readable,
     validate_candidate,
     validate_response,
 )
@@ -792,6 +804,202 @@ def test_implementation_is_bound_to_the_frozen_issue_419_spec():
     assert spec["status"] == "SPEC_ONLY_NOT_ADMITTED"
 
 
+def _frozen_layer_b_vocabulary():
+    """The T1 gate ids and reason codes, read from the frozen v2 protocol."""
+    protocol = json.loads(
+        (
+            ROOT
+            / "analysis/issue419_hierarchical_tree/validation_protocol_v2"
+            / "FROZEN_VALIDATION_PROTOCOL_V2.json"
+        ).read_text(encoding="utf-8")
+    )
+    gates = protocol["gates"]
+    return (
+        list(gates["layer_b_admissibility_gate_ids"]),
+        list(gates["layer_b_admissibility_gate_reason_codes"]),
+    )
+
+
+def _estimate_context():
+    """A context whose exact key is thin but whose L1 stack pool qualifies."""
+    context = _stack_variant(100.0)
+    sibling = _stack_variant(60.0)
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=[
+            {"context": context, "hand_id": "exact", "action": "RAISE", "target_total_bb": 7.0}
+        ]
+        + _rows(sibling, "sib", MIN_MARGINAL_OBSERVATIONS, 9.0),
+    )
+    return context, candidate
+
+
+def test_two_layer_blocks_are_serialized_explicitly_for_every_status():
+    context = _context()
+    strong = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "strong", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    thin = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=[
+            {"context": context, "hand_id": "only", "action": "RAISE", "target_total_bb": 7.0}
+        ],
+    )
+    estimate_context, estimate_candidate = _estimate_context()
+    responses = {
+        STATUS_EXACT_EMPIRICAL_STRONG: resolve_exact_context(
+            candidate=strong, context=context
+        ),
+        STATUS_EXACT_HIERARCHICAL_ESTIMATE: resolve_exact_context(
+            candidate=estimate_candidate, context=estimate_context
+        ),
+        STATUS_EXACT_UNRESOLVED: resolve_exact_context(candidate=thin, context=context),
+    }
+    assert sorted(responses) == sorted(
+        [STATUS_EXACT_EMPIRICAL_STRONG, STATUS_EXACT_HIERARCHICAL_ESTIMATE, STATUS_EXACT_UNRESOLVED]
+    )
+    for status, response in responses.items():
+        with_status = f"status={status}"
+        assert response["status"] == status, with_status
+        assert response["reason_code"] == status, with_status
+        for block in (
+            "empirical_support",
+            "pooling_provenance",
+            "effective_sample_size",
+            "uncertainty",
+            "admissibility",
+            "posterior_identity",
+        ):
+            assert block in response, f"{with_status}: {block} must be serialized"
+        # Layer A is always the exact requested key, never a pooled level.
+        empirical = response["empirical_support"]
+        assert empirical["layer"] == LAYER_A_EXACT_EMPIRICAL_SUPPORT, with_status
+        assert empirical["source_key"] == response["requested_key"], with_status
+        assert empirical["counts_from_pooled_level"] is False, with_status
+        assert empirical["qualifies_as_exact_support"] is (
+            empirical["observations"] >= MIN_MARGINAL_OBSERVATIONS
+            and empirical["distinct_hands"] >= MIN_DISTINCT_HANDS
+        ), with_status
+        # Layer B reports per-gate state with the frozen T1 reason codes.
+        admissibility = response["admissibility"]
+        assert admissibility["layer"] == LAYER_B_EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY
+        assert admissibility["node_closure_rule_id"] == NODE_CLOSURE_RULE_ID
+        assert admissibility["status"] == status, with_status
+        assert [
+            gate["gate_id"] for gate in admissibility["gates"]
+        ] == [gate_id for _, gate_id, _, _ in LAYER_B_GATES], with_status
+        assert [
+            gate["reason_code"] for gate in admissibility["gates"]
+        ] == [reason for _, _, reason, _ in LAYER_B_GATES], with_status
+        identity = response["posterior_identity"]
+        assert identity["status"] == status and identity["reason_code"] == status
+        assert identity["posterior_present"] is (response["posterior"] is not None)
+        assert identity["probability_emitted"] is (response["posterior"] is not None)
+        validate_response(response)
+
+
+def test_hierarchical_estimate_is_never_exported_as_empirical_support():
+    context, candidate = _estimate_context()
+    response = resolve_exact_context(candidate=candidate, context=context)
+    assert response["status"] == STATUS_EXACT_HIERARCHICAL_ESTIMATE
+    # The exact key has one observation; the admissible parent has 21.
+    assert response["empirical_support"]["observations"] == 1
+    assert response["empirical_support"]["distinct_hands"] == 1
+    assert response["empirical_support"]["source_key"] == response["requested_key"]
+    assert response["empirical_support"]["qualifies_as_exact_support"] is False
+    assert response["pooling_provenance"]["source_observations"] == 21
+    assert response["pooling_provenance"]["source_key"] != response["requested_key"]
+    assert response["pooling_provenance"]["counts_as_exact_support"] is False
+    assert POOLING_LEVELS.index(response["pooling"]["level"]) > POOLING_LEVELS.index(
+        SUPPORT_LEVEL
+    )
+    assert response["uncertainty"] is not None
+    assert uncertainty_is_machine_readable(response["uncertainty"]) is True
+    assert response["admissibility"]["admissible"] is True
+    assert response["admissibility"]["primary_failure_gate"] is None
+    # The zero-exact-support estimate still reports zero layer-A counts.
+    sibling = _stack_variant(60.0)
+    zero_candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(sibling, "sib", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    zero = resolve_exact_context(candidate=zero_candidate, context=context)
+    assert zero["status"] == STATUS_EXACT_HIERARCHICAL_ESTIMATE
+    assert zero["empirical_support"]["observations"] == 0
+    assert zero["empirical_support"]["effective_sample_size"] == 0.0
+    assert zero["pooling_provenance"]["source_observations"] >= MIN_MARGINAL_OBSERVATIONS
+
+
+def test_admissibility_gates_match_the_frozen_t1_gate_vocabulary():
+    gate_ids, reason_codes = _frozen_layer_b_vocabulary()
+    assert [gate_id for _, gate_id, _, _ in LAYER_B_GATES] == gate_ids
+    assert [reason for _, _, reason, _ in LAYER_B_GATES] == reason_codes
+    assert [GATE_REASON_BY_ID[gate_id] for gate_id in gate_ids] == reason_codes
+    context = _context()
+    candidate = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=_rows(context, "strong", MIN_MARGINAL_OBSERVATIONS, 7.0),
+    )
+    response = resolve_exact_context(candidate=candidate, context=context)
+    for gate in response["admissibility"]["gates"]:
+        assert gate["reason_code"] == GATE_REASON_BY_ID[gate["gate_id"]]
+
+
+def test_absence_of_admissible_pooling_or_uncertainty_fails_closed():
+    context, candidate = _estimate_context()
+    response = resolve_exact_context(candidate=candidate, context=context)
+    support = response["support"]
+    pooling = response["pooling"]
+    uncertainty = response["uncertainty"]
+    assert "RAISE" in uncertainty["actions"]
+
+    admissible = admissibility_block(
+        requested_key=response["requested_key"],
+        support=support,
+        pooling=pooling,
+        uncertainty=uncertainty,
+        raise_sizing=response["raise_sizing"],
+        status=STATUS_EXACT_HIERARCHICAL_ESTIMATE,
+    )
+    assert admissible["admissible"] is True
+
+    # An answered estimate without its machine-readable uncertainty band is not
+    # admissible: the UNCERTAINTY gate fails with the frozen T1 reason code.
+    assert uncertainty_is_machine_readable(None) is False
+    without_uncertainty = admissibility_block(
+        requested_key=response["requested_key"],
+        support=support,
+        pooling=pooling,
+        uncertainty=None,
+        raise_sizing=response["raise_sizing"],
+        status=STATUS_EXACT_HIERARCHICAL_ESTIMATE,
+    )
+    assert without_uncertainty["admissible"] is False
+    assert without_uncertainty["primary_failure_gate"] == GATE_UNCERTAINTY
+    assert without_uncertainty["reason_code"] == "REFUSED_UNCERTAINTY"
+
+    # Absence of an admissible pooling level is EXACT_UNRESOLVED, with the
+    # failing gate and its frozen reason code serialized.
+    thin = make_synthetic_hierarchical_candidate(
+        population_id=POPULATION,
+        observations=[
+            {"context": context, "hand_id": "only", "action": "RAISE", "target_total_bb": 7.0}
+        ],
+    )
+    unresolved = resolve_exact_context(candidate=thin, context=context)
+    assert unresolved["status"] == STATUS_EXACT_UNRESOLVED
+    assert unresolved["unresolved_reason"] == REASON_NO_ADMISSIBLE_POOLING
+    assert unresolved["posterior"] is None
+    assert unresolved["uncertainty"] is None
+    assert unresolved["pooling"] is None
+    assert unresolved["pooling_provenance"] is None
+    assert unresolved["admissibility"]["admissible"] is False
+    assert unresolved["admissibility"]["primary_failure_gate"] == GATE_POOLING_LEVEL
+    assert unresolved["admissibility"]["reason_code"] == "REFUSED_POOLING_LEVEL"
+    validate_response(unresolved)
+
+
 def test_schema_locks_the_hierarchical_contract_and_validates_the_outputs():
     schema_path = (
         ROOT / "contracts/training/model-a-preflop-sizing-hierarchical-likelihood.schema.json"
@@ -812,6 +1020,50 @@ def test_schema_locks_the_hierarchical_contract_and_validates_the_outputs():
         STATUS_EXACT_HIERARCHICAL_ESTIMATE,
         STATUS_EXACT_UNRESOLVED,
     ]
+    # Provider/schema parity for the explicit two-layer serialization: the
+    # blocks are required by the contract, and every provider output below
+    # validates with them present.
+    response_required = set(schema["$defs"]["response"]["required"])
+    for block in (
+        "empirical_support",
+        "pooling_provenance",
+        "effective_sample_size",
+        "admissibility",
+        "posterior_identity",
+    ):
+        assert block in response_required, block
+    assert schema["$defs"]["empiricalSupport"]["properties"]["layer"]["const"] == (
+        LAYER_A_EXACT_EMPIRICAL_SUPPORT
+    )
+    assert schema["$defs"]["empiricalSupport"]["properties"]["source_key"]["$ref"] == (
+        "#/$defs/exactKey"
+    )
+    assert schema["$defs"]["empiricalSupport"]["properties"]["counts_from_pooled_level"][
+        "const"
+    ] is False
+    assert schema["$defs"]["empiricalSupport"]["properties"]["thresholds"]["properties"] == {
+        "minimum_marginal_observations": {"const": MIN_MARGINAL_OBSERVATIONS},
+        "minimum_distinct_hands": {"const": MIN_DISTINCT_HANDS},
+    }
+    assert schema["$defs"]["admissibility"]["properties"]["layer"]["const"] == (
+        LAYER_B_EXACT_CONTEXT_ESTIMATE_ADMISSIBILITY
+    )
+    assert schema["$defs"]["admissibility"]["properties"]["node_closure_rule_id"][
+        "const"
+    ] == NODE_CLOSURE_RULE_ID
+    gate_schema = schema["$defs"]["admissibility"]["properties"]["gates"]["items"]
+    assert gate_schema["properties"]["gate_id"]["enum"] == [
+        gate_id for _, gate_id, _, _ in LAYER_B_GATES
+    ]
+    assert gate_schema["properties"]["reason_code"]["enum"] == [
+        reason for _, _, reason, _ in LAYER_B_GATES
+    ]
+    assert schema["$defs"]["effectiveSampleSize"]["properties"]["credited_at"]["const"] == (
+        "DISTINCT_HANDS_NEVER_INFLATED_BY_POOLING"
+    )
+    assert schema["$defs"]["posteriorIdentity"]["properties"]["status"]["$ref"] == (
+        "#/$defs/status"
+    )
     exact_schema = json.loads(
         (ROOT / "contracts/training/model-a-preflop-sizing-likelihood.schema.json").read_text(
             encoding="utf-8"

@@ -138,8 +138,8 @@ The single frozen protocol above is split into two explicitly named layers by a
 `analysis/issue419_hierarchical_tree/validation_protocol_v2/FROZEN_VALIDATION_PROTOCOL_V2.json`
 (`poker-hierarchical-frozen-validation-protocol/v2` at
 `analysis/issue419_hierarchical_tree/validation_protocol_v2/`, digest
-`74b8a006ae84f8b9b22913ef76977e95f08992feb9765639a46d1ac49eb87350`, canonical
-payload `cb598a9fc2353aa78f19a7263a62a8ccbdba60eb400264787e896d0c232f19de`).
+`db1b1ab60224eb76e7a271de6a9544c89ac9676036e725935d0fb47105b9f6f1`, canonical
+payload `e80732c4ea5512863c448497b89896799f24c942f744193832dabd5c568579f0`).
 Its schema name, artifact name and file name are all distinct from v1. This is
 the **amended** v2 payload: the earlier v2 revision
 `508a31ec8072a72ca573f65ac6b748e1ce5e67c639fd4388e472153b7ffa4320`
