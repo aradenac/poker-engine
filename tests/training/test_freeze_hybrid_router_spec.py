@@ -390,16 +390,64 @@ class PersistedSpecTests(unittest.TestCase):
         self.assertEqual(set(procedure["derivation_order"]), ids)
 
     def test_spec_holds_no_terminal_numeric_value(self):
+        """Every number is a preregistered constant or a frozen manifest criterion.
+
+        Since #423 T5 the spec also carries the numerically frozen admission
+        criteria.  They are not terminal-evaluation values: they are resolved
+        from the TRAIN-only cross-fitted derivation and are pinned by the
+        router manifest, which is why the guard below allows exactly the
+        numbers that appear in that manifest-bound block and nothing else.
+        """
         allowed = {entry["value"] for entry in self.spec["procedure"]["constants"]}
         allowed.add(self.spec["issue"])
+        frozen = self.spec.get("frozen_criteria")
+        self.assertEqual(frozen is not None, tool.FROZEN_MANIFEST_PATH.is_file())
+        if frozen is not None:
+            manifest = json.loads(tool.FROZEN_MANIFEST_PATH.read_text(encoding="utf-8"))
+            self.assertEqual(manifest["frozen_criteria"], frozen)
+            self.assertEqual(manifest["frozen_criteria_sha256"], frozen["criteria_sha256"])
+            allowed |= {value for _, value in _numbers(frozen)}
         offenders = [
             (path, value) for path, value in _numbers(self.spec) if value not in allowed
         ]
         self.assertEqual(offenders, [])
         self.assertTrue(self.spec["assertions"]["terminal_numeric_values_persisted"] is False)
+        self.assertTrue(self.spec["assertions"]["frozen_numeric_criteria_persisted"] == (frozen is not None))
         self.assertTrue(self.spec["assertions"]["train_only"])
         self.assertFalse(self.spec["assertions"]["validation_consumed"])
         self.assertFalse(self.spec["assertions"]["test_consumed"])
+
+    def test_frozen_criteria_are_content_addressed_and_non_terminal(self):
+        """The frozen numbers are digest-bound, justified and TRAIN-derived."""
+        frozen = self.spec.get("frozen_criteria")
+        if frozen is None:  # pragma: no cover - pre-freeze checkout
+            self.skipTest("the numeric freeze has not been authored yet")
+        manifest = json.loads(tool.FROZEN_MANIFEST_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(manifest["schema"], "poker-hybrid-router-criteria-manifest/v1")
+        self.assertEqual(manifest["frozen_spec"]["sha256"], self.digest)
+        self.assertTrue(manifest["terminal_score_guard"]["terminal_report_absent_at_freeze"])
+        self.assertEqual(manifest["frozen_criteria_sha256"], frozen["criteria_sha256"])
+        self.assertEqual(frozen["schema"], "poker-hybrid-router-frozen-criteria/v1")
+        self.assertFalse(frozen["terminal_evaluation_derived"])
+        self.assertEqual(
+            [entry["id"] for entry in frozen["criteria"]],
+            list(frozen["criteria_order"]),
+        )
+        for entry in frozen["criteria"]:
+            with self.subTest(criterion=entry["id"]):
+                self.assertIsInstance(entry["value"], (int, float))
+                self.assertFalse(entry["terminal_evaluation_derived"])
+                self.assertTrue(entry["justification"])
+                self.assertTrue(entry["effectifs"])
+                self.assertGreaterEqual(len(entry["inputs"]), 2)
+                for item in entry["inputs"]:
+                    self.assertIn("source", item)
+                    self.assertIn("pointer", item)
+        self.assertEqual(
+            frozen["procedure_reference"]["spec"],
+            "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        )
+        self.assertEqual(frozen["procedure_reference"]["pointer"], "/procedure")
 
     def test_evidence_bindings_are_content_addressed(self):
         bindings = {entry["role"]: entry for entry in self.spec["evidence_bindings"]}

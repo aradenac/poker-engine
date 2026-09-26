@@ -22,6 +22,12 @@ and *before* any closure evaluation:
   **sparse ECE ceiling**, the **frequent-exact non-degradation bound** and the
   **OOD abstention criterion**.
 
+Once the #423 T5 numeric freeze exists (``analysis/issue423_hybrid_router/
+ROUTER_MANIFEST.json``), :func:`build_spec` embeds its ``frozen_criteria``
+block verbatim, so a rebuild reproduces the frozen bytes instead of dropping
+the numbers the freeze authored; before the freeze the document is the pure,
+numeric-free procedure below.
+
 Scientific boundary
 -------------------
 The spec is authored and hashed from TRAIN-only out-of-fold evidence and from
@@ -62,6 +68,12 @@ HERE = ROOT / "analysis/issue423_hybrid_router"
 SPEC_NAME = "HYBRID_ROUTER_SPEC.json"
 SPEC_PATH = HERE / SPEC_NAME
 DIGEST_PATH = HERE / "HYBRID_ROUTER_SPEC.sha256"
+
+#: The #423 T5 numeric freeze.  When it exists, its ``frozen_criteria`` block is
+#: embedded verbatim in the spec so a rebuild reproduces the frozen bytes
+#: instead of silently dropping the numeric criteria the freeze authored.
+FROZEN_MANIFEST_NAME = "ROUTER_MANIFEST.json"
+FROZEN_MANIFEST_PATH = HERE / FROZEN_MANIFEST_NAME
 
 SCHEMA_PATH = ROOT / "contracts/training/hybrid-router-spec.schema.json"
 CV_REPORT_PATH = ROOT / "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json"
@@ -1507,14 +1519,47 @@ def _strip_private(value: Any) -> Any:
     return value
 
 
+def load_frozen_criteria(
+    manifest_path: str | Path | None = None,
+) -> dict[str, Any] | None:
+    """The #423 T5 numeric freeze, once it exists, is embedded verbatim.
+
+    Before the freeze this returns ``None`` and the spec stays the pure
+    procedure #423 T1 authored.  After the freeze the manifest is a frozen,
+    content-addressed artifact, so embedding its criteria keeps the spec
+    byte-reproducible; a manifest without a criteria block is a hard error
+    rather than a silent downgrade to the pre-freeze document.
+    """
+    source = Path(manifest_path) if manifest_path is not None else Path(FROZEN_MANIFEST_PATH)
+    if not source.is_file():
+        return None
+    try:
+        manifest = json.loads(source.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:  # pragma: no cover - defensive
+        raise HybridRouterSpecError(f"the router manifest is not valid JSON: {error}") from error
+    criteria = manifest.get("frozen_criteria")
+    if not isinstance(criteria, Mapping):
+        raise HybridRouterSpecError(
+            f"the router manifest {source.name} carries no frozen_criteria block"
+        )
+    return dict(criteria)
+
+
 def build_spec(
     *,
     consumed_splits: Sequence[str] = CONSUMED_SPLITS,
     formulas: Sequence[Mapping[str, Any]] | None = None,
     report: Mapping[str, Any] | None = None,
     source_scan: Mapping[str, Any] | None = None,
+    frozen_criteria: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Assemble the frozen document.  Fails closed on any refused split."""
+    """Assemble the frozen document.  Fails closed on any refused split.
+
+    The #423 T5 numeric freeze (``ROUTER_MANIFEST.json``) is embedded verbatim
+    when it exists, so a rebuild reproduces the frozen criteria bytes instead of
+    dropping them.  Before the freeze the document stays exactly what #423 T1
+    authored: a procedure with no numeric admission value.
+    """
     resolved_splits = assert_allowed_splits(consumed_splits)
     evidence_report = report if report is not None else load_train_cv_report()
     assert_train_only_report(evidence_report)
@@ -1522,6 +1567,9 @@ def build_spec(
     if scan.get("result") != "PASS":
         raise HybridRouterSpecError("the generator self source scan did not pass")
     library = _strip_private(list(formulas) if formulas is not None else build_formulas())
+    criteria = (
+        dict(frozen_criteria) if frozen_criteria is not None else load_frozen_criteria()
+    )
     spec: dict[str, Any] = {
         "schema": SPEC_SCHEMA,
         "issue": ISSUE,
@@ -1616,8 +1664,11 @@ def build_spec(
             "byte_stable": True,
             "generator_self_source_scan": "PASS",
             "terminal_numeric_values_persisted": False,
+            "frozen_numeric_criteria_persisted": criteria is not None,
         },
     }
+    if criteria is not None:
+        spec["frozen_criteria"] = criteria
     spec["canonical_payload_sha256"] = stable_hash(_canonical_payload(spec))
     return spec
 

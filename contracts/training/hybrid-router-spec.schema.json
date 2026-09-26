@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://poker-engine.local/contracts/training/hybrid-router-spec.schema.json",
   "title": "Hybrid preflop response router spec and TRAIN-only preregistration procedure",
-  "description": "Contract of issue #423's hybrid router preregistration document (analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json, poker-hybrid-router-spec/v1, authored by tools/training/freeze_hybrid_router_spec.py). The document declares, machine-readable and before any closure evaluation: the three route sources (ACTIVE_STRONG_SUPPORT / GENERALIZED_SPARSE_IN_DOMAIN / OOD_ABSTAIN), the stable pre-action signals the route decision may read, the reason-code catalog reused from #421's OOD gate, the runtime contract a routed answer must satisfy, and the exact procedure that derives every admission threshold. The procedure is symbolic on purpose: the formulas consume TRAIN-only out-of-fold evidence or a future frozen admission support, never a VALIDATION or TEST evaluation. The contract is stdlib-validated in tests/training/test_freeze_hybrid_router_spec.py, consistent with the repository rule that jsonschema is not a declared dependency.",
+  "description": "Contract of issue #423's hybrid router preregistration document (analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json, poker-hybrid-router-spec/v1, authored by tools/training/freeze_hybrid_router_spec.py). The document declares, machine-readable and before any closure evaluation: the three route sources (ACTIVE_STRONG_SUPPORT / GENERALIZED_SPARSE_IN_DOMAIN / OOD_ABSTAIN), the stable pre-action signals the route decision may read, the reason-code catalog reused from #421's OOD gate, the runtime contract a routed answer must satisfy, and the exact procedure that derives every admission threshold. The procedure is symbolic on purpose: the formulas consume TRAIN-only out-of-fold evidence or a future frozen admission support, never a VALIDATION or TEST evaluation. Since #423 T5 the document additionally carries the numeric freeze of those thresholds in the optional frozen_criteria block: the values resolved from the TRAIN-only cross-fitted derivation, each with its statistic, confidence interval, effectifs and input pointers, digest-bound by analysis/issue423_hybrid_router/ROUTER_MANIFEST.json. The contract is stdlib-validated in tests/training/test_freeze_hybrid_router_spec.py, consistent with the repository rule that jsonschema is not a declared dependency.",
   "$ref": "#/$defs/spec",
   "$defs": {
     "sha256": {
@@ -951,6 +951,312 @@
         }
       }
     },
+    "criterionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "pointer"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 3
+        },
+        "pointer": {
+          "type": "string",
+          "minLength": 2
+        },
+        "value": {
+          "type": [
+            "number",
+            "string",
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "frozenCriterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "t1_formula_id",
+        "derives",
+        "value",
+        "unit",
+        "direction",
+        "criterion",
+        "derivation_rule",
+        "justification",
+        "inputs",
+        "effectifs",
+        "terminal_evaluation_derived"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "GLOBAL_NON_INFERIORITY_MARGIN",
+            "SPARSE_GAIN_FLOOR",
+            "SPARSE_ECE_CEILING",
+            "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+            "OOD_ABSTENTION_CRITERION"
+          ]
+        },
+        "t1_formula_id": {
+          "enum": [
+            "GLOBAL_NON_INFERIORITY_MARGIN",
+            "SPARSE_GAIN_FLOOR",
+            "SPARSE_ECE_CEILING",
+            "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+            "OOD_ABSTENTION_CRITERION"
+          ]
+        },
+        "derives": {
+          "type": "string",
+          "minLength": 3
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 3
+        },
+        "direction": {
+          "enum": [
+            "lower_is_better",
+            "higher_is_better",
+            "predicate"
+          ]
+        },
+        "criterion": {
+          "type": "string",
+          "minLength": 10
+        },
+        "derivation_rule": {
+          "type": "string",
+          "minLength": 10
+        },
+        "justification": {
+          "type": "object",
+          "minProperties": 4
+        },
+        "inputs": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/criterionInput"
+          }
+        },
+        "effectifs": {
+          "type": "object",
+          "minProperties": 2
+        },
+        "terminal_evaluation_derived": {
+          "const": false
+        }
+      }
+    },
+    "frozenCriteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "issue",
+        "planner_key",
+        "kind",
+        "status",
+        "frozen_at",
+        "frozen_at_source",
+        "evaluation_basis",
+        "derivation",
+        "procedure_reference",
+        "resolution_quantum_bits_per_decision",
+        "criteria_order",
+        "criteria",
+        "terminal_evaluation",
+        "terminal_evaluation_derived",
+        "criteria_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "poker-hybrid-router-frozen-criteria/v1"
+        },
+        "issue": {
+          "const": 423
+        },
+        "planner_key": {
+          "const": "T5"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 10
+        },
+        "status": {
+          "const": "FROZEN_BEFORE_TERMINAL_EVALUATION"
+        },
+        "frozen_at": {
+          "type": "string",
+          "minLength": 10
+        },
+        "frozen_at_source": {
+          "type": "string",
+          "minLength": 10
+        },
+        "evaluation_basis": {
+          "const": "TRAIN_only_hand_grouped_out_of_fold_cv_derivation"
+        },
+        "derivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "artifact",
+            "schema",
+            "sha256",
+            "canonical_payload_sha256",
+            "rows",
+            "hands",
+            "folds"
+          ],
+          "properties": {
+            "artifact": {
+              "type": "string",
+              "minLength": 3
+            },
+            "schema": {
+              "type": "string",
+              "minLength": 3
+            },
+            "planner_key": {
+              "type": "string"
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "canonical_payload_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "rows": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "hands": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "folds": {
+              "type": "integer",
+              "minimum": 2
+            }
+          }
+        },
+        "procedure_reference": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "spec",
+            "spec_schema",
+            "pointer",
+            "evaluation_basis",
+            "derivation_order",
+            "formula_ids",
+            "constants"
+          ],
+          "properties": {
+            "spec": {
+              "type": "string",
+              "minLength": 3
+            },
+            "spec_schema": {
+              "const": "poker-hybrid-router-spec/v1"
+            },
+            "pointer": {
+              "const": "/procedure"
+            },
+            "evaluation_basis": {
+              "const": "TRAIN_only_hand_grouped_out_of_fold"
+            },
+            "derivation_order": {
+              "type": "array",
+              "minItems": 5,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
+            },
+            "formula_ids": {
+              "type": "array",
+              "minItems": 5,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
+            },
+            "constants": {
+              "type": "object",
+              "minProperties": 8
+            }
+          }
+        },
+        "resolution_quantum_bits_per_decision": {
+          "type": "number",
+          "exclusiveMinimum": 0.0,
+          "maximum": 0.01
+        },
+        "criteria_order": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "GLOBAL_NON_INFERIORITY_MARGIN",
+              "SPARSE_GAIN_FLOOR",
+              "SPARSE_ECE_CEILING",
+              "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+              "OOD_ABSTENTION_CRITERION"
+            ]
+          }
+        },
+        "criteria": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/frozenCriterion"
+          }
+        },
+        "terminal_evaluation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "consumed",
+            "declared_terminal_report_locations"
+          ],
+          "properties": {
+            "consumed": {
+              "const": false
+            },
+            "declared_terminal_report_locations": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
+            }
+          }
+        },
+        "terminal_evaluation_derived": {
+          "const": false
+        },
+        "criteria_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
     "spec": {
       "type": "object",
       "additionalProperties": false,
@@ -1044,10 +1350,13 @@
         "ood_gate": {
           "$ref": "#/$defs/oodGate"
         },
-        "procedure": {
-          "$ref": "#/$defs/procedure"
-        },
-        "evidence_bindings": {
+    "procedure": {
+      "$ref": "#/$defs/procedure"
+    },
+    "frozen_criteria": {
+      "$ref": "#/$defs/frozenCriteria"
+    },
+    "evidence_bindings": {
           "type": "array",
           "minItems": 3,
           "items": {
@@ -1057,14 +1366,15 @@
         "assertions": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "train_only",
-            "validation_consumed",
-            "test_consumed",
-            "byte_stable",
-            "generator_self_source_scan",
-            "terminal_numeric_values_persisted"
-          ],
+      "required": [
+        "train_only",
+        "validation_consumed",
+        "test_consumed",
+        "byte_stable",
+        "generator_self_source_scan",
+        "terminal_numeric_values_persisted",
+        "frozen_numeric_criteria_persisted"
+      ],
           "properties": {
             "train_only": {
               "const": true
@@ -1081,11 +1391,14 @@
             "generator_self_source_scan": {
               "const": "PASS"
             },
-            "terminal_numeric_values_persisted": {
-              "const": false
-            }
-          }
+        "terminal_numeric_values_persisted": {
+          "const": false
         },
+        "frozen_numeric_criteria_persisted": {
+          "type": "boolean"
+        }
+      }
+    },
         "canonical_payload_sha256": {
           "$ref": "#/$defs/sha256"
         }
