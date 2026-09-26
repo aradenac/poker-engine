@@ -1,0 +1,32 @@
+{
+  "artifact": "RAISE_SIZING_FRONTIER_RESOLUTION.json",
+  "bytes_copied_into_this_bundle": false,
+  "digest_re_derived_from_persisted_bytes": true,
+  "frontiers_total": 7,
+  "gates_weaker_than_v1": false,
+  "holdout_reopened_by_this_bundle": false,
+  "independent_of_the_response_model": true,
+  "kind": "DIGEST_REFERENCE_TRAIN_ONLY_NO_HOLDOUT_READ",
+  "read_rule": "the raise-sizing frontier resolution is TRAIN-only evidence; this bundle records the v2 digest instead of duplicating the bytes. The v1 revision stays byte-frozen custody and is re-verified on every build and never rewritten, while the terminal decision v2 binds the v2 revision for its values",
+  "resolved_count": 0,
+  "revision": "v2",
+  "role": "T1B_RAISE_SIZING_FRONTIER_RESOLUTION_V2",
+  "schema": "poker-hierarchical-integration-reference/v2",
+  "source": {
+    "bundle_index": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/ARTIFACTS.json",
+    "byte_sha256": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+    "canonical_payload_sha256": "cfdc9887a5e71fdf899bce3512e31e501b4fba08d25d6ec8dec4d8d388f1b01d",
+    "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "schema": "poker-raise-sizing-frontier-resolution/v2"
+  },
+  "split_consumed": "TRAIN",
+  "supersedes": {
+    "byte_sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+    "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+    "kept_content_addressed": true,
+    "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "rewritten": false,
+    "schema": "poker-raise-sizing-frontier-resolution/v1"
+  },
+  "thresholds_moved": false
+}

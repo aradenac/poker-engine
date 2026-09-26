@@ -25,8 +25,9 @@ result.  The mandatory assertions covered are:
 13. TEST stays inaccessible;
 14. an incomplete required tree is not admitted for #367.
 15. the consolidated v2 evidence bundle is complete and content-addressed, and the
-    integration report claims no CI status without a real run ID, documents both
-    required supersessions and keeps every boundary the decisions declare.
+    integration report claims no CI status without a real run ID, documents the
+    required supersessions, records the resolved pin findings as resolved, and
+    keeps every boundary the decisions declare.
 """
 from __future__ import annotations
 
@@ -895,7 +896,7 @@ class Issue419IntegrationBundleV2Tests(unittest.TestCase):
         self.assertIn("NON-AUTHORITATIVE", self.report_md)
         self.assertNotIn("ci_observation.status = PASS", self.report_md)
 
-    def test_report_documents_the_two_required_supersessions(self):
+    def test_report_documents_the_required_supersessions(self):
         for token in (
             integration_tool.PROTOCOL_V2_SUPERSEDED_BYTE_SHA256,
             integration_tool.PROTOCOL_V2_SUPERSEDED_CANONICAL_SHA256,
@@ -907,8 +908,11 @@ class Issue419IntegrationBundleV2Tests(unittest.TestCase):
             integration_tool.PREFLIGHT_V1_CANONICAL_SHA256,
             integration_tool.PREFLIGHT_V1_INDEX_SHA256,
             integration_tool.CORRECTION_BYTE_SHA256,
+            integration_tool.FRONTIERS_BYTE_SHA256,
+            integration_tool.FRONTIERS_V2_BYTE_SHA256,
             "V1_EXACT_TREE_PREFLIGHT_REGENERATION",
             "SUPERSEDED_V2_PROTOCOL_PAYLOAD_508A31EC",
+            "RAISE_SIZING_FRONTIER_RESOLUTION_V1_SUPERSEDED_BY_V2",
         ):
             with self.subTest(token=token):
                 self.assertIn(token, self.report_md)
@@ -916,6 +920,7 @@ class Issue419IntegrationBundleV2Tests(unittest.TestCase):
             integration_tool.PROTOCOL_V2_SUPERSEDED_BYTE_SHA256,
             integration_tool.PREFLIGHT_V1_PRECORRECTION_BYTE_SHA256,
             integration_tool.PREFLIGHT_V1_BYTE_SHA256,
+            integration_tool.FRONTIERS_V2_BYTE_SHA256,
         ):
             self.assertIn(token, self.summary_md)
         ids = {item["supersession_id"] for item in self.report["required_supersessions"]}
@@ -924,6 +929,7 @@ class Issue419IntegrationBundleV2Tests(unittest.TestCase):
             {
                 "SUPERSEDED_V2_PROTOCOL_PAYLOAD_508A31EC",
                 "V1_EXACT_TREE_PREFLIGHT_REGENERATION",
+                "RAISE_SIZING_FRONTIER_RESOLUTION_V1_SUPERSEDED_BY_V2",
             },
         )
         self.assertIn("MUTANT", self.report_md.upper())
@@ -940,31 +946,78 @@ class Issue419IntegrationBundleV2Tests(unittest.TestCase):
             row for row in self.report["recorded_local_observations"]
             if row["observed_exit_code"] != 0
         ]
-        self.assertTrue(red, "the two red local checks must stay visible")
+        # The red local rows left are the expected single-frozen-read refusal and
+        # the recorded bookkeeping drift of the snapshot correction v2 record.
+        self.assertTrue(red, "the expected red local checks must stay visible")
         explained = {
             code
             for row in red
             for code in str(row.get("explained_by", "")).split(",")
             if code
         }
-        finding_ids = {row["finding_id"] for row in self.report["residual_findings"]}
-        self.assertEqual(explained - finding_ids, {"EXPECTED_AFTER_THE_SINGLE_FROZEN_READ"})
-        self.assertIn("V1_PREFLIGHT_PIN_STALE", explained)
-        self.assertIn("PROTOCOL_V2_PREFLIGHT_PIN_STALE", explained)
-        finding = next(
-            row for row in self.report["residual_findings"]
-            if row["finding_id"] == "V1_PREFLIGHT_PIN_STALE"
+        self.assertEqual(
+            explained,
+            {
+                "EXPECTED_AFTER_THE_SINGLE_FROZEN_READ",
+                integration_tool.EVIDENCE_CORRECTION_V2_STALE_FINDING_ID,
+            },
         )
-        self.assertFalse(finding["pin_matches_on_disk_bytes"])
-        self.assertFalse(finding["repaired_by_this_bundle"])
-        self.assertIn("V1_PREFLIGHT_PIN_STALE", self.report_md)
-        v2_finding = next(
-            row for row in self.report["residual_findings"]
-            if row["finding_id"] == "PROTOCOL_V2_PREFLIGHT_PIN_STALE"
+        # The two pre-repair pin findings are RESOLVED, not residual, and the
+        # bundle's own pre-repair revision finding is CLOSED by this regeneration.
+        resolved_ids = {row["finding_id"] for row in self.report["resolved_findings"]}
+        self.assertEqual(
+            resolved_ids,
+            {
+                "V1_PREFLIGHT_PIN_STALE",
+                "PROTOCOL_V2_PREFLIGHT_PIN_STALE",
+                integration_tool.EVIDENCE_CORRECTION_V2_FINDING_ID,
+            },
         )
-        self.assertFalse(v2_finding["pin_matches_on_disk_bytes"])
-        self.assertFalse(v2_finding["repaired_by_this_bundle"])
-        self.assertIn("PROTOCOL_V2_PREFLIGHT_PIN_STALE", self.report_md)
+        residual_ids = {row["finding_id"] for row in self.report["residual_findings"]}
+        self.assertEqual(
+            residual_ids,
+            {
+                "CI_NOT_OBSERVED",
+                "WORKFLOW_BYTES_CHANGED_BY_THIS_TASK",
+                integration_tool.EVIDENCE_CORRECTION_V2_STALE_FINDING_ID,
+            },
+        )
+        for finding_id in ("V1_PREFLIGHT_PIN_STALE", "PROTOCOL_V2_PREFLIGHT_PIN_STALE"):
+            finding = next(
+                row for row in self.report["resolved_findings"]
+                if row["finding_id"] == finding_id
+            )
+            with self.subTest(finding=finding_id):
+                self.assertEqual(finding["status"], "RESOLVED")
+                self.assertTrue(finding["pin_matches_on_disk_bytes"])
+                self.assertFalse(finding["repaired_by_this_bundle"])
+                self.assertFalse(finding["blocks_ready_for_integration"])
+                self.assertIn(finding_id, self.report_md)
+        closed = next(
+            row for row in self.report["resolved_findings"]
+            if row["finding_id"] == integration_tool.EVIDENCE_CORRECTION_V2_FINDING_ID
+        )
+        self.assertEqual(closed["status"], "CLOSED_BY_THIS_REGENERATION")
+        self.assertTrue(closed["repaired_by_this_bundle"])
+        self.assertFalse(closed["blocks_ready_for_integration"])
+        self.assertFalse(closed["touches_a_frozen_byte"])
+        self.assertEqual(
+            closed["before"]["EXACT_TREE_PREFLIGHT_V2.json"],
+            integration_tool.PREFLIGHT_V2_PRE_REPAIR_BYTE_SHA256,
+        )
+        self.assertEqual(
+            closed["before"]["DECISION_V2.json"],
+            integration_tool.DECISION_V2_PRE_REPAIR_BYTE_SHA256,
+        )
+        self.assertEqual(
+            closed["after"]["EXACT_TREE_PREFLIGHT_V2.json"],
+            integration_tool.PREFLIGHT_V2_BYTE_SHA256,
+        )
+        self.assertEqual(
+            closed["after"]["DECISION_V2.json"],
+            integration_tool.DECISION_V2_BYTE_SHA256,
+        )
+        self.assertIn(integration_tool.EVIDENCE_CORRECTION_V2_FINDING_ID, self.report_md)
 
     def test_boundaries_are_the_ones_the_decisions_declare(self):
         boundaries = self.report["boundaries"]
