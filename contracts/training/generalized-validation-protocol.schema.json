@@ -1,0 +1,1272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poker-engine.local/contracts/training/generalized-validation-protocol.schema.json",
+  "title": "Generalized adverse-response candidate manifest and frozen VALIDATION protocol",
+  "description": "Issue #421 contract. One file covers the two frozen artifacts: CANDIDATE_MANIFEST.json is a candidateManifest and FROZEN_VALIDATION_PROTOCOL.json is a frozenProtocol. Both are authored and hashed before the fenced VALIDATION admission evaluation reads a single VALIDATION row. The protocol registers the minimum product coverage (>= 0.50), the non-inferiority rule, the maximum allowed calibration and the raise-sizing criteria, and every threshold is immutable after the freeze.",
+  "oneOf": [
+    {"$ref": "#/$defs/candidateManifest"},
+    {"$ref": "#/$defs/frozenProtocol"}
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "action": {"enum": ["FOLD", "CALL", "RAISE", "JAM"]},
+    "actionSpace": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/action"}
+    },
+    "pathString": {"type": "string", "minLength": 1},
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/pathString"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "coverageFloor": {
+      "title": "Minimum product coverage gate",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_coverage", "minimum_scored_decisions", "minimum_distinct_hands",
+        "definition", "train_out_of_fold_coverage", "coverage_is_an_admission_gate"
+      ],
+      "properties": {
+        "minimum_coverage": {"type": "number", "minimum": 0.5, "maximum": 1.0},
+        "minimum_scored_decisions": {"type": "integer", "minimum": 1},
+        "minimum_distinct_hands": {"type": "integer", "minimum": 1},
+        "definition": {"type": "string", "minLength": 1},
+        "train_out_of_fold_coverage": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "coverage_is_an_admission_gate": {"const": true}
+      }
+    },
+    "nonInferiority": {
+      "title": "Frozen non-inferiority rule",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id", "paired_unit", "metric", "direction", "method", "bootstrap_samples",
+        "confidence_level", "seed", "ci_upper_bound", "pairing_rule", "comparisons"
+      ],
+      "properties": {
+        "rule_id": {"const": "CANDIDATE_NOT_INFERIOR_TO_COMPARATORS"},
+        "paired_unit": {"const": "hand_id"},
+        "metric": {"const": "multiclass_log_loss_bits_per_decision"},
+        "direction": {"const": "lower_is_better"},
+        "method": {"const": "paired_percentile_bootstrap"},
+        "bootstrap_samples": {"type": "integer", "minimum": 1000},
+        "confidence_level": {"type": "number", "minimum": 0.5, "maximum": 1.0},
+        "seed": {"type": "integer"},
+        "ci_upper_bound": {"type": "number", "maximum": 0.0},
+        "pairing_rule": {"type": "string", "minLength": 1},
+        "comparisons": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["against", "rule", "margin_bits"],
+            "properties": {
+              "against": {"type": "string", "minLength": 1},
+              "rule": {"type": "string", "minLength": 1},
+              "margin_bits": {"type": "number", "minimum": 0.0}
+            }
+          }
+        }
+      }
+    },
+    "calibrationMax": {
+      "title": "Maximum allowed calibration error",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id", "method", "bins_per_action_class", "minimum_bin_support_for_a_claim",
+        "maximum_absolute_ece", "maximum_ece_delta_vs_active", "train_out_of_fold_ece",
+        "train_out_of_fold_evidence", "claim_requires"
+      ],
+      "properties": {
+        "rule_id": {"const": "CALIBRATION_WITHIN_FROZEN_CEILING"},
+        "method": {"const": "equal_count_reliability_bins"},
+        "bins_per_action_class": {"type": "integer", "minimum": 2},
+        "minimum_bin_support_for_a_claim": {"type": "integer", "minimum": 1},
+        "maximum_absolute_ece": {"type": "number", "minimum": 0.0, "maximum": 0.05},
+        "maximum_ece_delta_vs_active": {"type": "number", "minimum": 0.0},
+        "train_out_of_fold_ece": {"type": "number", "minimum": 0.0},
+        "train_out_of_fold_evidence": {"$ref": "#/$defs/evidenceRef"},
+        "claim_requires": {"type": "string", "minLength": 1}
+      }
+    },
+    "sizingCriteria": {
+      "title": "Raise-sizing criteria",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criteria_id", "basis", "target_axis", "window_rule", "sizing_quantile_levels",
+        "generation_quantile_levels", "no_nearest_price_substitution",
+        "no_nearest_context_substitution", "fail_closed_policy",
+        "maximum_illegal_generated_rate", "minimum_nll_gain_vs_uniform_bits",
+        "maximum_nll_bits_per_sizing", "maximum_crps_bb", "maximum_pit_abs_bin_error",
+        "train_evidence"
+      ],
+      "properties": {
+        "criteria_id": {"const": "SIZING_NOT_INFERIOR_TO_FROZEN_TRAIN_EVIDENCE"},
+        "basis": {"type": "string", "minLength": 1},
+        "target_axis": {"type": "string", "minLength": 1},
+        "window_rule": {"type": "string", "minLength": 1},
+        "sizing_quantile_levels": {
+          "type": "array",
+          "minItems": 5,
+          "items": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+        },
+        "generation_quantile_levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+        },
+        "no_nearest_price_substitution": {"const": true},
+        "no_nearest_context_substitution": {"const": true},
+        "fail_closed_policy": {
+          "const": "ABSTAIN_OR_FAIL_CLOSED_NEVER_SUBSTITUTE_NEAREST_PRICE_OR_CONTEXT"
+        },
+        "maximum_illegal_generated_rate": {"const": 0.0},
+        "minimum_nll_gain_vs_uniform_bits": {"type": "number", "minimum": 0.0},
+        "maximum_nll_bits_per_sizing": {"type": "number", "minimum": 0.0},
+        "maximum_crps_bb": {"type": "number", "minimum": 0.0},
+        "maximum_pit_abs_bin_error": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "train_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path", "sha256", "rows", "scored", "nll_bits_per_sizing",
+            "nll_gain_vs_uniform_bits", "crps_bb", "illegal_generated_rate",
+            "pit_max_abs_bin_error", "fail_closed"
+          ],
+          "properties": {
+            "path": {"$ref": "#/$defs/pathString"},
+            "sha256": {"$ref": "#/$defs/sha256"},
+            "rows": {"type": "integer", "minimum": 1},
+            "scored": {"type": "integer", "minimum": 1},
+            "nll_bits_per_sizing": {"type": "number", "minimum": 0.0},
+            "nll_gain_vs_uniform_bits": {"type": "number"},
+            "crps_bb": {"type": "number", "minimum": 0.0},
+            "illegal_generated_rate": {"const": 0.0},
+            "pit_max_abs_bin_error": {"type": "number", "minimum": 0.0},
+            "fail_closed": {"type": "integer", "minimum": 0}
+          }
+        }
+      }
+    },
+    "oodGate": {
+      "title": "Frozen out-of-domain gate",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_schema", "contract_path", "contract_sha256", "calibration_report_path",
+        "calibration_report_sha256", "calibration_kind", "statuses", "hard_reason_codes",
+        "soft_reason_codes", "thresholds", "abstain_policy", "never_seen_category_abstains",
+        "stack_extrapolation_abstains", "sizing_extrapolation_abstains"
+      ],
+      "properties": {
+        "gate_schema": {"const": "poker-generalized-response-ood-gate/v1"},
+        "contract_path": {"$ref": "#/$defs/pathString"},
+        "contract_sha256": {"$ref": "#/$defs/sha256"},
+        "calibration_report_path": {"$ref": "#/$defs/pathString"},
+        "calibration_report_sha256": {"$ref": "#/$defs/sha256"},
+        "calibration_kind": {"const": "train_only_ood_uncertainty_gate_calibration"},
+        "statuses": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": {"enum": ["MODEL_SUPPORTED", "MODEL_SUPPORTED_HIGH_UNCERTAINTY", "MODEL_OOD_ABSTAIN"]}
+        },
+        "hard_reason_codes": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "soft_reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "domain_distance", "extrapolation_margin", "min_exact_context_share",
+            "min_feature_share", "min_model_node_support_per_row", "normalized_entropy",
+            "support_floor_share"
+          ],
+          "properties": {
+            "domain_distance": {"type": "number", "minimum": 0.0},
+            "extrapolation_margin": {"type": "number", "minimum": 0.0},
+            "min_exact_context_share": {"type": "number", "minimum": 0.0},
+            "min_feature_share": {"type": "number", "minimum": 0.0},
+            "min_model_node_support_per_row": {"type": "number", "minimum": 0.0},
+            "normalized_entropy": {"type": "number", "minimum": 0.0},
+            "support_floor_share": {"type": "number", "minimum": 0.0}
+          }
+        },
+        "abstain_policy": {"type": "string", "minLength": 1},
+        "never_seen_category_abstains": {"const": true},
+        "stack_extrapolation_abstains": {"const": true},
+        "sizing_extrapolation_abstains": {"const": true}
+      }
+    },
+    "thresholds": {
+      "title": "Frozen, immutable threshold block",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frozen", "immutable_after_validation_read", "coverage", "non_inferiority",
+        "calibration", "sizing", "ood", "support"
+      ],
+      "properties": {
+        "frozen": {"const": true},
+        "immutable_after_validation_read": {"const": true},
+        "coverage": {"$ref": "#/$defs/coverageFloor"},
+        "non_inferiority": {"$ref": "#/$defs/nonInferiority"},
+        "calibration": {"$ref": "#/$defs/calibrationMax"},
+        "sizing": {"$ref": "#/$defs/sizingCriteria"},
+        "ood": {"$ref": "#/$defs/oodGate"},
+        "support": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["minimum_marginal_observations", "minimum_distinct_hands"],
+          "properties": {
+            "minimum_marginal_observations": {"type": "integer", "minimum": 1},
+            "minimum_distinct_hands": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+    "metrics": {
+      "title": "Frozen metric set",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary", "secondary", "paired_unit", "pairing_rule", "bootstrap",
+        "stratification", "cv_report_metrics", "mandatory_reporting"
+      ],
+      "properties": {
+        "primary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "unit", "direction", "definition", "epsilon_clip"],
+          "properties": {
+            "name": {"const": "multiclass_log_loss"},
+            "unit": {"const": "bits_per_decision"},
+            "direction": {"const": "lower_is_better"},
+            "definition": {"type": "string", "minLength": 1},
+            "epsilon_clip": {"type": "number", "minimum": 0.0}
+          }
+        },
+        "secondary": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "definition"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "definition": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "paired_unit": {"const": "hand_id"},
+        "pairing_rule": {"type": "string", "minLength": 1},
+        "bootstrap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "samples", "confidence_level", "seed"],
+          "properties": {
+            "method": {"const": "paired_percentile_bootstrap"},
+            "samples": {"type": "integer", "minimum": 1000},
+            "confidence_level": {"type": "number", "minimum": 0.5, "maximum": 1.0},
+            "seed": {"type": "integer"}
+          }
+        },
+        "stratification": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "cv_report_metrics": {"type": "object", "minProperties": 1},
+        "mandatory_reporting": {"type": "string", "minLength": 1}
+      }
+    },
+    "modelPointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "role", "mutated_by_this_freeze"],
+      "properties": {
+        "path": {"$ref": "#/$defs/pathString"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "role": {"type": "string", "minLength": 1},
+        "mutated_by_this_freeze": {"const": false}
+      }
+    },
+    "admittedFor367": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id", "candidate_sha256", "admission_decision",
+        "fit_evidence_sha256", "validation_evidence_sha256", "active_model_pointer_mutation"
+      ],
+      "properties": {
+        "candidate_id": {"type": "string", "minLength": 1},
+        "candidate_sha256": {"$ref": "#/$defs/sha256"},
+        "admission_decision": {"const": "ADMIT_CANDIDATE"},
+        "fit_evidence_sha256": {"$ref": "#/$defs/sha256"},
+        "validation_evidence_sha256": {"$ref": "#/$defs/sha256"},
+        "active_model_pointer_mutation": {"const": false}
+      }
+    },
+    "activeReferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active_model_a_preflop", "active_model_b_postflop", "training_registry",
+        "populations_registry", "issue419_frozen_validation_protocol",
+        "admitted_model_a_candidate_for_367", "population_id", "population_fingerprint_sha256"
+      ],
+      "properties": {
+        "active_model_a_preflop": {"$ref": "#/$defs/modelPointer"},
+        "active_model_b_postflop": {"$ref": "#/$defs/modelPointer"},
+        "training_registry": {"$ref": "#/$defs/modelPointer"},
+        "populations_registry": {"$ref": "#/$defs/modelPointer"},
+        "issue419_frozen_validation_protocol": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "role"],
+          "properties": {
+            "path": {"$ref": "#/$defs/pathString"},
+            "sha256": {"$ref": "#/$defs/sha256"},
+            "role": {"const": "PREDECESSOR_FROZEN_PROTOCOL"}
+          }
+        },
+        "admitted_model_a_candidate_for_367": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_id", "candidate_sha256", "admission_decision", "fit_evidence_sha256",
+            "validation_evidence_sha256", "active_model_pointer_mutation",
+            "mutated_by_this_freeze"
+          ],
+          "properties": {
+            "candidate_id": {"type": "string", "minLength": 1},
+            "candidate_sha256": {"$ref": "#/$defs/sha256"},
+            "admission_decision": {"const": "ADMIT_CANDIDATE"},
+            "fit_evidence_sha256": {"$ref": "#/$defs/sha256"},
+            "validation_evidence_sha256": {"$ref": "#/$defs/sha256"},
+            "active_model_pointer_mutation": {"const": false},
+            "mutated_by_this_freeze": {"const": false}
+          }
+        },
+        "population_id": {"const": "pokerstars_nlhe_100-200_zoom_play_6max_v1"},
+        "population_fingerprint_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "issue367Rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id", "question", "authorized_at_freeze", "authorized_when", "forbidden_while",
+        "consequence_when_forbidden", "currently_admitted_model_a_for_367",
+        "unchanged_by_this_freeze", "test_consumed", "model_b_consumed", "hero_ev_consumed",
+        "promotion_performed", "active_model_pointer_mutation"
+      ],
+      "properties": {
+        "rule_id": {"const": "ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE"},
+        "question": {"type": "string", "minLength": 1},
+        "authorized_at_freeze": {"const": false},
+        "authorized_when": {
+          "type": "array",
+          "minItems": 4,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "forbidden_while": {
+          "type": "array",
+          "minItems": 4,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "consequence_when_forbidden": {"type": "string", "minLength": 1},
+        "currently_admitted_model_a_for_367": {"$ref": "#/$defs/admittedFor367"},
+        "unchanged_by_this_freeze": {"const": true},
+        "test_consumed": {"const": false},
+        "model_b_consumed": {"const": false},
+        "hero_ev_consumed": {"const": false},
+        "promotion_performed": {"const": false},
+        "active_model_pointer_mutation": {"const": false}
+      }
+    },
+    "runtimeFormat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_schema", "prediction_schema", "evaluation_schema", "price_response_schema",
+        "contract_path", "contract_sha256", "module_path", "module_sha256", "action_space",
+        "input_fields", "optional_input_fields", "output_fields", "entrypoints",
+        "illegal_mass_max", "probability_sum_tolerance", "legal_masking",
+        "standard_library_only", "deterministic", "test_refused_fail_closed"
+      ],
+      "properties": {
+        "model_schema": {"const": "poker-generalized-response-model/v1"},
+        "prediction_schema": {"const": "poker-generalized-response-action-probabilities/v1"},
+        "evaluation_schema": {"const": "poker-generalized-response-evaluation/v1"},
+        "price_response_schema": {"const": "poker-generalized-response-price-response/v1"},
+        "contract_path": {"$ref": "#/$defs/pathString"},
+        "contract_sha256": {"$ref": "#/$defs/sha256"},
+        "module_path": {"$ref": "#/$defs/pathString"},
+        "module_sha256": {"$ref": "#/$defs/sha256"},
+        "action_space": {"$ref": "#/$defs/actionSpace"},
+        "input_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "optional_input_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "output_fields": {
+          "type": "array",
+          "minItems": 4,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "entrypoints": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fit", "predict", "evaluate", "price_response", "generate_raise_sizings",
+            "score_raise_sizing", "ood_gate_decision", "validate_candidate", "load_candidate"
+          ],
+          "properties": {
+            "fit": {"type": "string", "minLength": 1},
+            "predict": {"type": "string", "minLength": 1},
+            "evaluate": {"type": "string", "minLength": 1},
+            "price_response": {"type": "string", "minLength": 1},
+            "generate_raise_sizings": {"type": "string", "minLength": 1},
+            "score_raise_sizing": {"type": "string", "minLength": 1},
+            "ood_gate_decision": {"type": "string", "minLength": 1},
+            "validate_candidate": {"type": "string", "minLength": 1},
+            "load_candidate": {"type": "string", "minLength": 1}
+          }
+        },
+        "illegal_mass_max": {"const": 0.0},
+        "probability_sum_tolerance": {"type": "number", "minimum": 0.0, "maximum": 0.001},
+        "legal_masking": {"const": true},
+        "standard_library_only": {"const": true},
+        "deterministic": {"const": true},
+        "test_refused_fail_closed": {"const": true}
+      }
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "public_only", "state_timing", "split_scope", "refused_splits", "response_actions",
+        "excluded_actions", "categorical_blocks", "spline_blocks", "interaction_blocks",
+        "ood_feature_blocks", "ood_numeric_axes", "row_contract_fields", "forbidden_keys",
+        "outcome_dimensions_excluded", "feature_audit_report_path", "feature_audit_report_sha256",
+        "row_contract_path", "row_contract_sha256"
+      ],
+      "properties": {
+        "public_only": {"const": true},
+        "state_timing": {"const": "BEFORE_ACTION"},
+        "split_scope": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"enum": ["TRAIN", "VALIDATION"]}
+        },
+        "refused_splits": {"type": "array", "minItems": 1, "items": {"const": "TEST"}},
+        "response_actions": {"$ref": "#/$defs/actionSpace"},
+        "excluded_actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "categorical_blocks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "spline_blocks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "interaction_blocks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "ood_feature_blocks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "ood_numeric_axes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "row_contract_fields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "forbidden_keys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "outcome_dimensions_excluded": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "feature_audit_report_path": {"$ref": "#/$defs/pathString"},
+        "feature_audit_report_sha256": {"$ref": "#/$defs/sha256"},
+        "row_contract_path": {"$ref": "#/$defs/pathString"},
+        "row_contract_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "transformations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "axis_transform", "spline_axis_knots", "sizing_axis_knots", "sizing_target_axis",
+        "sizing_ratio_cap", "categorical_level_rules", "partition_of_unity",
+        "no_nearest_cell_substitution", "continuous_recompute_on_query"
+      ],
+      "properties": {
+        "axis_transform": {"const": "log1p"},
+        "spline_axis_knots": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["to_call_bb", "pot_before_bb", "effective_stack_bb"],
+          "properties": {
+            "to_call_bb": {"$ref": "#/$defs/knots"},
+            "pot_before_bb": {"$ref": "#/$defs/knots"},
+            "effective_stack_bb": {"$ref": "#/$defs/knots"}
+          }
+        },
+        "sizing_axis_knots": {"$ref": "#/$defs/knots"},
+        "sizing_target_axis": {"type": "string", "minLength": 1},
+        "sizing_ratio_cap": {"type": "number", "minimum": 1.0},
+        "categorical_level_rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["public_levels", "count_caps", "coarse_buckets"],
+          "properties": {
+            "public_levels": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "count_caps": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {"type": "integer", "minimum": 1}
+            },
+            "coarse_buckets": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {"$ref": "#/$defs/knots"}
+            }
+          }
+        },
+        "partition_of_unity": {"const": true},
+        "no_nearest_cell_substitution": {"const": true},
+        "continuous_recompute_on_query": {"const": true}
+      }
+    },
+    "knots": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {"type": "number", "minimum": 0.0}
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id", "architecture", "model_family", "path", "sha256",
+        "canonical_payload_sha256", "bytes", "seed", "action_space", "status",
+        "active_model_replaced", "selected_by", "selection_evidence"
+      ],
+      "properties": {
+        "candidate_id": {"const": "generalized-adverse-response-candidate-v1"},
+        "architecture": {"const": "regularized_multinomial_spline"},
+        "model_family": {"const": "MODEL_A_PREFLOP_RESPONSE"},
+        "path": {"$ref": "#/$defs/pathString"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "seed": {"type": "integer"},
+        "action_space": {"$ref": "#/$defs/actionSpace"},
+        "status": {"const": "CANDIDATE_ONLY_NOT_ACTIVE"},
+        "active_model_replaced": {"const": false},
+        "selected_by": {"type": "string", "minLength": 1},
+        "selection_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "selected", "ranking", "evidence_basis"],
+          "properties": {
+            "path": {"$ref": "#/$defs/pathString"},
+            "sha256": {"$ref": "#/$defs/sha256"},
+            "selected": {"const": "regularized_multinomial_spline"},
+            "ranking": {
+              "type": "array",
+              "minItems": 2,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "evidence_basis": {"const": "out_of_fold_holdout_only"}
+          }
+        }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_family", "identity_granularity", "architecture", "candidate_id", "action_space",
+        "aggressive_actions", "baseline_object", "discrete_choice_core",
+        "conditional_sizing_channel", "hidden_hand_imputation", "pseudo_observation",
+        "nearest_context_fallback", "nearest_price_fallback", "alternative_architectures"
+      ],
+      "properties": {
+        "model_family": {"const": "MODEL_A_PREFLOP_RESPONSE"},
+        "identity_granularity": {"const": "public_preflop_response_context"},
+        "architecture": {"const": "regularized_multinomial_spline"},
+        "candidate_id": {"const": "generalized-adverse-response-candidate-v1"},
+        "action_space": {"$ref": "#/$defs/actionSpace"},
+        "aggressive_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["RAISE", "JAM"]}
+        },
+        "baseline_object": {"type": "string", "minLength": 1},
+        "discrete_choice_core": {"const": true},
+        "conditional_sizing_channel": {"const": true},
+        "hidden_hand_imputation": {"const": false},
+        "pseudo_observation": {"const": false},
+        "nearest_context_fallback": {"const": false},
+        "nearest_price_fallback": {"const": false},
+        "alternative_architectures": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["architecture", "path", "sha256", "canonical_payload_sha256", "role"],
+            "properties": {
+              "architecture": {"const": "hierarchical_empirical_bayes_dirichlet"},
+              "path": {"$ref": "#/$defs/pathString"},
+              "sha256": {"$ref": "#/$defs/sha256"},
+              "canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+              "role": {"const": "ALTERNATE_ARCHITECTURE_COMPARATOR"}
+            }
+          }
+        }
+      }
+    },
+    "hyperparameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "smoothing_mass", "interaction_smoothing_mass", "interaction_min_support",
+        "interaction_max_cells", "interaction_block_weight", "lift_scale_grid",
+        "deviation_scale_grid", "deviation_clip", "hierarchical_strength_bounds",
+        "hierarchical_min_cells", "holdout_modulus", "tuning_max_rows",
+        "default_target_to_pot_ratio", "sizing_gain_bounds", "sizing_smoothing_mass",
+        "spline_knots", "sizing_axis_knots", "estimator", "frozen", "frozen_by_candidate",
+        "hyperparameter_search_performed_on_validation", "selected_on"
+      ],
+      "properties": {
+        "smoothing_mass": {"type": "number", "minimum": 0.0},
+        "interaction_smoothing_mass": {"type": "number", "minimum": 0.0},
+        "interaction_min_support": {"type": "integer", "minimum": 1},
+        "interaction_max_cells": {"type": "integer", "minimum": 1},
+        "interaction_block_weight": {"type": "number", "minimum": 0.0},
+        "lift_scale_grid": {"$ref": "#/$defs/knots"},
+        "deviation_scale_grid": {"$ref": "#/$defs/knots"},
+        "deviation_clip": {"type": "number", "minimum": 0.0},
+        "hierarchical_strength_bounds": {"$ref": "#/$defs/knots"},
+        "hierarchical_min_cells": {"type": "integer", "minimum": 1},
+        "holdout_modulus": {"type": "integer", "minimum": 2},
+        "tuning_max_rows": {"type": "integer", "minimum": 1},
+        "default_target_to_pot_ratio": {"type": "number", "minimum": 0.0},
+        "sizing_gain_bounds": {"$ref": "#/$defs/knots"},
+        "sizing_smoothing_mass": {"type": "number", "minimum": 0.0},
+        "spline_knots": {"$ref": "#/$defs/splineKnots"},
+        "sizing_axis_knots": {"$ref": "#/$defs/knots"},
+        "estimator": {"const": "regularized_additive_multinomial_log_linear"},
+        "frozen": {"const": true},
+        "frozen_by_candidate": {"$ref": "#/$defs/pathString"},
+        "hyperparameter_search_performed_on_validation": {"const": false},
+        "selected_on": {"type": "string", "minLength": 1}
+      }
+    },
+    "splineKnots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["to_call_bb", "pot_before_bb", "effective_stack_bb"],
+      "properties": {
+        "to_call_bb": {"$ref": "#/$defs/knots"},
+        "pot_before_bb": {"$ref": "#/$defs/knots"},
+        "effective_stack_bb": {"$ref": "#/$defs/knots"}
+      }
+    },
+    "seeds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "random_seed", "candidate_seed", "rng_algorithm", "stochastic_draws",
+        "deterministic_reproduction", "policy", "purpose"
+      ],
+      "properties": {
+        "random_seed": {"type": "integer"},
+        "candidate_seed": {"type": "integer"},
+        "rng_algorithm": {"const": "none"},
+        "stochastic_draws": {"const": 0},
+        "deterministic_reproduction": {"const": true},
+        "policy": {"const": "DETERMINISTIC_NO_RANDOMNESS"},
+        "purpose": {"type": "string", "minLength": 1}
+      }
+    },
+    "corpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "population_id", "dataset_path", "dataset_sha256", "dataset_bytes", "dataset_rows",
+        "dataset_manifest_path", "dataset_manifest_sha256", "corpus_hashes_path",
+        "corpus_hashes_sha256", "certification_path", "certification_sha256",
+        "population_fingerprint_sha256", "train", "validation", "test",
+        "split_consumed_for_authoring", "validation_consumed_for_authoring",
+        "test_consumed_for_authoring"
+      ],
+      "properties": {
+        "population_id": {"const": "pokerstars_nlhe_100-200_zoom_play_6max_v1"},
+        "dataset_path": {"$ref": "#/$defs/pathString"},
+        "dataset_sha256": {"$ref": "#/$defs/sha256"},
+        "dataset_bytes": {"type": "integer", "minimum": 1},
+        "dataset_rows": {"type": "integer", "minimum": 1},
+        "dataset_manifest_path": {"$ref": "#/$defs/pathString"},
+        "dataset_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "corpus_hashes_path": {"$ref": "#/$defs/pathString"},
+        "corpus_hashes_sha256": {"$ref": "#/$defs/sha256"},
+        "certification_path": {"$ref": "#/$defs/pathString"},
+        "certification_sha256": {"$ref": "#/$defs/sha256"},
+        "population_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+        "train": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["split", "hands", "response_rows", "hand_ids_fingerprint_sha256", "consumed_for_fit"],
+          "properties": {
+            "split": {"const": "TRAIN"},
+            "hands": {"type": "integer", "minimum": 1},
+            "response_rows": {"type": "integer", "minimum": 1},
+            "hand_ids_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+            "consumed_for_fit": {"const": true}
+          }
+        },
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "split", "hands", "response_rows", "hand_ids_fingerprint_sha256",
+            "consumed_for_fit", "reserved_for"
+          ],
+          "properties": {
+            "split": {"const": "VALIDATION"},
+            "hands": {"type": "integer", "minimum": 1},
+            "response_rows": {"type": "integer", "minimum": 1},
+            "hand_ids_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+            "consumed_for_fit": {"const": false},
+            "reserved_for": {"type": "string", "minLength": 1}
+          }
+        },
+        "test": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["split", "hands", "consumed", "refused"],
+          "properties": {
+            "split": {"const": "TEST"},
+            "hands": {"type": "integer", "minimum": 0},
+            "consumed": {"const": false},
+            "refused": {"const": true}
+          }
+        },
+        "split_consumed_for_authoring": {"const": "TRAIN"},
+        "validation_consumed_for_authoring": {"const": false},
+        "test_consumed_for_authoring": {"const": false}
+      }
+    },
+    "cvProcedure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind", "main_split", "forbidden_splits", "consumed_splits", "group_key", "folds",
+        "fold_assignment", "seed", "model_config_source", "sizing_mode",
+        "preregistered_selection_criteria", "no_leak", "selected_architecture",
+        "selection_evidence_basis", "report_path", "report_sha256"
+      ],
+      "properties": {
+        "kind": {"const": "hand_grouped_k_fold_cross_validation"},
+        "main_split": {"const": "TRAIN"},
+        "forbidden_splits": {"type": "array", "minItems": 1, "items": {"const": "TEST"}},
+        "consumed_splits": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"const": "TRAIN"}},
+        "group_key": {"const": "hand_id"},
+        "folds": {"type": "integer", "minimum": 2},
+        "fold_assignment": {"type": "string", "minLength": 1},
+        "seed": {"type": "integer"},
+        "model_config_source": {"type": "string", "minLength": 1},
+        "sizing_mode": {"type": "string", "minLength": 1},
+        "preregistered_selection_criteria": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "consumed_splits", "direction", "evidence_basis", "preregistered",
+            "registered_before_evaluation", "runtime_complexity_rank", "steps",
+            "test_consumed", "validation_consumed"
+          ],
+          "properties": {
+            "consumed_splits": {"type": "array", "minItems": 1, "items": {"const": "TRAIN"}},
+            "direction": {"const": "lower_is_better"},
+            "evidence_basis": {"const": "out_of_fold_holdout_only"},
+            "preregistered": {"const": true},
+            "registered_before_evaluation": {"const": true},
+            "runtime_complexity_rank": {
+              "type": "object",
+              "additionalProperties": {"type": "integer", "minimum": 1}
+            },
+            "steps": {
+              "type": "array",
+              "minItems": 6,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["metric", "name", "rule", "step", "tolerance"],
+                "properties": {
+                  "metric": {"type": "string", "minLength": 1},
+                  "name": {"type": "string", "minLength": 1},
+                  "rule": {"type": "string", "minLength": 1},
+                  "step": {"type": "integer", "minimum": 1},
+                  "tolerance": {"type": "number", "minimum": 0.0}
+                }
+              }
+            },
+            "test_consumed": {"const": false},
+            "validation_consumed": {"const": false}
+          }
+        },
+        "no_leak": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "assertion", "checked_at_runtime", "folds", "group_key", "hands",
+            "hands_assigned_to_exactly_one_fold", "holdout_hands_pairwise_disjoint",
+            "holdout_hands_per_fold", "max_hand_overlap_between_fit_and_holdout"
+          ],
+          "properties": {
+            "assertion": {"type": "string", "minLength": 1},
+            "checked_at_runtime": {"const": true},
+            "folds": {"type": "integer", "minimum": 2},
+            "group_key": {"const": "hand_id"},
+            "hands": {"type": "integer", "minimum": 1},
+            "hands_assigned_to_exactly_one_fold": {"const": true},
+            "holdout_hands_pairwise_disjoint": {"const": true},
+            "holdout_hands_per_fold": {
+              "type": "array",
+              "minItems": 2,
+              "items": {"type": "integer", "minimum": 1}
+            },
+            "max_hand_overlap_between_fit_and_holdout": {"const": 0}
+          }
+        },
+        "selected_architecture": {"const": "regularized_multinomial_spline"},
+        "selection_evidence_basis": {"const": "out_of_fold_holdout_only"},
+        "report_path": {"$ref": "#/$defs/pathString"},
+        "report_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "candidateManifest": {
+      "title": "Frozen candidate manifest",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "issue", "kind", "status", "frozen_at", "frozen_at_epoch",
+        "frozen_at_source", "generated_by", "candidate", "features", "transformations",
+        "architecture", "hyperparameters", "seeds", "corpus", "cv_procedure", "ood_gate",
+        "metrics", "thresholds", "active_references", "non_inferiority_rule",
+        "calibration_max", "sizing_criteria", "runtime_format", "issue367_consumption_rule",
+        "forbidden", "reproduction"
+      ],
+      "properties": {
+        "schema": {"const": "poker-generalized-response-candidate-manifest/v1"},
+        "issue": {"const": 421},
+        "kind": {"const": "CANDIDATE_MANIFEST"},
+        "status": {"const": "FROZEN_BEFORE_VALIDATION"},
+        "frozen_at": {"type": "string", "minLength": 1, "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+        "frozen_at_epoch": {"type": "integer", "minimum": 1},
+        "frozen_at_source": {"type": "string", "minLength": 1},
+        "generated_by": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tool_path", "tool_sha256", "schema_path", "schema_sha256"],
+          "properties": {
+            "tool_path": {"$ref": "#/$defs/pathString"},
+            "tool_sha256": {"$ref": "#/$defs/sha256"},
+            "schema_path": {"$ref": "#/$defs/pathString"},
+            "schema_sha256": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        "candidate": {"$ref": "#/$defs/candidate"},
+        "features": {"$ref": "#/$defs/features"},
+        "transformations": {"$ref": "#/$defs/transformations"},
+        "architecture": {"$ref": "#/$defs/architecture"},
+        "hyperparameters": {"$ref": "#/$defs/hyperparameters"},
+        "seeds": {"$ref": "#/$defs/seeds"},
+        "corpus": {"$ref": "#/$defs/corpus"},
+        "cv_procedure": {"$ref": "#/$defs/cvProcedure"},
+        "ood_gate": {"$ref": "#/$defs/oodGate"},
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "thresholds": {"$ref": "#/$defs/thresholds"},
+        "active_references": {"$ref": "#/$defs/activeReferences"},
+        "non_inferiority_rule": {"$ref": "#/$defs/nonInferiority"},
+        "calibration_max": {"$ref": "#/$defs/calibrationMax"},
+        "sizing_criteria": {"$ref": "#/$defs/sizingCriteria"},
+        "runtime_format": {"$ref": "#/$defs/runtimeFormat"},
+        "issue367_consumption_rule": {"$ref": "#/$defs/issue367Rule"},
+        "forbidden": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "reproduction": {"$ref": "#/$defs/reproduction"}
+      }
+    },
+    "reproduction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "check_command"],
+      "properties": {
+        "command": {"type": "string", "minLength": 1},
+        "check_command": {"type": "string", "minLength": 1}
+      }
+    },
+    "frozenProtocol": {
+      "title": "Frozen VALIDATION protocol",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "issue", "kind", "status", "protocol_name", "frozen_at",
+        "frozen_at_epoch", "frozen_at_source", "canonical_payload_is_the_frozen_identity",
+        "authoring_order", "artifacts", "code", "evaluation", "coverage_floor", "thresholds",
+        "non_inferiority_rule", "calibration_max", "sizing_criteria", "metrics",
+        "active_references", "issue367_rule", "immutability", "order_guard",
+        "holdout_boundary", "publication", "forbidden", "not_an_admission", "reproduction"
+      ],
+      "properties": {
+        "schema": {"const": "poker-generalized-frozen-validation-protocol/v1"},
+        "issue": {"const": 421},
+        "kind": {"const": "FROZEN_VALIDATION_PROTOCOL"},
+        "status": {"const": "FROZEN_BEFORE_VALIDATION"},
+        "protocol_name": {"const": "FROZEN_VALIDATION_PROTOCOL.json"},
+        "frozen_at": {"type": "string", "minLength": 1, "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+        "frozen_at_epoch": {"type": "integer", "minimum": 1},
+        "frozen_at_source": {"type": "string", "minLength": 1},
+        "canonical_payload_is_the_frozen_identity": {"const": true},
+        "authoring_order": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocol_written_and_hashed_before_validation_read", "scope",
+            "protocol_bytes_pinned_before_fenced_validation_evaluation",
+            "validation_read_before_protocol_hash",
+            "evaluation_split_opened_during_authoring",
+            "validation_rows_read_during_protocol_authoring",
+            "test_rows_read_during_protocol_authoring"
+          ],
+          "properties": {
+            "protocol_written_and_hashed_before_validation_read": {"const": true},
+            "scope": {"type": "string", "minLength": 1},
+            "protocol_bytes_pinned_before_fenced_validation_evaluation": {"const": true},
+            "validation_read_before_protocol_hash": {"const": false},
+            "evaluation_split_opened_during_authoring": {"const": false},
+            "validation_rows_read_during_protocol_authoring": {"const": 0},
+            "test_rows_read_during_protocol_authoring": {"const": 0}
+          }
+        },
+        "artifacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["candidate_manifest", "candidate", "corpus", "evidence"],
+          "properties": {
+            "candidate_manifest": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path", "sha256", "canonical_payload_sha256", "schema"],
+              "properties": {
+                "path": {"$ref": "#/$defs/pathString"},
+                "sha256": {"$ref": "#/$defs/sha256"},
+                "canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+                "schema": {"const": "poker-generalized-response-candidate-manifest/v1"}
+              }
+            },
+            "candidate": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "candidate_id", "architecture", "path", "sha256",
+                "canonical_payload_sha256", "status"
+              ],
+              "properties": {
+                "candidate_id": {"const": "generalized-adverse-response-candidate-v1"},
+                "architecture": {"const": "regularized_multinomial_spline"},
+                "path": {"$ref": "#/$defs/pathString"},
+                "sha256": {"$ref": "#/$defs/sha256"},
+                "canonical_payload_sha256": {"$ref": "#/$defs/sha256"},
+                "status": {"const": "CANDIDATE_ONLY_NOT_ACTIVE"}
+              }
+            },
+            "corpus": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "dataset_path", "dataset_sha256", "dataset_manifest_path",
+                "dataset_manifest_sha256", "corpus_hashes_path", "corpus_hashes_sha256",
+                "certification_path", "certification_sha256",
+                "train_hand_ids_fingerprint_sha256",
+                "validation_hand_ids_fingerprint_sha256"
+              ],
+              "properties": {
+                "dataset_path": {"$ref": "#/$defs/pathString"},
+                "dataset_sha256": {"$ref": "#/$defs/sha256"},
+                "dataset_manifest_path": {"$ref": "#/$defs/pathString"},
+                "dataset_manifest_sha256": {"$ref": "#/$defs/sha256"},
+                "corpus_hashes_path": {"$ref": "#/$defs/pathString"},
+                "corpus_hashes_sha256": {"$ref": "#/$defs/sha256"},
+                "certification_path": {"$ref": "#/$defs/pathString"},
+                "certification_sha256": {"$ref": "#/$defs/sha256"},
+                "train_hand_ids_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+                "validation_hand_ids_fingerprint_sha256": {"$ref": "#/$defs/sha256"}
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "role", "sha256"],
+                "properties": {
+                  "path": {"$ref": "#/$defs/pathString"},
+                  "role": {"type": "string", "minLength": 1},
+                  "sha256": {"$ref": "#/$defs/sha256"}
+                }
+              }
+            }
+          }
+        },
+        "code": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cluster_id", "inputs", "protocol_generator_sha256", "schema_path", "frozen"
+          ],
+          "properties": {
+            "cluster_id": {"type": "string", "minLength": 1},
+            "inputs": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "role", "sha256"],
+                "properties": {
+                  "path": {"$ref": "#/$defs/pathString"},
+                  "role": {"type": "string", "minLength": 1},
+                  "sha256": {"$ref": "#/$defs/sha256"}
+                }
+              }
+            },
+            "protocol_generator_sha256": {"$ref": "#/$defs/sha256"},
+            "schema_path": {"$ref": "#/$defs/pathString"},
+            "frozen": {"const": true}
+          }
+        },
+        "evaluation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "split", "test_consumed", "test_authorized", "population", "universe",
+            "outcome_rule", "result_schema", "result_path", "unresolved_policy",
+            "result_must_not_exist_before_the_freeze"
+          ],
+          "properties": {
+            "split": {"const": "VALIDATION"},
+            "test_consumed": {"const": false},
+            "test_authorized": {"const": false},
+            "population": {"const": "pokerstars_nlhe_100-200_zoom_play_6max_v1"},
+            "universe": {"type": "string", "minLength": 1},
+            "outcome_rule": {"type": "string", "minLength": 1},
+            "result_schema": {"const": "poker-generalized-response-validation-result/v1"},
+            "result_path": {"$ref": "#/$defs/pathString"},
+            "unresolved_policy": {"type": "string", "minLength": 1},
+            "result_must_not_exist_before_the_freeze": {"const": true}
+          }
+        },
+        "coverage_floor": {"$ref": "#/$defs/coverageFloor"},
+        "thresholds": {"$ref": "#/$defs/thresholds"},
+        "non_inferiority_rule": {"$ref": "#/$defs/nonInferiority"},
+        "calibration_max": {"$ref": "#/$defs/calibrationMax"},
+        "sizing_criteria": {"$ref": "#/$defs/sizingCriteria"},
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "active_references": {"$ref": "#/$defs/activeReferences"},
+        "issue367_rule": {"$ref": "#/$defs/issue367Rule"},
+        "immutability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "frozen", "immutable_after_validation_read",
+            "thresholds_unmodifiable_after_validation_read", "guard_rule", "detection"
+          ],
+          "properties": {
+            "frozen": {"const": true},
+            "immutable_after_validation_read": {"const": true},
+            "thresholds_unmodifiable_after_validation_read": {"const": true},
+            "guard_rule": {"type": "string", "minLength": 1},
+            "detection": {"type": "string", "minLength": 1}
+          }
+        },
+        "order_guard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "guard_id", "enforced_by", "guard_source_sha256", "rule",
+            "declared_result_locations", "evaluation_side_rule",
+            "freeze_authored_before_validation", "validation_read_before_freeze"
+          ],
+          "properties": {
+            "guard_id": {"const": "VALIDATION_ORDER_GUARD"},
+            "enforced_by": {"$ref": "#/$defs/pathString"},
+            "guard_source_sha256": {"$ref": "#/$defs/sha256"},
+            "rule": {"type": "string", "minLength": 1},
+            "declared_result_locations": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "evaluation_side_rule": {"type": "string", "minLength": 1},
+            "freeze_authored_before_validation": {"const": true},
+            "validation_read_before_freeze": {"const": false}
+          }
+        },
+        "holdout_boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "split_consumed_for_authoring", "validation_consumed_for_authoring",
+            "validation_decisions_read", "validation_hands_parsed", "test_consumed",
+            "test_decisions_read", "protocol_frozen_before_fenced_validation_evaluation",
+            "fenced_validation_result_exists_at_freeze",
+            "evaluation_split_opened_during_authoring", "prior_validation_reads", "checks"
+          ],
+          "properties": {
+            "split_consumed_for_authoring": {"const": "TRAIN"},
+            "validation_consumed_for_authoring": {"const": false},
+            "validation_decisions_read": {"const": 0},
+            "validation_hands_parsed": {"const": 0},
+            "test_consumed": {"const": false},
+            "test_decisions_read": {"const": 0},
+            "protocol_frozen_before_fenced_validation_evaluation": {"const": true},
+            "fenced_validation_result_exists_at_freeze": {"const": false},
+            "evaluation_split_opened_during_authoring": {"const": false},
+            "prior_validation_reads": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "reader", "artifact_path", "artifact_sha256", "split", "rows",
+                  "read_before_this_freeze", "scope", "authoritative_for_admission",
+                  "used_for_candidate_selection", "used_for_thresholds",
+                  "candidate_selection_basis", "repair", "note"
+                ],
+                "properties": {
+                  "reader": {"type": "string", "minLength": 1},
+                  "artifact_path": {"$ref": "#/$defs/pathString"},
+                  "artifact_sha256": {"$ref": "#/$defs/sha256"},
+                  "split": {"const": "VALIDATION"},
+                  "rows": {"type": "integer", "minimum": 0},
+                  "read_before_this_freeze": {"const": true},
+                  "scope": {"const": "EXPLORATORY_ARCHITECTURE_COMPARISON"},
+                  "authoritative_for_admission": {"const": false},
+                  "used_for_candidate_selection": {"const": false},
+                  "used_for_thresholds": {"const": false},
+                  "candidate_selection_basis": {"type": "string", "minLength": 1},
+                  "repair": {"type": "string", "minLength": 1},
+                  "note": {"type": "string", "minLength": 1}
+                }
+              }
+            },
+            "checks": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["check", "result"],
+                "properties": {
+                  "check": {"type": "string", "minLength": 1},
+                  "result": {"const": "PASS"}
+                }
+              }
+            }
+          }
+        },
+        "publication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "automatic_promotion", "active_model_pointer_mutation", "production_effect",
+            "downstream"
+          ],
+          "properties": {
+            "automatic_promotion": {"const": "FORBIDDEN"},
+            "active_model_pointer_mutation": {"const": false},
+            "production_effect": {"const": "NONE"},
+            "downstream": {"type": "string", "minLength": 1}
+          }
+        },
+        "forbidden": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "not_an_admission": {"type": "string", "minLength": 1},
+        "reproduction": {"$ref": "#/$defs/reproduction"}
+      }
+    }
+  }
+}

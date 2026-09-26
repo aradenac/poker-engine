@@ -1,0 +1,18 @@
+{
+  "CANDIDATE_MANIFEST.json": {
+    "canonical_payload_sha256": "4a9cbcd3ddc2bab6500803c08a5876d5ebad47c2f460be00c37292fd9dbf69e7",
+    "object": "sha256/06f8380ea898d41efc9f7dbe65968292fd1277fe750229e0059b4df5918f8fea.json",
+    "schema": "poker-generalized-response-candidate-manifest/v1",
+    "sha256": "06f8380ea898d41efc9f7dbe65968292fd1277fe750229e0059b4df5918f8fea"
+  },
+  "FROZEN_VALIDATION_PROTOCOL.json": {
+    "canonical_payload_sha256": "7c703fd934629b239293932fd0a7349957b0fdd48538154429f4597da74883ce",
+    "object": "sha256/ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5.json",
+    "schema": "poker-generalized-frozen-validation-protocol/v1",
+    "sha256": "ff91421b372dab869b8603fac04e7cb15b4b810f4c742c0fff4139786d97cdd5"
+  },
+  "SUMMARY.md": {
+    "object": "sha256/318cde8e2ff09c4c8be1cf04056c065b37e0af796eaf275a78fcc9e2c483d5e4.md",
+    "sha256": "318cde8e2ff09c4c8be1cf04056c065b37e0af796eaf275a78fcc9e2c483d5e4"
+  }
+}
