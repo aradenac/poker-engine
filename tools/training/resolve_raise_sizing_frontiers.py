@@ -16,13 +16,24 @@ missing node or LEGAL_MIN_FALLBACK is unresolved``. A frontier is therefore
 nearest-price, nearest-context, target-drift, or observed-empirical
 substitution is emitted: ``admitted_target_bb`` stays ``null``.
 
-Output is content-addressed
-(``analysis/issue419_hierarchical_tree/raise_sizing_frontiers/``) and, when at
-least one frontier stays unresolved, a distinct blocker is persisted. That
-blocker is a necessary but *not* sufficient condition for closing the required
-tree and is independent of the response model: the same reference nodes do
-carry response likelihoods (``population_model`` / ``policy169_q_b64``) while
-carrying no raise sizing at all.
+Output is content-addressed into a **v2** bundle
+(``analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/``, schema
+``poker-raise-sizing-frontier-resolution/v2``) and, when at least one frontier
+stays unresolved, a distinct blocker is persisted. That blocker is a necessary
+but *not* sufficient condition for closing the required tree and is independent
+of the response model: the same reference nodes do carry response likelihoods
+(``population_model`` / ``policy169_q_b64``) while carrying no raise sizing at
+all.
+
+The v1 bundle (``.../raise_sizing_frontiers/``, schema
+``poker-raise-sizing-frontier-resolution/v1``, byte SHA256
+``93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e``) is a
+consumed, immutable evidence surface: it is only ever re-verified byte-for-byte
+against the digests pinned below and is **never** a write target.  The blocker
+semantics added after that bundle was frozen (the per-frontier
+``RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE`` blocker, its response-model
+independence and its ``BLOCKS_REQUIRED_TREE_COMPLETE`` effect) therefore live
+exclusively in the v2 revision.
 
 TRAIN only: no VALIDATION/TEST hand is parsed, no active registry or reference
 is mutated, and no candidate is admitted.
@@ -52,9 +63,21 @@ from tools.training import audit_model_a_exact_tree as legacy
 from tools.training import audit_hierarchical_tree_sparsity as issue419_baseline
 from tools.training.audit_hierarchical_tree_sparsity import stable_hash
 
-OUTPUT = ROOT / 'analysis/issue419_hierarchical_tree/raise_sizing_frontiers'
+# The v1 bundle is frozen evidence: pinned, re-verified, never written.
+V1_OUTPUT = ROOT / 'analysis/issue419_hierarchical_tree/raise_sizing_frontiers'
+V1_ARTIFACT_NAME = 'RAISE_SIZING_FRONTIER_RESOLUTION.json'
+V1_SCHEMA = 'poker-raise-sizing-frontier-resolution/v1'
+V1_RESOLUTION_SHA256 = '93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e'
+V1_RESOLUTION_CANONICAL_SHA256 = (
+    '29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174'
+)
+V1_SUMMARY_SHA256 = 'cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c'
+V1_INDEX_SHA256 = '86ab23239979b9ee5a0e5cf4111cc7bc9525b417b567fb324699594fbc2ba3cf'
+
+# This tool's only write target: the versioned v2 bundle.
+OUTPUT = ROOT / 'analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2'
 ARTIFACT_NAME = 'RAISE_SIZING_FRONTIER_RESOLUTION.json'
-SCHEMA = 'poker-raise-sizing-frontier-resolution/v1'
+SCHEMA = 'poker-raise-sizing-frontier-resolution/v2'
 SCENARIO_ISSUE = 321
 UNRESOLVED_FRONTIERS = 7
 FRONTIER_ACTION = 'RAISE'
@@ -459,6 +482,53 @@ def unprotected(frontiers: Sequence[Mapping[str, Any]]) -> bool:
     return False
 
 
+def verify_v1_custody() -> dict[str, Any]:
+    """Re-derive the frozen v1 frontier digests; v1 is pinned, never rewritten."""
+    expected = {
+        V1_ARTIFACT_NAME: V1_RESOLUTION_SHA256,
+        'SUMMARY.md': V1_SUMMARY_SHA256,
+        'ARTIFACTS.json': V1_INDEX_SHA256,
+    }
+    indexed = {
+        V1_ARTIFACT_NAME: V1_RESOLUTION_SHA256,
+        'SUMMARY.md': V1_SUMMARY_SHA256,
+    }
+    digests: dict[str, str] = {}
+    for name, pinned in expected.items():
+        path = V1_OUTPUT / name
+        if not path.is_file():
+            raise ValueError(f'the frozen v1 raise-sizing artifact is missing: {path}')
+        actual = sha256_file(path)
+        if actual != pinned:
+            raise ValueError(
+                f'the frozen v1 raise-sizing artifact drifted: {name} {actual} != {pinned}'
+            )
+        digests[name] = actual
+    index = json.loads((V1_OUTPUT / 'ARTIFACTS.json').read_text())
+    for name, pinned in indexed.items():
+        if str(index[name]['sha256']) != pinned:
+            raise ValueError(f'the frozen v1 raise-sizing index disagrees on {name}')
+        if (V1_OUTPUT / str(index[name]['object'])).read_bytes() != (V1_OUTPUT / name).read_bytes():
+            raise ValueError(f'the frozen v1 raise-sizing object copy disagrees on {name}')
+    payload = json.loads((V1_OUTPUT / V1_ARTIFACT_NAME).read_text())
+    if payload.get('schema') != V1_SCHEMA:
+        raise ValueError('the frozen v1 raise-sizing schema drifted')
+    if stable_hash(payload) != V1_RESOLUTION_CANONICAL_SHA256:
+        raise ValueError('the frozen v1 raise-sizing canonical payload drifted')
+    if 'blocker' in payload.get('frontiers', [{}])[0]:
+        raise ValueError('the frozen v1 raise-sizing bundle must not carry the v2 blocker')
+    return {
+        'check': 'frozen_v1_raise_sizing_frontier_bytes_re_derived',
+        'result': 'PASS',
+        'bundle': str(V1_OUTPUT.relative_to(ROOT)),
+        'schema': V1_SCHEMA,
+        'artifacts': digests,
+        'canonical_payload_sha256': V1_RESOLUTION_CANONICAL_SHA256,
+        'never_rewritten': True,
+        'superseded_by': str(OUTPUT.relative_to(ROOT)) + '/' + ARTIFACT_NAME,
+    }
+
+
 def build_resolution(
     *,
     tree: Mapping[str, Any],
@@ -469,6 +539,7 @@ def build_resolution(
     parity: Mapping[str, Any],
     protected_before: Mapping[str, str],
     protected_after: Mapping[str, str],
+    v1_custody: Mapping[str, Any],
 ) -> dict[str, Any]:
     unresolved = [f for f in frontiers if f['resolution_state'] == 'UNRESOLVED']
     if len(frontiers) != UNRESOLVED_FRONTIERS:
@@ -492,6 +563,9 @@ def build_resolution(
         assert not unresolved and enumeration_complete
     return {
         'schema': SCHEMA,
+        'revision': 'v2',
+        'supersedes_schema': V1_SCHEMA,
+        'supersedes_v1': copy.deepcopy(dict(v1_custody)),
         'issue': 419,
         'source_issue': 388,
         'scenario_issue': SCENARIO_ISSUE,
@@ -691,12 +765,14 @@ def resolve() -> dict[str, Any]:
         ROOT / 'training/registry.json', ROOT / 'training/populations/registry.json',
         legacy.REFERENCE,
     ]
+    v1_custody = verify_v1_custody()
     before = {str(p.relative_to(ROOT)): sha256_file(p) for p in protected}
     resolution = build_resolution(
         tree=tree, sizing_scan=sizing_scan, frontiers=frontiers, bundle=bundle,
         provenance={'certified_split_counts': provenance['certified_split_counts'],
                     'train_hand_ids': parsed_ids, 'provenance': provenance},
         parity=parity, protected_before=before, protected_after=before,
+        v1_custody=v1_custody,
     )
     after = {str(p.relative_to(ROOT)): sha256_file(p) for p in protected}
     if before != after:
@@ -708,7 +784,11 @@ def resolve() -> dict[str, Any]:
 
 
 def persist(output: Path, artifacts: dict[str, Any], summary: str) -> None:
-    """Content-addressed write into this tool's own artifact directory."""
+    """Content-addressed write into this tool's own **v2** artifact directory."""
+    if output.resolve() == V1_OUTPUT.resolve():
+        raise ValueError(
+            f'refusing to write the frozen v1 raise-sizing bundle {V1_OUTPUT}'
+        )
     output.mkdir(parents=True, exist_ok=True)
     objects = output / 'sha256'
     objects.mkdir(exist_ok=True)
@@ -738,7 +818,14 @@ def summary_text(resolution: Mapping[str, Any]) -> str:
     unresolved = [f for f in resolution['frontiers'] if f['resolution_state'] == 'UNRESOLVED']
     frontier_list = ', '.join('`' + f['node_id'][:12] + '`' for f in unresolved)
     return '\n'.join([
-        '# #419 — raise-sizing frontier resolution (TRAIN only)',
+        '# #419 — raise-sizing frontier resolution v2 (TRAIN only)',
+        '',
+        'This is the **v2** revision '
+        f"(`schema={resolution['schema']}`), written to "
+        f"`{OUTPUT.relative_to(ROOT)}/`. The superseded v1 bundle "
+        f"(`raise_sizing_frontiers/{V1_ARTIFACT_NAME}`, byte SHA256 `{V1_RESOLUTION_SHA256}`) is "
+        'frozen, consumed evidence: it is re-verified byte-for-byte and never rewritten. The '
+        'per-frontier blocker below was added after v1 was frozen and therefore lives only here.',
         '',
         f"**{resolution['unresolved_count']} of {resolution['frontiers_total']} raise-sizing "
         'frontiers remain UNRESOLVED**; the required #388 tree stays open and no candidate is '

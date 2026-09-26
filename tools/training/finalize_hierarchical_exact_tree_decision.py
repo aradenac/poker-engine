@@ -226,11 +226,27 @@ PREFLIGHT_V2_OUTPUT = preflight_tool.V2_OUTPUT
 PREFLIGHT_V2_PATH = PREFLIGHT_V2_OUTPUT / preflight_tool.V2_NAME
 PREFLIGHT_V2_SCHEMA = preflight_tool.V2_SCHEMA
 PREFLIGHT_V2_BYTE_SHA256 = (
-    '2c07ae3279d10ec3e3bbdbe81cdb0d0f1f23e6bbb91cbdadddae113d1a9ea691'
+    '9b924077b286ef8c7c57e8a6e757cfb22a9784d2b44e8b328b11a55ba27abfc2'
 )
 PREFLIGHT_V2_CANONICAL_SHA256 = (
-    'c25afda4d1fd56608b5041ba3cd63749b8229f10ea980a6f8957d02d52d24bcb'
+    'd88d1dba290f9a86033db7a875f8013b813472c24390c8a2736a09b7670b3a5b'
 )
+
+# The frozen v1 raise-sizing frontier bundle: superseded evidence, pinned and
+# re-verified byte-for-byte, never a write target.  The blocker semantics this
+# v2 decision consumes live in the v2 bundle (``raise_sizing_frontiers_v2``),
+# which is the only frontier revision this tool binds for values; the v1 bytes
+# are carried as custody so a silent in-place regeneration cannot go unnoticed.
+V1_FRONTIER_RESOLUTION_SHA256 = (
+    '93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e'
+)
+V1_FRONTIER_SUMMARY_SHA256 = (
+    'cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c'
+)
+V1_FRONTIER_INDEX_SHA256 = (
+    '86ab23239979b9ee5a0e5cf4111cc7bc9525b417b567fb324699594fbc2ba3cf'
+)
+V1_FRONTIER_SCHEMA = frontier_tool.V1_SCHEMA
 
 # The already-consumed v1 VALIDATION result, referenced by digest only.  The
 # digest below is the one the frozen protocol v2 custody table pins as
@@ -340,7 +356,14 @@ PROTECTED_PATHS: tuple[Path, ...] = (
     V1_VALIDATION_RESULT_PATH,
     PREFLIGHT_V2_PATH,
     preflight_tool.OUTPUT / preflight_tool.NAME,
+    # the v2 frontier bundle (the values source) and the frozen v1 frontier
+    # bytes (custody only: pinned, re-verified, never rewritten)
     frontier_tool.OUTPUT / frontier_tool.ARTIFACT_NAME,
+    frontier_tool.OUTPUT / 'SUMMARY.md',
+    frontier_tool.OUTPUT / 'ARTIFACTS.json',
+    frontier_tool.V1_OUTPUT / frontier_tool.V1_ARTIFACT_NAME,
+    frontier_tool.V1_OUTPUT / 'SUMMARY.md',
+    frontier_tool.V1_OUTPUT / 'ARTIFACTS.json',
     legacy.REFERENCE,
     BUNDLE / DECISION_NAME,
     BUNDLE / SUMMARY_NAME,
@@ -788,9 +811,60 @@ def load_v1_validation_reference(
     }
 
 
+def verify_v1_raise_sizing_frontier() -> dict[str, Any]:
+    """Re-derive the frozen v1 raise-sizing frontier digests; v1 is never rewritten."""
+    expected = {
+        frontier_tool.V1_ARTIFACT_NAME: V1_FRONTIER_RESOLUTION_SHA256,
+        'SUMMARY.md': V1_FRONTIER_SUMMARY_SHA256,
+        'ARTIFACTS.json': V1_FRONTIER_INDEX_SHA256,
+    }
+    digests: dict[str, str] = {}
+    for name, pinned in expected.items():
+        path = frontier_tool.V1_OUTPUT / name
+        if not path.is_file():
+            raise TerminalDecisionError(f'the frozen v1 raise-sizing artifact is missing: {path}')
+        actual = sha256_file(path)
+        if actual != pinned:
+            raise TerminalDecisionError(
+                f'the frozen v1 raise-sizing artifact drifted: {name} {actual} != {pinned}'
+            )
+        digests[name] = actual
+    payload = _load(frontier_tool.V1_OUTPUT / frontier_tool.V1_ARTIFACT_NAME)
+    if payload.get('schema') != V1_FRONTIER_SCHEMA:
+        raise TerminalDecisionError('the frozen v1 raise-sizing schema drifted')
+    if stable_hash(payload) != frontier_tool.V1_RESOLUTION_CANONICAL_SHA256:
+        raise TerminalDecisionError('the frozen v1 raise-sizing canonical payload drifted')
+    if 'blocker' in payload.get('frontiers', [{}])[0]:
+        raise TerminalDecisionError(
+            'the frozen v1 raise-sizing bundle must not carry the v2 blocker semantics'
+        )
+    return {
+        'check': 'frozen_v1_raise_sizing_frontier_bytes_re_derived',
+        'result': 'PASS',
+        'bundle': _relative(frontier_tool.V1_OUTPUT),
+        'schema': V1_FRONTIER_SCHEMA,
+        'artifacts': digests,
+        'canonical_payload_sha256': frontier_tool.V1_RESOLUTION_CANONICAL_SHA256,
+        'never_rewritten': True,
+        'superseded_by': (
+            _relative(frontier_tool.OUTPUT) + '/' + frontier_tool.ARTIFACT_NAME
+        ),
+    }
+
+
 def load_raise_sizing_frontiers(preflight: Mapping[str, Any]) -> dict[str, Any]:
-    """Load the frozen TRAIN-only raise-sizing resolution; fail closed on drift."""
-    frontier = _load(frontier_tool.OUTPUT / frontier_tool.ARTIFACT_NAME)
+    """Load the versioned **v2** TRAIN-only raise-sizing resolution; fail closed on drift."""
+    path = frontier_tool.OUTPUT / frontier_tool.ARTIFACT_NAME
+    frontier = _load(path)
+    if frontier.get('schema') != frontier_tool.SCHEMA:
+        raise TerminalDecisionError('the raise-sizing resolution is not the v2 revision')
+    if frontier.get('revision') != 'v2':
+        raise TerminalDecisionError('the raise-sizing resolution must declare revision v2')
+    v1_custody = verify_v1_raise_sizing_frontier()
+    if str(frontier['supersedes_v1']['artifacts'][frontier_tool.V1_ARTIFACT_NAME]) != (
+        V1_FRONTIER_RESOLUTION_SHA256
+    ):
+        raise TerminalDecisionError('the v2 resolution records another v1 frontier custody')
     if frontier['unresolved_count'] != baseline_tool.ISSUE388_UNRESOLVED_FRONTIERS:
         raise TerminalDecisionError('raise-sizing frontier count mismatch')
     if frontier['blocker_persisted'] is not True:
@@ -801,6 +875,51 @@ def load_raise_sizing_frontiers(preflight: Mapping[str, Any]) -> dict[str, Any]:
         raise TerminalDecisionError('the raise-sizing count disagrees with the preflight v2')
     if frontier['unresolved_count'] != preflight['sizing_frontiers_queried']:
         raise TerminalDecisionError('the raise-sizing count disagrees with the walked frontiers')
+    # The re-hosted v2 semantics: every frontier is an independent sizing blocker
+    # with no admissible target and no substitution, and it forces the required
+    # tree open.
+    if frontier.get('blocker_reason_code') != RAISE_SIZING_REASON_CODE:
+        raise TerminalDecisionError('the v2 frontier blocker reason code drifted')
+    if frontier.get('independent_of_the_response_model') is not True:
+        raise TerminalDecisionError('the v2 frontier must stay independent of the response model')
+    effect = frontier.get('required_tree_complete_effect')
+    if not isinstance(effect, Mapping):
+        raise TerminalDecisionError('the v2 frontier lost its required_tree_complete effect')
+    if effect.get('effect') != frontier_tool.REQUIRED_TREE_COMPLETE_EFFECT:
+        raise TerminalDecisionError('the required_tree_complete effect drifted')
+    if effect.get('blocker_reason_code') != RAISE_SIZING_REASON_CODE:
+        raise TerminalDecisionError('the required_tree_complete effect names another blocker')
+    if effect.get('independent_of_the_response_model') is not True:
+        raise TerminalDecisionError('the required_tree_complete effect must stay model-independent')
+    if effect.get('blocks_required_tree_complete') is not True:
+        raise TerminalDecisionError('the unresolved frontier must block required_tree_complete')
+    if effect.get('required_tree_complete') is not False:
+        raise TerminalDecisionError('an unresolved frontier cannot leave the required tree complete')
+    if frontier.get('required_tree_complete') is not False:
+        raise TerminalDecisionError('the v2 frontier resolution must stay incomplete')
+    if any(frontier['blockers'][0].get(flag) for flag in (
+        'representative_price_substituted', 'nearest_price_substituted',
+        'nearest_context_substituted', 'legal_minimum_fallback_substituted',
+    )):
+        raise TerminalDecisionError('a frontier replaced a price with a substitution')
+    for item in frontier['frontiers']:
+        blocker = item.get('blocker') or {}
+        if blocker.get('reason_code') != RAISE_SIZING_REASON_CODE:
+            raise TerminalDecisionError('a frontier is missing the v2 sizing blocker')
+        if blocker.get('independent_of_the_response_model') is not True:
+            raise TerminalDecisionError('a frontier blocker is response-model dependent')
+        if blocker.get('exactly_supported_target_bb') is not None:
+            raise TerminalDecisionError('a frontier blocker leaked an exact target')
+        if blocker.get('admitted_target_bb') is not None:
+            raise TerminalDecisionError('a frontier blocker leaked an admitted target')
+        if any(blocker.get(flag) for flag in (
+            'representative_price_substituted', 'nearest_price_substituted',
+            'nearest_context_substituted', 'legal_minimum_fallback_substituted',
+        )):
+            raise TerminalDecisionError('a frontier blocker substituted a price')
+    frontier = dict(frontier)
+    frontier['_v1_custody'] = v1_custody
+    frontier['_v2_byte_sha256'] = sha256_file(path)
     return frontier
 
 
@@ -852,10 +971,13 @@ def tree_blocker(preflight: Mapping[str, Any], binding: Mapping[str, Any]) -> di
 def sizing_blocker(
     preflight: Mapping[str, Any], frontier: Mapping[str, Any], binding: Mapping[str, Any]
 ) -> dict[str, Any]:
+    effect = frontier['required_tree_complete_effect']
     return {
         'class': 'SCIENTIFIC_STRUCTURAL',
         'code': BLOCK_UNRESOLVED_RAISE_SIZING,
         'reason_code': RAISE_SIZING_REASON_CODE,
+        'frontier_schema': str(frontier['schema']),
+        'frontier_revision': str(frontier['revision']),
         'detail': (
             'raise-sizing frontiers stay unresolved: no exactly supported raise target exists at '
             'the frozen #367 structural node and no representative price may substitute it. The '
@@ -869,6 +991,8 @@ def sizing_blocker(
         'unresolved_node_ids': list(frontier['unresolved_node_ids']),
         'independent_of_the_response_model': True,
         'blocker_persisted': frontier['blocker_persisted'] is True,
+        'required_tree_complete': frontier['required_tree_complete'] is True,
+        'required_tree_complete_effect': _deepcopy_json(effect),
         'preflight_sizing_frontiers_queried': preflight['sizing_frontiers_queried'],
         'evidence': {
             'preflight': {
@@ -879,6 +1003,14 @@ def sizing_blocker(
             'frontier_resolution': {
                 'source': _relative(frontier_tool.OUTPUT / frontier_tool.ARTIFACT_NAME),
                 'sha256': sha256_file(frontier_tool.OUTPUT / frontier_tool.ARTIFACT_NAME),
+                'schema': str(frontier['schema']),
+                'revision': str(frontier['revision']),
+            },
+            'superseded_v1_frontier_custody': {
+                'source': _relative(
+                    frontier_tool.V1_OUTPUT / frontier_tool.V1_ARTIFACT_NAME
+                ),
+                'sha256': V1_FRONTIER_RESOLUTION_SHA256,
             },
         },
     }
@@ -1151,6 +1283,8 @@ def build() -> tuple[dict[str, Any], str]:
     with hand_history_tripwire() as opened:
         verify_content_address(HERE)
         verify_content_address(PREFLIGHT_V2_OUTPUT)
+        verify_content_address(frontier_tool.OUTPUT)
+        verify_content_address(frontier_tool.V1_OUTPUT)
         v2_preflight = load_frozen_v2_preflight()
         custody = load_frozen_protocol_v2_custody()
         v1_custody = verify_frozen_v1_decision()
@@ -1283,7 +1417,13 @@ def build() -> tuple[dict[str, Any], str]:
             'frontiers_total': frontier['frontiers_total'],
             'unresolved_count': frontier['unresolved_count'],
             'resolved_count': frontier['resolved_count'],
+            'schema': str(frontier['schema']),
+            'revision': str(frontier['revision']),
             'independent_of_the_response_model': True,
+            'blocker_reason_code': RAISE_SIZING_REASON_CODE,
+            'required_tree_complete_effect': str(
+                frontier['required_tree_complete_effect']['effect']
+            ),
             'unresolved_node_ids': list(frontier['unresolved_node_ids']),
             'preflight_sizing_frontiers_queried': preflight['sizing_frontiers_queried'],
         },
@@ -1429,6 +1569,7 @@ def build() -> tuple[dict[str, Any], str]:
             _relative(PROTOCOL_V1_BUNDLE),
             _relative(V1_VALIDATION_RESULT_PATH.parent),
             _relative(frontier_tool.OUTPUT),
+            _relative(frontier_tool.V1_OUTPUT),
             _relative(BUNDLE),
         }),
         'frozen_inputs_untouched': {
@@ -1444,9 +1585,25 @@ def build() -> tuple[dict[str, Any], str]:
             'active_reference_sha256': REFERENCE_BYTE_SHA256,
             'v1_validation_result_sha256': V1_VALIDATION_RESULT_SHA256,
             'v1_decision_sha256': V1_DECISION_SHA256,
+            'v1_terminal_decision_bundle_index_sha256': V1_INDEX_SHA256,
+            'v1_raise_sizing_frontier_sha256': V1_FRONTIER_RESOLUTION_SHA256,
+            'v1_raise_sizing_frontier_bundle_index_sha256': V1_FRONTIER_INDEX_SHA256,
+            'v2_raise_sizing_frontier_sha256': str(frontier['_v2_byte_sha256']),
             'exact_tree_preflight_v2_sha256': PREFLIGHT_V2_BYTE_SHA256,
         },
         'frozen_v1_decision': v1_custody,
+        'frozen_v1_raise_sizing_frontier': frontier['_v1_custody'],
+        'raise_sizing_frontier_revision': {
+            'schema': str(frontier['schema']),
+            'revision': str(frontier['revision']),
+            'supersedes_schema': str(frontier['supersedes_schema']),
+            'values_source': (
+                _relative(frontier_tool.OUTPUT) + '/' + frontier_tool.ARTIFACT_NAME
+            ),
+            'v1_custody_only_never_rewritten': (
+                _relative(frontier_tool.V1_OUTPUT) + '/' + frontier_tool.V1_ARTIFACT_NAME
+            ),
+        },
         'protected_files_before_after_sha256': {
             'before': protected_before,
             'after': protected_after,
@@ -1557,7 +1714,13 @@ def summary_text(decision: Mapping[str, Any]) -> str:
         f"`{POOLING_LEVEL_REASON_CODE}` and {decision['unresolved_raise_sizing_frontier_count']} on "
         f"`{RAISE_SIZING_REASON_CODE}`). T5 left "
         f"{decision['unresolved_raise_sizing_frontier_count']} raise-sizing frontiers unresolved, "
-        'explicitly `independent_of_the_response_model=true`. T7 VALIDATION returned '
+        'explicitly `independent_of_the_response_model=true`; the re-hosted resolution is the '
+        f"versioned **v2** bundle (`{decision['raise_sizing_frontier_revision']['values_source']}`, "
+        f"schema `{decision['raise_sizing_frontier_revision']['schema']}`) whose unresolved "
+        "frontiers force the `BLOCKS_REQUIRED_TREE_COMPLETE` effect. The superseded v1 frontier "
+        f"bytes (`{decision['raise_sizing_frontier_revision']['v1_custody_only_never_rewritten']}`, "
+        f"byte SHA256 `{V1_FRONTIER_RESOLUTION_SHA256}`) are pinned, re-verified and never "
+        'rewritten. T7 VALIDATION returned '
         f"`{decision['validation_outcome']}` with failing frozen gates "
         f"{decision['validation_failing_gates']}.",
         '',

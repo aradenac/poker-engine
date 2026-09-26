@@ -1,10 +1,12 @@
 {
   "blocker_count": 1,
   "blocker_persisted": true,
+  "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
   "blockers": [
     {
       "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
       "blocker_id": "UNRESOLVED_RAISE_SIZING_FRONTIER",
+      "blocks_required_tree_complete": true,
       "closure_condition": "Every required RAISE frontier must resolve to an exactly supported target whose descendant closure is enumerable without a representative price. Closing the tree also still requires the independent runtime-support-context conditions, so this blocker is necessary but not sufficient.",
       "coded_reasons": [
         "DESCENDANT_CLOSURE_REQUIRES_EXACT_RAISE_TARGET",
@@ -32,6 +34,8 @@
         "reference_nodes": 4554,
         "reference_nodes_with_translatable_raise_sizing": 0
       },
+      "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "required_tree_complete": false,
       "response_model_independence": "The same active reference nodes already carry response-likelihood state (population_model/frequencies, response_model_key, policy169_q_b64) while carrying no raise-size statistic at all; the sizing gap is therefore not a property of any response model and cannot be closed by one.",
       "status": "OPEN",
       "sufficient_for_tree_closure": false
@@ -42,6 +46,26 @@
   "frontiers": [
     {
       "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
       "coded_notes": [
         "NO_EXACT_TARGET_EMITTED"
       ],
@@ -88,6 +112,7 @@
         "trained_reference_sizing_stat_nodes_total": 0,
         "translatable_sizing_stat_keys_present": []
       },
+      "independent_of_the_response_model": true,
       "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
       "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
       "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
@@ -107,6 +132,7 @@
         "BB:FOLD",
         "CO:FOLD"
       ],
+      "required_tree_complete": false,
       "resolution_state": "UNRESOLVED",
       "runtime_exact_preflop_node_key": "MAPNODE_2a816dad5861a8dcee48760db2c45069b6f6cbeaa2073e410cafa3f5377b50ff",
       "runtime_exact_preflop_node_key_decision_form": "MAPNODE_2a816dad5861a8dcee48760db2c45069b6f6cbeaa2073e410cafa3f5377b50ff",
@@ -255,6 +281,26 @@
     },
     {
       "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
       "coded_notes": [
         "NO_EXACT_TARGET_EMITTED"
       ],
@@ -303,6 +349,7 @@
         "trained_reference_sizing_stat_nodes_total": 0,
         "translatable_sizing_stat_keys_present": []
       },
+      "independent_of_the_response_model": true,
       "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
       "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
       "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
@@ -322,6 +369,7 @@
         "BB:FOLD",
         "CO:CALL"
       ],
+      "required_tree_complete": false,
       "resolution_state": "UNRESOLVED",
       "runtime_exact_preflop_node_key": "MAPNODE_bc1e6aadedd2bd9d0cbcce7a4c54d8f3af4be57e12bcb7027c5d45cab09d5c66",
       "runtime_exact_preflop_node_key_decision_form": "MAPNODE_abcb7b8b3f1baa168aadc24f680027ca257cf8f9cbf5f0013be927270252b591",
@@ -535,6 +583,26 @@
     },
     {
       "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
       "coded_notes": [
         "TRAIN_OBSERVED_RAISE_ACTIONS_NOT_ADMITTED_AS_A_PRICE",
         "NO_EXACT_TARGET_EMITTED"
@@ -584,6 +652,7 @@
         "trained_reference_sizing_stat_nodes_total": 0,
         "translatable_sizing_stat_keys_present": []
       },
+      "independent_of_the_response_model": true,
       "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
       "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
       "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
@@ -602,6 +671,7 @@
         "SB:ISO@5",
         "BB:FOLD"
       ],
+      "required_tree_complete": false,
       "resolution_state": "UNRESOLVED",
       "runtime_exact_preflop_node_key": "MAPNODE_f03eb080b6331092395fd4e69c76adc4706fa9d44fb7054f0c3e35f4ddfc1f78",
       "runtime_exact_preflop_node_key_decision_form": "MAPNODE_612daad7187d954f3a112fd8f6c0f03c0a6dc8768148eb9dbc6723b113317ed7",
@@ -911,6 +981,26 @@
     },
     {
       "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
       "coded_notes": [
         "NO_EXACT_TARGET_EMITTED"
       ],
@@ -956,6 +1046,7 @@
         "trained_reference_sizing_stat_nodes_total": 0,
         "translatable_sizing_stat_keys_present": []
       },
+      "independent_of_the_response_model": true,
       "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
       "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
       "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
@@ -975,6 +1066,7 @@
         "BB:CALL",
         "CO:FOLD"
       ],
+      "required_tree_complete": false,
       "resolution_state": "UNRESOLVED",
       "runtime_exact_preflop_node_key": "MAPNODE_5dbf880a9604d5be9c70e8b19d7e78814e526e38f6936ac5ce402b3ed966e80f",
       "runtime_exact_preflop_node_key_decision_form": "MAPNODE_d316b38743c712020c11066927af54eec335cee5dbb2166f7d7cee3c364e4200",
@@ -1067,6 +1159,26 @@
     },
     {
       "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
       "coded_notes": [
         "NO_EXACT_TARGET_EMITTED"
       ],
@@ -1113,6 +1225,7 @@
         "trained_reference_sizing_stat_nodes_total": 0,
         "translatable_sizing_stat_keys_present": []
       },
+      "independent_of_the_response_model": true,
       "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
       "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
       "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
@@ -1132,6 +1245,7 @@
         "BB:CALL",
         "CO:CALL"
       ],
+      "required_tree_complete": false,
       "resolution_state": "UNRESOLVED",
       "runtime_exact_preflop_node_key": "MAPNODE_3a6961db2db1ff7ddc4c70bc0cb677dc7b0e98c97b965200b0a3f80356dd4b4b",
       "runtime_exact_preflop_node_key_decision_form": "MAPNODE_44fda993baaeb94502ffaaa4a24119e692ea3f64bef58b31f5a4e414fbbf2f01",
@@ -1330,6 +1444,26 @@
     },
     {
       "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
       "coded_notes": [
         "TRAIN_OBSERVED_RAISE_ACTIONS_NOT_ADMITTED_AS_A_PRICE",
         "NO_EXACT_TARGET_EMITTED"
@@ -1379,6 +1513,7 @@
         "trained_reference_sizing_stat_nodes_total": 0,
         "translatable_sizing_stat_keys_present": []
       },
+      "independent_of_the_response_model": true,
       "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
       "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
       "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
@@ -1397,6 +1532,7 @@
         "SB:ISO@5",
         "BB:CALL"
       ],
+      "required_tree_complete": false,
       "resolution_state": "UNRESOLVED",
       "runtime_exact_preflop_node_key": "MAPNODE_2600c38a4545ff21491d9f51d941b4250503cc2a8e933db210dcfeede37b7a98",
       "runtime_exact_preflop_node_key_decision_form": "MAPNODE_76b2cbe8305ded1208504738796ca1fb65c6b059e47b6249bfc08fec546c1a2b",
@@ -1571,6 +1707,26 @@
     },
     {
       "action": "RAISE",
+      "blocker": {
+        "admitted_target_bb": null,
+        "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+        "blocks_required_tree_complete": true,
+        "blocks_what": "required_tree_complete",
+        "exactly_supported_target_bb": null,
+        "independent_of_the_response_model": true,
+        "independent_of_the_response_model_scope": "a property of the active structural reference node key, not of any response-likelihood model",
+        "legal_minimum_fallback_substituted": false,
+        "nearest_context_substituted": false,
+        "nearest_price_substituted": false,
+        "necessary_for_tree_closure": true,
+        "reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+        "representative_price_substituted": false,
+        "required_tree_complete": false,
+        "status": "OPEN",
+        "sufficient_for_tree_closure": false
+      },
+      "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+      "blocks_required_tree_complete": true,
       "coded_notes": [
         "NO_EXACT_TARGET_EMITTED"
       ],
@@ -1619,6 +1775,7 @@
         "trained_reference_sizing_stat_nodes_total": 0,
         "translatable_sizing_stat_keys_present": []
       },
+      "independent_of_the_response_model": true,
       "issue388_descendants": "REQUIRED_UNRESOLVED_NOT_PRUNED_AS_ZERO_MASS",
       "issue388_expansion_rule": "apply RAISE at an exactly supported target, then recurse until preflop closes; no representative price is permitted",
       "issue388_reason": "EXACT_REFERENCE_RAISE_SIZING_UNAVAILABLE",
@@ -1636,6 +1793,7 @@
       "path": [
         "SB:ISO@5"
       ],
+      "required_tree_complete": false,
       "resolution_state": "UNRESOLVED",
       "runtime_exact_preflop_node_key": "MAPNODE_2d1c7cbb86c3fabad985ce36301dc3a3cc378c97595ac77b5221d4e26ebf4415",
       "runtime_exact_preflop_node_key_decision_form": "MAPNODE_496a56b46c039a51f6e5d75f8e0802df9b4bdce2eaca57d4255bbf3ea4472318",
@@ -1861,6 +2019,7 @@
     "target_drift": false,
     "zero_probability": "observed zero counts do not prove zero probability; enumerate every legal action"
   },
+  "independent_of_the_response_model": true,
   "issue": 419,
   "issue388_bindings": {
     "audit_tool_sha256": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e",
@@ -1937,9 +2096,40 @@
     "train_hands_parsed": 19016,
     "tree_rederived_equal_issue388": true
   },
+  "required_tree_complete": false,
+  "required_tree_complete_effect": {
+    "argument": "Each unresolved RAISE frontier is a sizing/structural gap that no response model can close without a representative price: its descendant states depend on the raise target, so the required #388 tree stays open and required_tree_complete stays false until every frontier is exactly resolved and the enumeration is complete. Clearing the frontiers is necessary but not sufficient for closure.",
+    "blocker_class": "RAISE_SIZING_EXACT_SUPPORT",
+    "blocker_reason_code": "RAISE_SIZING_UNRESOLVED_NO_NEAREST_PRICE",
+    "blocking_frontier_count": 7,
+    "blocking_frontier_node_ids": [
+      "a2d5046ff291480f031b955fe0100ad494847a855e01071f717c8c5da3563b2d",
+      "060b2ee879f11d4d0dee08c0d2920b8453508a0d37b01689f95e01ca8c7f5f0f",
+      "4a394bbb62e4cd8b704289f0d8a56b5b19b965f5a8c9ada8e05df4f6b946c747",
+      "6640a5aa54a307e31c6b4e0c1dddaf09abc0049e28d4025e49583966cadbc059",
+      "eb6478a3a92d3d91bfcc8f4a72f0bc4cc89d8cc0faf73eb816bab49ffb6ec5a3",
+      "1b9af07db202b4adbbffc7a50ee873eae7c48bc6a0390b74318800b50492e08b",
+      "e5aa7850b80d2567ae4b5aed5aa0d957fd6b2eb058cab1b141814b1b141fc46b"
+    ],
+    "blocks_required_tree_complete": true,
+    "effect": "BLOCKS_REQUIRED_TREE_COMPLETE",
+    "enumeration_complete": false,
+    "frontiers_total": 7,
+    "independent_of_the_response_model": true,
+    "necessary_for_tree_closure": true,
+    "propagated_to": [
+      "raise_sizing_frontiers.required_tree_complete",
+      "exact_tree_preflight.required_tree_complete",
+      "terminal_decision.required_tree_complete"
+    ],
+    "representative_price_substituted": false,
+    "required_tree_complete": false,
+    "sufficient_for_tree_closure": false
+  },
   "resolved_count": 0,
+  "revision": "v2",
   "scenario_issue": 321,
-  "schema": "poker-raise-sizing-frontier-resolution/v1",
+  "schema": "poker-raise-sizing-frontier-resolution/v2",
   "sizing_scan": {
     "reference_nodes": 4554,
     "reference_nodes_with_translatable_raise_sizing": 0,
@@ -1962,11 +2152,26 @@
     "tools/simulation/model_a_continuation.py": "498570e6e66ca8abb7441fa07a8fed72fe59f0f6952ce80d060a006e3ec951ff",
     "tools/training/audit_hierarchical_tree_sparsity.py": "8fd510c24611bc1879871a4b0ba2b4978e5fead28e8d94979963b7b3c765ec11",
     "tools/training/audit_model_a_exact_tree.py": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e",
-    "tools/training/resolve_raise_sizing_frontiers.py": "307fb62490368e51ed0a7e461c286e780e79398b9156561e56b4de95312b5834",
+    "tools/training/resolve_raise_sizing_frontiers.py": "91ebba7897eb6d6c07643293901e85556288292ce7c09fde176c8d0ef8aa645b",
     "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
   },
   "source_issue": 388,
   "split_consumed": "TRAIN",
+  "supersedes_schema": "poker-raise-sizing-frontier-resolution/v1",
+  "supersedes_v1": {
+    "artifacts": {
+      "ARTIFACTS.json": "86ab23239979b9ee5a0e5cf4111cc7bc9525b417b567fb324699594fbc2ba3cf",
+      "RAISE_SIZING_FRONTIER_RESOLUTION.json": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+      "SUMMARY.md": "cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c"
+    },
+    "bundle": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers",
+    "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+    "check": "frozen_v1_raise_sizing_frontier_bytes_re_derived",
+    "never_rewritten": true,
+    "result": "PASS",
+    "schema": "poker-raise-sizing-frontier-resolution/v1",
+    "superseded_by": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json"
+  },
   "test_consumed": false,
   "unresolved_count": 7,
   "unresolved_node_ids": [

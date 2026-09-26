@@ -7,10 +7,10 @@
     "sha256": "d6801eb15810ecfc3096d643e721f914cf2a34264e79eee2daaf7e413279303c"
   },
   "DECISION.json": {
-    "canonical_payload_sha256": "7085221310c7f7eeaddc65016ffad9a281fccd48f800580edb403a1cc85245bb",
-    "object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/70a0d8097c9629c6db71be452f2fb71112b12c323b98970eea4a32a7e450e411.json",
+    "canonical_payload_sha256": "9b6aec99feeeb9c49424172f31a2d4657d8cf67cab2b80d2bbf66ecd22c261f5",
+    "object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc.json",
     "path": "analysis/issue419_hierarchical_tree/terminal_decision/DECISION.json",
-    "sha256": "70a0d8097c9629c6db71be452f2fb71112b12c323b98970eea4a32a7e450e411"
+    "sha256": "9425f30163dcfa5e0a72ca8f6dd1bb4b6a25ce270b4a894aaa57e898a74bd0bc"
   },
   "EXACT_TREE_PREFLIGHT.json": {
     "bundle": "analysis/issue419_hierarchical_tree/exact_tree_preflight",
@@ -47,10 +47,10 @@
   },
   "RAISE_SIZING_FRONTIER_RESOLUTION.json": {
     "bundle": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers",
-    "canonical_payload_sha256": "a29d1a90399a16c2236cff01e30aa2df8de644863d270a40ff4093d26c28c83e",
-    "object": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/sha256/6a8cfcd1dbea6203538fbece8d07f02ee19e3e4e755cc5c8e87f8cd88746809a.json",
+    "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+    "object": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/sha256/93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e.json",
     "path": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json",
-    "sha256": "6a8cfcd1dbea6203538fbece8d07f02ee19e3e4e755cc5c8e87f8cd88746809a"
+    "sha256": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e"
   },
   "SUMMARY.md": {
     "object": "analysis/issue419_hierarchical_tree/terminal_decision/sha256/bb9c1b6f15695bb94b287a940ffd0e542ba575c586725fcea4dad4ecc235ed8f.md",

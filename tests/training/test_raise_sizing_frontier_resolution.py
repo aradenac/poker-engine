@@ -372,6 +372,63 @@ class RaiseSizingFrontierResolutionTests(unittest.TestCase):
             ),
         )
 
+    def test_v1_bundle_is_frozen_and_never_a_write_target(self):
+        # The re-hosted semantics live *only* in the versioned v2 bundle: the tool
+        # writes to a distinct directory whose schema is explicitly v2, and the
+        # consumed v1 bundle is pinned, re-verified and never rewritten.
+        self.assertEqual(resolution_tool.OUTPUT.name, 'raise_sizing_frontiers_v2')
+        self.assertEqual(resolution_tool.V1_OUTPUT.name, 'raise_sizing_frontiers')
+        self.assertNotEqual(resolution_tool.OUTPUT, resolution_tool.V1_OUTPUT)
+        self.assertEqual(resolution_tool.SCHEMA, 'poker-raise-sizing-frontier-resolution/v2')
+        self.assertEqual(resolution_tool.V1_SCHEMA, 'poker-raise-sizing-frontier-resolution/v1')
+        self.assertEqual(self.resolution['schema'], resolution_tool.SCHEMA)
+        self.assertEqual(self.resolution['revision'], 'v2')
+        self.assertEqual(self.resolution['supersedes_schema'], resolution_tool.V1_SCHEMA)
+
+        # The frozen v1 bytes are re-derived from disk, not asserted.
+        custody = resolution_tool.verify_v1_custody()
+        self.assertEqual(custody['result'], 'PASS')
+        self.assertTrue(custody['never_rewritten'])
+        for name, pinned in (
+            (resolution_tool.V1_ARTIFACT_NAME, resolution_tool.V1_RESOLUTION_SHA256),
+            ('SUMMARY.md', resolution_tool.V1_SUMMARY_SHA256),
+            ('ARTIFACTS.json', resolution_tool.V1_INDEX_SHA256),
+        ):
+            with self.subTest(artifact=name):
+                data = (resolution_tool.V1_OUTPUT / name).read_bytes()
+                self.assertEqual(hashlib.sha256(data).hexdigest(), pinned)
+        v1_payload = json.loads(
+            (resolution_tool.V1_OUTPUT / resolution_tool.V1_ARTIFACT_NAME).read_text()
+        )
+        self.assertEqual(v1_payload['schema'], resolution_tool.V1_SCHEMA)
+        # v1 predates the re-hosted semantics: it must not carry the v2 blocker.
+        self.assertNotIn('blocker', v1_payload['frontiers'][0])
+        # ... while the v2 revision does, and records the v1 custody it supersedes.
+        self.assertEqual(self.resolution['supersedes_v1']['result'], 'PASS')
+        self.assertEqual(
+            self.resolution['supersedes_v1']['artifacts'][resolution_tool.V1_ARTIFACT_NAME],
+            resolution_tool.V1_RESOLUTION_SHA256,
+        )
+        self.assertIn('blocker', self.resolution['frontiers'][0])
+
+        # A write aimed at the v1 directory is refused outright and leaves the
+        # frozen bytes untouched.
+        before = {
+            name: hashlib.sha256((resolution_tool.V1_OUTPUT / name).read_bytes()).hexdigest()
+            for name in (
+                resolution_tool.V1_ARTIFACT_NAME, 'SUMMARY.md', 'ARTIFACTS.json',
+            )
+        }
+        with self.assertRaises(ValueError):
+            resolution_tool.persist(resolution_tool.V1_OUTPUT, {}, '')
+        after = {
+            name: hashlib.sha256((resolution_tool.V1_OUTPUT / name).read_bytes()).hexdigest()
+            for name in (
+                resolution_tool.V1_ARTIFACT_NAME, 'SUMMARY.md', 'ARTIFACTS.json',
+            )
+        }
+        self.assertEqual(before, after)
+
 
 if __name__ == '__main__':
     unittest.main()

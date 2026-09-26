@@ -2127,8 +2127,9 @@
     "sufficient_for_tree_closure": false
   },
   "resolved_count": 0,
+  "revision": "v2",
   "scenario_issue": 321,
-  "schema": "poker-raise-sizing-frontier-resolution/v1",
+  "schema": "poker-raise-sizing-frontier-resolution/v2",
   "sizing_scan": {
     "reference_nodes": 4554,
     "reference_nodes_with_translatable_raise_sizing": 0,
@@ -2151,11 +2152,26 @@
     "tools/simulation/model_a_continuation.py": "498570e6e66ca8abb7441fa07a8fed72fe59f0f6952ce80d060a006e3ec951ff",
     "tools/training/audit_hierarchical_tree_sparsity.py": "8fd510c24611bc1879871a4b0ba2b4978e5fead28e8d94979963b7b3c765ec11",
     "tools/training/audit_model_a_exact_tree.py": "2f417f499e1fad0a883ad8310c8a835c17b7794131d42ad0978c43656cf99a2e",
-    "tools/training/resolve_raise_sizing_frontiers.py": "7e856e11a11415615347e68f53798c6e244a8a1c31497c746de1ce9575be5380",
+    "tools/training/resolve_raise_sizing_frontiers.py": "91ebba7897eb6d6c07643293901e85556288292ce7c09fde176c8d0ef8aa645b",
     "training/models/preflop_population_model_v5.json": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
   },
   "source_issue": 388,
   "split_consumed": "TRAIN",
+  "supersedes_schema": "poker-raise-sizing-frontier-resolution/v1",
+  "supersedes_v1": {
+    "artifacts": {
+      "ARTIFACTS.json": "86ab23239979b9ee5a0e5cf4111cc7bc9525b417b567fb324699594fbc2ba3cf",
+      "RAISE_SIZING_FRONTIER_RESOLUTION.json": "93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e",
+      "SUMMARY.md": "cf092d67b1b09d604f1de14b6c9335de32e4bbbf30410d0b7d758ac40ccc850c"
+    },
+    "bundle": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers",
+    "canonical_payload_sha256": "29b87a82533a69b083034035dd9e2867e4dcf68bea099324675be5441a8f8174",
+    "check": "frozen_v1_raise_sizing_frontier_bytes_re_derived",
+    "never_rewritten": true,
+    "result": "PASS",
+    "schema": "poker-raise-sizing-frontier-resolution/v1",
+    "superseded_by": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json"
+  },
   "test_consumed": false,
   "unresolved_count": 7,
   "unresolved_node_ids": [

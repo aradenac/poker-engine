@@ -126,6 +126,82 @@ class HierarchicalTerminalDecisionTests(unittest.TestCase):
             self.index[tool.DECISION_NAME]['sha256'], tool.V1_DECISION_SHA256
         )
 
+    def test_tools_write_only_versioned_v2_bundles_and_never_v1(self):
+        # The reader/writer split is structural: the terminal decision is written
+        # only to the versioned v2 bundle, the frontier semantics only to the
+        # versioned v2 frontier bundle, and both v1 bundles are pinned custody.
+        self.assertEqual(tool.V2_BUNDLE.name, 'terminal_decision_v2')
+        self.assertNotEqual(tool.V2_BUNDLE, tool.BUNDLE)
+        self.assertNotEqual(tool.V2_SCHEMA, tool.SCHEMA)
+        self.assertEqual(tool.frontier_tool.OUTPUT.name, 'raise_sizing_frontiers_v2')
+        self.assertNotEqual(tool.frontier_tool.OUTPUT, tool.frontier_tool.V1_OUTPUT)
+
+        v1_frontier = tool.verify_v1_raise_sizing_frontier()
+        self.assertEqual(v1_frontier['result'], 'PASS')
+        self.assertTrue(v1_frontier['never_rewritten'])
+        self.assertEqual(
+            v1_frontier['artifacts'][tool.frontier_tool.V1_ARTIFACT_NAME],
+            tool.V1_FRONTIER_RESOLUTION_SHA256,
+        )
+        self.assertEqual(
+            tool.sha256_file(
+                tool.frontier_tool.V1_OUTPUT / tool.frontier_tool.V1_ARTIFACT_NAME
+            ),
+            tool.V1_FRONTIER_RESOLUTION_SHA256,
+        )
+        # v1 predates the re-hosted semantics; the v2 revision carries them.
+        v1_payload = json.loads(
+            (tool.frontier_tool.V1_OUTPUT / tool.frontier_tool.V1_ARTIFACT_NAME).read_text(
+                encoding='utf-8'
+            )
+        )
+        self.assertNotIn('blocker', v1_payload['frontiers'][0])
+        self.assertEqual(
+            self.decision['raise_sizing_frontier_revision']['schema'],
+            tool.frontier_tool.SCHEMA,
+        )
+        self.assertEqual(
+            self.decision['raise_sizing_frontier_revision']['revision'], 'v2'
+        )
+        self.assertEqual(
+            self.decision['sizing_frontiers']['required_tree_complete_effect'],
+            tool.frontier_tool.REQUIRED_TREE_COMPLETE_EFFECT,
+        )
+        # The bound artifact is the v2 frontier, while the frozen v1 frontier and
+        # the frozen v1 decision custody are recorded by digest.
+        self.assertEqual(
+            self.index[tool.frontier_tool.ARTIFACT_NAME]['sha256'],
+            tool.sha256_file(
+                tool.frontier_tool.OUTPUT / tool.frontier_tool.ARTIFACT_NAME
+            ),
+        )
+        self.assertEqual(
+            self.index[tool.DECISION_NAME]['sha256'], tool.V1_DECISION_SHA256
+        )
+        frozen = self.decision['frozen_inputs_untouched']
+        self.assertEqual(
+            frozen['v1_terminal_decision_bundle_index_sha256'], tool.V1_INDEX_SHA256
+        )
+        self.assertEqual(
+            frozen['v1_raise_sizing_frontier_sha256'],
+            tool.V1_FRONTIER_RESOLUTION_SHA256,
+        )
+        self.assertEqual(
+            frozen['v1_raise_sizing_frontier_bundle_index_sha256'],
+            tool.V1_FRONTIER_INDEX_SHA256,
+        )
+        # A v2 build leaves every v1 bundle byte-identical.
+        tool.build()
+        self.assertEqual(
+            tool.sha256_file(tool.BUNDLE / tool.DECISION_NAME), tool.V1_DECISION_SHA256
+        )
+        self.assertEqual(
+            tool.sha256_file(
+                tool.frontier_tool.V1_OUTPUT / tool.frontier_tool.V1_ARTIFACT_NAME
+            ),
+            tool.V1_FRONTIER_RESOLUTION_SHA256,
+        )
+
     # ------------------------------------------------- terminal decision rules
     def test_v2_decision_never_forces_admission_and_is_coherent_with_preflight_v2(self):
         self.assertEqual(self.decision['schema'], tool.V2_SCHEMA)

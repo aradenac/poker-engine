@@ -1,4 +1,6 @@
-# #419 — raise-sizing frontier resolution (TRAIN only)
+# #419 — raise-sizing frontier resolution v2 (TRAIN only)
+
+This is the **v2** revision (`schema=poker-raise-sizing-frontier-resolution/v2`), written to `analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/`. The superseded v1 bundle (`raise_sizing_frontiers/RAISE_SIZING_FRONTIER_RESOLUTION.json`, byte SHA256 `93e7e3ede0a69e6b3e35f40217bd53ff95d1fbbb847ca3fbc9181c0689d0152e`) is frozen, consumed evidence: it is re-verified byte-for-byte and never rewritten. The per-frontier blocker below was added after v1 was frozen and therefore lives only here.
 
 **7 of 7 raise-sizing frontiers remain UNRESOLVED**; the required #388 tree stays open and no candidate is admitted.
 
