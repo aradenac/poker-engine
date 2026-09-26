@@ -70,6 +70,7 @@ on:
       - 'tests/simulation/test_issue421_preflight.py'
       - 'tests/training/test_*generalized*.py'
       - 'tests/training/test_issue421_evidence_bundle.py'
+      - 'tests/training/test_issue421_n8n_result.py'
       - 'tests/test_github_workflow_audit.py'
       # resolved inputs the runner consumes but the issue does not ship
       - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
@@ -111,6 +112,7 @@ on:
       - 'tests/simulation/test_issue421_preflight.py'
       - 'tests/training/test_*generalized*.py'
       - 'tests/training/test_issue421_evidence_bundle.py'
+      - 'tests/training/test_issue421_n8n_result.py'
       - 'tests/test_github_workflow_audit.py'
       - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
       - 'analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json'
@@ -172,6 +174,7 @@ jobs:
             tests/preflop/test_issue421_mandatory_contracts.py \
             tests/ci/test_issue421_contract_guards.py \
             tests/training/test_issue421_evidence_bundle.py \
+            tests/training/test_issue421_n8n_result.py \
             tests/test_github_workflow_audit.py \
             tests/ci/test_consolidation_decision.py
       - name: Public-only dataset, hand-grouped split and TEST refusal
@@ -200,6 +203,8 @@ jobs:
         run: PYTHONPATH=. python3 tests/ci/test_issue421_contract_guards.py
       - name: Content-addressed #421 evidence bundle
         run: PYTHONPATH=. python3 tests/training/test_issue421_evidence_bundle.py
+      - name: n8n output block (N8N_TASK_RESULT) matches the terminal evidence
+        run: PYTHONPATH=. python3 tests/training/test_issue421_n8n_result.py
       - name: Prove every #421 suite is actually executed (no-op guard)
         run: |
           set -euo pipefail
@@ -224,6 +229,7 @@ jobs:
               'tests/preflop/test_issue421_mandatory_contracts.py',
               'tests/ci/test_issue421_contract_guards.py',
               'tests/training/test_issue421_evidence_bundle.py',
+              'tests/training/test_issue421_n8n_result.py',
               'tests/test_github_workflow_audit.py',
               'tests/ci/test_consolidation_decision.py',
           )
