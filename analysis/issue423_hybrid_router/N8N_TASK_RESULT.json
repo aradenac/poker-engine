@@ -1,0 +1,16 @@
+{
+  "active_pointer_mutated": false,
+  "decision": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+  "global_cv_delta_log_loss": -0.004301,
+  "issue": 423,
+  "issue367_preflight_passed": false,
+  "next_issue": 367,
+  "ood_abstain_rate": 1.0,
+  "router_id": "hybrid_router",
+  "router_sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+  "sparse_calibration_ece": 0.027507,
+  "sparse_cv_delta_log_loss": -0.031234,
+  "status": "BLOCKED_SCIENTIFIC",
+  "test_consumed": false,
+  "validation_reopened": false
+}
