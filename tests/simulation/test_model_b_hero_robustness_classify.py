@@ -16,8 +16,10 @@ from tools.simulation.model_b_hero_robustness_classify import (  # noqa: E402
     DEFAULT_POLICY,
     MAX_CI95_WIDTH_BB,
     REASON_CODES,
+    REASON_CODES_BY_STATUS,
     REQUIRED_ALTERNATIVE_FIELDS,
     REQUIRED_HERO_ENTRY_FIELDS,
+    ORDERING_SUPPORT_STATUS_BUCKETS,
     SENSITIVE_DELTA_BB,
     STATUS_PRECEDENCE,
     STATUSES,
@@ -405,6 +407,279 @@ class UncertaintySemanticsTests(unittest.TestCase):
             },
         )
         self.assertTrue(set(first["reason_codes"]) <= REASON_CODES)
+
+
+class CloseBandSemanticsTests(unittest.TestCase):
+    """Quasi-equality vs clearly-superior alternative (task ``backlog-lgc``).
+
+    The numeric ``TOO_CLOSE`` test is reserved for an *absolute* gap inside
+    :data:`TOO_CLOSE_DELTA_BB`: a gap that merely points downwards is a
+    quasi-equality only while it stays in that band. Beyond it the best
+    alternative is clearly superior to Hero and the verdict is an explicit
+    ``SENSITIVE`` carrying ``BEST_ALTERNATIVE_CLEARLY_SUPERIOR`` -- never
+    ``TOO_CLOSE``, and never a sizing selection or a recommendation.
+    """
+
+    def _hero_below_best(self, *, best_ev: float, best_paired_delta: float = 4.0) -> dict:
+        """A coherent Hero entry at EV -5.0 whose best alternative is far above."""
+
+        return _entry(
+            ev=-5.0,
+            alternatives=[
+                _alternative(
+                    alternative_id="BEST",
+                    ev=best_ev,
+                    paired_delta=best_paired_delta,
+                    # Same sizing as Hero: the corrected case must not hinge on a
+                    # sizing variation reason.
+                    sizing=5.0,
+                )
+            ],
+        )
+
+    def test_clearly_better_alternative_is_sensitive_not_too_close(self) -> None:
+        entry = self._hero_below_best(best_ev=-1.0, best_paired_delta=4.0)
+        result = classify(entry)
+        self.assertEqual(result["status"], "SENSITIVE")
+        self.assertNotEqual(result["status"], "TOO_CLOSE")
+        self.assertEqual(result["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
+        self.assertTrue(set(result["reason_codes"]) <= REASON_CODES)
+        self.assertTrue(
+            set(result["reason_codes"])
+            <= set(REASON_CODES_BY_STATUS["SENSITIVE"])
+        )
+        # No reason code of the close band may survive the correction.
+        self.assertFalse(
+            set(result["reason_codes"]) & set(REASON_CODES_BY_STATUS["TOO_CLOSE"])
+        )
+
+    def test_corrected_case_never_selects_or_recommends_a_sizing(self) -> None:
+        # Only the standing is reported: exactly one status, one dedicated
+        # reason, and no sizing/selection wording anywhere in the output.
+        entry = self._hero_below_best(best_ev=-1.0)
+        result = classify(entry)
+        self.assertEqual(set(result), {"status", "reason_codes"})
+        self.assertEqual(result["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
+        rendered = json.dumps(result)
+        for forbidden in ("sizing", "SIZING", "recommend", "RECOMMEND", "selected"):
+            self.assertNotIn(forbidden, rendered)
+
+    def test_gap_inside_the_band_is_too_close_in_both_directions(self) -> None:
+        # Hero ahead by exactly the tolerance: quasi ex-aequo, no ordering.
+        ahead = classify(
+            _entry(
+                ev=1.0,
+                alternatives=[
+                    _alternative(
+                        ev=1.0 - TOO_CLOSE_DELTA_BB,
+                        paired_delta=-TOO_CLOSE_DELTA_BB,
+                    )
+                ],
+            )
+        )
+        self.assertEqual(ahead["status"], "TOO_CLOSE")
+        self.assertIn("ADVANTAGE_WITHIN_TOLERANCE", ahead["reason_codes"])
+        self.assertNotIn("BEST_ALTERNATIVE_CLEARLY_SUPERIOR", ahead["reason_codes"])
+
+        # Hero behind by exactly the tolerance: still a quasi-equality.
+        behind = classify(
+            _entry(
+                ev=1.0,
+                alternatives=[
+                    _alternative(
+                        ev=1.0 + TOO_CLOSE_DELTA_BB,
+                        paired_delta=TOO_CLOSE_DELTA_BB,
+                    )
+                ],
+            )
+        )
+        self.assertEqual(behind["status"], "TOO_CLOSE")
+        self.assertIn("ADVANTAGE_WITHIN_TOLERANCE", behind["reason_codes"])
+        self.assertIn("ALTERNATIVE_MATCHES_OR_EXCEEDS_HERO", behind["reason_codes"])
+        self.assertNotIn("BEST_ALTERNATIVE_CLEARLY_SUPERIOR", behind["reason_codes"])
+
+    def test_near_zero_gaps_in_both_directions_are_too_close(self) -> None:
+        for gap in (1e-9, -1e-9, 0.0):
+            with self.subTest(gap=gap):
+                entry = _entry(
+                    ev=1.0,
+                    alternatives=[
+                        _alternative(ev=1.0 - gap, paired_delta=-gap)
+                    ],
+                )
+                result = classify(entry)
+                self.assertEqual(result["status"], "TOO_CLOSE", result)
+                self.assertIn("ADVANTAGE_WITHIN_TOLERANCE", result["reason_codes"])
+                self.assertNotIn(
+                    "BEST_ALTERNATIVE_CLEARLY_SUPERIOR", result["reason_codes"]
+                )
+
+    def test_gap_just_outside_the_band_is_sensitive(self) -> None:
+        outside = TOO_CLOSE_DELTA_BB + 1e-6
+
+        # Just outside on the downward side: the alternative is clearly better.
+        below = classify(
+            _entry(
+                ev=1.0,
+                alternatives=[
+                    _alternative(ev=1.0 + outside, paired_delta=outside)
+                ],
+            )
+        )
+        self.assertEqual(below["status"], "SENSITIVE", below)
+        self.assertIn("BEST_ALTERNATIVE_CLEARLY_SUPERIOR", below["reason_codes"])
+        self.assertNotIn("ADVANTAGE_WITHIN_TOLERANCE", below["reason_codes"])
+
+        # Just outside on the upward side: the standing only holds inside the
+        # wider sensitivity band.
+        above = classify(
+            _entry(
+                ev=1.0,
+                alternatives=[
+                    _alternative(ev=1.0 - outside, paired_delta=-outside)
+                ],
+            )
+        )
+        self.assertEqual(above["status"], "SENSITIVE", above)
+        self.assertIn("ADVANTAGE_WITHIN_SENSITIVITY_BAND", above["reason_codes"])
+        self.assertNotIn("BEST_ALTERNATIVE_CLEARLY_SUPERIOR", above["reason_codes"])
+
+    def test_clearly_superior_beyond_the_sensitivity_band_is_sensitive(self) -> None:
+        entry = self._hero_below_best(
+            best_ev=-1.0, best_paired_delta=SENSITIVE_DELTA_BB * 4.0
+        )
+        result = classify(entry)
+        self.assertEqual(result["status"], "SENSITIVE", result)
+        self.assertEqual(result["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
+
+    def test_unrelated_paired_delta_does_not_mask_the_corrected_case(self) -> None:
+        # A lower-ranked alternative declares a quasi-zero paired delta (and a
+        # paired CI covering zero): that speaks about *its* standing, not about
+        # the Hero-versus-best comparison, so the corrected case stands.
+        unrelated = _alternative(
+            alternative_id="TIED",
+            ev=-5.0,
+            paired_delta=0.0,
+        )
+        unrelated["paired_delta_ci95"] = [-0.2, 0.2]
+        entry = _entry(
+            ev=-5.0,
+            alternatives=[
+                _alternative(
+                    alternative_id="BEST", ev=-1.0, paired_delta=4.0, sizing=5.0
+                ),
+                unrelated,
+            ],
+        )
+        result = classify(entry)
+        self.assertEqual(result["status"], "SENSITIVE", result)
+        self.assertEqual(result["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
+
+    def test_unrelated_support_status_does_not_mask_the_corrected_case(self) -> None:
+        # Same rule for the declared support signal of an unrelated alternative.
+        entry = _entry(
+            ev=-5.0,
+            alternatives=[
+                _alternative(
+                    alternative_id="BEST", ev=-1.0, paired_delta=4.0, sizing=5.0
+                ),
+                _alternative(
+                    alternative_id="TIED",
+                    ev=-5.0,
+                    paired_delta=0.0,
+                    support={"status": "TOO_CLOSE", "tier": "MEDIUM", "ood": False},
+                ),
+            ],
+        )
+        result = classify(entry)
+        self.assertEqual(result["status"], "SENSITIVE", result)
+        self.assertEqual(result["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
+        self.assertNotIn("SUPPORT_STATUS_TOO_CLOSE", result["reason_codes"])
+
+    def test_contradictory_paired_delta_on_the_best_alternative_keeps_too_close(self) -> None:
+        # Contradictory signals *about the relevant comparison*: the EV gap says
+        # "clearly superior" while the best alternative's own paired comparison
+        # declares a tie. The conservative no-claim verdict and the documented
+        # precedence win -- an explicit pair never promotes a sensitivity claim.
+        entry = self._hero_below_best(best_ev=-1.0, best_paired_delta=-0.01)
+        result = classify(entry)
+        self.assertEqual(result["status"], "TOO_CLOSE", result)
+        self.assertIn("PAIRED_DELTA_WITHIN_TOLERANCE", result["reason_codes"])
+        self.assertNotIn("BEST_ALTERNATIVE_CLEARLY_SUPERIOR", result["reason_codes"])
+
+    def test_contradictory_support_status_on_the_best_alternative_keeps_too_close(self) -> None:
+        entry = _entry(
+            ev=-5.0,
+            alternatives=[
+                _alternative(
+                    alternative_id="BEST",
+                    ev=-1.0,
+                    paired_delta=4.0,
+                    support={"status": "TOO_CLOSE", "tier": "MEDIUM", "ood": False},
+                )
+            ],
+        )
+        result = classify(entry)
+        self.assertEqual(result["status"], "TOO_CLOSE", result)
+        self.assertIn("SUPPORT_STATUS_TOO_CLOSE", result["reason_codes"])
+
+    def test_clearly_superior_case_still_fails_closed_on_ood(self) -> None:
+        entry = self._hero_below_best(best_ev=-1.0)
+        entry["support"] = {"status": "OOD_UNTESTABLE", "tier": "UNKNOWN", "ood": True}
+        self.assertEqual(classify(entry)["status"], "OOD_UNTESTABLE")
+
+    def test_clearly_superior_case_still_fails_closed_on_sparse_support(self) -> None:
+        entry = self._hero_below_best(best_ev=-1.0)
+        entry["support"] = {"status": "INSUFFICIENT_SUPPORT", "tier": "LOW", "ood": False}
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT", result)
+        self.assertIn("SUPPORT_STATUS_INSUFFICIENT", result["reason_codes"])
+
+    def test_clearly_superior_case_still_fails_closed_on_wide_uncertainty(self) -> None:
+        entry = self._hero_below_best(best_ev=-1.0)
+        entry["alternatives"][0]["uncertainty"] = {
+            "ci95": [-4.0, 4.0],
+            "width_bb": 8.0,
+            "source": "s",
+        }
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT", result)
+        self.assertIn("CI95_WIDTH_EXCEEDS_POLICY", result["reason_codes"])
+
+    def test_clearly_superior_verdict_is_order_independent(self) -> None:
+        alternatives = [
+            _alternative(
+                alternative_id="BEST", ev=-1.0, paired_delta=4.0, sizing=5.0
+            ),
+            _alternative(alternative_id="TIED", ev=-5.0, paired_delta=0.0),
+            _alternative(alternative_id="WORSE", ev=-7.0, paired_delta=-2.0),
+        ]
+        first = classify(_entry(ev=-5.0, alternatives=copy.deepcopy(alternatives)))
+        flipped = classify(
+            _entry(ev=-5.0, alternatives=list(reversed(copy.deepcopy(alternatives))))
+        )
+        self.assertEqual(first, flipped)
+        self.assertEqual(first["status"], "SENSITIVE")
+        self.assertEqual(first["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
+
+    def test_reason_code_catalogue_names_the_corrected_case(self) -> None:
+        self.assertIn("BEST_ALTERNATIVE_CLEARLY_SUPERIOR", REASON_CODES)
+        self.assertIn(
+            "BEST_ALTERNATIVE_CLEARLY_SUPERIOR",
+            REASON_CODES_BY_STATUS["SENSITIVE"],
+        )
+        self.assertNotIn(
+            "BEST_ALTERNATIVE_CLEARLY_SUPERIOR",
+            REASON_CODES_BY_STATUS["TOO_CLOSE"],
+        )
+
+    def test_ordering_support_statuses_are_the_two_ordering_claims(self) -> None:
+        # Only TOO_CLOSE/SENSITIVE carry an ordering claim; the evidence-level
+        # statuses are not part of the relevance-filtered signal set.
+        self.assertEqual(
+            ORDERING_SUPPORT_STATUS_BUCKETS,
+            {"TOO_CLOSE": "TOO_CLOSE", "SENSITIVE": "SENSITIVE"},
+        )
 
 
 class FailClosedTests(unittest.TestCase):

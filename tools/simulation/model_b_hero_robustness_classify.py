@@ -25,14 +25,28 @@ Precedence is fixed and strict, most severe first
    entry or of any compared alternative is missing, malformed, incoherent
    (``width_bb`` contradicting the ``ci95`` bounds, reversed or non-finite
    bounds, invalid declared width) or wider than :data:`MAX_CI95_WIDTH_BB`.
-3. ``TOO_CLOSE`` -- the alternative standing sits inside the noise band
-   (:data:`TOO_CLOSE_DELTA_BB`): the runner-up is quasi ex-aequo or an explicit
-   ``paired_delta`` sits in the band, so no ordering can be asserted. ``TOO_CLOSE``
-   is never collapsed into ``CONSISTENT``/``SENSITIVE``.
+3. ``TOO_CLOSE`` -- the *absolute* gap between Hero and the best alternative sits
+   inside the noise band (:data:`TOO_CLOSE_DELTA_BB`, in either direction): the
+   two are quasi ex-aequo, so no ordering can be asserted. The numeric test is
+   explicitly reserved for ``abs(gap) <= band``; it is never triggered by a gap
+   that merely points downwards. ``TOO_CLOSE`` is never collapsed into
+   ``CONSISTENT``/``SENSITIVE``.
 4. ``SENSITIVE`` -- the standing holds only within the wider sensitivity band
    (:data:`SENSITIVE_DELTA_BB`): a sizing variation beyond the close band moves
-   the outcome, or the declared support reports ``SENSITIVE``.
+   the outcome, the declared support reports ``SENSITIVE``, or the best
+   alternative is *clearly superior* to Hero (more than the close band below it,
+   reported with the dedicated ``BEST_ALTERNATIVE_CLEARLY_SUPERIOR`` reason).
 5. ``CONSISTENT`` -- the standing survives every declared tolerance.
+
+The comparison set is read with an explicit relevance rule: the standing is the
+Hero-versus-best-alternative comparison, so only the best-ranked alternative's
+declared ordering signal (its ``paired_delta``, its paired CI and its declared
+``TOO_CLOSE``/``SENSITIVE`` support status) may speak about it. A lower-ranked
+alternative describes its own standing, so an unrelated near-zero delta or
+``TOO_CLOSE`` status can never mask the corrected case. Evidence-level signals
+(``OOD_UNTESTABLE``, ``INSUFFICIENT_SUPPORT``, sparse tiers, a missing/malformed
+uncertainty envelope) keep being folded for *every* compared entry: they forbid a
+claim whatever the ordering is.
 
 Fail-closed: ``hero_entry`` must be a mapping carrying every required field
 (:data:`REQUIRED_HERO_ENTRY_FIELDS`) and each alternative must carry
@@ -59,6 +73,7 @@ __all__ = [
     "ROBUSTNESS_STATUSES",
     "REASON_CODES",
     "REASON_CODES_BY_STATUS",
+    "ORDERING_SUPPORT_STATUS_BUCKETS",
     "REQUIRED_HERO_ENTRY_FIELDS",
     "REQUIRED_ALTERNATIVE_FIELDS",
     "TOO_CLOSE_DELTA_BB",
@@ -153,6 +168,20 @@ SPARSE_TIERS = frozenset({"LOW", "VERY_LOW", "SPARSE", "NONE", "MINIMAL"})
 #: envelope is unverifiable and is reported as ``INSUFFICIENT_SUPPORT``.
 REQUIRE_UNCERTAINTY = True
 
+#: Declared ``support.status`` values that carry an *ordering* claim (the two
+#: options cannot be told apart), mapped onto the reason bucket they fill. They
+#: are the only declared statuses whose meaning depends on *which* entry declares
+#: them: only the relevant comparison (the Hero entry and the best-ranked
+#: alternative) may contribute one, because a lower-ranked alternative's
+#: ``TOO_CLOSE`` speaks about that alternative's own standing, not about Hero's.
+#: Evidence-level statuses (``OOD_UNTESTABLE``, ``INSUFFICIENT_SUPPORT``) are not
+#: listed here: they forbid a claim for every compared entry and are folded
+#: unconditionally.
+ORDERING_SUPPORT_STATUS_BUCKETS = {
+    "TOO_CLOSE": "TOO_CLOSE",
+    "SENSITIVE": "SENSITIVE",
+}
+
 #: Required (but possibly null-valued) fields of a ``hero_entry`` block.
 REQUIRED_HERO_ENTRY_FIELDS = (
     "action",
@@ -219,6 +248,7 @@ _SENSITIVE_REASON_CODES = frozenset(
         "SUPPORT_STATUS_SENSITIVE",
         "ADVANTAGE_WITHIN_SENSITIVITY_BAND",
         "SIZING_VARIATION_WITHIN_SENSITIVITY_BAND",
+        "BEST_ALTERNATIVE_CLEARLY_SUPERIOR",
     }
 )
 _CONSISTENT_REASON_CODES = frozenset({"CONSISTENT_WITHIN_POLICY"})
@@ -476,8 +506,19 @@ def _paired_ci_includes_zero(value: Any) -> bool:
 def _support_verdict(
     entry: Mapping[str, Any],
     buckets: dict[str, set[str]],
+    *,
+    ordering_relevant: bool = True,
 ) -> str | None:
-    """Fold one ``support`` block into the reason buckets and return its status."""
+    """Fold one ``support`` block into the reason buckets and return its status.
+
+    ``ordering_relevant`` tells whether the entry is part of the relevant
+    comparison (the Hero entry, or the best-ranked alternative). Evidence-level
+    signals (missing/invalid/OOD support, ``INSUFFICIENT_SUPPORT``, a sparse
+    tier) are always folded -- they forbid a claim for any compared entry.
+    Ordering signals (:data:`ORDERING_SUPPORT_STATUS_BUCKETS`) are only folded
+    for the relevant comparison, so a lower-ranked alternative can never mask the
+    standing that is actually classified.
+    """
 
     support = entry.get("support")
     if support is None:
@@ -500,15 +541,30 @@ def _support_verdict(
         buckets["OOD_UNTESTABLE"].add("SUPPORT_STATUS_UNKNOWN")
     elif declared == "INSUFFICIENT_SUPPORT":
         buckets["INSUFFICIENT_SUPPORT"].add("SUPPORT_STATUS_INSUFFICIENT")
-    elif declared == "TOO_CLOSE":
-        buckets["TOO_CLOSE"].add("SUPPORT_STATUS_TOO_CLOSE")
-    elif declared == "SENSITIVE":
-        buckets["SENSITIVE"].add("SUPPORT_STATUS_SENSITIVE")
+    elif ordering_relevant:
+        _fold_ordering_support_status(declared, buckets)
 
     tier = support.get("tier")
     if tier is not None and str(tier).strip().upper() in SPARSE_TIERS:
         buckets["INSUFFICIENT_SUPPORT"].add("SPARSE_SUPPORT_TIER")
     return declared
+
+
+def _fold_ordering_support_status(
+    declared: str | None,
+    buckets: dict[str, set[str]],
+) -> None:
+    """Fold one declared *ordering* support status onto its reason bucket.
+
+    A status outside :data:`ORDERING_SUPPORT_STATUS_BUCKETS` (``CONSISTENT``,
+    ``INSUFFICIENT_SUPPORT``, ``OOD_UNTESTABLE``, an unknown label) carries no
+    ordering claim of its own and adds no reason code.
+    """
+
+    label = "" if declared is None else str(declared)
+    bucket = ORDERING_SUPPORT_STATUS_BUCKETS.get(label)
+    if bucket is not None:
+        buckets[bucket].add(f"SUPPORT_STATUS_{bucket}")
 
 
 def _rank_key(item: Mapping[str, Any]) -> tuple[float, str]:
@@ -589,7 +645,13 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
         alternative_id = (
             str(alternative_id) if alternative_id not in (None, "") else f"alternative[{index}]"
         )
-        _support_verdict(raw, buckets)
+        # Evidence-level support signals are folded for every compared
+        # alternative, exactly as for the Hero entry. The declared *ordering*
+        # signal is held back and folded later, for the best-ranked alternative
+        # only -- see the relevance rule in the module docstring.
+        declared_support_status = _support_verdict(
+            raw, buckets, ordering_relevant=False
+        )
 
         # Every alternative of the comparison set is verified as strictly as the
         # Hero entry: a secondary alternative that carries no, a malformed or a
@@ -610,6 +672,7 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
                 "ev": ev,
                 "paired_delta": _finite_or_none(raw.get("paired_delta")),
                 "paired_delta_ci95": raw.get("paired_delta_ci95"),
+                "support_status": declared_support_status,
             }
         )
 
@@ -621,19 +684,33 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
     if ranked:
         best = ranked[0]
 
-        for item in ranked:
-            delta = item["paired_delta"]
-            if delta is not None and abs(delta) <= effective.too_close_delta_bb + _EPS:
-                buckets["TOO_CLOSE"].add("PAIRED_DELTA_WITHIN_TOLERANCE")
-            if _paired_ci_includes_zero(item.get("paired_delta_ci95")):
-                buckets["TOO_CLOSE"].add("PAIRED_CI_INCLUDES_ZERO")
+        # Relevance rule: the classified standing is Hero versus the *best*
+        # alternative, so only that alternative's declared ordering signal is
+        # folded. A lower-ranked alternative's own TOO_CLOSE/SENSITIVE status
+        # describes its own standing and must never mask the corrected case.
+        _fold_ordering_support_status(best["support_status"], buckets)
+
+        # Same rule for the explicit paired comparison: a near-zero paired delta
+        # (or a paired CI covering zero) declared by an unrelated alternative is
+        # not evidence about the Hero standing.
+        best_delta = best["paired_delta"]
+        if best_delta is not None and abs(best_delta) <= effective.too_close_delta_bb + _EPS:
+            buckets["TOO_CLOSE"].add("PAIRED_DELTA_WITHIN_TOLERANCE")
+        if _paired_ci_includes_zero(best.get("paired_delta_ci95")):
+            buckets["TOO_CLOSE"].add("PAIRED_CI_INCLUDES_ZERO")
 
         if hero_ev is not None:
             advantage = hero_ev - best["ev"]
-            if advantage <= effective.too_close_delta_bb + _EPS:
+            # The numeric close-band test is reserved for an *absolute* gap
+            # inside the tolerance, in either direction. A downward gap is only
+            # a quasi-equality while it stays in the band: beyond it, the best
+            # alternative is clearly superior and gets its own explicit reason.
+            if abs(advantage) <= effective.too_close_delta_bb + _EPS:
                 buckets["TOO_CLOSE"].add("ADVANTAGE_WITHIN_TOLERANCE")
                 if advantage <= 0.0:
                     buckets["TOO_CLOSE"].add("ALTERNATIVE_MATCHES_OR_EXCEEDS_HERO")
+            elif advantage < 0.0:
+                buckets["SENSITIVE"].add("BEST_ALTERNATIVE_CLEARLY_SUPERIOR")
             elif advantage <= effective.sensitive_delta_bb + _EPS:
                 buckets["SENSITIVE"].add("ADVANTAGE_WITHIN_SENSITIVITY_BAND")
 

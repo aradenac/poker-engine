@@ -113,13 +113,33 @@ when a consumer collapses one input to a single verdict
 | Status | Meaning |
 |---|---|
 | `CONSISTENT` | Across the declared Model B environments the alternative keeps its standing (same best alternative, ranking and sizing within tolerance). |
-| `SENSITIVE` | A declared environment changes the best alternative, the ranking or the sizing, so the standing is not robust to Model B variation. |
-| `TOO_CLOSE` | The comparison is complete but the gap to the best alternative is within tolerance, so no ordering can be asserted. |
+| `SENSITIVE` | A declared environment changes the best alternative, the ranking or the sizing, or the best alternative is *clearly superior* to Hero (more than the close band below it, `BEST_ALTERNATIVE_CLEARLY_SUPERIOR`), so the standing is not robust to Model B variation. |
+| `TOO_CLOSE` | The comparison is complete but the **absolute** gap to the best alternative is within tolerance (in either direction), so the two are quasi ex-aequo and no ordering can be asserted. |
 | `INSUFFICIENT_SUPPORT` | Evidence is missing or unsupported: no robustness claim is allowed. |
 | `OOD_UNTESTABLE` | The relevant environment is out of distribution (`support.ood = true`), so it can be reported but cannot be tested against. |
 
 `INSUFFICIENT_SUPPORT` and `OOD_UNTESTABLE` are fail-closed outcomes and must be
 surfaced as "not established", never as a weak positive.
+
+The numeric `TOO_CLOSE` test is reserved for a gap inside the close band, and it
+is a **magnitude-only** test: the standing is quasi ex-aequo while
+`abs(hero_ev - best_ev) <= TOO_CLOSE_DELTA_BB`, in either direction. A gap that
+merely points downwards is therefore *not* a quasi-equality beyond that band --
+an alternative evaluated clearly above Hero is reported `SENSITIVE` with the
+dedicated `BEST_ALTERNATIVE_CLEARLY_SUPERIOR` reason.
+
+The comparison set is read with an explicit relevance rule: the classified
+standing is Hero versus the **best-ranked** alternative, so only that
+alternative's declared ordering signal (its `paired_delta`, its paired CI and its
+declared `TOO_CLOSE`/`SENSITIVE` support status) may speak about it. A
+lower-ranked alternative's near-zero paired delta or declared `TOO_CLOSE` status
+describes its own standing and can never mask the Hero standing. Evidence-level
+signals (`ood`, `INSUFFICIENT_SUPPORT`, a sparse tier, a missing or malformed
+`uncertainty` envelope) keep being folded for the Hero entry and for **every**
+compared alternative.
+
+The verdict is a status only: neither the classifier nor the report ever selects
+an alternative, emits a recommendation or names a best sizing.
 
 ## Mapping to #199
 

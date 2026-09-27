@@ -39,6 +39,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.simulation import model_b_hero_robustness_adapter as adapter  # noqa: E402
+from tools.simulation import model_b_hero_robustness_classify as classifier  # noqa: E402
 from tools.simulation import model_b_preflop_sensitivity_harness as harness  # noqa: E402
 
 FIXTURES = ROOT / "tests/fixtures/model_b_hero_robustness"
@@ -540,6 +541,153 @@ class UncertaintyRegressionTest(unittest.TestCase):
                 payload = raised.exception.to_dict()
                 self.assertEqual(payload["outcome"], "FAIL_CLOSED")
                 self.assertNotIn("status", payload)
+
+
+class ClearlySuperiorAlternativeRegressionTest(unittest.TestCase):
+    """Quasi-equality vs clearly-superior alternative (task ``backlog-lgc``).
+
+    ``robust_consistent.json`` is derived in memory (no fixture file is ever
+    written or edited): a Hero entry whose EV sits well below its synthetic
+    alternatives must be ``SENSITIVE`` with the dedicated reason -- never
+    ``TOO_CLOSE`` -- and the emitted report must stay a status-only artifact
+    carrying no sizing selection and no recommendation. The fail-closed statuses
+    keep their precedence on the very same document shape.
+    """
+
+    CLEARLY_SUPERIOR_REASON = "BEST_ALTERNATIVE_CLEARLY_SUPERIOR"
+    BEST_EV = -3.0
+    SECOND_EV = -4.0
+
+    def _bracket(self, ev: float) -> dict:
+        return {
+            "ci95": [ev - 0.03, ev + 0.03],
+            "width_bb": 0.06,
+            "source": "synthetic_paired_ci95_v1",
+        }
+
+    def _derived_document(self, *, hero_ev: float) -> dict:
+        """Derive a coherent ``robust_consistent.json`` with a new Hero EV.
+
+        The alternatives keep their committed public identity (action/sizing),
+        only their synthetic EV envelope moves, and every paired delta is kept
+        consistent with the derived point estimates (delta = alternative - hero).
+        """
+
+        document = fixture("robust_consistent.json")
+        entry = document["hero_entry"]
+        entry["ev"] = hero_ev
+        entry["uncertainty"] = self._bracket(hero_ev)
+        for alternative, ev in zip(entry["alternatives"], (self.BEST_EV, self.SECOND_EV)):
+            alternative["ev"] = ev
+            alternative["paired_delta"] = ev - hero_ev
+            alternative["uncertainty"] = self._bracket(ev)
+        return document
+
+    def test_better_evaluated_alternatives_are_sensitive_not_too_close(self) -> None:
+        # Acceptance case: Hero EV = -5.0 with a coherent CI95 and synthetic
+        # alternatives evaluated above it.
+        document = self._derived_document(hero_ev=-5.0)
+        report = adapter.build_report(document, context=context(), **docs_340())
+
+        self.assertEqual(report["status"], "SENSITIVE")
+        self.assertNotEqual(report["status"], "TOO_CLOSE")
+        self.assertEqual(report["reason_codes"], [self.CLEARLY_SUPERIOR_REASON])
+        self.assertIn(report["status"], adapter.STATUSES)
+        self.assertTrue(
+            set(report["reason_codes"])
+            <= set(classifier.REASON_CODES_BY_STATUS["SENSITIVE"])
+        )
+        adapter.validate_report(report)
+
+        # One source of truth: the report mirrors the T4 classifier exactly.
+        verdict = classifier.classify(document)
+        self.assertEqual(report["status"], verdict["status"])
+        self.assertEqual(report["reason_codes"], verdict["reason_codes"])
+
+    def test_report_of_the_corrected_case_recommends_no_sizing(self) -> None:
+        document = self._derived_document(hero_ev=-5.0)
+        report = adapter.build_report(document, context=context(), **docs_340())
+
+        self.assertEqual(
+            set(report),
+            {
+                "schema",
+                "input_schema_ref",
+                "status",
+                "reason_codes",
+                "information_boundary",
+                "provenance",
+                "harness_request_sha256",
+                "harness_report_sha256",
+            },
+        )
+        # The information_boundary block names the boundary flags themselves
+        # ("recommendation_consumed", ...) and is asserted all-false separately,
+        # exactly like the consumer leak walk.
+        self.assertEqual(
+            report["information_boundary"],
+            {flag: False for flag in adapter.REPORT_INFORMATION_BOUNDARY_FLAGS},
+        )
+        scannable = {
+            key: value
+            for key, value in report.items()
+            if key != "information_boundary"
+        }
+        rendered = json.dumps(scannable).lower()
+        for forbidden in (
+            "sizing",
+            "recommend",
+            "selected",
+            "target_total",
+            "incremental_cost",
+            "suggested",
+        ):
+            self.assertNotIn(forbidden, rendered)
+
+    def test_quasi_equal_hero_and_best_alternative_stay_too_close(self) -> None:
+        document = self._derived_document(
+            hero_ev=self.BEST_EV + classifier.TOO_CLOSE_DELTA_BB / 2.0
+        )
+        report = adapter.build_report(document, context=context(), **docs_340())
+
+        self.assertEqual(report["status"], "TOO_CLOSE")
+        self.assertIn("ADVANTAGE_WITHIN_TOLERANCE", report["reason_codes"])
+        self.assertTrue(
+            set(report["reason_codes"])
+            <= set(classifier.REASON_CODES_BY_STATUS["TOO_CLOSE"])
+        )
+        adapter.validate_report(report)
+
+    def test_fail_closed_statuses_keep_their_precedence_on_the_corrected_shape(self) -> None:
+        ood = self._derived_document(hero_ev=-5.0)
+        ood["hero_entry"]["support"] = {
+            "status": "OOD_UNTESTABLE",
+            "tier": "UNKNOWN",
+            "ood": True,
+        }
+        report = adapter.build_report(ood, context=context(), **docs_340())
+        self.assertEqual(report["status"], "OOD_UNTESTABLE")
+        adapter.validate_report(report)
+
+        sparse = self._derived_document(hero_ev=-5.0)
+        sparse["hero_entry"]["support"] = {
+            "status": "INSUFFICIENT_SUPPORT",
+            "tier": "LOW",
+            "ood": False,
+        }
+        report = adapter.build_report(sparse, context=context(), **docs_340())
+        self.assertEqual(report["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("SPARSE_SUPPORT_TIER", report["reason_codes"])
+        adapter.validate_report(report)
+
+    def test_corrected_case_is_deterministic(self) -> None:
+        document = self._derived_document(hero_ev=-5.0)
+        first = adapter.build_report(document, context=context(), **docs_340())
+        second = adapter.build_report(document, context=context(), **docs_340())
+        self.assertEqual(first, second)
+        self.assertEqual(
+            adapter.render_report(first), adapter.render_report(second)
+        )
 
 
 if __name__ == "__main__":
