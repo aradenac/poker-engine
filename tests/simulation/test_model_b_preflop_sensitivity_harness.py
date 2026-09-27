@@ -173,36 +173,6 @@ def main():
     else:
         raise AssertionError("tampered #340 candidate must fail closed")
 
-    # The harness accepts one source kind only: the synthetic default. A second
-    # #425 projection source kind, a non-synthetic request or an EV/Model-A
-    # feature all fail closed instead of being accepted.
-    bad = copy.deepcopy(request)
-    bad["source_kind"] = "SYNTHETIC_ROBUSTNESS_PROJECTED"
-    try:
-        validate_request(bad)
-    except ValueError as exc:
-        assert "synthetic" in str(exc)
-    else:
-        raise AssertionError("a non-SYNTHETIC_HARNESS_ONLY request must fail closed")
-
-    bad = copy.deepcopy(request)
-    bad["synthetic_fixture"] = False
-    try:
-        validate_request(bad)
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("a non-synthetic request must fail closed")
-
-    bad = copy.deepcopy(request)
-    bad["alternatives"][0]["ev_bb"] = 1.0
-    try:
-        validate_request(bad)
-    except ValueError as exc:
-        assert "forbidden" in str(exc).lower()
-    else:
-        raise AssertionError("an EV feature injected into the request must fail closed")
-
     print("Issue #344 synthetic Model B sensitivity harness: PASS")
 
 

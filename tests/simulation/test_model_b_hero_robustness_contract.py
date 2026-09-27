@@ -420,5 +420,176 @@ class UncertaintySemanticsTest(unittest.TestCase):
         self.assertIn("UNCERTAINTY_MISSING", verdict["reason_codes"])
 
 
+class ReusedHarnessBoundaryTest(unittest.TestCase):
+    """#425-owned guards on the reused #344 harness (task ``backlog-ncv``).
+
+    The #344 files stay byte-identical to their own reviewed state, so the
+    guards the #425 chain relies on are asserted from the #425 side: the harness
+    accepts exactly its own synthetic source kind, refuses a non-synthetic
+    request and refuses an injected EV / Model A feature.
+    """
+
+    def request(self) -> dict:
+        return contract.project_to_harness_request(
+            load_json(FIXTURES / "robust_consistent.json"), context()
+        )
+
+    def test_harness_accepts_the_projected_request(self) -> None:
+        request = self.request()
+        self.assertIs(harness.validate_request(request), None)
+        self.assertEqual(request["source_kind"], harness.SOURCE_KIND)
+        self.assertIs(request["synthetic_fixture"], True)
+
+    def test_harness_refuses_a_foreign_source_kind(self) -> None:
+        request = self.request()
+        request["source_kind"] = f"{harness.SOURCE_KIND}_EXT"
+        with self.assertRaises(ValueError) as raised:
+            harness.validate_request(request)
+        self.assertIn("synthetic", str(raised.exception).lower())
+
+    def test_harness_refuses_a_non_synthetic_request(self) -> None:
+        request = self.request()
+        request["synthetic_fixture"] = False
+        with self.assertRaises(ValueError):
+            harness.validate_request(request)
+
+    def test_harness_refuses_an_injected_ev_feature(self) -> None:
+        request = self.request()
+        request["alternatives"][0]["ev_bb"] = 1.0
+        with self.assertRaises(ValueError) as raised:
+            harness.validate_request(request)
+        self.assertIn("forbidden", str(raised.exception).lower())
+
+    def test_harness_refuses_an_injected_model_a_feature(self) -> None:
+        request = self.request()
+        request["alternatives"][0]["model_a_policy"] = "leak"
+        with self.assertRaises(ValueError) as raised:
+            harness.validate_request(request)
+        self.assertIn("forbidden", str(raised.exception).lower())
+
+
+class MetadataFeatureBoundaryTest(unittest.TestCase):
+    """Metadata -> feature boundary and request invariance (task ``backlog-ncv``).
+
+    The #425 metadata (public EV envelope, uncertainty, paired delta,
+    route/source label, support verdict, posterior references) is read for
+    classification and provenance only. Only the public action identity crosses
+    into the #344 request, so changing *only* that metadata -- at constant public
+    identity (decision id, context id, hero position, action and sizing of the
+    Hero entry and of every alternative) -- must leave the projected request
+    unchanged, byte for byte. The counterpart of an identity change is asserted
+    too, so an over-aggressive projection that drops the sizing would fail here.
+    """
+
+    #: The exact key set a projected alternative may carry: public identity only.
+    PROJECTED_ALTERNATIVE_KEYS = (
+        "alternative_id",
+        "action",
+        "target_total_bb",
+        "incremental_cost_bb",
+    )
+
+    def document(self) -> dict:
+        return copy.deepcopy(load_json(FIXTURES / "robust_consistent.json"))
+
+    def metadata_variant(self) -> dict:
+        """Keep the public identity, move every classification/provenance field."""
+
+        document = self.document()
+        entry = document["hero_entry"]
+        entry["ev"] = -5.0
+        entry["uncertainty"] = {
+            "ci95": [-5.03, -4.97],
+            "width_bb": 0.06,
+            "source": "synthetic_variant_ci95_v1",
+        }
+        entry["paired_delta"] = -1.25
+        entry["route_source"] = "synthetic_variant_route_iso_5"
+        entry["support"] = {"status": "SENSITIVE", "tier": "LOW", "ood": False}
+        entry["posterior_refs"] = ["synthetic-variant-posterior-iso-5-01"]
+        for index, alternative in enumerate(entry["alternatives"]):
+            alternative["ev"] = float(alternative["ev"]) + 10.0
+            alternative["uncertainty"] = {
+                "ci95": [alternative["ev"] - 0.03, alternative["ev"] + 0.03],
+                "width_bb": 0.06,
+                "source": "synthetic_variant_ci95_v1",
+            }
+            alternative["paired_delta"] = float(alternative["paired_delta"]) + 0.5
+            alternative["route_source"] = f"synthetic_variant_route_{index}"
+            alternative["support"] = {
+                "status": "OOD_UNTESTABLE",
+                "tier": "VERY_LOW",
+                "ood": True,
+            }
+            alternative["posterior_refs"] = [f"synthetic-variant-posterior-{index}"]
+        return document
+
+    def test_only_the_allowed_public_identity_is_projected(self) -> None:
+        for name in VALID_FIXTURES:
+            with self.subTest(fixture=name):
+                request = contract.project_to_harness_request(
+                    load_json(FIXTURES / name), context()
+                )
+                for alternative in request["alternatives"]:
+                    self.assertEqual(
+                        tuple(alternative), self.PROJECTED_ALTERNATIVE_KEYS
+                    )
+                self.assertEqual(
+                    contract.check_forbidden_features(request), []
+                )
+                boundary = request["information_boundary"]
+                self.assertTrue(boundary)
+                self.assertTrue(all(flag is False for flag in boundary.values()))
+
+    def test_request_is_unchanged_when_only_metadata_varies(self) -> None:
+        baseline = contract.project_to_harness_request(self.document(), context())
+        variant = contract.project_to_harness_request(self.metadata_variant(), context())
+        self.assertEqual(
+            variant, baseline, "metadata must never reach the projected request"
+        )
+        self.assertEqual(
+            harness.canonical_sha256(variant), harness.canonical_sha256(baseline)
+        )
+        # The projected request stays the single accepted #344 format.
+        self.assertIs(harness.validate_request(variant), None)
+        self.assertEqual(variant["source_kind"], harness.SOURCE_KIND)
+
+    def test_classification_may_move_while_the_request_stays_pinned(self) -> None:
+        baseline, variant = self.document(), self.metadata_variant()
+        self.assertNotEqual(
+            classifier.classify(baseline)["status"],
+            classifier.classify(variant)["status"],
+            "the metadata variant must actually change the #425 verdict",
+        )
+        self.assertEqual(
+            harness.canonical_sha256(
+                contract.project_to_harness_request(variant, context())
+            ),
+            harness.canonical_sha256(
+                contract.project_to_harness_request(baseline, context())
+            ),
+            "a verdict change must not change the Model B query",
+        )
+
+    def test_public_identity_change_does_change_the_request(self) -> None:
+        baseline = contract.project_to_harness_request(self.document(), context())
+        mutated = self.document()
+        mutated["hero_entry"]["alternatives"][0]["sizing"] = 4.5
+        variant = contract.project_to_harness_request(mutated, context())
+        self.assertNotEqual(
+            harness.canonical_sha256(variant),
+            harness.canonical_sha256(baseline),
+            "the projected request must still track the public sizing identity",
+        )
+        mutated = self.document()
+        mutated["hero_entry"]["decision_id"] = "synthetic-variant-decision-id"
+        variant = contract.project_to_harness_request(mutated, context())
+        self.assertNotEqual(
+            harness.canonical_sha256(variant),
+            harness.canonical_sha256(baseline),
+            "the projected request must still track the public decision identity",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

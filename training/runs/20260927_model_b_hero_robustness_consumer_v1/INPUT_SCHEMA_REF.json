@@ -5,6 +5,7 @@
     "T3_contract_bridge": "tools/simulation/model_b_hero_robustness_contract.py",
     "T4_classifier": "tools/simulation/model_b_hero_robustness_classify.py",
     "T5_runner_cli": "tools/simulation/model_b_hero_robustness_adapter.py",
+    "T6_consumer_tests": "tests/simulation/test_model_b_hero_robustness_consumer.py",
     "T7_run_builder": "tools/simulation/build_model_b_hero_robustness_consumer_run.py"
   },
   "consumer_report_schema": "hero-model-b-hero-robustness-consumer-report/v1",

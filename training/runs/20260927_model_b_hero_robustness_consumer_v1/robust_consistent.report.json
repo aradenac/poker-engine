@@ -11,8 +11,8 @@
   },
   "input_schema_ref": "hero-model-b-robustness-input/v1",
   "provenance": {
-    "harness_issue": "344",
-    "parent_issue": "425",
+    "harness_issue": 344,
+    "issue": 425,
     "real_issue_314_consumed": false,
     "real_issue_367_consumed": false,
     "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",

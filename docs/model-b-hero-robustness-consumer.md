@@ -18,6 +18,42 @@ VALIDATION or TEST hand.
 The parent issue #315 stays **open**: this contract standardizes the input
 shape only and does not run the real Model B sensitivity evaluation.
 
+## Preserved chain, parent and upstream
+
+The two documents of issue `#425` describe **one** preserved chain (this
+contract document and its companion run book
+`docs/model-b-robustness-consumer.md`). The chain has exactly one implementation
+per step:
+
+| Step | Artifact | Role |
+|---|---|---|
+| T1 | `contracts/training/model-b-hero-robustness-input.schema.json` (`$id = hero-model-b-robustness-input/v1`) | fail-closed input contract |
+| T2 | `tests/fixtures/model_b_hero_robustness/` | synthetic robustness-shaped fixtures |
+| T3 | `tools/simulation/model_b_hero_robustness_contract.py` | contract bridge and projection to the #344 request |
+| T4 | `tools/simulation/model_b_hero_robustness_classify.py` | deterministic #425 classifier |
+| T5 | `tools/simulation/model_b_hero_robustness_adapter.py` | runner CLI, the single callable entry point |
+| T6 | `tests/simulation/test_model_b_hero_robustness_consumer.py` | consumer integration suite |
+| T7 | `tools/simulation/build_model_b_hero_robustness_consumer_run.py` | canonical run bundle builder/regenerator |
+
+The parent and upstream references are pinned, never inferred:
+
+- **parent**: issue `#315` stays open and is never closed by this chain
+  (`RUN_PROVENANCE.json` carries `parent_issue = 315`, `next_issue = 315` and
+  `parent_closed = false`);
+- **upstream consumed**: the persisted `#340` run
+  (`training/runs/20260919_model_b_preflop_response_to_price_2a/`: candidate,
+  price-agnostic reference, `SUMMARY.json`, `RESULT.json`, `RUN_PROVENANCE.json`)
+  reused read-only through the public `#344` harness API — no refit, no
+  promotion, the active Model B pointer is untouched;
+- **upstream never consumed**: the real ISO EV run of `#367`, the real `#314`
+  output, the VALIDATION hand and the TEST hand
+  (`real_issue_367_consumed = false`, `real_issue_314_consumed = false`,
+  `validation_consumed = false`, `test_consumed = false`);
+- the emitted report binds its **producing** issue and the reused harness
+  (`provenance.issue = 425`, `provenance.harness_issue = 344`); the chain
+  *parent* reference lives in the run provenance only, so a report can never be
+  read as a parent-closing artifact.
+
 ## Input contract
 
 A document is valid only if it carries these five top-level blocks, with
@@ -102,6 +138,34 @@ tries to open the boundary is invalid by construction.
 Model B uncertainty is represented only by the unweighted cross-environment
 envelope; the input must never synthesize a probability (a "weight") over
 environments.
+
+## Metadata versus Model B features
+
+`#425` separates **metadata** from **features**. The metadata is read for
+classification and provenance only; it never becomes a Model B feature:
+
+| Classification / provenance metadata (never a feature) | Public identity (allowed to cross) |
+|---|---|
+| `hero_entry.ev`, `hero_entry.uncertainty`, `hero_entry.paired_delta` | `hero_entry.decision_id`, `hero_entry.context_id`, `hero_entry.hero_position` |
+| `hero_entry.route_source` (provenance label, never a predictive target) | `hero_entry.action`, `hero_entry.sizing` |
+| `hero_entry.support` (`status`, `tier`, `ood`), `hero_entry.posterior_refs` | the public context fixture (`#344`) supplied to `run_harness` |
+| the same six fields of every `alternatives[]` entry | `alternatives[].alternative_id`, `.action`, `.sizing` |
+
+Only the allowed public identity is projected: every projected alternative is
+reduced to exactly `{alternative_id, action, target_total_bb, incremental_cost_bb}`
+(`target_total_bb` from the declared `sizing`, `incremental_cost_bb` derived from
+the public Hero contribution), and the request keeps
+`source_kind = SYNTHETIC_HARNESS_ONLY`, `synthetic_fixture = true` and an
+all-false `information_boundary`. The EV envelope, uncertainty, paired delta,
+route/source label, support verdict and posterior references are dropped, never
+copied and never defaulted.
+
+That boundary has a testable consequence: **changing only the metadata, at
+constant public identity, leaves the projected request byte-identical** (same
+`harness_request_sha256`) while the #425 verdict may move. The invariance is
+asserted by the contract suite and by the consumer integration suite; the
+counterpart (a public sizing or decision-id change *does* change the request) is
+asserted too, so a frozen projection cannot pass as invariance.
 
 ## Status vocabulary (#425)
 
@@ -189,7 +253,63 @@ Reusing the harness keeps the Model A / Model B independence guarantee: no
 Model A output, no recommendation and no route/source-as-target can reach the
 Model B request.
 
+## Commands
+
+Every command below runs the preserved chain and succeeds on the committed
+synthetic fixtures. They are the commands recorded by the consolidation
+evidence (`TEST_REPORT.json`).
+
+```
+# T5 runner CLI: one fixture, the deterministic report on stdout
+PYTHONPATH=. python3 tools/simulation/model_b_hero_robustness_adapter.py \
+  --fixture tests/fixtures/model_b_hero_robustness/robust_consistent.json
+
+# T7 run bundle: verify the versioned bundle, regenerate, prove determinism
+PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --check
+PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py
+PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --verify-determinism
+
+# #425 suites (T1 -> T6), the reused #344 suite and the #199 non-regression
+PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_contract.py
+PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_classify.py
+PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_adapter.py
+PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_consumer.py
+PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_consumer_run.py
+PYTHONPATH=. python3 tests/simulation/test_model_b_preflop_sensitivity_harness.py
+PYTHONPATH=. python3 tests/simulation/test_model_b_robustness.py
+```
+
+All commands are dependency-free (`python3` only; the repository does not use
+`pytest`), read only the committed synthetic fixtures, the synthetic `#344`
+context and the persisted `#340` evidence, and perform no network I/O.
+
+## Run bundle and consolidation evidence
+
+The canonical bundle is
+`training/runs/20260927_model_b_hero_robustness_consumer_v1/`:
+
+| File | Content |
+|---|---|
+| `INPUT_SCHEMA_REF.json` | the T1 `$id`/sha256, the pinned inputs and the T1->T7 chain |
+| `<fixture>.report.json` | one report per synthetic fixture, emitted verbatim by the T5 runner |
+| `INDEPENDENCE_PROOF.json` | forbidden-feature scan of every projected request, all-false boundary |
+| `RUN_PROVENANCE.json` | non-consumption flags, parent `#315`, `next_issue 315`, `parent_closed=false` |
+| `SUMMARY.json` | per-report sha256 and the expected/observed statuses |
+| `TEST_REPORT.json` | executed #425/#344/#199 suites, documented commands, bundle checks, honest limits |
+| `N8N_TASK_RESULT.json` | the task result derived from those checks (`issue=425`, `next_issue=315`) |
+
+`TEST_REPORT.json` and `N8N_TASK_RESULT.json` are versioned by their own
+regenerable command:
+
+```
+PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_evidence.py
+PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_evidence.py --check
+```
+
 ## Out of scope
 
 `contracts/analytics/*` belongs to a different scope (#423) and is not modified
-by this contract. #315 remains open and is not closed by this document.
+by this contract. `tools/simulation/model_b_robustness.py` and its consumer
+`site/analytics/model-b-robustness.js` (#199) are not modified. No removed
+consumer entry point, fixture folder or evidence bundle is referenced any more:
+the chain above is the only one, and #315 remains open.

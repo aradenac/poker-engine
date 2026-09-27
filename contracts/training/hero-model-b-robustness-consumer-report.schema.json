@@ -81,7 +81,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "parent_issue",
+        "issue",
         "harness_issue",
         "source_kind",
         "synthetic_fixture",
@@ -91,11 +91,12 @@
         "test_consumed"
       ],
       "properties": {
-        "parent_issue": {
-          "const": "425"
+        "issue": {
+          "description": "Producing issue of the report: the #425 synthetic Hero robustness consumer chain. The chain's parent (#315) is pinned in the run provenance and is never closed here.",
+          "const": 425
         },
         "harness_issue": {
-          "const": "344"
+          "const": 344
         },
         "source_kind": {
           "const": "SYNTHETIC_ROBUSTNESS_SHAPED"

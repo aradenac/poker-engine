@@ -136,10 +136,13 @@ STATUSES = frozenset(CLASSIFY_STATUSES)
 #: Every #425 boundary flag pinned ``false`` in the report.
 REPORT_INFORMATION_BOUNDARY_FLAGS = tuple(HERO_ROBUSTNESS_BOUNDARY_FLAGS)
 
-#: Pinned synthetic provenance references of the report.
+#: Pinned synthetic provenance references of the report. ``issue`` is the
+#: producing issue of the report (#425) and ``harness_issue`` the reused #344
+#: harness; the chain's *parent* (#315) is pinned in the run provenance
+#: (``RUN_PROVENANCE.json``) and is never closed by this consumer.
 REPORT_PROVENANCE: dict[str, Any] = {
-    "parent_issue": "425",
-    "harness_issue": "344",
+    "issue": 425,
+    "harness_issue": 344,
     "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
     "synthetic_fixture": True,
     "real_issue_367_consumed": False,

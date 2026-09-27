@@ -7,7 +7,7 @@ The consumer under test is the single callable #425 entry point,
 (``backlog-uso``), the deterministic status classifier (``backlog-nhg``) and the
 synthetic-only #344 sensitivity harness.
 
-The suite covers the ticket's eight points on the committed synthetic fixtures
+The suite covers the ticket's points on the committed synthetic fixtures
 of ``tests/fixtures/model_b_hero_robustness/`` plus derived in-memory variants
 (no fixture file is ever written or edited):
 
@@ -30,7 +30,12 @@ of ``tests/fixtures/model_b_hero_robustness/`` plus derived in-memory variants
    across two distinct ``PYTHONHASHSEED`` values;
 8. Model A / B independence: the projected #344 request carries no
    ``FORBIDDEN_MODEL_FEATURES`` key, its alternatives are public action identity
-   only and its ``information_boundary`` is entirely false.
+   only and its ``information_boundary`` is entirely false;
+9. metadata -> feature boundary: changing only the #425 metadata (EV envelope,
+   uncertainty, paired delta, route/source label, support verdict, posterior
+   references) at constant public identity leaves the projected #344 request
+   byte-identical while the #425 verdict may move -- and changing the public
+   identity (sizing, decision id) does move the request.
 
 The suite is synthetic and hermetic: it only reads the committed fixtures, the
 public #344 context and the persisted #340 response-to-price documents. It never
@@ -790,6 +795,146 @@ def test_projected_request_is_independent_from_model_a() -> None:
     )
 
 
+# --------------------------------------------------------------------------- #
+# (9) metadata -> feature boundary: the Model B query never moves with metadata
+# --------------------------------------------------------------------------- #
+def metadata_variant() -> dict[str, Any]:
+    """Return ``robust_consistent.json`` with only metadata moved.
+
+    The public identity -- decision/context ids, hero position, Hero action and
+    sizing, and every alternative's ``alternative_id``/``action``/``sizing`` --
+    is kept byte-for-byte; the public EV envelope, uncertainty, paired delta,
+    route/source label, support verdict and posterior references all change.
+    """
+
+    document = fixture("robust_consistent.json")
+    entry = document["hero_entry"]
+    entry["ev"] = -5.0
+    entry["uncertainty"] = {
+        "ci95": [-5.03, -4.97],
+        "width_bb": 0.06,
+        "source": "synthetic_variant_ci95_v1",
+    }
+    entry["paired_delta"] = -1.25
+    entry["route_source"] = "synthetic_variant_route_iso_5"
+    entry["support"] = {"status": "SENSITIVE", "tier": "LOW", "ood": False}
+    entry["posterior_refs"] = ["synthetic-variant-posterior-iso-5-01"]
+    for index, alternative in enumerate(entry["alternatives"]):
+        alternative["ev"] = float(alternative["ev"]) + 10.0
+        alternative["uncertainty"] = {
+            "ci95": [alternative["ev"] - 0.03, alternative["ev"] + 0.03],
+            "width_bb": 0.06,
+            "source": "synthetic_variant_ci95_v1",
+        }
+        alternative["paired_delta"] = float(alternative["paired_delta"]) + 0.5
+        alternative["route_source"] = f"synthetic_variant_route_{index}"
+        alternative["support"] = {
+            "status": "OOD_UNTESTABLE",
+            "tier": "VERY_LOW",
+            "ood": True,
+        }
+        alternative["posterior_refs"] = [f"synthetic-variant-posterior-{index}"]
+    return document
+
+
+def test_metadata_invariance_of_the_projected_request() -> None:
+    baseline = fixture("robust_consistent.json")
+    variant = metadata_variant()
+
+    # The two documents share their full public identity.
+    for left, right in zip(
+        [baseline["hero_entry"], *baseline["hero_entry"]["alternatives"]],
+        [variant["hero_entry"], *variant["hero_entry"]["alternatives"]],
+    ):
+        check(
+            (left["action"], left["sizing"]) == (right["action"], right["sizing"]),
+            "the metadata variant must keep the public action/sizing identity",
+        )
+    check(
+        baseline["hero_entry"]["decision_id"] == variant["hero_entry"]["decision_id"]
+        and baseline["hero_entry"]["context_id"] == variant["hero_entry"]["context_id"]
+        and baseline["hero_entry"]["hero_position"] == variant["hero_entry"]["hero_position"],
+        "the metadata variant must keep the public decision/context identity",
+    )
+
+    baseline_request = contract.project_to_harness_request(baseline, context())
+    variant_request = contract.project_to_harness_request(variant, context())
+    check(
+        variant_request == baseline_request,
+        "changing only the #425 metadata must leave the projected #344 request unchanged",
+    )
+    check(
+        adapter.canonical_sha256(variant_request)
+        == adapter.canonical_sha256(baseline_request),
+        "the projected request hash must be metadata-invariant",
+    )
+    for request in (baseline_request, variant_request):
+        for alternative in request["alternatives"]:
+            check(
+                alternative_keys(alternative) == PROJECTED_ALTERNATIVE_KEYS,
+                f"only public action identity may be projected, got {sorted(alternative)}",
+            )
+        check(
+            all(value is False for value in request["information_boundary"].values()),
+            "the projected information boundary must stay closed",
+        )
+
+    # Classification does move with the metadata, so the invariance is a
+    # *request* property, not a frozen verdict.
+    baseline_verdict = classifier.classify(baseline)
+    variant_verdict = classifier.classify(variant)
+    check(
+        baseline_verdict["status"] == "CONSISTENT",
+        f"the baseline fixture must stay CONSISTENT, got {baseline_verdict}",
+    )
+    check(
+        variant_verdict["status"] == "OOD_UNTESTABLE",
+        f"the metadata variant must move the verdict, got {variant_verdict}",
+    )
+
+    # End to end through the consumer: same #344 request hash, different verdict,
+    # and the report stays a synthetic status-only artifact with a closed boundary.
+    baseline_report = adapter.build_report(
+        baseline, context=context(), **docs_340()
+    )
+    variant_report = adapter.build_report(
+        variant, context=context(), **docs_340()
+    )
+    check(
+        baseline_report["harness_request_sha256"]
+        == variant_report["harness_request_sha256"],
+        "the metadata variant must not change the Model B query the report binds",
+    )
+    check(
+        baseline_report["status"] != variant_report["status"],
+        "the metadata variant must still move the #425 verdict in the report",
+    )
+    for report in (baseline_report, variant_report):
+        check(
+            adapter.validate_report(report) is report,
+            "every derived report must satisfy the shipped #425 report contract",
+        )
+        check(
+            all(value is False for value in report["information_boundary"].values()),
+            "the report information boundary must stay closed",
+        )
+        check(
+            report["provenance"]["validation_consumed"] is False
+            and report["provenance"]["test_consumed"] is False,
+            "the derived report must not claim a VALIDATION/TEST consumption",
+        )
+
+    # Counterpart: a public identity change *does* move the projected request, so
+    # the invariance above is not the trivial artefact of a frozen projection.
+    mutated = fixture("robust_consistent.json")
+    mutated["hero_entry"]["alternatives"][0]["sizing"] = 4.5
+    check(
+        adapter.canonical_sha256(contract.project_to_harness_request(mutated, context()))
+        != adapter.canonical_sha256(baseline_request),
+        "a public sizing change must change the projected Model B query",
+    )
+
+
 SECTIONS: tuple[tuple[str, Callable[[], None]], ...] = (
     (
         "(1) schema mismatch fails closed with a reason code",
@@ -813,6 +958,10 @@ SECTIONS: tuple[tuple[str, Callable[[], None]], ...] = (
     (
         "(8) projected request is Model A/B independent",
         test_projected_request_is_independent_from_model_a,
+    ),
+    (
+        "(9) request is invariant when only metadata varies",
+        test_metadata_invariance_of_the_projected_request,
     ),
 )
 

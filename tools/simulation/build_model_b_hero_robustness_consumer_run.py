@@ -2,9 +2,11 @@
 """backlog-o7k -- persist the versioned synthetic robustness consumer run.
 
 The ``#425`` chain builds a fail-closed Hero -> Model B robustness consumer on
-top of synthetic, robustness-shaped fixtures, *before* the real upstream
-evidence of issue ``#314`` exists. This tool persists that chain as one
-immutable, versioned run:
+top of synthetic, robustness-shaped fixtures, *before* the real upstream Hero
+evidence exists. The real ISO EV run of issue ``#367`` (the ``#314``-style
+canonical decision) is never opened: the chain consumes only the persisted
+``#340`` candidate/reference evidence and the synthetic ``#344`` harness
+context. This tool persists that chain as one versioned run:
 
 ``training/runs/20260927_model_b_hero_robustness_consumer_v1/``
 
@@ -13,8 +15,10 @@ holding:
 * ``INPUT_SCHEMA_REF.json`` -- the reference to the T1 schema
   (``contracts/training/model-b-hero-robustness-input.schema.json``,
   ``$id = hero-model-b-robustness-input/v1``): its ``$id``, its sha256, the
-  fixture/context/#340 digests the run consumed and the T1->T5 chain it
-  exercises;
+  fixture/context/#340 digests the run consumed and the full T1->T7 chain it
+  exercises (contract schema -> synthetic fixtures -> contract bridge ->
+  classifier -> runner CLI -> consumer tests -> run builder); the chain's parent
+  issue ``#315`` stays open and is pinned in ``RUN_PROVENANCE.json``;
 * one report per synthetic fixture, named ``<fixture>.report.json`` and written
   *verbatim* by the T5 runner
   (``tools/simulation/model_b_hero_robustness_adapter.py``) -- they are never
@@ -528,6 +532,7 @@ def _build_artifacts(consumed: Mapping[str, Any], inputs: RunInputs) -> dict[str
             "T3_contract_bridge": "tools/simulation/model_b_hero_robustness_contract.py",
             "T4_classifier": "tools/simulation/model_b_hero_robustness_classify.py",
             "T5_runner_cli": CLI_REL,
+            "T6_consumer_tests": "tests/simulation/test_model_b_hero_robustness_consumer.py",
             "T7_run_builder": BUILDER_REL,
         },
         "inputs": input_manifest,

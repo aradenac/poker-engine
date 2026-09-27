@@ -464,8 +464,12 @@ class BoundaryTest(unittest.TestCase):
                 report = report_for(name)
                 self.assertIs(report["provenance"]["validation_consumed"], False)
                 self.assertIs(report["provenance"]["test_consumed"], False)
-                self.assertEqual(report["provenance"]["parent_issue"], "425")
-                self.assertEqual(report["provenance"]["harness_issue"], "344")
+                # The report binds its *producing* issue and the reused harness.
+                # The chain's parent (#315) lives in the run provenance and is
+                # never closed by the report.
+                self.assertEqual(report["provenance"]["issue"], 425)
+                self.assertEqual(report["provenance"]["harness_issue"], 344)
+                self.assertNotIn("parent_issue", report["provenance"])
 
 
 class UncertaintyRegressionTest(unittest.TestCase):
