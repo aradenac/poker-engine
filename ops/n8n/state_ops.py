@@ -60,13 +60,16 @@ def mark_needs_human(payload: dict[str, Any]) -> dict[str, Any]:
     now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     pointer = Path(payload["pointer"])
     current = json.loads(pointer.read_text(encoding="utf-8")) if pointer.exists() else {}
+    phase = str(payload.get("phase") or "INTEGRATION_FAILED_NEEDS_HUMAN")
     current.update(
         {
-            "phase": "INTEGRATION_FAILED_NEEDS_HUMAN",
+            "phase": phase,
             "phase_updated_at": now,
             "terminal_reason": str(payload["reason"]),
         }
     )
+    if isinstance(payload.get("merge_gate_context"), dict):
+        current["merge_gate_context"] = payload["merge_gate_context"]
     _atomic_json(pointer, current)
     body = (
         "agent-worklog:v1\n\n"

@@ -22,7 +22,27 @@ DISPATCHER = "7U3ji3e7qXSAw9Go"
 ISSUE_PIPELINE = "1AbV6ckDpTZLPvm0"
 RECONCILIATION = "zjzqbFEWJdNsTD6u"
 INSTALL_DIR = Path("/home/abel/.config/poker-engine-orchestrator")
+CONTRACT_VALIDATOR = INSTALL_DIR / "validate-task-worker-v8.py"
 HELPERS = ("review_events.py", "state_ops.py", "rebase_resolver.py")
+
+OLD_CLAIM_VALIDATION = {
+    "integration": '''    if "sed -n" in integration_claim_code or "awk '/<!-- n8n-claim:v1 -->/" not in integration_claim_code:
+        errors.append("Issue Integration NEEDS_HUMAN update: claim parser is not delimiter-safe")''',
+    "ci": '''    if "sed -n" in ci_claim_code or "awk '/<!-- n8n-claim:v1 -->/" not in ci_claim_code:
+        errors.append("CI Gate NEEDS_HUMAN update: claim parser is not delimiter-safe")''',
+}
+NEW_CLAIM_VALIDATION = {
+    "integration": """    if not (
+        "state_ops.py mark-needs-human" in integration_claim_code
+        or 'awk \\'index($0,"<!-- n8n-claim:v1 -->")' in integration_claim_code
+    ):
+        errors.append("Issue Integration NEEDS_HUMAN update: claim parser is not delimiter-safe")""",
+    "ci": """    if not (
+        "state_ops.py mark-needs-human" in ci_claim_code
+        or 'awk \\'index($0,"<!-- n8n-claim:v1 -->")' in ci_claim_code
+    ):
+        errors.append("CI Gate NEEDS_HUMAN update: claim parser is not delimiter-safe")""",
+}
 
 
 def request(key: str, method: str, path: str, payload: dict | None = None) -> dict:
@@ -104,6 +124,15 @@ let ack; try { ack=JSON.parse(String($json.stdout || '').trim()); } catch (_) { 
 if (ack.status !== 'OK') throw new Error('REVIEW_EVENT_ACK_REJECTED');
 return [{json:{...ctx,review_ack:ack}}];"""
 
+CI_NEEDS_HUMAN_CODE = r"""const ctx = { ...$json };
+const src = $('Normalize input').item.json;
+const reason = ctx.ci_investigation?.classification === 'EXTERNAL' ? 'CI_EXTERNAL_FAILURE' : ctx.ci_investigation?.classification === 'UNKNOWN' ? 'CI_FAILURE_UNATTRIBUTED' : (ctx.ci && ctx.ci.reason) ? ctx.ci.reason : 'CI_GATE_BLOCKED';
+const mergeGateContext = {issue_number:src.issue_number,run_id:src.run_id,pr_number:src.pr_number,reviewed_head_sha:src.reviewed_head_sha,auto_merge:src.auto_merge,close_issue:src.close_issue,claim_comment_id:src.claim_comment_id,last_seen_comment_id:src.last_seen_comment_id,worktree_root:src.worktree_root,backlog_dir:src.backlog_dir,iteration:0};
+const payload = {repo:'aradenac/poker-engine',issue_number:Number(src.issue_number),pointer:String(src.issue_dir)+'/active_run.json',phase:'CI_FAILED_NEEDS_HUMAN',stage:'CI_GATE',reason:String(reason),claim_comment_id:Number(src.claim_comment_id || 0),merge_gate_context:mergeGateContext};
+const encoded = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64');
+const command = `python3 /home/abel/.config/poker-engine-orchestrator/state_ops.py mark-needs-human --payload-b64 ${JSON.stringify(encoded)}`;
+return [{json:{...ctx,command}}];"""
+
 
 def patch_ci_gate(workflow: dict) -> list[str]:
     changed: list[str] = []
@@ -111,6 +140,7 @@ def patch_ci_gate(workflow: dict) -> list[str]:
         "Build comment watch": COLLECT_CODE,
         "Parse comment watch": PARSE_COLLECT_CODE,
         "Build corrective plan call (from comment)": BUILD_CORRECTIVE_CODE,
+        "Build NEEDS_HUMAN update": CI_NEEDS_HUMAN_CODE,
     }
     for name, value in replacements.items():
         target = node(workflow, name)
@@ -235,6 +265,32 @@ def payload(workflow: dict) -> dict:
     }
 
 
+def patch_contract_validator(
+    path: Path = CONTRACT_VALIDATOR,
+    *,
+    apply: bool = False,
+    backup_root: Path | None = None,
+) -> bool:
+    """Teach the installed fail-closed guard about the shell-safe state helper."""
+    source = path.read_text(encoding="utf-8")
+    updated = source
+    for label in ("integration", "ci"):
+        old = OLD_CLAIM_VALIDATION[label]
+        new = NEW_CLAIM_VALIDATION[label]
+        if new not in updated:
+            if old not in updated:
+                raise RuntimeError(f"contract validator {label} claim check has an unknown shape")
+            updated = updated.replace(old, new, 1)
+    changed = updated != source
+    if apply and changed:
+        if backup_root is None:
+            raise ValueError("backup_root is required when applying validator changes")
+        backup_root.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, backup_root / f"{path.name}.before")
+        path.write_text(updated, encoding="utf-8")
+    return changed
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true")
@@ -255,6 +311,10 @@ def main() -> int:
         (RECONCILIATION, patch_reconciliation),
     )
     updated: list[dict] = []
+    validator_changed = patch_contract_validator(
+        apply=args.apply,
+        backup_root=backup_root,
+    )
     if args.apply:
         INSTALL_DIR.mkdir(parents=True, exist_ok=True)
         for helper in HELPERS:
@@ -272,7 +332,7 @@ def main() -> int:
             if before.get("active") and not result.get("active"):
                 request(key, "POST", f"/workflows/{workflow_id}/activate")
             (backup_root / f"{workflow_id}.after.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
-    print(json.dumps({"status": "APPLIED" if args.apply else "DRY_RUN", "workflows": updated, "backup_root": str(backup_root)}, ensure_ascii=False, indent=2))
+    print(json.dumps({"status": "APPLIED" if args.apply else "DRY_RUN", "workflows": updated, "contract_validator_changed": validator_changed, "backup_root": str(backup_root)}, ensure_ascii=False, indent=2))
     return 0
 
 

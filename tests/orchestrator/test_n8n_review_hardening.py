@@ -24,6 +24,7 @@ def load(name: str):
 review_events = load("review_events")
 state_ops = load("state_ops")
 rebase_resolver = load("rebase_resolver")
+deploy = load("deploy")
 
 
 class ReviewEventTests(unittest.TestCase):
@@ -103,6 +104,41 @@ class StateOpsTests(unittest.TestCase):
             saved = json.loads(pointer.read_text())
             self.assertEqual(saved["merge_gate_context"]["pr_number"], 428)
             self.assertIsNone(saved["terminal_reason"])
+
+    def test_needs_human_can_preserve_ci_resume_context(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            pointer = Path(directory) / "active_run.json"
+            pointer.write_text('{"phase":"CI_PENDING"}\n', encoding="utf-8")
+            context = {"pr_number": 428, "reviewed_head_sha": "abc"}
+            payload = {
+                "pointer": str(pointer),
+                "phase": "CI_FAILED_NEEDS_HUMAN",
+                "reason": "CI failed",
+                "stage": "CI_GATE",
+                "repo": "owner/repo",
+                "issue_number": 1,
+                "claim_comment_id": 0,
+                "merge_gate_context": context,
+            }
+            with mock.patch.object(state_ops, "_gh", return_value=""):
+                state_ops.mark_needs_human(payload)
+            saved = json.loads(pointer.read_text())
+            self.assertEqual(saved["phase"], "CI_FAILED_NEEDS_HUMAN")
+            self.assertEqual(saved["merge_gate_context"], context)
+
+
+class DeployTests(unittest.TestCase):
+    def test_contract_validator_upgrade_is_idempotent(self) -> None:
+        source = "\n\n".join(deploy.OLD_CLAIM_VALIDATION.values()) + "\n"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "validator.py"
+            backup = Path(directory) / "backup"
+            path.write_text(source, encoding="utf-8")
+            self.assertTrue(deploy.patch_contract_validator(path, apply=True, backup_root=backup))
+            self.assertTrue((backup / "validator.py.before").is_file())
+            self.assertFalse(deploy.patch_contract_validator(path))
+            updated = path.read_text(encoding="utf-8")
+            self.assertIn("state_ops.py mark-needs-human", updated)
 
 
 class RebaseResolverTests(unittest.TestCase):
