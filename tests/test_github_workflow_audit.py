@@ -604,20 +604,22 @@ jobs:
 
     def test_issue421_trigger_paths_cover_the_issue_surface(self):
         """Completeness: the filters must cover the real #421 surface, not only a curated list."""
-        surface=branch_changed_paths()
         changed=issue421_changed_paths()
-        if surface is None or changed is None:
+        if changed is None:
             self.skipTest("git history unavailable (shallow checkout): set fetch-depth: 0 to enforce this")
-        # The curated manifest must stay inside the real branch surface, so it can
-        # never assert coverage for a path the issue does not actually ship.
-        fabricated=set(ISSUE_421_CHANGED_PATHS)-set(surface)
-        self.assertEqual(set(),fabricated,
-                         f"manifest claims paths outside the #421 branch surface: {sorted(fabricated)}")
         if not changed:
+            # #421 is already merged into origin/main, so unrelated branches carry
+            # none of its stamped commits.  Do not compare their branch-local diff
+            # with the historical #421 manifest; the static #421 guards still run.
             self.skipTest("branch carries no #421-stamped commit: surface cross-check not applicable")
         text=(ROOT/ISSUE_421_WORKFLOW).read_text()
         self.assertEqual([],issue421_uncovered_paths(text,changed),
                          "the #421 change surface exposes paths the runner never triggers on")
+        # Mirror the #419 guard: once this really is a #421 branch, the curated
+        # manifest must be a subset of that issue's stamped surface.
+        fabricated=set(ISSUE_421_CHANGED_PATHS)-set(changed)
+        self.assertEqual(set(),fabricated,
+                         f"manifest claims paths outside the #421 surface: {sorted(fabricated)}")
 
     def test_issue421_trigger_drift_and_substitution_are_detected(self):
         """Negative guard: dropping or swapping a #421 trigger pattern must be detected."""
