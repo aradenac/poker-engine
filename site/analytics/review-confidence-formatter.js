@@ -126,6 +126,12 @@
   // than a synthetic `0.00 bb`.
   function formatEvDisplay(input){
     const src=input&&typeof input==='object'?input:{};
+    // Fail-closed guard, evaluated before any coercion of `ev_bb`: an
+    // abstention or an out-of-distribution spot has no reviewable EV, so an
+    // inconsistent upstream payload that still ships a finite number must not
+    // smuggle a value past the abstention semantics.
+    if(src.abstains===true||upper(src.abstains)==='TRUE')return '';
+    if(normalizeSupportState(src.support_state)===SUPPORT_STATES.OOD_UNSUPPORTED)return '';
     const ev=finiteNumber(src.ev_bb);
     if(ev==null)return '';
     const body=formatBb(ev);

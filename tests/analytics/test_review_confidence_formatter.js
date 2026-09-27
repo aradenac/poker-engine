@@ -94,6 +94,32 @@ const SCHEMA=JSON.parse(fs.readFileSync(path.join(__dirname,'..','..','contracts
   }
   // Non-sparse states do not gain an estimation marker.
   assert.equal(Formatter.formatEvDisplay({ev_bb:-1.5,support_state:'STRONG_SUPPORT'}),'-1.50 bb');
+
+  // Fail-closed (#424, task backlog-11i): an abstention or an out-of-distribution
+  // spot renders no EV, even when an inconsistent upstream payload still ships a
+  // finite numeric `ev_bb`. The guard must run before any numeric coercion.
+  // (a) OOD_UNSUPPORTED alone drops a finite number.
+  assert.equal(Formatter.formatEvDisplay({ev_bb:1.23,support_state:'OOD_UNSUPPORTED'}),'');
+  assert.equal(Formatter.formatEvDisplay({ev_bb:-0.75,is_estimate:false,support_state:'OOD_UNSUPPORTED'}),'');
+  // (b) `abstains` is an independent authority, whatever the support_state or EV.
+  for(const support_state of [...Formatter.SUPPORT_STATE_VALUES,null,'UNKNOWN']){
+    assert.equal(Formatter.formatEvDisplay({ev_bb:0.9,abstains:true,support_state}),'',`abstains:true must drop the EV (${support_state})`);
+  }
+  assert.equal(Formatter.formatEvDisplay({ev_bb:0.9,abstains:'TRUE',support_state:'ROBUST'}),'');
+  assert.equal(Formatter.formatEvDisplay({ev_bb:0.9,abstains:true,is_estimate:true}),'');
+  // A stringified falsey/truthy `abstains` never fabricates an EV nor blocks a real one.
+  assert.equal(Formatter.formatEvDisplay({ev_bb:0.9,abstains:'false',support_state:'ROBUST'}),'0.90 bb');
+  assert.equal(Formatter.formatEvDisplay({ev_bb:0.9,abstains:false,support_state:'ROBUST'}),'0.90 bb');
+  // (c) Regression: SPARSE_ESTIMATED keeps its exact estimation rendering.
+  assert.equal(Formatter.formatEvDisplay({ev_bb:0.42,support_state:'SPARSE_ESTIMATED'}),'≈ 0.42 bb (estimation)');
+  assert.equal(Formatter.formatEvDisplay({ev_bb:0.42,is_estimate:true,support_state:'SPARSE_ESTIMATED'}),'≈ 0.42 bb (estimation)');
+  // (d) Regression: supported states keep their bare numeric rendering.
+  assert.equal(Formatter.formatEvDisplay({ev_bb:1,support_state:'STRONG_SUPPORT'}),'1.00 bb');
+  assert.equal(Formatter.formatEvDisplay({ev_bb:1,support_state:'ROBUST'}),'1.00 bb');
+  assert.equal(Formatter.formatEvDisplay({ev_bb:-0.35,support_state:'ROBUST',abstains:false}),'-0.35 bb');
+  // LOW_CONFIDENCE_TOO_CLOSE is a real verdict gap, not an abstention: the EV stays.
+  assert.equal(Formatter.formatEvDisplay({ev_bb:-0.05,support_state:'LOW_CONFIDENCE_TOO_CLOSE'}),'-0.05 bb');
+  assert.equal(Formatter.formatEvDisplay({ev_bb:-0.05,support_state:'LOW_CONFIDENCE_TOO_CLOSE',is_estimate:true}),'≈ -0.05 bb (estimation)');
 }
 
 // Abstention: no recommendation text is ever produced for an abstention or an
