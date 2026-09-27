@@ -36,6 +36,12 @@ const formatterSource=fs.readFileSync('site/analytics/review-confidence-formatte
 const MUTATIONS={
   'default-open':['panel.hidden=!reviewInboxAdvancedIsOpen(handId);','panel.hidden=false;'],
   'ungated':['if(item.hybrid){','if(true){'],
+  // #424 T3 - trois mutations ciblees du seul contrat de *rangee principale* :
+  // chacune desactive un maillon du passthrough T2 pour prouver que les cas
+  // negatifs (a-d) ne passent pas sur un garde trop faible.
+  'no-abstain-row-gate':['if(rowAbstains){','if(false){'],
+  'no-too-close-row-gate':['else if(rowTooClose){','else if(false){'],
+  'no-estimate-row-gate':['else if(rowEstimated){','else if(false){'],
 };
 const mutation=process.env.ADVANCED_VIEW_MUTATION||'';
 if(mutation){
@@ -157,8 +163,10 @@ function fieldValues(panel){
   return map;
 }
 
-// 1. The simple view stays simple: a hand without `hybrid` keeps exactly its
-//    `[open, status]` row, with no panel, no toggle and no provenance text.
+// 1. (f) The simple view stays simple: a hand without `hybrid` keeps exactly its
+//    `[open, status]` row, with no panel, no toggle and no provenance text. This
+//    is the pre-existing simple-row/mutation contract, reused as-is for the
+//    `item.hybrid` absent regression (never duplicated by the cases below).
 {
   const rows=paint([plainItem]);
   assert.equal(rows.length,1);
@@ -258,6 +266,94 @@ function fieldValues(panel){
   }
 }
 
+// 6. #424 T3 - contrat NEGATIF de la *rangee principale* (et non du panneau
+//    avance) : la projection `hybrid` deja decidee en amont (passthrough T2) doit
+//    (a-b) retirer toute reco / perte EV actionnable quand le modele s'abstient
+//    ou sort de la distribution, (c) marquer visiblement une estimation, (d)
+//    refuser de designer une action unique quand le verdict est trop proche, et
+//    (e) laisser STRONG_SUPPORT / ROBUST strictement inchanges. On lit le HTML
+//    reellement peint dans le bouton `open` (cellules "Perte EV" et
+//    "Decision"), jamais la projection brute.
+const servedValue=expr=>vm.runInContext(expr,sandbox);
+const bb=v=>sandbox.formatBB(v);
+function rowHtml(item){
+  const rows=paint([item]);
+  assert.equal(rows.length,1);
+  const html=String(rows[0].children[0]?.innerHTML||'');
+  assert.ok(html.includes('review-inbox-loss'),'la rangee porte sa cellule perte EV');
+  assert.ok(html.includes('review-inbox-decision'),'la rangee porte sa cellule decision');
+  return html;
+}
+const ABSTENTION=servedValue('REVIEW_INBOX_ADVANCED_ABSTENTION');
+assert.ok(ABSTENTION&&ABSTENTION.length,'le libelle d abstention servi est lisible');
+const RowFormatter=sandbox.window.PokerReviewConfidenceFormatter;
+assert.ok(RowFormatter,'le formateur est disponible pour le contrat de rangee');
+
+// (a) OOD_UNSUPPORTED + ev_bb numerique fini + action_recommended presente : la
+//     rangee principale ne porte ni la reco ni de perte EV numerique actionnable.
+{
+  const ood={...plainItem,hand_id:'20',action_played:'call',action_recommended:'fold',total_loss_bb:-0.5,
+    hybrid:{...hybrid,support_state:'OOD_UNSUPPORTED',ev_bb:-0.5,abstains:false,too_close:false,is_estimate:false}};
+  const html=rowHtml(ood);
+  assert.ok(!html.includes('fold'),'(a) aucune reco actionnable pour OOD_UNSUPPORTED');
+  assert.ok(!html.includes(bb(-0.5)),'(a) aucune perte EV numerique pour OOD_UNSUPPORTED');
+  assert.ok(!html.includes(bb(0.5)),'(a) aucune perte EV de decision pour OOD_UNSUPPORTED');
+  assert.ok(html.includes(ABSTENTION),'(a) la rangee porte l etat d abstention');
+}
+
+// (b) abstains=true (support_state quelconque) + ev_bb numerique : meme contrat,
+//     l'entree autoritaire `abstains` prime sur tout EV numerique.
+{
+  const abstain={...plainItem,hand_id:'21',action_played:'call',action_recommended:'raise',total_loss_bb:-0.4,
+    hybrid:{...hybrid,support_state:'ROBUST',ev_bb:-0.4,abstains:true,too_close:false,is_estimate:false}};
+  const html=rowHtml(abstain);
+  assert.ok(!html.includes('raise'),'(b) aucune reco actionnable quand le modele s abstient');
+  assert.ok(!html.includes(bb(-0.4)),'(b) aucune perte EV numerique quand le modele s abstient');
+  assert.ok(!html.includes(bb(0.5)),'(b) aucune perte EV de decision quand le modele s abstient');
+  assert.ok(html.includes(ABSTENTION),'(b) la rangee porte l etat d abstention');
+}
+
+// (c) SPARSE_ESTIMATED + ev_bb numerique : la rangee principale porte un marqueur
+//     visible d'estimation (prefixe et suffixe servis par le formateur) sur la
+//     reco et sur l'EV affichee.
+{
+  const est={...plainItem,hand_id:'22',action_played:'call',action_recommended:'call',total_loss_bb:-0.3,
+    hybrid:{...hybrid,support_state:'SPARSE_ESTIMATED',ev_bb:-0.3,abstains:false,too_close:false,is_estimate:false}};
+  const html=rowHtml(est);
+  assert.ok(RowFormatter.ESTIMATE_PREFIX&&RowFormatter.ESTIMATE_SUFFIX,'le formateur expose ses marqueurs d estimation');
+  assert.ok(html.includes(RowFormatter.ESTIMATE_PREFIX),'(c) prefixe d estimation present sur la rangee');
+  assert.ok(html.includes(RowFormatter.ESTIMATE_SUFFIX),'(c) suffixe d estimation present sur la rangee');
+  assert.ok(
+    html.includes(RowFormatter.ESTIMATE_PREFIX+' '+bb(-0.3)+' '+RowFormatter.ESTIMATE_SUFFIX),
+    "(c) l'EV affichee porte le marqueur d estimation"
+  );
+}
+
+// (d) LOW_CONFIDENCE_TOO_CLOSE : aucune action unique ne doit apparaitre comme
+//     definitive/mise en avant (`reco <action>`), seul le verdict trop proche est
+//     peint sur la rangee principale.
+{
+  const close={...plainItem,hand_id:'23',action_played:'call',action_recommended:'fold',total_loss_bb:-0.2,
+    hybrid:{...hybrid,support_state:'LOW_CONFIDENCE_TOO_CLOSE',ev_bb:-0.2,abstains:false,too_close:false,is_estimate:false}};
+  const html=rowHtml(close);
+  assert.ok(!html.includes('\u2192 reco'),'(d) aucune reco unique mise en avant');
+  assert.ok(!html.includes('reco '),'(d) aucun libelle de reco unique');
+  assert.ok(!html.includes('fold'),'(d) aucune action unique mise en avant');
+  assert.ok(html.includes(RowFormatter.TOO_CLOSE_NOTICE),'(d) la rangee porte le verdict trop proche');
+}
+
+// (e) Regression STRONG_SUPPORT / ROBUST : la reco et la perte EV restent
+//     concises et non marquees, exactement comme la rangee historique.
+for(const state of ['STRONG_SUPPORT','ROBUST']){
+  const item={...plainItem,hand_id:state==='ROBUST'?'25':'24',action_played:'call',action_recommended:'fold',
+    total_loss_bb:-0.25,hybrid:{...hybrid,support_state:state,ev_bb:-0.25,abstains:false,too_close:false,is_estimate:false}};
+  const html=rowHtml(item);
+  assert.ok(html.includes('\u2192 reco fold'),'(e) la reco concise reste inchangee pour '+state);
+  assert.ok(html.includes(bb(-0.25)),'(e) la perte EV reste concise pour '+state);
+  assert.ok(!html.includes(RowFormatter.ESTIMATE_PREFIX),'(e) aucun marqueur d estimation pour '+state);
+  assert.ok(!html.includes(RowFormatter.ESTIMATE_SUFFIX),'(e) aucun suffixe d estimation pour '+state);
+}
+
 process.stdout.write(JSON.stringify({status:'PASS',mutation:mutation||null}));
 """
 
@@ -297,12 +393,26 @@ def main() -> None:
     # `paintReviewInboxRows` source is executed against a minimal measured DOM
     # (no browser, no server). The simple row stays `[open, status]`, the hybrid
     # row carries a collapsed panel opened only by its toggle, and the displayed
-    # values are the mirrored formatter outputs. Two in-memory mutations of the
-    # served bytes are replayed to prove the harness is not vacuous.
+    # values are the mirrored formatter outputs.
+    #
+    # #424 T3 — the same harness carries the *main row* negative contract
+    # (cases a-e) and, for case (f), reuses the pre-existing simple-row contract
+    # (case 1 here + the `ungated` mutation): a hand without `hybrid` must keep
+    # exactly `[open, status]`. It is never re-declared below.
+    #
+    # Every mutation of the served bytes must break the harness, so a weaker
+    # guard (panel promoted/opened, abstention gate dropped, too-close or
+    # estimate gate dropped) can never pass here.
     base = run_advanced_view_runtime()
     assert base.returncode == 0, base.stderr
     assert json.loads(base.stdout)["mutation"] is None, base.stdout
-    for regression in ("default-open", "ungated"):
+    for regression in (
+        "default-open",
+        "ungated",
+        "no-abstain-row-gate",
+        "no-too-close-row-gate",
+        "no-estimate-row-gate",
+    ):
         mutated = run_advanced_view_runtime(regression)
         assert mutated.returncode != 0, (
             f"the {regression} regression must fail the advanced-view harness",
