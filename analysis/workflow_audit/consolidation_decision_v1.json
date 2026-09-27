@@ -27,14 +27,14 @@
     "workflow_files_modified": false
   },
   "counts": {
-    "active_automatic_workflow_count": 56,
+    "active_automatic_workflow_count": 57,
     "blocked_not_applied_count": 11,
-    "cancel_in_progress_false_count": 12,
+    "cancel_in_progress_false_count": 13,
     "cancel_in_progress_true_count": 28,
-    "duplicate_push_and_pull_request_exposure_count": 36,
-    "inventory_workflow_count": 71,
+    "duplicate_push_and_pull_request_exposure_count": 37,
+    "inventory_workflow_count": 72,
     "manual_only_count": 15,
-    "safe_candidate_not_applied_count": 17,
+    "safe_candidate_not_applied_count": 18,
     "without_concurrency_count": 16
   },
   "dag_evidence": "analysis/workflow_audit/active_workflow_dag_v2.json",
@@ -49,8 +49,8 @@
     ".github/workflows/project-state-consistency.yml is never modified",
     "job and artifact names are preserved and digest-pinned for every workflow"
   ],
-  "frozen_name_digest": "c203626987fa9e5da8825f2cc69530c8c5b4654b54fea187e76633eb570d9e6c",
-  "inventory_sha256": "57697e3c37dd6c04ee6af39c8bd4c605692cb4db3d7a16c95f6ba74f3d440c81",
+  "frozen_name_digest": "7a76159adfda8b69e8914ce33de0ba92305d5f96ef483b39af1a98cc3e13765e",
+  "inventory_sha256": "34eb6298fdb1c18d5f41d9cf5e7449b7ab915521c5559111dc38396ac4a71ef8",
   "inventory_source": "analysis/workflow_audit/workflows.json",
   "issue": 382,
   "measurement_method": {
@@ -80,7 +80,7 @@
     "without_concurrency": 19
   },
   "planner_estimate_delta": {
-    "active_automatic": 3,
+    "active_automatic": 4,
     "cancel_in_progress_true": -9,
     "manual_only": 0,
     "without_concurrency": -3
@@ -115,6 +115,7 @@
       ".github/workflows/issue-367-real-iso-ev.yml",
       ".github/workflows/issue-419-hierarchical-exact-tree.yml",
       ".github/workflows/issue-421-generalized-response-model.yml",
+      ".github/workflows/issue-423-hybrid-router.yml",
       ".github/workflows/model-a-continuation.yml",
       ".github/workflows/model-b-card-aware-runtime.yml",
       ".github/workflows/model-b-reveal-aware.yml",
@@ -124,7 +125,7 @@
       ".github/workflows/project-state-consistency.yml",
       ".github/workflows/user-artifact-bundle.yml"
     ],
-    "unapplied_count": 28
+    "unapplied_count": 29
   },
   "scenario_count": 14,
   "scenarios": [
@@ -286,14 +287,14 @@
     },
     {
       "after": {
-        "cost_proxy": 53,
-        "jobs": 9,
-        "runs": 5
+        "cost_proxy": 58,
+        "jobs": 10,
+        "runs": 6
       },
       "before": {
-        "cost_proxy": 53,
-        "jobs": 9,
-        "runs": 5
+        "cost_proxy": 58,
+        "jobs": 10,
+        "runs": 6
       },
       "billed": false,
       "changed_paths": [
@@ -497,14 +498,14 @@
   "task": "backlog-85b",
   "totals": {
     "after": {
-      "cost_proxy": 625,
-      "jobs": 121,
-      "runs": 96
+      "cost_proxy": 630,
+      "jobs": 122,
+      "runs": 97
     },
     "before": {
-      "cost_proxy": 625,
-      "jobs": 121,
-      "runs": 96
+      "cost_proxy": 630,
+      "jobs": 122,
+      "runs": 97
     },
     "billed": false,
     "delta": {
@@ -1834,6 +1835,128 @@
       ],
       "name": "Execute issue 421 generalized response model",
       "path": ".github/workflows/issue-421-generalized-response-model.yml",
+      "proposed_change": "keep the existing group and set cancel-in-progress: true",
+      "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
+      "role": "validation_or_utility",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": 5,
+      "triggers": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "artifact_names": [],
+      "blockers": [
+        "NO_MEASURED_IMPROVEMENT",
+        "FROZEN_TELEMETRY_PREDATES_HEAD"
+      ],
+      "cancel_in_progress": false,
+      "concurrency_group": "issue-423-hybrid-router-${{ github.event_name }}-${{ github.ref }}",
+      "duplicate_push_and_pull_request_exposure": true,
+      "event_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/preflop/hybrid_response_router.py",
+            "tools/preflop/hybrid_response_runtime.py",
+            "tools/preflop/generalized_response_calibration.py",
+            "tools/simulation/issue423_issue367_preflight.py",
+            "tools/training/build_issue423_evidence_bundle.py",
+            "tools/training/evaluate_hybrid_router_cv.py",
+            "tools/training/freeze_hybrid_router_criteria.py",
+            "tools/training/freeze_hybrid_router_spec.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/hybrid-router-spec.schema.json",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "tests/ci/test_issue423_contract_guards.py",
+            "tests/preflop/test_generalized_response_calibration.py",
+            "tests/preflop/test_hybrid_response_*.py",
+            "tests/preflop/test_issue423_mandatory_contracts.py",
+            "tests/simulation/test_issue423_preflight.py",
+            "tests/training/test_freeze_hybrid_router_*.py",
+            "tests/training/test_evaluate_hybrid_router_cv.py",
+            "tests/training/test_hybrid_router_terminal_report.py",
+            "tests/training/test_issue423_evidence_bundle.py",
+            "tests/training/test_issue423_n8n_result.py",
+            "tests/test_github_workflow_audit.py",
+            "tests/ci/test_consolidation_decision.py",
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "analysis/issue421_generalized_response/**",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "docs/hybrid-response-router.md",
+            "docs/ci-workflow-dag.md",
+            ".project/decisions/*hybrid-router*.md",
+            "analysis/issue423_hybrid_router/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-423-hybrid-router.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/preflop/hybrid_response_router.py",
+            "tools/preflop/hybrid_response_runtime.py",
+            "tools/preflop/generalized_response_calibration.py",
+            "tools/simulation/issue423_issue367_preflight.py",
+            "tools/training/build_issue423_evidence_bundle.py",
+            "tools/training/evaluate_hybrid_router_cv.py",
+            "tools/training/freeze_hybrid_router_criteria.py",
+            "tools/training/freeze_hybrid_router_spec.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/hybrid-router-spec.schema.json",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "tests/ci/test_issue423_contract_guards.py",
+            "tests/preflop/test_generalized_response_calibration.py",
+            "tests/preflop/test_hybrid_response_*.py",
+            "tests/preflop/test_issue423_mandatory_contracts.py",
+            "tests/simulation/test_issue423_preflight.py",
+            "tests/training/test_freeze_hybrid_router_*.py",
+            "tests/training/test_evaluate_hybrid_router_cv.py",
+            "tests/training/test_hybrid_router_terminal_report.py",
+            "tests/training/test_issue423_evidence_bundle.py",
+            "tests/training/test_issue423_n8n_result.py",
+            "tests/test_github_workflow_audit.py",
+            "tests/ci/test_consolidation_decision.py",
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "analysis/issue421_generalized_response/**",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "docs/hybrid-response-router.md",
+            "docs/ci-workflow-dag.md",
+            ".project/decisions/*hybrid-router*.md",
+            "analysis/issue423_hybrid_router/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-423-hybrid-router.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "fail_closed_safe": true,
+      "has_concurrency": true,
+      "job_ids": [
+        "contract"
+      ],
+      "name": "Execute issue 423 hybrid response router",
+      "path": ".github/workflows/issue-423-hybrid-router.yml",
       "proposed_change": "keep the existing group and set cancel-in-progress: true",
       "recommendation_state": "SAFE_CANDIDATE_NOT_APPLIED",
       "role": "validation_or_utility",

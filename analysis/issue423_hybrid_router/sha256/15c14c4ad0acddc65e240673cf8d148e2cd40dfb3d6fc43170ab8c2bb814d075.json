@@ -1,0 +1,1633 @@
+{
+  "assertions": {
+    "byte_stable": true,
+    "frozen_numeric_criteria_persisted": true,
+    "generator_self_source_scan": "PASS",
+    "terminal_numeric_values_persisted": false,
+    "test_consumed": false,
+    "train_only": true,
+    "validation_consumed": false
+  },
+  "authored_before_validation_read": true,
+  "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+  "evidence_bindings": [
+    {
+      "path": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+      "role": "train_out_of_fold_cv_report",
+      "sha256": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff"
+    },
+    {
+      "path": "contracts/training/generalized-response-ood-gate.schema.json",
+      "role": "ood_gate_contract_schema",
+      "sha256": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e"
+    },
+    {
+      "path": "tools/preflop/generalized_response_model.py",
+      "role": "ood_gate_model_module",
+      "sha256": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3"
+    },
+    {
+      "path": "tools/training/evaluate_generalized_response_cv.py",
+      "role": "strata_definition_module",
+      "sha256": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff"
+    },
+    {
+      "path": "tools/training/freeze_hybrid_router_spec.py",
+      "role": "spec_generator",
+      "sha256": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26"
+    }
+  ],
+  "frozen": true,
+  "frozen_criteria": {
+    "criteria": [
+      {
+        "criterion": "margin_global_bits_per_decision <= 0.001 (one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the admission support)",
+        "derivation_rule": "ceil_to_quantum(max(MARGIN_MAX_BITS, one_sided_upper_quantile of the paired hybrid-minus-active bootstrap), MARGIN_ANALYTIC_TOLERANCE_BITS)",
+        "derives": "margin_global",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "admission_strata": [
+            "frequent_exact",
+            "rare_exact",
+            "exact_absent_in_domain"
+          ],
+          "excluded_decisions": 9,
+          "hands": 19016,
+          "rows": 94151,
+          "stratum_rows": {
+            "exact_absent_in_domain": 2547,
+            "frequent_exact": 81186,
+            "rare_exact": 10427
+          }
+        },
+        "id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "inputs": [
+          {
+            "pointer": "/margin_derivation/margin_global_bootstrap_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.000508
+          },
+          {
+            "pointer": "/margin_derivation/margin_global_analytic_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.000338
+          },
+          {
+            "pointer": "/paired/hybrid_router_minus_active_model_a/admission_support/ci95",
+            "source": "train_only_cv_derivation",
+            "value": null
+          }
+        ],
+        "justification": {
+          "bootstrap_analytic_absolute_difference_bits": 0.00017,
+          "bootstrap_analytic_agreement_tolerance_bits": 0.001,
+          "bootstrap_samples": 2000,
+          "bootstrap_seed": 423,
+          "confidence_level": 0.95,
+          "dispersion": {
+            "bootstrap_stddev_bits_per_decision": 0.002864,
+            "bootstrap_variance_bits_squared": 8e-06,
+            "ci95": [
+              -0.009648,
+              0.001598
+            ],
+            "quantiles": {
+              "0.025": -0.009648,
+              "0.05": -0.008764,
+              "0.5": -0.004402,
+              "0.95": 0.000508,
+              "0.975": 0.001598
+            }
+          },
+          "observed_analytic_bits_per_decision": 0.000338,
+          "observed_bootstrap_bits_per_decision": 0.000508,
+          "paired_unit": "hand_id",
+          "point_estimate_bits_per_decision": -0.004301,
+          "preregistered_reference": {
+            "MARGIN_ANALYTIC_TOLERANCE_BITS": 0.001,
+            "MARGIN_MAX_BITS": 0.0
+          },
+          "statement": "the margin is sized by the measured TRAIN out-of-fold dispersion: it is the smallest multiple of the preregistered 0.001-bit resolution that covers the observed one-sided 95% upper bound of the paired hybrid-minus-active loss difference, and the closed-form analytic margin reproduces it within the preregistered tolerance",
+          "statistic": "one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the TRAIN out-of-fold admission support",
+          "upper_quantile": 0.95
+        },
+        "t1_formula_id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.001
+      },
+      {
+        "criterion": "gain_sparse_bits_per_decision >= 0.167 on the pooled (rare_exact, exact_absent_in_domain) support",
+        "derivation_rule": "max(GAIN_FLOOR_BITS, floor_to_quantum(support_weighted_mean of the hybrid channel's gain_bits_per_decision over rare_exact and exact_absent_in_domain, MARGIN_ANALYTIC_TOLERANCE_BITS))",
+        "derives": "gain_sparse",
+        "direction": "higher_is_better",
+        "effectifs": {
+          "minimum_sparse_observations": 20,
+          "sparse_decisions": 12966,
+          "sparse_strata": [
+            "rare_exact",
+            "exact_absent_in_domain"
+          ],
+          "stratum_abstained": {
+            "exact_absent_in_domain": 6,
+            "rare_exact": 2
+          },
+          "stratum_decisions": {
+            "exact_absent_in_domain": 2541,
+            "rare_exact": 10425
+          },
+          "stratum_rows": {
+            "exact_absent_in_domain": 2547,
+            "rare_exact": 10427
+          }
+        },
+        "id": "SPARSE_GAIN_FLOOR",
+        "inputs": [
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/gain_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.226143
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/gain_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": -0.071905
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/n",
+            "source": "train_only_cv_derivation",
+            "value": 10425
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/n",
+            "source": "train_only_cv_derivation",
+            "value": 2541
+          }
+        ],
+        "justification": {
+          "observed_sparse_gain_bits_per_decision": 0.167733,
+          "per_stratum_gain_bits_per_decision": {
+            "exact_absent_in_domain": -0.071905,
+            "rare_exact": 0.226143
+          },
+          "preregistered_reference": {
+            "GAIN_FLOOR_BITS": 0.0,
+            "MINIMUM_SPARSE_OBSERVATIONS": 20
+          },
+          "rounding": {
+            "quantum_bits_per_decision": 0.001,
+            "rationale": "the floor is the gain TRAIN already demonstrated, rounded down to the preregistered resolution so the requirement is never stricter than the measured evidence",
+            "rule": "floor_to_quantum"
+          },
+          "statement": "the minimal sparse gain required of the router is the level the TRAIN out-of-fold evidence already demonstrates on the two strata the generalized channel may cover",
+          "statistic": "support-weighted mean of the hybrid channel's gain_bits_per_decision over rare_exact and exact_absent_in_domain on the TRAIN out-of-fold decisions"
+        },
+        "t1_formula_id": "SPARSE_GAIN_FLOOR",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.167
+      },
+      {
+        "criterion": "ece_sparse <= 0.02",
+        "derivation_rule": "min(ECE_ABSOLUTE_CEILING, ece_active_sparse + ECE_DELTA_CEILING) with ece_active_sparse the support-weighted active-reference ECE on the sparse strata",
+        "derives": "ece_ceiling_sparse",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "active_stratum_decisions": {
+            "exact_absent_in_domain": 2547,
+            "rare_exact": 10427
+          },
+          "calibration_bins_per_action_class": 10,
+          "sparse_decisions": 12966,
+          "stratum_decisions": {
+            "exact_absent_in_domain": 2541,
+            "rare_exact": 10425
+          }
+        },
+        "id": "SPARSE_ECE_CEILING",
+        "inputs": [
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.024273
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.040773
+          },
+          {
+            "pointer": "/models/active_model_a/by_stratum/rare_exact/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.042341
+          },
+          {
+            "pointer": "/models/active_model_a/by_stratum/exact_absent_in_domain/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.043809
+          }
+        ],
+        "justification": {
+          "active_sparse_ece_plus_delta": 0.062629,
+          "binding_term": "ECE_ABSOLUTE_CEILING",
+          "observed_active_sparse_ece": 0.042629,
+          "observed_sparse_ece": 0.027507,
+          "per_stratum_ece": {
+            "active_model_a": {
+              "exact_absent_in_domain": 0.043809,
+              "rare_exact": 0.042341
+            },
+            "hybrid_router": {
+              "exact_absent_in_domain": 0.040773,
+              "rare_exact": 0.024273
+            }
+          },
+          "preregistered_reference": {
+            "ECE_ABSOLUTE_CEILING": 0.02,
+            "ECE_DELTA_CEILING": 0.02
+          },
+          "statement": "the frozen ceiling is the tighter of the preregistered absolute ECE ceiling and the active reference's own sparse ECE plus the preregistered delta; the recorded term name shows which of the two binds",
+          "statistic": "support-weighted expected calibration error over rare_exact and exact_absent_in_domain, measured on the TRAIN out-of-fold decisions"
+        },
+        "t1_formula_id": "SPARSE_ECE_CEILING",
+        "terminal_evaluation_derived": false,
+        "unit": "expected_calibration_error",
+        "value": 0.02
+      },
+      {
+        "criterion": "delta_frequent_exact_bits_per_decision <= 0.0 and paired_ci95_upper(delta_frequent_exact) <= 0.0",
+        "derivation_rule": "max(FREQUENT_EXACT_MAX_DEGRADATION_BITS, ceil_to_quantum(max(point estimate, one-sided upper quantile, ci95 upper) of the paired hybrid-minus-active loss on frequent_exact, MARGIN_ANALYTIC_TOLERANCE_BITS))",
+        "derives": "bound_frequent_exact",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "active_stratum_rows": 81186,
+          "decisions_per_hand": 4.269973,
+          "excluded_decisions": 1,
+          "hands": 19013,
+          "rows": 81185,
+          "stratum_rows": 81186
+        },
+        "id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "inputs": [
+          {
+            "pointer": "/per_stratum/frequent_exact/paired/hybrid_router_minus_active_model_a/point_estimate_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.0
+          },
+          {
+            "pointer": "/per_stratum/frequent_exact/paired/hybrid_router_minus_active_model_a/upper_quantile_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.0
+          }
+        ],
+        "justification": {
+          "dispersion": {
+            "analytic_margin_bits_per_decision": 0.0,
+            "analytic_standard_error_bits_per_decision": 0.0,
+            "bootstrap_stddev_bits_per_decision": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "point_estimate_bits_per_decision": 0.0,
+          "preregistered_reference": {
+            "FREQUENT_EXACT_MAX_DEGRADATION_BITS": 0.0
+          },
+          "statement": "the frequent-exact route may not degrade the active reference beyond the bound derived from the paired dispersion of that stratum, in point estimate and in paired upper quantile",
+          "statistic": "paired-by-hand hybrid-minus-active log-loss delta on the frequent_exact stratum of the TRAIN out-of-fold decisions",
+          "upper_quantile_bits_per_decision": 0.0
+        },
+        "t1_formula_id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.0
+      },
+      {
+        "criterion": "abstain iff hard_reasons is not empty; abstain_rate on the synthetic out-of-domain probe surface == 1.0 and coverage == 0.0",
+        "derivation_rule": "abstain(c) iff reasons(c) intersect OOD_HARD_REASONS is not empty; the soft reason set may only raise the status to high uncertainty, never to abstention",
+        "derives": "abstain",
+        "direction": "predicate",
+        "effectifs": {
+          "declared_probe_kinds": [
+            "extrapolation_sizing",
+            "extrapolation_stack",
+            "missing_domain_axis",
+            "unseen_category"
+          ],
+          "ood_criterion_stratum": "exact_absent_out_of_domain",
+          "ood_stratum_probes": 160,
+          "probes": 640,
+          "probes_abstained": 640,
+          "probes_per_kind": {
+            "extrapolation_sizing": 160,
+            "extrapolation_stack": 160,
+            "missing_domain_axis": 160,
+            "unseen_category": 160
+          }
+        },
+        "id": "OOD_ABSTENTION_CRITERION",
+        "inputs": [
+          {
+            "pointer": "/ood_synthetic_probes/abstain_rate",
+            "source": "train_only_cv_derivation",
+            "value": 1.0
+          },
+          {
+            "pointer": "/ood_synthetic_probes/router_abstained",
+            "source": "train_only_cv_derivation",
+            "value": 640
+          },
+          {
+            "pointer": "/ood_synthetic_probes/n",
+            "source": "train_only_cv_derivation",
+            "value": 640
+          }
+        ],
+        "justification": {
+          "observed_abstention_rate": 1.0,
+          "observed_coverage": 0.0,
+          "paired_unit": "decision",
+          "preregistered_reference": {
+            "FREQUENT_EXACT_MIN_SUPPORT": 20,
+            "OOD_ABSTAIN_is_decisive_for_hard_reasons_only": true,
+            "RARE_EXACT_MIN_SUPPORT": 1
+          },
+          "probe_kinds": [
+            "extrapolation_sizing",
+            "extrapolation_stack",
+            "missing_domain_axis",
+            "unseen_category"
+          ],
+          "probes_per_kind": {
+            "extrapolation_sizing": 160,
+            "extrapolation_stack": 160,
+            "missing_domain_axis": 160,
+            "unseen_category": 160
+          },
+          "statement": "the router must fail closed on every out-of-domain probe: the frozen criterion requires a complete abstention on the probe surface, with the hard reason codes decisive and the soft reasons never abstaining",
+          "statistic": "measured abstention rate of the frozen router on the synthetic out-of-domain probe surface of the TRAIN cross-validation"
+        },
+        "t1_formula_id": "OOD_ABSTENTION_CRITERION",
+        "terminal_evaluation_derived": false,
+        "unit": "required_abstention_rate_on_synthetic_ood_probes",
+        "value": 1.0
+      }
+    ],
+    "criteria_order": [
+      "GLOBAL_NON_INFERIORITY_MARGIN",
+      "SPARSE_GAIN_FLOOR",
+      "SPARSE_ECE_CEILING",
+      "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+      "OOD_ABSTENTION_CRITERION"
+    ],
+    "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+    "derivation": {
+      "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+      "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+      "folds": 5,
+      "hands": 19016,
+      "planner_key": "T4",
+      "rows": 94160,
+      "schema": "poker-hybrid-router-cv-derivation/v1",
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
+    },
+    "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold_cv_derivation",
+    "frozen_at": "2026-09-26T00:00:00Z",
+    "frozen_at_source": "explicit_freeze_timestamp_recorded_before_the_terminal_router_score",
+    "issue": 423,
+    "kind": "frozen_hybrid_router_admission_criteria_and_manifest",
+    "planner_key": "T5",
+    "procedure_reference": {
+      "constants": {
+        "BOOTSTRAP_SAMPLES": 2000.0,
+        "BOOTSTRAP_SEED": 423.0,
+        "ECE_ABSOLUTE_CEILING": 0.02,
+        "ECE_DELTA_CEILING": 0.02,
+        "FREQUENT_EXACT_MAX_DEGRADATION_BITS": 0.0,
+        "FREQUENT_EXACT_MIN_SUPPORT": 20.0,
+        "GAIN_FLOOR_BITS": 0.0,
+        "MARGIN_ANALYTIC_TOLERANCE_BITS": 0.001,
+        "MARGIN_MAX_BITS": 0.0,
+        "MINIMUM_SPARSE_OBSERVATIONS": 20.0,
+        "NON_INFERIORITY_ALPHA": 0.05,
+        "NON_INFERIORITY_CONFIDENCE_LEVEL": 0.95,
+        "NON_INFERIORITY_UPPER_QUANTILE": 0.95,
+        "RARE_EXACT_MIN_SUPPORT": 1.0
+      },
+      "derivation_order": [
+        "STRATUM_ASSIGNMENT",
+        "OOD_ABSTENTION_CRITERION",
+        "ROUTE_SELECTION_PROCEDURE",
+        "SUPPORT_STATE_ASSIGNMENT",
+        "GLOBAL_NON_INFERIORITY_MARGIN",
+        "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+        "SPARSE_GAIN_FLOOR",
+        "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+        "SPARSE_ECE_MEASUREMENT",
+        "SPARSE_ECE_CEILING",
+        "FREQUENT_EXACT_NON_DEGRADATION_BOUND"
+      ],
+      "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold",
+      "formula_ids": [
+        "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+        "GLOBAL_NON_INFERIORITY_MARGIN",
+        "OOD_ABSTENTION_CRITERION",
+        "ROUTE_SELECTION_PROCEDURE",
+        "SPARSE_ECE_CEILING",
+        "SPARSE_ECE_MEASUREMENT",
+        "SPARSE_GAIN_FLOOR",
+        "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+        "STRATUM_ASSIGNMENT",
+        "SUPPORT_STATE_ASSIGNMENT"
+      ],
+      "pointer": "/procedure",
+      "spec": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "spec_schema": "poker-hybrid-router-spec/v1"
+    },
+    "resolution_quantum_bits_per_decision": 0.001,
+    "schema": "poker-hybrid-router-frozen-criteria/v1",
+    "status": "FROZEN_BEFORE_TERMINAL_EVALUATION",
+    "terminal_evaluation": {
+      "consumed": false,
+      "declared_terminal_report_locations": [
+        "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+        "analysis/issue423_hybrid_router/terminal/TRAIN_CV_ROUTER_REPORT.json"
+      ]
+    },
+    "terminal_evaluation_derived": false
+  },
+  "issue": 423,
+  "kind": "hybrid_router_spec_and_preregistration_procedure",
+  "ood_gate": {
+    "abstention_criterion_formula": "OOD_ABSTENTION_CRITERION",
+    "contract_path": "contracts/training/generalized-response-ood-gate.schema.json",
+    "contract_sha256": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e",
+    "exact_context_absent_in_domain_decisive": false,
+    "hard_reason_codes": [
+      "UNSEEN_CATEGORY",
+      "EXTRAPOLATION_STACK",
+      "EXTRAPOLATION_SIZING",
+      "EXTRAPOLATION_PRICE",
+      "MISSING_DOMAIN_AXIS"
+    ],
+    "high_uncertainty_rule": "no hard reason and at least one soft reason raises the status to MODEL_SUPPORTED_HIGH_UNCERTAINTY without abstaining",
+    "reused_from": "issue-421",
+    "schema": "poker-generalized-response-ood-gate/v1",
+    "soft_reason_codes": [
+      "SPLINE_BOUNDARY_EXTRAPOLATION",
+      "DOMAIN_DISTANCE",
+      "LOW_FEATURE_SUPPORT",
+      "LOW_EXACT_CONTEXT_SUPPORT",
+      "HIGH_PREDICTIVE_ENTROPY",
+      "LOW_MODEL_NODE_SUPPORT",
+      "PREDICTIVE_UNCERTAINTY_UNAVAILABLE"
+    ],
+    "status_definitions": {
+      "MODEL_OOD_ABSTAIN": "the context is out of the calibrated distribution: a never-observed category or a queried sizing / stack / price outside the calibrated TRAIN domain. The gate abstains and no model answer may be used",
+      "MODEL_SUPPORTED": "the context is inside the calibrated TRAIN domain, every category was observed, the local support is above the calibrated floor and the predictive uncertainty is below the calibrated ceiling: the answer may be used as a supported model output",
+      "MODEL_SUPPORTED_HIGH_UNCERTAINTY": "the context stays inside the calibrated TRAIN domain and no category is unseen, but at least one uncertainty signal is in its calibrated tail (rare feature label, exact cell never observed in TRAIN, robust domain distance, spline-knot boundary, high predictive entropy or low fitted node support): the answer is still emitted, but it must be reported as a high-uncertainty output"
+    },
+    "statuses": [
+      "MODEL_SUPPORTED",
+      "MODEL_SUPPORTED_HIGH_UNCERTAINTY",
+      "MODEL_OOD_ABSTAIN"
+    ],
+    "threshold_keys": [
+      "min_feature_share",
+      "min_exact_context_share",
+      "min_model_node_support_per_row",
+      "normalized_entropy",
+      "domain_distance",
+      "extrapolation_margin"
+    ]
+  },
+  "procedure": {
+    "constants": [
+      {
+        "name": "NON_INFERIORITY_CONFIDENCE_LEVEL",
+        "provenance": "preregistered router convention, aligned with the frozen #421 protocol",
+        "terminal_evaluation_derived": false,
+        "value": 0.95
+      },
+      {
+        "name": "NON_INFERIORITY_UPPER_QUANTILE",
+        "provenance": "one-sided upper percentile of the paired bootstrap (1 - alpha)",
+        "terminal_evaluation_derived": false,
+        "value": 0.95
+      },
+      {
+        "name": "NON_INFERIORITY_ALPHA",
+        "provenance": "preregistered one-sided tail of the paired non-inferiority bootstrap",
+        "terminal_evaluation_derived": false,
+        "value": 0.05
+      },
+      {
+        "name": "BOOTSTRAP_SAMPLES",
+        "provenance": "preregistered paired percentile-bootstrap resample count",
+        "terminal_evaluation_derived": false,
+        "value": 2000
+      },
+      {
+        "name": "BOOTSTRAP_SEED",
+        "provenance": "deterministic bootstrap seed of the issue-423 preregistration",
+        "terminal_evaluation_derived": false,
+        "value": 423
+      },
+      {
+        "name": "MARGIN_MAX_BITS",
+        "provenance": "preregistered maximum tolerated global non-inferiority margin",
+        "terminal_evaluation_derived": false,
+        "value": 0.0
+      },
+      {
+        "name": "MARGIN_ANALYTIC_TOLERANCE_BITS",
+        "provenance": "preregistered agreement tolerance between bootstrap and analytic margin",
+        "terminal_evaluation_derived": false,
+        "value": 0.001
+      },
+      {
+        "name": "GAIN_FLOOR_BITS",
+        "provenance": "preregistered minimum sparse gain over the global action prior",
+        "terminal_evaluation_derived": false,
+        "value": 0.0
+      },
+      {
+        "name": "ECE_ABSOLUTE_CEILING",
+        "provenance": "preregistered absolute expected-calibration-error ceiling",
+        "terminal_evaluation_derived": false,
+        "value": 0.02
+      },
+      {
+        "name": "ECE_DELTA_CEILING",
+        "provenance": "preregistered maximum sparse ECE delta against the active reference",
+        "terminal_evaluation_derived": false,
+        "value": 0.02
+      },
+      {
+        "name": "FREQUENT_EXACT_MAX_DEGRADATION_BITS",
+        "provenance": "preregistered non-degradation bound on the frequent-exact route",
+        "terminal_evaluation_derived": false,
+        "value": 0.0
+      },
+      {
+        "name": "MINIMUM_SPARSE_OBSERVATIONS",
+        "provenance": "repository minimum-support convention reused for the sparse floor",
+        "terminal_evaluation_derived": false,
+        "value": 20
+      },
+      {
+        "name": "MINIMUM_CATEGORY_SUPPORT",
+        "provenance": "minimum out-of-fold support before a categorical block may be consumed",
+        "terminal_evaluation_derived": false,
+        "value": 20
+      },
+      {
+        "name": "MINIMUM_POSITIVE_GAIN_SHARE",
+        "provenance": "minimum eligible support share answered with positive gain",
+        "terminal_evaluation_derived": false,
+        "value": 0.5
+      },
+      {
+        "name": "FREQUENT_EXACT_MIN_SUPPORT",
+        "provenance": "stratum threshold reused from the #421 TRAIN cross-validation",
+        "terminal_evaluation_derived": false,
+        "value": 20
+      },
+      {
+        "name": "RARE_EXACT_MIN_SUPPORT",
+        "provenance": "stratum threshold reused from the #421 TRAIN cross-validation",
+        "terminal_evaluation_derived": false,
+        "value": 1
+      },
+      {
+        "name": "Z_ONE_SIDED_95",
+        "provenance": "standard normal one-sided 95% quantile used by the analytic margin",
+        "terminal_evaluation_derived": false,
+        "value": 1.6448536269514722
+      }
+    ],
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "derivation_order": [
+      "STRATUM_ASSIGNMENT",
+      "OOD_ABSTENTION_CRITERION",
+      "ROUTE_SELECTION_PROCEDURE",
+      "SUPPORT_STATE_ASSIGNMENT",
+      "GLOBAL_NON_INFERIORITY_MARGIN",
+      "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+      "SPARSE_GAIN_FLOOR",
+      "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+      "SPARSE_ECE_MEASUREMENT",
+      "SPARSE_ECE_CEILING",
+      "FREQUENT_EXACT_NON_DEGRADATION_BOUND"
+    ],
+    "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold",
+    "formulas": [
+      {
+        "constant_refs": [
+          "BOOTSTRAP_SAMPLES",
+          "BOOTSTRAP_SEED",
+          "NON_INFERIORITY_UPPER_QUANTILE",
+          "MARGIN_MAX_BITS"
+        ],
+        "criterion": "margin_global <= MARGIN_MAX_BITS",
+        "derives": "margin_global",
+        "direction": "lower_is_better",
+        "evaluation_surface": "FROZEN_ADMISSION_SUPPORT",
+        "expression": "margin_global = quantile(paired_bootstrap(hand_id, B=BOOTSTRAP_SAMPLES, seed=BOOTSTRAP_SEED) of delta = loss_hybrid - loss_active, NON_INFERIORITY_UPPER_QUANTILE)",
+        "id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "frozen_admission_support",
+            "symbol": "delta.pooled"
+          }
+        ],
+        "notes": "the margin is the one-sided upper percentile of the paired bootstrap of the hybrid-minus-active loss on the frozen admission support",
+        "strata_scope": [
+          "frequent_exact",
+          "rare_exact",
+          "exact_absent_in_domain"
+        ],
+        "symbols": [
+          "delta.pooled"
+        ]
+      },
+      {
+        "constant_refs": [
+          "Z_ONE_SIDED_95",
+          "MARGIN_ANALYTIC_TOLERANCE_BITS",
+          "MARGIN_MAX_BITS"
+        ],
+        "criterion": "abs(margin_global_analytic - margin_global) <= MARGIN_ANALYTIC_TOLERANCE_BITS and margin_global_analytic <= MARGIN_MAX_BITS",
+        "derives": "margin_global_analytic",
+        "direction": "lower_is_better",
+        "evaluation_surface": "FROZEN_ADMISSION_SUPPORT",
+        "expression": "margin_global_analytic = mean(delta.pooled) + Z_ONE_SIDED_95 * se(delta.pooled)",
+        "id": "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "frozen_admission_support",
+            "symbol": "mean.pooled"
+          },
+          {
+            "pointer": null,
+            "source": "frozen_admission_support",
+            "symbol": "se.pooled"
+          }
+        ],
+        "notes": "closed-form cross-check of the bootstrap margin; the two must agree within the preregistered tolerance",
+        "strata_scope": [
+          "frequent_exact",
+          "rare_exact",
+          "exact_absent_in_domain"
+        ],
+        "symbols": [
+          "mean.pooled",
+          "se.pooled"
+        ]
+      },
+      {
+        "constant_refs": [
+          "GAIN_FLOOR_BITS",
+          "MINIMUM_SPARSE_OBSERVATIONS",
+          "FREQUENT_EXACT_MIN_SUPPORT"
+        ],
+        "criterion": "gain_sparse >= GAIN_FLOOR_BITS and min(gain.rare_exact, gain.exact_absent_in_domain) >= GAIN_FLOOR_BITS and (n.rare_exact + n.exact_absent_in_domain) >= MINIMUM_SPARSE_OBSERVATIONS",
+        "derives": "gain_sparse",
+        "direction": "higher_is_better",
+        "evaluation_surface": "TRAIN_OUT_OF_FOLD",
+        "expression": "gain_sparse = (n.rare_exact * gain.rare_exact + n.exact_absent_in_domain * gain.exact_absent_in_domain) / (n.rare_exact + n.exact_absent_in_domain)",
+        "id": "SPARSE_GAIN_FLOOR",
+        "inputs": [
+          {
+            "pointer": "/architectures/{selected}/strata/counts/rare_exact",
+            "source": "train_out_of_fold_cv_report",
+            "symbol": "n.rare_exact"
+          },
+          {
+            "pointer": "/architectures/{selected}/strata/counts/exact_absent_in_domain",
+            "source": "train_out_of_fold_cv_report",
+            "symbol": "n.exact_absent_in_domain"
+          },
+          {
+            "pointer": "/architectures/{selected}/strata/metrics/rare_exact",
+            "source": "train_out_of_fold_cv_report",
+            "symbol": "gain.rare_exact"
+          },
+          {
+            "pointer": "/architectures/{selected}/strata/metrics/exact_absent_in_domain",
+            "source": "train_out_of_fold_cv_report",
+            "symbol": "gain.exact_absent_in_domain"
+          }
+        ],
+        "notes": "the sparse floor pools exactly rare_exact and exact_absent_in_domain, the two strata the generalized channel is allowed to cover; the {selected} placeholder of the inputs resolves to the architecture selected by the frozen TRAIN cross-validation",
+        "strata_scope": [
+          "rare_exact",
+          "exact_absent_in_domain"
+        ],
+        "symbols": [
+          "n.rare_exact",
+          "n.exact_absent_in_domain",
+          "gain.rare_exact",
+          "gain.exact_absent_in_domain"
+        ]
+      },
+      {
+        "constant_refs": [
+          "BOOTSTRAP_SAMPLES",
+          "BOOTSTRAP_SEED",
+          "NON_INFERIORITY_ALPHA",
+          "GAIN_FLOOR_BITS"
+        ],
+        "criterion": "gain_sparse_lower_bound >= GAIN_FLOOR_BITS",
+        "derives": "gain_sparse_lower_bound",
+        "direction": "higher_is_better",
+        "evaluation_surface": "FROZEN_ADMISSION_SUPPORT",
+        "expression": "gain_sparse_lower_bound = quantile(paired_bootstrap(hand_id, B=BOOTSTRAP_SAMPLES, seed=BOOTSTRAP_SEED) of gain_sparse, NON_INFERIORITY_ALPHA)",
+        "id": "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "frozen_admission_support",
+            "symbol": "delta.sparse"
+          }
+        ],
+        "notes": "conservative admission form of the sparse floor: the lower paired-bootstrap percentile of the sparse gain must stay above the floor",
+        "strata_scope": [
+          "rare_exact",
+          "exact_absent_in_domain"
+        ],
+        "symbols": [
+          "delta.sparse"
+        ]
+      },
+      {
+        "constant_refs": [
+          "ECE_ABSOLUTE_CEILING"
+        ],
+        "criterion": "ece_sparse <= ECE_ABSOLUTE_CEILING",
+        "derives": "ece_sparse",
+        "direction": "lower_is_better",
+        "evaluation_surface": "TRAIN_OUT_OF_FOLD",
+        "expression": "ece_sparse = (n.rare_exact * ece.rare_exact + n.exact_absent_in_domain * ece.exact_absent_in_domain) / (n.rare_exact + n.exact_absent_in_domain)",
+        "id": "SPARSE_ECE_MEASUREMENT",
+        "inputs": [
+          {
+            "pointer": "/architectures/{selected}/strata/counts/rare_exact",
+            "source": "train_out_of_fold_cv_report",
+            "symbol": "n.rare_exact"
+          },
+          {
+            "pointer": "/architectures/{selected}/strata/counts/exact_absent_in_domain",
+            "source": "train_out_of_fold_cv_report",
+            "symbol": "n.exact_absent_in_domain"
+          },
+          {
+            "pointer": "/architectures/{selected}/strata/metrics/rare_exact",
+            "source": "train_out_of_fold_cv_report",
+            "symbol": "ece.rare_exact"
+          },
+          {
+            "pointer": "/architectures/{selected}/strata/metrics/exact_absent_in_domain",
+            "source": "train_out_of_fold_cv_report",
+            "symbol": "ece.exact_absent_in_domain"
+          }
+        ],
+        "notes": "support-weighted sparse calibration error on the same two strata as the sparse gain floor; the {selected} placeholder of the inputs resolves to the architecture selected by the frozen TRAIN cross-validation",
+        "strata_scope": [
+          "rare_exact",
+          "exact_absent_in_domain"
+        ],
+        "symbols": [
+          "n.rare_exact",
+          "n.exact_absent_in_domain",
+          "ece.rare_exact",
+          "ece.exact_absent_in_domain"
+        ]
+      },
+      {
+        "constant_refs": [
+          "ECE_ABSOLUTE_CEILING",
+          "ECE_DELTA_CEILING"
+        ],
+        "criterion": "ece_sparse <= ece_ceiling_sparse",
+        "derives": "ece_ceiling_sparse",
+        "direction": "lower_is_better",
+        "evaluation_surface": "FROZEN_ADMISSION_SUPPORT",
+        "expression": "ece_ceiling_sparse = min(ECE_ABSOLUTE_CEILING, ece_active_sparse + ECE_DELTA_CEILING)",
+        "id": "SPARSE_ECE_CEILING",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "frozen_admission_support",
+            "symbol": "ece.active_sparse"
+          }
+        ],
+        "notes": "the sparse ceiling is the tighter of the absolute ceiling and the active reference ECE plus the preregistered delta",
+        "strata_scope": [
+          "rare_exact",
+          "exact_absent_in_domain"
+        ],
+        "symbols": [
+          "ece.active_sparse"
+        ]
+      },
+      {
+        "constant_refs": [
+          "FREQUENT_EXACT_MAX_DEGRADATION_BITS"
+        ],
+        "criterion": "delta_frequent_exact <= bound_frequent_exact and paired_ci_upper(delta_frequent_exact) <= bound_frequent_exact",
+        "derives": "bound_frequent_exact",
+        "direction": "lower_is_better",
+        "evaluation_surface": "FROZEN_ADMISSION_SUPPORT",
+        "expression": "delta_frequent_exact = loss.hybrid.frequent_exact - loss.active.frequent_exact; bound_frequent_exact = FREQUENT_EXACT_MAX_DEGRADATION_BITS",
+        "id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "frozen_admission_support",
+            "symbol": "loss.hybrid.frequent_exact"
+          },
+          {
+            "pointer": null,
+            "source": "frozen_admission_support",
+            "symbol": "loss.active.frequent_exact"
+          }
+        ],
+        "notes": "the frequent-exact route must never degrade the active reference beyond the preregistered bound, in point estimate and in paired upper bound",
+        "strata_scope": [
+          "frequent_exact"
+        ],
+        "symbols": [
+          "loss.hybrid.frequent_exact",
+          "loss.active.frequent_exact"
+        ]
+      },
+      {
+        "constant_refs": [
+          "FREQUENT_EXACT_MIN_SUPPORT"
+        ],
+        "criterion": "route_source(c) == OOD_ABSTAIN iff abstain(c)",
+        "derives": "abstain",
+        "direction": "predicate",
+        "evaluation_surface": "RUNTIME_GATE",
+        "expression": "hard_reasons(c) = reasons(c) intersect OOD_HARD_REASONS; abstain(c) iff hard_reasons(c) is not empty; high_uncertainty(c) iff hard_reasons(c) is empty and soft_reasons(c) is not empty",
+        "id": "OOD_ABSTENTION_CRITERION",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "runtime_gate",
+            "symbol": "hard_reasons"
+          },
+          {
+            "pointer": null,
+            "source": "runtime_gate",
+            "symbol": "soft_reasons"
+          }
+        ],
+        "notes": "abstention is decided by the hard reason set only; an exact cell absent while every single-feature label is in domain is never decisive",
+        "strata_scope": [
+          "exact_absent_out_of_domain"
+        ],
+        "symbols": [
+          "hard_reasons",
+          "soft_reasons"
+        ]
+      },
+      {
+        "constant_refs": [
+          "FREQUENT_EXACT_MIN_SUPPORT",
+          "RARE_EXACT_MIN_SUPPORT"
+        ],
+        "criterion": "route_source(c) equals the first matching row of the route decision table",
+        "derives": "route_source",
+        "direction": "predicate",
+        "evaluation_surface": "RUNTIME_GATE",
+        "expression": "route_source(c) = OOD_ABSTAIN if hard_reasons(c) is not empty else ACTIVE_STRONG_SUPPORT if support_exact(c) >= FREQUENT_EXACT_MIN_SUPPORT else GENERALIZED_SPARSE_IN_DOMAIN if feature_in_domain(c) else OOD_ABSTAIN",
+        "id": "ROUTE_SELECTION_PROCEDURE",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "runtime_gate",
+            "symbol": "hard_reasons"
+          },
+          {
+            "pointer": null,
+            "source": "runtime_gate",
+            "symbol": "support_exact"
+          },
+          {
+            "pointer": null,
+            "source": "runtime_gate",
+            "symbol": "feature_in_domain"
+          }
+        ],
+        "notes": "the ordered decision table R1..R4 is the single source of the route; the last row is a fail-closed fallback onto OOD_ABSTAIN",
+        "strata_scope": [
+          "frequent_exact",
+          "rare_exact",
+          "exact_absent_in_domain",
+          "exact_absent_out_of_domain"
+        ],
+        "symbols": [
+          "hard_reasons",
+          "support_exact",
+          "feature_in_domain"
+        ]
+      },
+      {
+        "constant_refs": [
+          "FREQUENT_EXACT_MIN_SUPPORT"
+        ],
+        "criterion": "support_state is the support state declared by the selected route source",
+        "derives": "support_state",
+        "direction": "predicate",
+        "evaluation_surface": "RUNTIME_GATE",
+        "expression": "support_state(c) = STRONG_EXACT_SUPPORT if route_source(c) == ACTIVE_STRONG_SUPPORT else SPARSE_IN_DOMAIN if route_source(c) == GENERALIZED_SPARSE_IN_DOMAIN else OOD_ABSTAIN",
+        "id": "SUPPORT_STATE_ASSIGNMENT",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "runtime_gate",
+            "symbol": "route_source"
+          }
+        ],
+        "notes": "support_state mirrors the selected route source so a consumer never re-derives it",
+        "strata_scope": [
+          "frequent_exact",
+          "rare_exact",
+          "exact_absent_in_domain",
+          "exact_absent_out_of_domain"
+        ],
+        "symbols": [
+          "route_source"
+        ]
+      },
+      {
+        "constant_refs": [
+          "FREQUENT_EXACT_MIN_SUPPORT",
+          "RARE_EXACT_MIN_SUPPORT"
+        ],
+        "criterion": "every held-out decision receives exactly one of the four frozen strata",
+        "derives": "stratum",
+        "direction": "predicate",
+        "evaluation_surface": "TRAIN_OUT_OF_FOLD",
+        "expression": "stratum(c) = frequent_exact if support_exact(c) >= FREQUENT_EXACT_MIN_SUPPORT else rare_exact if support_exact(c) >= RARE_EXACT_MIN_SUPPORT else exact_absent_in_domain if feature_in_domain(c) else exact_absent_out_of_domain",
+        "id": "STRATUM_ASSIGNMENT",
+        "inputs": [
+          {
+            "pointer": null,
+            "source": "runtime_gate",
+            "symbol": "support_exact"
+          },
+          {
+            "pointer": null,
+            "source": "runtime_gate",
+            "symbol": "feature_in_domain"
+          }
+        ],
+        "notes": "the stratum of a decision is a pure function of the fit-fold exact support and of the single-feature in-domain verdict",
+        "strata_scope": [
+          "frequent_exact",
+          "rare_exact",
+          "exact_absent_in_domain",
+          "exact_absent_out_of_domain"
+        ],
+        "symbols": [
+          "support_exact",
+          "feature_in_domain"
+        ]
+      }
+    ],
+    "preregistered": true,
+    "registered_before_evaluation": true,
+    "terminal_values_persisted": false,
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "purpose": "preregister, before any closure evaluation, how a preflop response request is routed between the active strong-support model, the generalized sparse in-domain channel and a fail-closed abstention, and how every admission threshold is derived from TRAIN-only out-of-fold evidence",
+  "reason_codes": {
+    "abstaining": [
+      "UNSEEN_CATEGORY",
+      "EXTRAPOLATION_STACK",
+      "EXTRAPOLATION_SIZING",
+      "EXTRAPOLATION_PRICE",
+      "MISSING_DOMAIN_AXIS"
+    ],
+    "catalog": [
+      {
+        "abstains": true,
+        "class": "hard",
+        "code": "UNSEEN_CATEGORY",
+        "definition": "at least one single-feature node label of the context was never observed in the calibrated TRAIN domain"
+      },
+      {
+        "abstains": true,
+        "class": "hard",
+        "code": "EXTRAPOLATION_STACK",
+        "definition": "the queried effective stack leaves the calibrated TRAIN stack domain"
+      },
+      {
+        "abstains": true,
+        "class": "hard",
+        "code": "EXTRAPOLATION_SIZING",
+        "definition": "the queried raise target leaves the calibrated TRAIN sizing domain"
+      },
+      {
+        "abstains": true,
+        "class": "hard",
+        "code": "EXTRAPOLATION_PRICE",
+        "definition": "the queried to-call / pot price leaves the calibrated TRAIN price domain"
+      },
+      {
+        "abstains": true,
+        "class": "hard",
+        "code": "MISSING_DOMAIN_AXIS",
+        "definition": "a numeric domain axis required by the gate is absent from the request"
+      },
+      {
+        "abstains": false,
+        "class": "soft",
+        "code": "SPLINE_BOUNDARY_EXTRAPOLATION",
+        "definition": "the queried point sits on the frozen spline boundary, where the learned function is extrapolating"
+      },
+      {
+        "abstains": false,
+        "class": "soft",
+        "code": "DOMAIN_DISTANCE",
+        "definition": "the robust domain distance exceeds its calibrated tail"
+      },
+      {
+        "abstains": false,
+        "class": "soft",
+        "code": "LOW_FEATURE_SUPPORT",
+        "definition": "a single-feature label is below the calibrated minimum support share"
+      },
+      {
+        "abstains": false,
+        "class": "soft",
+        "code": "LOW_EXACT_CONTEXT_SUPPORT",
+        "definition": "the exact context signature is below the calibrated minimum exact-context share"
+      },
+      {
+        "abstains": false,
+        "class": "soft",
+        "code": "HIGH_PREDICTIVE_ENTROPY",
+        "definition": "the predictive distribution entropy exceeds its calibrated ceiling"
+      },
+      {
+        "abstains": false,
+        "class": "soft",
+        "code": "LOW_MODEL_NODE_SUPPORT",
+        "definition": "the fitted node cell carries less than the calibrated support floor"
+      },
+      {
+        "abstains": false,
+        "class": "soft",
+        "code": "PREDICTIVE_UNCERTAINTY_UNAVAILABLE",
+        "definition": "no fitted model was available, so predictive uncertainty could not be computed"
+      }
+    ],
+    "hard": [
+      "UNSEEN_CATEGORY",
+      "EXTRAPOLATION_STACK",
+      "EXTRAPOLATION_SIZING",
+      "EXTRAPOLATION_PRICE",
+      "MISSING_DOMAIN_AXIS"
+    ],
+    "order": [
+      "UNSEEN_CATEGORY",
+      "EXTRAPOLATION_STACK",
+      "EXTRAPOLATION_SIZING",
+      "EXTRAPOLATION_PRICE",
+      "MISSING_DOMAIN_AXIS",
+      "SPLINE_BOUNDARY_EXTRAPOLATION",
+      "DOMAIN_DISTANCE",
+      "LOW_FEATURE_SUPPORT",
+      "LOW_EXACT_CONTEXT_SUPPORT",
+      "HIGH_PREDICTIVE_ENTROPY",
+      "LOW_MODEL_NODE_SUPPORT",
+      "PREDICTIVE_UNCERTAINTY_UNAVAILABLE"
+    ],
+    "reused_from": "issue-421",
+    "soft": [
+      "SPLINE_BOUNDARY_EXTRAPOLATION",
+      "DOMAIN_DISTANCE",
+      "LOW_FEATURE_SUPPORT",
+      "LOW_EXACT_CONTEXT_SUPPORT",
+      "HIGH_PREDICTIVE_ENTROPY",
+      "LOW_MODEL_NODE_SUPPORT",
+      "PREDICTIVE_UNCERTAINTY_UNAVAILABLE"
+    ],
+    "source_module_symbol": "tools/preflop/generalized_response_model.py::OOD_REASON_ORDER"
+  },
+  "route_decision_table": [
+    {
+      "fallback": false,
+      "route_source": "OOD_ABSTAIN",
+      "row": "R1",
+      "when": "hard_reasons(context) is not empty"
+    },
+    {
+      "fallback": false,
+      "route_source": "ACTIVE_STRONG_SUPPORT",
+      "row": "R2",
+      "when": "hard_reasons(context) is empty and support_exact >= FREQUENT_EXACT_MIN_SUPPORT"
+    },
+    {
+      "fallback": false,
+      "route_source": "GENERALIZED_SPARSE_IN_DOMAIN",
+      "row": "R3",
+      "when": "hard_reasons(context) is empty and feature_in_domain(context)"
+    },
+    {
+      "fallback": true,
+      "route_source": "OOD_ABSTAIN",
+      "row": "R4",
+      "when": "no earlier row matched"
+    }
+  ],
+  "route_sources": [
+    {
+      "abstains": false,
+      "decision_priority": "P2",
+      "definition": "answer from the active reference population model, admissible only where the exact context is strongly supported",
+      "id": "ACTIVE_STRONG_SUPPORT",
+      "model_id": "active_model_a_preflop_population",
+      "preconditions": [
+        {
+          "operator": ">=",
+          "reference": "FREQUENT_EXACT_MIN_SUPPORT",
+          "signal": "support_exact"
+        },
+        {
+          "operator": "is_empty",
+          "reference": "OOD_HARD_REASONS",
+          "signal": "hard_reasons"
+        }
+      ],
+      "probabilities_source": "frozen active reference probabilities",
+      "routed_strata": [
+        "frequent_exact"
+      ],
+      "support_state": "STRONG_EXACT_SUPPORT"
+    },
+    {
+      "abstains": false,
+      "decision_priority": "P3",
+      "definition": "answer from the learned generalized response channel where the exact context is sparse or absent but every single-feature label stays inside the calibrated domain",
+      "id": "GENERALIZED_SPARSE_IN_DOMAIN",
+      "model_id": "generalized_adverse_response_candidate_v1",
+      "preconditions": [
+        {
+          "operator": ">=",
+          "reference": "feature_in_domain",
+          "signal": "support_feature_level"
+        },
+        {
+          "operator": "is_empty",
+          "reference": "OOD_HARD_REASONS",
+          "signal": "hard_reasons"
+        }
+      ],
+      "probabilities_source": "generalized channel legal-action distribution",
+      "routed_strata": [
+        "rare_exact",
+        "exact_absent_in_domain"
+      ],
+      "support_state": "SPARSE_IN_DOMAIN"
+    },
+    {
+      "abstains": true,
+      "decision_priority": "P1",
+      "definition": "fail closed: no route may answer, no probabilities and no sizing are emitted, and the decision is excluded from every predictive gate",
+      "id": "OOD_ABSTAIN",
+      "model_id": "none",
+      "preconditions": [
+        {
+          "operator": "is_not_empty",
+          "reference": "OOD_HARD_REASONS",
+          "signal": "hard_reasons"
+        }
+      ],
+      "probabilities_source": "no probabilities: the decision abstains",
+      "routed_strata": [
+        "exact_absent_out_of_domain"
+      ],
+      "support_state": "OOD_ABSTAIN"
+    }
+  ],
+  "runtime_contract": {
+    "abstention_contract": {
+      "analysis_admissible": false,
+      "probabilities_present": false,
+      "reason_codes_present": true,
+      "route_source": "OOD_ABSTAIN",
+      "selected_action_present": false
+    },
+    "analysis_admissibility_rule": "analysis_admissible = (route_source != OOD_ABSTAIN) and probabilities legal and (sizing_provenance present when the selected action is RAISE or JAM)",
+    "fields": [
+      {
+        "definition": "the route source that produced this decision, always present",
+        "name": "route_source",
+        "required": true,
+        "required_when": null,
+        "type": "enum[ACTIVE_STRONG_SUPPORT|GENERALIZED_SPARSE_IN_DOMAIN|OOD_ABSTAIN]"
+      },
+      {
+        "definition": "stable identity of the model that produced the probabilities",
+        "name": "model_id",
+        "required": true,
+        "required_when": null,
+        "type": "string"
+      },
+      {
+        "definition": "byte digest of the model artifact the probabilities were read from",
+        "name": "model_hash",
+        "required": true,
+        "required_when": null,
+        "type": "sha256"
+      },
+      {
+        "definition": "support classification of the request, derived from route_source",
+        "name": "support_state",
+        "required": true,
+        "required_when": null,
+        "type": "enum[STRONG_EXACT_SUPPORT|SPARSE_IN_DOMAIN|OOD_ABSTAIN]"
+      },
+      {
+        "definition": "HIGH when the gate raised any soft reason, NONE otherwise",
+        "name": "uncertainty",
+        "required": true,
+        "required_when": null,
+        "type": "enum[NONE|HIGH]"
+      },
+      {
+        "definition": "status returned by the frozen #421 OOD / uncertainty gate",
+        "name": "ood_status",
+        "required": true,
+        "required_when": null,
+        "type": "enum[MODEL_SUPPORTED|MODEL_SUPPORTED_HIGH_UNCERTAINTY|MODEL_OOD_ABSTAIN]"
+      },
+      {
+        "definition": "legal-action distribution summing to one with zero mass on illegal actions; absent on an abstention",
+        "name": "probabilities",
+        "required": true,
+        "required_when": "route_source != OOD_ABSTAIN",
+        "type": "object[FOLD|CALL|RAISE|JAM]->number"
+      },
+      {
+        "definition": "the sizing channel, its legality window verdict and the queried target of a raise or jam answer",
+        "name": "sizing_provenance",
+        "required": false,
+        "required_when": "selected_action in {RAISE, JAM}",
+        "type": "object"
+      },
+      {
+        "definition": "true only when the decision is answered (no abstention), the probabilities are legal and the sizing provenance is present on RAISE / JAM",
+        "name": "analysis_admissible",
+        "required": true,
+        "required_when": null,
+        "type": "boolean"
+      }
+    ],
+    "invariants": [
+      "route_source is always one of the three declared route sources",
+      "an OOD_ABSTAIN answer carries no probabilities, no selected action and no sizing",
+      "analysis_admissible is false on every abstention",
+      "a RAISE or JAM answer carries the sizing provenance of the channel that produced it",
+      "the emitted probabilities sum to one with zero mass on illegal actions"
+    ],
+    "required_fields": [
+      "route_source",
+      "model_id",
+      "model_hash",
+      "support_state",
+      "uncertainty",
+      "ood_status",
+      "analysis_admissible"
+    ],
+    "schema": "poker-hybrid-router-runtime-contract/v1",
+    "sizing_contract": {
+      "fail_closed_on_illegal_target": true,
+      "field": "sizing_provenance",
+      "no_nearest_price_substitution": true,
+      "required_actions": [
+        "RAISE",
+        "JAM"
+      ]
+    }
+  },
+  "schema": "poker-hybrid-router-spec/v1",
+  "signals": [
+    {
+      "admissibility": {
+        "basis": "mechanically defined before the action; no train tuning required",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": false
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": false,
+      "definition": "fit-fold occurrences of the decision's exact context signature at the model's own discrete resolution",
+      "deterministic": true,
+      "id": "support_exact",
+      "kind": "support",
+      "read_from": "fit-fold exact_context_support",
+      "source_module_symbol": "evaluate_generalized_response_cv.exact_context_key",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [
+        "STRATUM_ASSIGNMENT",
+        "ROUTE_SELECTION_PROCEDURE"
+      ],
+      "used_by_route_sources": [
+        "ACTIVE_STRONG_SUPPORT",
+        "GENERALIZED_SPARSE_IN_DOMAIN",
+        "OOD_ABSTAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "mechanically defined before the action; no train tuning required",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": false
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": true,
+      "definition": "weakest per-block share of the decision's single-feature node labels observed in the fit fold",
+      "deterministic": true,
+      "id": "support_feature_level",
+      "kind": "support",
+      "read_from": "local_support.min_feature_share",
+      "source_module_symbol": "evaluate_generalized_response_cv.FEATURE_BLOCKS",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [
+        "STRATUM_ASSIGNMENT",
+        "ROUTE_SELECTION_PROCEDURE"
+      ],
+      "used_by_route_sources": [
+        "GENERALIZED_SPARSE_IN_DOMAIN",
+        "OOD_ABSTAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "mechanically defined before the action; no train tuning required",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": false
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": false,
+      "definition": "robust distance of the queried context to the calibrated numeric domain, computed on the frozen domain axes",
+      "deterministic": true,
+      "id": "distance_to_domain",
+      "kind": "domain",
+      "read_from": "domain_distance",
+      "source_module_symbol": "generalized_response_model._ood_axis_distance",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [
+        "OOD_ABSTENTION_CRITERION"
+      ],
+      "used_by_route_sources": [
+        "GENERALIZED_SPARSE_IN_DOMAIN",
+        "OOD_ABSTAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "mechanically defined before the action; no train tuning required",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": false
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": false,
+      "definition": "normalized predictive entropy and fitted node support of the generalized channel, compared against the frozen calibration tails",
+      "deterministic": true,
+      "id": "predictive_uncertainty",
+      "kind": "uncertainty",
+      "read_from": "signals.predictive_uncertainty",
+      "source_module_symbol": "generalized_response_model.ood_gate_decision",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [
+        "OOD_ABSTENTION_CRITERION"
+      ],
+      "used_by_route_sources": [
+        "GENERALIZED_SPARSE_IN_DOMAIN",
+        "OOD_ABSTAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "mechanically defined before the action; no train tuning required",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": false
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": true,
+      "definition": "the queried raise target leaves the calibrated TRAIN sizing domain",
+      "deterministic": true,
+      "id": "extrapolation_sizing",
+      "kind": "extrapolation",
+      "read_from": "signals.axes.sizing_ratio",
+      "source_module_symbol": "generalized_response_model.OOD_AXIS_EXTRAPOLATION_REASON",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [
+        "OOD_ABSTENTION_CRITERION"
+      ],
+      "used_by_route_sources": [
+        "OOD_ABSTAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "mechanically defined before the action; no train tuning required",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": false
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": true,
+      "definition": "the queried effective stack leaves the calibrated TRAIN stack domain",
+      "deterministic": true,
+      "id": "extrapolation_stack",
+      "kind": "extrapolation",
+      "read_from": "signals.axes.effective_stack_bb",
+      "source_module_symbol": "generalized_response_model.OOD_AXIS_EXTRAPOLATION_REASON",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [
+        "OOD_ABSTENTION_CRITERION"
+      ],
+      "used_by_route_sources": [
+        "OOD_ABSTAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "mechanically defined before the action; no train tuning required",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": false
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": true,
+      "definition": "the queried to-call / pot price leaves the calibrated TRAIN price domain",
+      "deterministic": true,
+      "id": "extrapolation_price",
+      "kind": "extrapolation",
+      "read_from": "signals.axes.to_call_bb|pot_before_bb",
+      "source_module_symbol": "generalized_response_model.OOD_AXIS_EXTRAPOLATION_REASON",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [
+        "OOD_ABSTENTION_CRITERION"
+      ],
+      "used_by_route_sources": [
+        "OOD_ABSTAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "TRAIN out-of-fold breakdown: at least two eligible categories and a preponderant share of eligible support answered with positive gain over the global action prior",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": true
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": false,
+      "definition": "public family block; consumed by a route only where the TRAIN out-of-fold breakdown justifies it",
+      "deterministic": true,
+      "id": "family",
+      "kind": "categorical",
+      "read_from": "public context family",
+      "source_module_symbol": "generalized_response_model.CATEGORICAL_BLOCKS",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [],
+      "used_by_route_sources": [
+        "ACTIVE_STRONG_SUPPORT",
+        "GENERALIZED_SPARSE_IN_DOMAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "TRAIN out-of-fold breakdown: at least two eligible categories and a preponderant share of eligible support answered with positive gain over the global action prior",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": true
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": false,
+      "definition": "public actor position block; consumed by a route only where the TRAIN out-of-fold breakdown justifies it",
+      "deterministic": true,
+      "id": "actor_position",
+      "kind": "categorical",
+      "read_from": "public context actor_position",
+      "source_module_symbol": "generalized_response_model.CATEGORICAL_BLOCKS",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [],
+      "used_by_route_sources": [
+        "ACTIVE_STRONG_SUPPORT",
+        "GENERALIZED_SPARSE_IN_DOMAIN"
+      ]
+    },
+    {
+      "admissibility": {
+        "basis": "TRAIN out-of-fold breakdown: at least two eligible categories and a preponderant share of eligible support answered with positive gain over the global action prior",
+        "cv_justified": true,
+        "minimum_category_support": 20,
+        "minimum_positive_gain_share": 0.5,
+        "requires_cv_justification": true
+      },
+      "computable_before_action": true,
+      "decisive_for_ood": false,
+      "definition": "public aggressor position block; consumed by a route only where the TRAIN out-of-fold breakdown justifies it",
+      "deterministic": true,
+      "id": "aggressor_position",
+      "kind": "categorical",
+      "read_from": "public context aggressor_position",
+      "source_module_symbol": "generalized_response_model.CATEGORICAL_BLOCKS",
+      "timing": "BEFORE_ACTION",
+      "used_by_formulas": [],
+      "used_by_route_sources": [
+        "ACTIVE_STRONG_SUPPORT",
+        "GENERALIZED_SPARSE_IN_DOMAIN"
+      ]
+    }
+  ],
+  "split_policy": {
+    "allowed_splits": [
+      "TRAIN"
+    ],
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "fail_closed_on_refused_split": true,
+    "refused_split_is_a_hard_error": true,
+    "refused_splits": [
+      "VALIDATION",
+      "TEST"
+    ],
+    "statement": "the freeze consumes TRAIN only; requiring any VALIDATION or TEST split raises a hard error before a single byte of the spec is written"
+  },
+  "status": "SPEC_ONLY_PREREGISTERED_NOT_ADMITTED",
+  "strata": {
+    "definition": "held-out decisions stratified by the fit-fold support of their exact context signature (exact_context_key): frequent_exact = support >= 20, rare_exact = 1 <= support < 20, exact_absent_in_domain = support == 0 while every single-feature node label is observed in the fit fold, exact_absent_out_of_domain = support == 0 with at least one unseen feature value",
+    "ood_strata": [
+      "exact_absent_out_of_domain"
+    ],
+    "reused_from": "issue-421",
+    "source_module_symbol": "tools/training/evaluate_generalized_response_cv.py::STRATA/STRATA_DEFINITION",
+    "sparse_covered_strata": [
+      "rare_exact",
+      "exact_absent_in_domain"
+    ],
+    "strata": [
+      {
+        "covered_by_sparse_floor": false,
+        "id": "frequent_exact",
+        "role": "strong exact support",
+        "routed_to": "ACTIVE_STRONG_SUPPORT"
+      },
+      {
+        "covered_by_sparse_floor": true,
+        "id": "rare_exact",
+        "role": "sparse but observed exact support",
+        "routed_to": "GENERALIZED_SPARSE_IN_DOMAIN"
+      },
+      {
+        "covered_by_sparse_floor": true,
+        "id": "exact_absent_in_domain",
+        "role": "exact cell never observed while every single-feature label is in domain",
+        "routed_to": "GENERALIZED_SPARSE_IN_DOMAIN"
+      },
+      {
+        "covered_by_sparse_floor": false,
+        "id": "exact_absent_out_of_domain",
+        "role": "exact cell never observed with at least one unseen feature value",
+        "routed_to": "OOD_ABSTAIN"
+      }
+    ],
+    "support_thresholds": {
+      "frequent_exact_min_support": 20,
+      "rare_exact_min_support": 1
+    }
+  },
+  "terminal_evaluation_reads": 0,
+  "title": "Hybrid preflop response router: route sources, runtime contract and TRAIN-only preregistration procedure"
+}

@@ -253,6 +253,144 @@ ISSUE_421_EXTERNAL_DEPENDENCIES=(
 )
 ISSUE_421_TRIGGER_REQUIRED_PATHS=*ISSUE_421_CHANGED_PATHS,*ISSUE_421_EXTERNAL_DEPENDENCIES
 
+# ---------------------------------------------------------------------------
+# Issue #423 ships one authoritative workflow with the same two properties: it
+# must execute every #423 suite and its path filters must cover every file the
+# issue changes.  The constants below are the machine-readable projection of
+# the ticket (T1..T8 plus the T9 evidence bundle and the n8n result block)
+# mirrored by the workflow's own `required = (...)` no-op guard.
+# ---------------------------------------------------------------------------
+ISSUE_423_WORKFLOW=".github/workflows/issue-423-hybrid-router.yml"
+ISSUE_423_EVENTS=("push","pull_request")
+ISSUE_423_SUITES=(
+    "tests/training/test_freeze_hybrid_router_spec.py",
+    "tests/training/test_freeze_hybrid_router_criteria.py",
+    "tests/preflop/test_generalized_response_calibration.py",
+    "tests/training/test_evaluate_hybrid_router_cv.py",
+    "tests/preflop/test_hybrid_response_router.py",
+    "tests/preflop/test_hybrid_response_runtime.py",
+    "tests/simulation/test_issue423_preflight.py",
+    "tests/training/test_hybrid_router_terminal_report.py",
+    "tests/preflop/test_issue423_mandatory_contracts.py",
+    "tests/ci/test_issue423_contract_guards.py",
+    "tests/training/test_issue423_evidence_bundle.py",
+)
+# Suites #423 ships outside the T1..T8 model surface that the authoritative
+# runner must also execute: the n8n result block and this audit guard, which
+# asserts the runner's trigger/execution/read-only contract.
+ISSUE_423_EXTRA_SUITES=(
+    "tests/training/test_issue423_n8n_result.py",
+    "tests/test_github_workflow_audit.py",
+)
+# The shared #204 consolidation-decision mutation guard the runner re-proves at
+# the end of the job: it is not part of the #423 diff, but the runner executes
+# it and must therefore trigger on it (see ISSUE_423_EXTERNAL_DEPENDENCIES).
+ISSUE_423_CI_SUITES=(
+    "tests/ci/test_consolidation_decision.py",
+)
+ISSUE_423_REQUIRED_SUITES=ISSUE_423_SUITES+ISSUE_423_EXTRA_SUITES+ISSUE_423_CI_SUITES
+# The #423 change surface: every path the issue ships must trigger the
+# authoritative runner.  `test_issue423_trigger_paths_cover_the_issue_surface`
+# cross-checks the manifest against the real branch surface -- the union of the
+# working-tree diff (so the runner added on the branch is cross-checked before
+# the orchestrator commits) and the #423-stamped commits -- when git history is
+# available, so the list can never silently rot; the content-addressed
+# `sha256/` copies are enumerated by the `analysis/issue423_hybrid_router/**`
+# trigger rather than repeated here.
+ISSUE_423_CHANGED_PATHS=(
+    # production tools: the frozen router, the runtime provider, the calibration
+    # channel, the #367 preflight and every tools/training generator #423 ships
+    "tools/preflop/hybrid_response_router.py",
+    "tools/preflop/hybrid_response_runtime.py",
+    "tools/preflop/generalized_response_calibration.py",
+    "tools/simulation/issue423_issue367_preflight.py",
+    "tools/training/build_issue423_evidence_bundle.py",
+    "tools/training/evaluate_hybrid_router_cv.py",
+    "tools/training/freeze_hybrid_router_criteria.py",
+    "tools/training/freeze_hybrid_router_spec.py",
+    # the router spec contract #423 ships (its reused #421 siblings ride along as
+    # external dependencies below)
+    "contracts/training/hybrid-router-spec.schema.json",
+    # the suites this workflow is authoritative for (including the audit guard)
+    *ISSUE_423_SUITES,
+    *ISSUE_423_EXTRA_SUITES,
+    # content-addressed evidence (the `analysis/issue423_hybrid_router/**`
+    # trigger must cover the whole tree; these are the anchor artifacts the
+    # evidence index binds, the sha256/ store enumerated by that glob)
+    "analysis/issue423_hybrid_router/ARTIFACTS.json",
+    "analysis/issue423_hybrid_router/DECISION.json",
+    "analysis/issue423_hybrid_router/DECISION.sha256",
+    "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+    "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.sha256",
+    "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+    "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.sha256",
+    "analysis/issue423_hybrid_router/ISSUE367_PREFLIGHT.json",
+    "analysis/issue423_hybrid_router/ISSUE367_PREFLIGHT.sha256",
+    "analysis/issue423_hybrid_router/N8N_TASK_RESULT.json",
+    "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+    "analysis/issue423_hybrid_router/ROUTER_MANIFEST.sha256",
+    "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.json",
+    "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.sha256",
+    "analysis/issue423_hybrid_router/SUMMARY.md",
+    "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+    "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.sha256",
+    "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+    "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
+    # documentation and decision record
+    "docs/hybrid-response-router.md",
+    ".project/decisions/20260926-hybrid-router.md",
+    "docs/ci-workflow-dag.md",
+    # the runner and the regenerated audit evidence it ships
+    ISSUE_423_WORKFLOW,
+    "analysis/workflow_audit/workflows.json",
+    "analysis/workflow_audit/active_workflow_dag_v2.json",
+    "analysis/workflow_audit/consolidation_decision_v1.json",
+)
+# Inputs the runner consumes or executes but the issue does not itself change:
+# an edit to any of them must still re-run the authoritative surface.
+ISSUE_423_EXTERNAL_DEPENDENCIES=(
+    "tools/audit_github_workflows.py",
+    "tools/audit_active_workflow_dag.py",
+    # the shared #204 consolidation-decision guard the runner re-proves last: it
+    # belongs to #204/#419/#421, not to the #423 diff, but the runner executes it.
+    *ISSUE_423_CI_SUITES,
+    # the frozen #421 channel and the reused generalized-validation harness the
+    # router composes and the evidence bundle re-verifies
+    "tools/preflop/generalized_response_model.py",
+    "tools/preflop/generalized_response_runtime.py",
+    "tools/training/evaluate_generalized_response_cv.py",
+    "contracts/training/generalized-response-dataset.schema.json",
+    "contracts/training/generalized-response-ood-gate.schema.json",
+    "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json",
+    "analysis/issue421_generalized_response/CANDIDATE_MANIFEST.json",
+    "analysis/issue421_generalized_response/VALIDATION_RESULT.json",
+    "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+    "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+    "analysis/issue421_generalized_response/model/candidate_hierarchical_empirical_bayes_dirichlet.json",
+    "analysis/issue421_generalized_response/model/candidate_regularized_multinomial_spline.json",
+    # the frozen #388 tree, the #419 frontier resolution and the scenario fixture
+    "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+    "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+    "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+    # the active Model A/B pointers the preflight hashes back unchanged
+    "training/models/preflop_population_model_v5.json",
+    "training/models/postflop_population_model_v5.json",
+)
+ISSUE_423_TRIGGER_REQUIRED_PATHS=*ISSUE_423_CHANGED_PATHS,*ISSUE_423_EXTERNAL_DEPENDENCIES
+
+# The #423 nested-pin recomputation guard: the fail-closed assertion that every
+# digest nested in a persisted #423 file -- the spec, its frozen criteria, the
+# derivation, the terminal report and its sparse companion, the criteria manifest
+# -- is recomputed from the persisted bytes, with the documented projection rule
+# (``projection_neutralising_the_self_referential_spec_pin``) breaking the
+# self-referential spec <-> derivation cycle.  The guard lives in the
+# cross-fitted-harness suite (``PersistedPinRecomputationTests``) and the runner
+# must execute it as its own always-active step, gated by the flag below: a
+# `paths` declaration that never runs the guard is not enough.
+ISSUE_423_PIN_GUARD_SUITE="tests/training/test_evaluate_hybrid_router_cv.py"
+ISSUE_423_PIN_GUARD_FLAG="POKER_HYBRID_ROUTER_CV_PINS_ONLY"
+ISSUE_423_PIN_GUARD_TEST="PersistedPinRecomputationTests"
+
 
 def executed_suites(text: str, required: tuple[str, ...]) -> set[str]:
     """Suites the workflow really runs: a `python3 <suite>` command outside a comment."""
@@ -354,6 +492,73 @@ def issue421_uncovered_paths(text: str, paths=ISSUE_421_TRIGGER_REQUIRED_PATHS) 
 def issue421_changed_paths() -> list[str] | None:
     """The real #421 change surface, or None when git history is unavailable."""
     return issue_changed_paths(421)
+
+
+def issue423_executed_suites(text: str) -> set[str]:
+    """Suites the #423 runner really runs (see `executed_suites`)."""
+    return executed_suites(text,ISSUE_423_REQUIRED_SUITES)
+
+
+def issue423_declared_required_suites(text: str) -> set[str]:
+    """The suites the #423 runner's own `required = (...)` no-op guard asserts it executed."""
+    return declared_required_suites(text)
+
+
+def issue423_uncovered_paths(text: str, paths=ISSUE_423_TRIGGER_REQUIRED_PATHS) -> list[tuple[str, str]]:
+    """(event, path) pairs a #423 change would land on *without* triggering the runner."""
+    return uncovered_paths(text,paths,ISSUE_423_EVENTS)
+
+
+def issue423_changed_paths() -> list[str] | None:
+    """The real #423 change surface, or None when git history is unavailable."""
+    return issue_changed_paths(423)
+
+
+def workflow_steps(text: str) -> list[tuple[str, str]]:
+    """`(name, body)` for every step of a single-job workflow, comments dropped.
+
+    Only the flat shape the issue runners use is supported.  Comments are removed
+    before a step is inspected, so a commented-out command can never satisfy the
+    nested-pin guard.
+    """
+    lines=text.splitlines()
+    start=next((index for index,line in enumerate(lines) if line.rstrip()=="    steps:"),None)
+    if start is None: return []
+    steps: list[tuple[str,str]]=[]
+    name: str | None=None
+    body: list[str]=[]
+    for raw in lines[start+1:]:
+        line="" if raw.lstrip().startswith("#") else raw
+        match=re.match(r"^\s*-\s*(?:name|uses):\s*(.*?)\s*$",line)
+        if match:
+            if name is not None: steps.append((name,"\n".join(body)))
+            name=match.group(1)
+            body=[line]
+            continue
+        if name is not None: body.append(line)
+    if name is not None: steps.append((name,"\n".join(body)))
+    return steps
+
+
+def pin_guard_steps(text: str) -> list[str]:
+    """The bodies of the *always-active* steps that execute the #423 nested-pin guard.
+
+    A step gated by an ``if:`` condition can be skipped, so it is not the
+    always-active guard the ticket asks for and does not count.
+    """
+    running=[]
+    for _name,body in workflow_steps(text):
+        if ISSUE_423_PIN_GUARD_FLAG not in body: continue
+        if re.search(r"^\s*if:",body,re.M): continue
+        running.append(body)
+    return running
+
+
+def pin_guard_executes_the_suite(text: str) -> bool:
+    """True when a guard step really runs the guard-bearing suite (not just names it)."""
+    body="\n".join(pin_guard_steps(text))
+    return bool(re.search(r"python3\s+"+re.escape(ISSUE_423_PIN_GUARD_SUITE)+r"(?:\s|$)",body))
+
 
 HISTORICAL_EVIDENCE=(
     "analysis/workflow_audit/historical_workflow_quarantine_v1.json",
@@ -608,13 +813,16 @@ jobs:
         changed=issue421_changed_paths()
         if surface is None or changed is None:
             self.skipTest("git history unavailable (shallow checkout): set fetch-depth: 0 to enforce this")
+        if not changed:
+            # #421 is already merged into origin/main, so this branch carries none of
+            # its commits and none of its surface: the strict branch-diff cross-check
+            # is not applicable here (it is re-asserted on the #421 branch itself).
+            self.skipTest("branch carries no #421-stamped commit: surface cross-check not applicable")
         # The curated manifest must stay inside the real branch surface, so it can
         # never assert coverage for a path the issue does not actually ship.
         fabricated=set(ISSUE_421_CHANGED_PATHS)-set(surface)
         self.assertEqual(set(),fabricated,
                          f"manifest claims paths outside the #421 branch surface: {sorted(fabricated)}")
-        if not changed:
-            self.skipTest("branch carries no #421-stamped commit: surface cross-check not applicable")
         text=(ROOT/ISSUE_421_WORKFLOW).read_text()
         self.assertEqual([],issue421_uncovered_paths(text,changed),
                          "the #421 change surface exposes paths the runner never triggers on")
@@ -700,6 +908,169 @@ jobs:
         self.assertEqual("SAFE_CANDIDATE_NOT_APPLIED",row["recommendation_state"])
         self.assertTrue(row["blockers"])
 
+    # ------------------------------------------------------------------
+    # Issue #423: the same two properties, asserted on its own runner.
+    # ------------------------------------------------------------------
+    def test_issue423_changed_paths_are_all_covered_by_the_workflow(self):
+        """Every #423 path must trigger the authoritative runner on push and on pull_request."""
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        triggers=audit.parse_triggers(text.splitlines())
+        self.assertIn("push",triggers,ISSUE_423_WORKFLOW)
+        self.assertIn("pull_request",triggers,ISSUE_423_WORKFLOW)
+        for changed in ISSUE_423_TRIGGER_REQUIRED_PATHS:
+            self.assertTrue((ROOT/changed).exists(),f"declared #423 path is missing: {changed}")
+        self.assertEqual([],issue423_uncovered_paths(text))
+
+    def test_issue423_trigger_paths_cover_the_issue_surface(self):
+        """Completeness: the filters must cover the real #423 surface, not only a curated list."""
+        surface=branch_changed_paths()
+        changed=issue423_changed_paths()
+        if surface is None or changed is None:
+            self.skipTest("git history unavailable (shallow checkout): set fetch-depth: 0 to enforce this")
+        # The curated manifest must stay inside the real surface -- the working-tree
+        # diff (so the runner and the regenerated audit evidence are cross-checked
+        # before the orchestrator commits the worktree) unioned with the #423-stamped
+        # commits -- so it can never assert coverage for a path the issue does not ship.
+        known=set(surface)|set(changed)
+        fabricated=set(ISSUE_423_CHANGED_PATHS)-known
+        self.assertEqual(set(),fabricated,
+                         f"manifest claims paths outside the #423 surface: {sorted(fabricated)}")
+        if not changed:
+            self.skipTest("branch carries no #423-stamped commit: surface cross-check not applicable")
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        self.assertEqual([],issue423_uncovered_paths(text,changed),
+                         "the #423 change surface exposes paths the runner never triggers on")
+
+    def test_issue423_trigger_drift_and_substitution_are_detected(self):
+        """Negative guard: dropping or swapping a #423 trigger pattern must be detected."""
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        # (a) drift: a narrower test filter must not cover the shipped calibration suite.
+        drifted=text.replace("      - 'tests/preflop/test_generalized_response_calibration.py'\n",
+                             "      - 'tests/preflop/test_generalized_response_calibration_v2.py'\n")
+        self.assertIn(("push","tests/preflop/test_generalized_response_calibration.py"),
+                      issue423_uncovered_paths(drifted))
+        # (b) substitution: a nearby path that looks right but is not the shipped one.
+        substituted=text.replace("      - 'tests/preflop/test_hybrid_response_*.py'\n",
+                                 "      - 'tests/preflop/test_hybrid_response_router.py'\n")
+        self.assertIn(("pull_request","tests/preflop/test_hybrid_response_runtime.py"),
+                      issue423_uncovered_paths(substituted))
+        # (c) a silently-renamed evidence directory must also be flagged.
+        renamed=text.replace("'analysis/issue423_hybrid_router/**'",
+                             "'analysis/issue423_hybrid_routers/**'")
+        self.assertIn(("push","analysis/issue423_hybrid_router/DECISION.json"),
+                      issue423_uncovered_paths(renamed))
+
+    def test_issue423_workflow_executes_every_declared_suite(self):
+        """The #423 runner must execute every declared suite as a real command.
+
+        The declared set is the union ``ISSUE_423_SUITES ∪ ISSUE_423_EXTRA_SUITES``
+        (the T1..T8 suites plus the T9 evidence bundle, the n8n result block and
+        this audit guard) extended with the shared audit chain
+        (``ISSUE_423_CI_SUITES``): no suite the branch ships may stay silently
+        unexecuted.
+        """
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        declared=set(ISSUE_423_SUITES)|set(ISSUE_423_EXTRA_SUITES)
+        self.assertEqual(declared-set(ISSUE_423_REQUIRED_SUITES),set(),
+                         "the required set must cover the declared union")
+        self.assertEqual(set(ISSUE_423_REQUIRED_SUITES)-issue423_executed_suites(text),set())
+        # Each suite is executed independently so a failure cannot be masked by a later step.
+        for suite in ISSUE_423_REQUIRED_SUITES:
+            with self.subTest(suite=suite):
+                self.assertRegex(text,r"python3\s+"+re.escape(suite)+r"(?:\s|$)")
+
+    def test_issue423_noop_guard_tuple_mirrors_the_declared_suites(self):
+        """The #423 runner's own `required` tuple must mirror the suites declared here."""
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        declared=set(ISSUE_423_SUITES)|set(ISSUE_423_EXTRA_SUITES)
+        required=issue423_declared_required_suites(text)
+        self.assertTrue(required,f"no `required = (...)` tuple found in {ISSUE_423_WORKFLOW}")
+        self.assertEqual(declared-required,set(),
+                         "the workflow no-op guard tuple is missing declared suites")
+        self.assertEqual(set(ISSUE_423_CI_SUITES)-required,set(),
+                         "the workflow no-op guard tuple is missing the shared audit chain")
+
+    def test_issue423_noop_workflow_is_detected(self):
+        """Negative guard: a workflow that only declares the #423 suites in `paths` must be flagged."""
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        declaration_only="\n".join(
+            line for line in text.splitlines()
+            if line.lstrip().startswith(("-","'")) or line.startswith("on:") or line.startswith("  paths:"))
+        self.assertEqual(set(),issue423_executed_suites(declaration_only))
+        # Dropping a single executed command is also detected, so the guard cannot silently pass.
+        for suite in ISSUE_423_REQUIRED_SUITES:
+            with self.subTest(suite=suite):
+                dropped="\n".join(line for line in text.splitlines() if suite not in line)
+                self.assertIn(suite,set(ISSUE_423_REQUIRED_SUITES)-issue423_executed_suites(dropped))
+
+    def test_issue423_workflow_executes_the_nested_pin_guard(self):
+        """The nested-pin recomputation guard must be a real, always-active step.
+
+        The guard lives in ``ISSUE_423_PIN_GUARD_SUITE`` (the cross-fitted harness
+        suite) and is executed in a dedicated step gated by
+        ``ISSUE_423_PIN_GUARD_FLAG``; that step must run ``python3 <suite>``
+        itself, and the suite must stay in the required set so the runner's
+        ``paths`` filters keep covering it.
+        """
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        self.assertIn(ISSUE_423_PIN_GUARD_SUITE,ISSUE_423_REQUIRED_SUITES)
+        self.assertTrue(pin_guard_steps(text),"the runner declares no nested-pin guard step")
+        self.assertTrue(pin_guard_executes_the_suite(text),
+                        "the nested-pin guard step does not execute the guard suite")
+        # The manifest constant must name the real guard class, so it cannot rot.
+        self.assertIn(f"class {ISSUE_423_PIN_GUARD_TEST}(",
+                      (ROOT/ISSUE_423_PIN_GUARD_SUITE).read_text())
+        # The guard-bearing suite also keeps its own scored step, so a green run
+        # always covered both the score and the pin recomputation.
+        self.assertIn(ISSUE_423_PIN_GUARD_SUITE,issue423_executed_suites(text))
+
+    def test_issue423_nested_pin_guard_is_not_a_mere_declaration(self):
+        """Negative guard: declaring the suite in ``paths`` -- or dropping the guard step -- must be flagged."""
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        # (a) a runner that only declares the suite in its `paths` filters carries no guard step.
+        declaration_only="\n".join(
+            line for line in text.splitlines()
+            if line.lstrip().startswith(("-","'")) or line.startswith("on:") or line.startswith("  paths:"))
+        self.assertEqual([],pin_guard_steps(declaration_only))
+        self.assertFalse(pin_guard_executes_the_suite(declaration_only))
+        # (b) dropping (renaming) the guard flag leaves the guard unexecuted.
+        renamed=text.replace(ISSUE_423_PIN_GUARD_FLAG,"POKER_HYBRID_ROUTER_CV_PINS_DISABLED")
+        self.assertEqual([],pin_guard_steps(renamed))
+        self.assertFalse(pin_guard_executes_the_suite(renamed))
+        # (c) a guard step that runs some other suite is not the guard either.
+        substituted=text.replace(
+            f"python3 {ISSUE_423_PIN_GUARD_SUITE}",
+            "python3 tests/training/test_evaluate_hybrid_router_cv_v2.py")
+        self.assertFalse(pin_guard_executes_the_suite(substituted))
+        # (d) a guard step gated by an `if:` condition can be skipped, so it is not
+        # an always-active guard.
+        gated=text.replace(
+            "        env:\n          "+ISSUE_423_PIN_GUARD_FLAG,
+            "        if: false\n        env:\n          "+ISSUE_423_PIN_GUARD_FLAG)
+        self.assertNotEqual(gated,text,"the gated-step negative control did not apply")
+        self.assertEqual([],pin_guard_steps(gated))
+        self.assertFalse(pin_guard_executes_the_suite(gated))
+
+    def test_issue423_workflow_is_read_only_and_registered(self):
+        """The #423 runner publishes no artifact and never widens the write surface."""
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        self.assertIn("permissions:\n  contents: read",text)
+        for forbidden in ("upload-artifact","git push","pull_request_target","gh release create","wrangler deploy"):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden,text)
+        row=next(r for r in audit.inventory(ROOT)["workflows"] if r["path"]==ISSUE_423_WORKFLOW)
+        self.assertTrue(row["automatic"])
+        self.assertEqual(row["triggers"],["push","pull_request","workflow_dispatch"])
+        self.assertEqual(row["artifacts"],[])
+
+    def test_issue423_decision_artifact_classifies_the_workflow_as_safe(self):
+        decision=json.loads((ROOT/dag.DECISION).read_text())
+        row=next(r for r in decision["workflows"] if r["path"]==ISSUE_423_WORKFLOW)
+        self.assertEqual("READ_ONLY",row["side_effect_class"])
+        self.assertIs(row["fail_closed_safe"],True)
+        self.assertEqual("SAFE_CANDIDATE_NOT_APPLIED",row["recommendation_state"])
+        self.assertTrue(row["blockers"])
+
     def test_dag_evidence_is_regenerable_and_covers_the_issue_runners(self):
         """DAG half of the committed-evidence parity: the versioned DAG, its decision artifact
         and its rendered Markdown must all be the deterministic output of the generators at
@@ -720,7 +1091,7 @@ jobs:
         inventory=json.loads(inventory_bytes)
         self.assertEqual(inventory["aggregate"]["automatic_trigger_workflows"],data["active_workflow_count"])
         self.assertEqual(inventory["aggregate"]["manual_only_workflows"],data["manual_only_count"])
-        for path in (ISSUE_419_WORKFLOW,ISSUE_421_WORKFLOW):
+        for path in (ISSUE_419_WORKFLOW,ISSUE_421_WORKFLOW,ISSUE_423_WORKFLOW):
             with self.subTest(path=path):
                 # The new workflow is active (not quarantined) and classified like the inventory does.
                 self.assertNotIn(path,data["excluded_manual_only_workflows"])

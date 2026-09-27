@@ -1,9 +1,9 @@
 {
   "active_definition": "workflow file present in the audited default-branch snapshot",
   "aggregate": {
-    "automatic_trigger_workflows": 56,
+    "automatic_trigger_workflows": 57,
     "concurrency": {
-      "cancel_false_count": 14,
+      "cancel_false_count": 15,
       "cancel_true_count": 38,
       "groups": {
         "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}": [
@@ -58,6 +58,9 @@
         ],
         "issue-421-generalized-response-model-${{ github.event_name }}-${{ github.ref }}": [
           ".github/workflows/issue-421-generalized-response-model.yml"
+        ],
+        "issue-423-hybrid-router-${{ github.event_name }}-${{ github.ref }}": [
+          ".github/workflows/issue-423-hybrid-router.yml"
         ],
         "materialize-certified-population-${{ github.ref }}": [
           ".github/workflows/materialize-certified-population.yml"
@@ -163,17 +166,17 @@
     },
     "cost_band_counts": {
       "high": 11,
-      "low": 42,
+      "low": 43,
       "medium": 18
     },
     "duplication_primitives": {
-      "checkout": 117,
+      "checkout": 118,
       "download_artifact": 43,
       "npm_install": 0,
       "pip_install": 8,
       "playwright_install": 8,
       "setup_node": 8,
-      "setup_python": 72,
+      "setup_python": 73,
       "upload_artifact": 53
     },
     "explicit_workflow_run_edges": [
@@ -214,7 +217,7 @@
       ".github/workflows/v84-strategy-candidate.yml"
     ],
     "lifecycle_counts": {
-      "current": 48,
+      "current": 49,
       "frozen_current": 8,
       "historical_candidate": 15
     },
@@ -228,29 +231,29 @@
       "release_promotion": 3,
       "simulation_benchmark": 5,
       "training_orchestration": 2,
-      "validation_or_utility": 14
+      "validation_or_utility": 15
     },
     "trigger_event_counts": {
-      "pull_request": 46,
-      "push": 46,
+      "pull_request": 47,
+      "push": 47,
       "workflow_call": 1,
-      "workflow_dispatch": 48,
+      "workflow_dispatch": 49,
       "workflow_run": 2
     }
   },
   "path_detail": "path_scopes are normalized top-level scopes for overlap review; tools/audit_github_workflows.py emits exact event path filters from a checkout",
   "refresh_note": {
-    "automatic_trigger_workflows": 56,
+    "automatic_trigger_workflows": 57,
     "current_main_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
     "generator": "tools/audit_github_workflows.py --inventory analysis/workflow_audit/workflows.json",
     "manual_only_workflows": 15,
     "previous_snapshot_base_sha": "360d02225ff4ca0aca798f07e3abb87304be88ae",
-    "workflow_count_current": 71,
+    "workflow_count_current": 72,
     "workflow_count_previous": 54
   },
   "schema": "poker-engine-workflow-inventory/v1",
   "snapshot_base_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
-  "workflow_count": 71,
+  "workflow_count": 72,
   "workflows": [
     {
       "artifacts": [],
@@ -951,6 +954,42 @@
         "docs",
         "tests",
         "tools"
+      ],
+      "role": "validation_or_utility",
+      "triggers": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "automatic": true,
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "issue-423-hybrid-router-${{ github.event_name }}-${{ github.ref }}"
+      },
+      "cost_proxy": {
+        "band": "low",
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "jobs": [
+        "contract"
+      ],
+      "lifecycle": "current",
+      "name": "Execute issue 423 hybrid response router",
+      "path": ".github/workflows/issue-423-hybrid-router.yml",
+      "path_scopes": [
+        ".github",
+        ".project",
+        "analysis",
+        "contracts",
+        "docs",
+        "tests",
+        "tools",
+        "training"
       ],
       "role": "validation_or_utility",
       "triggers": [
