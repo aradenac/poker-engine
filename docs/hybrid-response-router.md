@@ -437,7 +437,7 @@ router neither claims it nor stands in for it.
   unchanged, and no promotion is performed (`automatic_promotion = FORBIDDEN`).
 * **#367 is not executed** — `ISSUE367_EXECUTED=false`. The preflight
   (`ISSUE367_PREFLIGHT.json`,
-  `fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d`) walks the 38
+  `8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b`) walks the 38
   required scenario #321 nodes and 7 raise-sizing frontiers (45 visited
   decisions: 43 direct evaluations, 2 explicit abstentions) through the runtime
   provider, but `hero_ev_executed=false` and `issue367_executed=false`. Because

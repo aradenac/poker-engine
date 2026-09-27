@@ -141,7 +141,7 @@ Les constantes de pré-enregistrement sont gelées
   registres inchangés, aucune promotion (`automatic_promotion=FORBIDDEN`).
 - `ISSUE367_EXECUTED=false` : la préflight
   (`ISSUE367_PREFLIGHT.json`,
-  `fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d`) parcourt les
+  `8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b`) parcourt les
   38 nœuds du scénario #321 et les 7 frontières de sizing (45 décisions visitées :
   43 évaluations directes, 2 abstentions explicites) via le provider runtime,
   mais `hero_ev_executed=false` et `issue367_executed=false`. L'issue terminale
