@@ -28,10 +28,10 @@
           "git_blob_sha": "ed9983e978e2ab7ab2c4959d40bb6a0a6fb54add"
         },
         "site/analytics/review-inbox.js": {
-          "git_blob_sha": "1aa0bce5aaa2ede24fc7afbab896c3b932743f8b"
+          "git_blob_sha": "ee429c58b10ddb7e00ecf940e1ecc46c881672a6"
         },
         "site/analytics/review-score-adapter.js": {
-          "git_blob_sha": "ac22e12d564916844b96ec657e3f92732b18a7ea"
+          "git_blob_sha": "6a82da9703599a1a33df408bc027881d0ffa6995"
         },
         "site/compute-scheduler.js": {
           "git_blob_sha": "c21caab928623c6d3ace9b4f58f12f6971e75929"

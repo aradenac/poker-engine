@@ -273,7 +273,7 @@
     if(comparableCount>0&&totalLoss<=EPS)return STATUS.CORRECT;
     return STATUS.TO_REVIEW;
   }
-  function buildItem(handId,summary,events,adapted,userMetadata,scope,handResults){
+  function buildItem(handId,summary,events,adapted,userMetadata,scope,handResults,hybrid){
     const rows=(events||[]).map(e=>Leak.normalizeEvent(e)).sort(eventOrder);
     const eligible=rows.filter(e=>e.support.covered&&e.comparability.comparable);
     const totalLoss=round(eligible.reduce((s,e)=>s+Number(e.ev.attributed_loss_bb||0),0));
@@ -305,6 +305,7 @@
       schema:ITEM_SCHEMA,hand_id:String(handId),timestamp,scope:{...sc},
       total_loss_bb:totalLoss,nominal_loss_bb:nominalLoss,
       hero_net_bb:heroNetBB,result:{state:resultStateFor(heroNetBB),net_bb:heroNetBB},
+      hybrid:hybrid==null?null:hybrid,
       costliest_decision:compactDecision(costly),primary_decision:compactDecision(primary),
       main_street:primary?primary.context.street:'UNKNOWN',position,
       spot_family:primary?primary.context.spot_family:'UNKNOWN',
@@ -316,12 +317,23 @@
       status,status_label:STATUS_LABELS[status],deep_link:link,facets
     };
   }
+  // Optional hand-level `hybrid` projection (poker-review-hybrid-result/v1, #424 T1).
+  // Pure passthrough carried from the persisted review input through the adapter: the
+  // value is never recomputed, normalized or invented, and an input without `hybrid`
+  // yields the explicit `null` schema default while every other field keeps its value.
+  function itemHybrid(handId,summary,hybrids){
+    const carried=hybrids&&typeof hybrids==='object'?hybrids[String(handId)]:null;
+    if(carried!=null)return carried;
+    if(summary&&typeof summary==='object'&&!Array.isArray(summary)&&summary.hybrid!=null)return summary.hybrid;
+    return null;
+  }
   function buildReviewInboxes(input={}){
     if(!Leak||!Adapter)throw new Error('PokerLeakAnalyzer and PokerReviewLeakAdapter are required');
     const reviewScores=input.reviewScores&&typeof input.reviewScores==='object'?input.reviewScores:{};
     const metadata=normalizeUserMetadata(input.user_metadata);
     const handResults=normalizeHandResults(input.hand_results);
-    const adapted=Adapter.adaptPersistedReviewData({reviewScores,hhSources:input.hhSources||[],scope:input.scope});
+    const adapted=Adapter.adaptPersistedReviewData({reviewScores,hhSources:input.hhSources||[],scope:input.scope,hybrid:input.hybrid});
+    const hybrids=adapted&&adapted.hybrids&&typeof adapted.hybrids==='object'?adapted.hybrids:null;
     const eventsByScope=new Map(),eventsByHand=new Map();
     for(const event of adapted.events){
       const k=scopeKey(Leak.scopeOf(event));
@@ -339,7 +351,7 @@
     const inboxes=[];
     for(const [key,bucket] of eventsByScope){
       const handIds=Object.keys(reviewScores).filter(h=>handScope.get(String(h))&&handScope.get(String(h)).key===key).sort();
-      const items=handIds.map(handId=>buildItem(handId,reviewScores[handId],eventsByHand.get(String(handId))||[],adapted,metadata,bucket.scope,handResults));
+      const items=handIds.map(handId=>buildItem(handId,reviewScores[handId],eventsByHand.get(String(handId))||[],adapted,metadata,bucket.scope,handResults,itemHybrid(handId,reviewScores[handId],hybrids)));
       inboxes.push({
         schema:INBOX_SCHEMA,event_schema:Leak.EVENT_SCHEMA,adapter_schema:Adapter.ADAPTER_SCHEMA,
         scope:{...bucket.scope},scope_key:key,items:sortInboxItems(items,'EV_LOSS_DESC'),

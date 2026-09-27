@@ -980,6 +980,40 @@ const t3Inbox=Inbox.buildReviewInbox({
   assert.equal(runtime,src,'site/analytics/review-inbox.js must stay byte-identical to src/analytics/review-inbox.js');
 }
 
+// #424 T3: the optional `hybrid` projection carried by the persisted review
+// input is transported verbatim to the matching item. An input without it keeps
+// the explicit `null` schema default, and the passthrough must never change any
+// other field, ordering or filter facet of the pre-existing item.
+{
+  const hybrid={
+    schema:'poker-review-hybrid-result/v1',support_state:'LOW_CONFIDENCE_TOO_CLOSE',confidence_level:'LOW',
+    is_estimate:true,ev_bb:-0.7,uncertainty_note:'Marge trop faible pour conclure',abstains:false,abstention_reason:null,too_close:true,
+    provenance:{route:'HYBRID_BACKOFF',source:'model_b+model_a',model_id:'gbm-2026-09',model_hash:'sha256:abcd',ood_status:'IN_DISTRIBUTION',ood_reason:null}
+  };
+  for(const item of inbox.items)assert.equal(item.hybrid,null,'an input without hybrid yields the explicit null schema default');
+  const withHybridScores=JSON.parse(JSON.stringify(reviewScores));
+  withHybridScores['100001'].hybrid=hybrid;
+  const carried=Inbox.buildReviewInbox({
+    reviewScores:withHybridScores,
+    hhSources:[{name:'all.txt',content:[HH1,HH2,HH3,HH4].join('\n')}],
+    scope:SCOPE,user_metadata:metadata2
+  });
+  const rows=new Map(carried.items.map(x=>[x.hand_id,x]));
+  assert.ok('hybrid' in rows.get('100001'),'an item always carries the hybrid key');
+  assert.equal(rows.get('100001').hybrid,withHybridScores['100001'].hybrid,'the hybrid value must be transported by reference, unchanged');
+  assert.equal(rows.get('100001').hybrid.provenance.route,'HYBRID_BACKOFF','the whole projection is carried, provenance included');
+  for(const id of ['100002','100003','100004'])assert.equal(rows.get(id).hybrid,null,'a hand without hybrid keeps the explicit null default');
+  const strip=item=>{const copy={...item};delete copy.hybrid;return copy;};
+  for(const id of ['100001','100002','100003','100004']){
+    assert.deepEqual(strip(rows.get(id)),strip(byId.get(id)),'the hybrid passthrough must not alter any other field of item '+id);
+  }
+  assert.deepEqual(carried.items.map(x=>x.hand_id),inbox.items.map(x=>x.hand_id),'the default ordering is untouched by the hybrid passthrough');
+  assert.deepEqual(rows.get('100001').facets,byId.get('100001').facets,'the filter facets are untouched by the hybrid passthrough');
+  const schema=JSON.parse(fs.readFileSync(path.join(__dirname,'../../contracts/analytics/review-inbox.schema.json'),'utf8'));
+  assert.ok(schema.$defs.item.properties.hybrid,'the item contract declares the optional hybrid projection');
+  assert.equal(schema.$defs.item.required.includes('hybrid'),false,'hybrid stays optional for backward compatibility');
+}
+
 console.log(JSON.stringify({
   status:'PASS',
   schema:Inbox.INBOX_SCHEMA,

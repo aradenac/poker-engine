@@ -8,6 +8,7 @@
 
   const ADAPTER_SCHEMA='poker-review-leak-adapter/v1';
   const RESOLUTION_SCOPE_SCHEMA='poker-review-resolution-scope/v1';
+  const HYBRID_SCHEMA='poker-review-hybrid-result/v1';
   const DEFAULT_EV_REFERENCE='review_score_policy_adjusted_incremental_bb';
   const UNAVAILABLE_STRATEGY_ID='UNAVAILABLE_STRATEGY';
   const UNAVAILABLE_STRATEGY_VERSION='UNAVAILABLE';
@@ -253,11 +254,30 @@
       notes:step.rawLine
     });
   }
+  // Optional hand-level `hybrid` projection (poker-review-hybrid-result/v1, #424 T1).
+  // Pure passthrough: the value is carried verbatim and is never recomputed,
+  // normalized, reshaped or invented. It is read from the hand's persisted review
+  // score (`reviewScores[hand_id].hybrid`) and, when the caller supplies it, from the
+  // explicit builder input `input.hybrid` — either a hand_id-keyed map (mirroring how
+  // `hand_results` is passed to the inbox) or the projection itself. An input without
+  // `hybrid` yields `null`, i.e. the schema default, never a fabricated support state.
+  function handHybrid(input,handId,summary){
+    const id=String(handId),raw=input&&input.hybrid;
+    if(raw&&typeof raw==='object'&&!Array.isArray(raw)){
+      const perHand=raw[id];
+      if(perHand!=null)return perHand;
+      if(raw.schema===HYBRID_SCHEMA)return raw;
+    }
+    if(summary&&typeof summary==='object'&&!Array.isArray(summary)&&summary.hybrid!=null)return summary.hybrid;
+    return null;
+  }
   function adaptPersistedReviewData(input={}){
     if(!Leak||typeof Leak.buildDecisionEvent!=='function')throw new Error('PokerLeakAnalyzer is required');
     const reviewScores=input.reviewScores&&typeof input.reviewScores==='object'?input.reviewScores:{};
-    const hands=parseStoredHandHistories(input.hhSources||[]),events=[],warnings=[];
+    const hands=parseStoredHandHistories(input.hhSources||[]),events=[],warnings=[],hybrids={};
     for(const [handId,summary] of Object.entries(reviewScores)){
+      const hybrid=handHybrid(input,handId,summary);
+      if(hybrid!=null)hybrids[String(handId)]=hybrid;
       const hand=hands.get(String(handId));if(!hand){warnings.push('Missing HH source for review score '+handId);continue;}
       const details=Array.isArray(summary&&summary.details)?summary.details:[],byStep=new Map(details.map(d=>[Number(d.stepIndex),d]));
       for(const step of hand.steps){
@@ -266,7 +286,13 @@
         if(ev)events.push(ev);
       }
     }
-    return {schema:ADAPTER_SCHEMA,events,hands,warnings,scope_keys:Array.from(new Set(events.map(e=>Leak.scopeKey(Leak.scopeOf(e))))).sort()};
+    const result={schema:ADAPTER_SCHEMA,events,hands,warnings,scope_keys:Array.from(new Set(events.map(e=>Leak.scopeKey(Leak.scopeOf(e))))).sort()};
+    // #424 T3: the optional hand-level `hybrid` projection is carried verbatim so
+    // the Review builders never recompute it. The passthrough key is only added
+    // when the input actually has one, so an input without `hybrid` still returns
+    // exactly the pre-#424 result.
+    if(Object.keys(hybrids).length)result.hybrids=hybrids;
+    return result;
   }
   function handSource(result,handId,decisionId){
     const hand=result&&result.hands&&result.hands.get?result.hands.get(String(handId)):null;if(!hand)return null;
