@@ -1,0 +1,104 @@
+{
+  "forbidden_alternative_leak_fields": [
+    "ev_bb",
+    "paired_delta_vs_best_bb",
+    "posterior_refs",
+    "route",
+    "source",
+    "support",
+    "uncertainty"
+  ],
+  "forbidden_features": [
+    "confidence",
+    "ev_bb",
+    "hero_ev",
+    "hero_recommendation",
+    "model_a",
+    "model_a_ev",
+    "model_a_policy",
+    "model_a_recommendation",
+    "recommendation",
+    "recommended_action",
+    "recommended_sizing",
+    "route",
+    "uncertainty"
+  ],
+  "forbidden_hits": [],
+  "forbidden_hits_by_fixture": {
+    "multi_sizing.json": [],
+    "ood_unsupported.json": [],
+    "robust_consistent.json": [],
+    "sparse_high_uncertainty.json": [],
+    "too_close.json": []
+  },
+  "hero_ev_consumed": false,
+  "independence_clean": true,
+  "information_boundary": false,
+  "information_boundary_all_false": true,
+  "information_boundary_all_false_by_fixture": {
+    "multi_sizing.json": true,
+    "ood_unsupported.json": true,
+    "robust_consistent.json": true,
+    "sparse_high_uncertainty.json": true,
+    "too_close.json": true
+  },
+  "information_boundary_by_fixture": {
+    "multi_sizing.json": {
+      "future_cards_consumed": false,
+      "hero_ev_consumed": false,
+      "model_a_consumed": false,
+      "opponent_hole_cards_consumed": false,
+      "recommendation_consumed": false
+    },
+    "ood_unsupported.json": {
+      "future_cards_consumed": false,
+      "hero_ev_consumed": false,
+      "model_a_consumed": false,
+      "opponent_hole_cards_consumed": false,
+      "recommendation_consumed": false
+    },
+    "robust_consistent.json": {
+      "future_cards_consumed": false,
+      "hero_ev_consumed": false,
+      "model_a_consumed": false,
+      "opponent_hole_cards_consumed": false,
+      "recommendation_consumed": false
+    },
+    "sparse_high_uncertainty.json": {
+      "future_cards_consumed": false,
+      "hero_ev_consumed": false,
+      "model_a_consumed": false,
+      "opponent_hole_cards_consumed": false,
+      "recommendation_consumed": false
+    },
+    "too_close.json": {
+      "future_cards_consumed": false,
+      "hero_ev_consumed": false,
+      "model_a_consumed": false,
+      "opponent_hole_cards_consumed": false,
+      "recommendation_consumed": false
+    }
+  },
+  "information_boundary_flags": [
+    "future_cards_consumed",
+    "hero_ev_consumed",
+    "model_a_consumed",
+    "opponent_hole_cards_consumed",
+    "recommendation_consumed"
+  ],
+  "issue": 425,
+  "model_a_consumed": false,
+  "projected_request_sha256": {
+    "multi_sizing.json": "4c7643cbc7fc5d8ebf9f463574a82327c1cad8e8da64bc828230f3afbc318bb2",
+    "ood_unsupported.json": "e50ff8bdaf93298e1900fcd215e8547c850e798bf8eb56df24caff35389e2122",
+    "robust_consistent.json": "3a35c458bbbd8e1fe8b4c999a19b1c12235547c71f6e6d3ab018d06a57d1e564",
+    "sparse_high_uncertainty.json": "5c3a726fa1087d005d8cb622800f84c5833c4c9e3ea20185e008572108f6b807",
+    "too_close.json": "ce706823bcb4b47e41454de03d8e63d9f88567eae0a2effed746738dbb5229c1"
+  },
+  "recommendation_consumed": false,
+  "route_as_predictive_target": false,
+  "run_dir": "training/runs/20260927_model_b_hero_robustness_consumer_v1",
+  "run_id": "20260927_model_b_hero_robustness_consumer_v1",
+  "scanned_target": "projected #344 harness request (T1->#344 projection)",
+  "schema": "hero-model-b-robustness-consumer-run-independence-proof/v1"
+}

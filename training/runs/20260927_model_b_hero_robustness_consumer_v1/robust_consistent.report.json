@@ -1,0 +1,28 @@
+{
+  "harness_report_sha256": "59871955d26686cb82d2bf17bd6467f1a733d5ef8bd752e069d7c74844bacb3d",
+  "harness_request_sha256": "3a35c458bbbd8e1fe8b4c999a19b1c12235547c71f6e6d3ab018d06a57d1e564",
+  "information_boundary": {
+    "future_cards_consumed": false,
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "opponent_hole_cards_consumed": false,
+    "recommendation_consumed": false,
+    "route_as_predictive_target": false
+  },
+  "input_schema_ref": "hero-model-b-robustness-input/v1",
+  "provenance": {
+    "harness_issue": "344",
+    "parent_issue": "425",
+    "real_issue_314_consumed": false,
+    "real_issue_367_consumed": false,
+    "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+    "synthetic_fixture": true,
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "reason_codes": [
+    "CONSISTENT_WITHIN_POLICY"
+  ],
+  "schema": "hero-model-b-hero-robustness-consumer-report/v1",
+  "status": "CONSISTENT"
+}

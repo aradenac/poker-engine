@@ -1,0 +1,85 @@
+{
+  "chain": {
+    "T1_contract_schema": "contracts/training/model-b-hero-robustness-input.schema.json",
+    "T2_fixtures": "tests/fixtures/model_b_hero_robustness",
+    "T3_contract_bridge": "tools/simulation/model_b_hero_robustness_contract.py",
+    "T4_classifier": "tools/simulation/model_b_hero_robustness_classify.py",
+    "T5_runner_cli": "tools/simulation/model_b_hero_robustness_adapter.py",
+    "T7_run_builder": "tools/simulation/build_model_b_hero_robustness_consumer_run.py"
+  },
+  "consumer_report_schema": "hero-model-b-hero-robustness-consumer-report/v1",
+  "contract": {
+    "id": "hero-model-b-robustness-input/v1",
+    "path": "contracts/training/model-b-hero-robustness-input.schema.json",
+    "sha256": "3c017225ab0c483a364fb1b75efe38c3f97658fad6216ec9a71213253c60ac0f",
+    "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+    "synthetic_fixture": true
+  },
+  "input_schema": "hero-model-b-robustness-input/v1",
+  "inputs": {
+    "context": {
+      "path": "tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json",
+      "sha256": "7efbd8003056e3844495b6fd879d94c76c8d2e01115bb297530def5283dbae80"
+    },
+    "contract": {
+      "path": "contracts/training/model-b-hero-robustness-input.schema.json",
+      "sha256": "3c017225ab0c483a364fb1b75efe38c3f97658fad6216ec9a71213253c60ac0f"
+    },
+    "fixtures": [
+      {
+        "fixture": "multi_sizing.json",
+        "sha256": "36ca01e98822d59bb05dcf25bbc84c83cc3ec4e2951b52e2f6474ad77ba5234e"
+      },
+      {
+        "fixture": "ood_unsupported.json",
+        "sha256": "76c1045269379f94760191acde38c97202bd68a432c89f42f9790c4e097659f6"
+      },
+      {
+        "fixture": "robust_consistent.json",
+        "sha256": "d474333a342aaf8d88b83817bbc8a50bd4f0169db8333645379aa0f47854829c"
+      },
+      {
+        "fixture": "schema_mismatch.json",
+        "sha256": "bb96fc25bdf1f70014b6ea0ffcec394fbb3aa6021b155e0c3a4acb901118893d"
+      },
+      {
+        "fixture": "sparse_high_uncertainty.json",
+        "sha256": "9931f2fbf85de2693eb3bd49b011b5727ecaea6c69acfe8ecaf5253e269bead9"
+      },
+      {
+        "fixture": "too_close.json",
+        "sha256": "6a37e3e514f235a7da677838e134a69ff08f3d8771716d2ff4e2fd04c0595ac3"
+      }
+    ],
+    "fixtures_dir": "tests/fixtures/model_b_hero_robustness",
+    "source_issue_340": {
+      "artifacts": {
+        "candidate_doc": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/candidate.json",
+          "sha256": "621fb4b198e797e73f55bfe4e42f60c70dfc9056376c134fac571f4c36284a1a"
+        },
+        "provenance": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RUN_PROVENANCE.json",
+          "sha256": "38449bff8777bffc5e8ece5786f0c7eb3ad0651838b43e4c7718d4ff00be95b9"
+        },
+        "reference_doc": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/price_agnostic_reference.json",
+          "sha256": "7ef33983891ef21cccd59883d0cf5d386140353ad6515190377cbeda0503d1c6"
+        },
+        "result": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json",
+          "sha256": "3df3d5d74caf1ca636d0b7124e4f6851240016e219373a979fad86500c0372f8"
+        },
+        "summary": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/SUMMARY.json",
+          "sha256": "d68f96d0e19208215b4e4497a39f0256dacba90aa30f9809f44e5689c9063163"
+        }
+      },
+      "run_dir": "training/runs/20260919_model_b_preflop_response_to_price_2a"
+    }
+  },
+  "issue": 425,
+  "run_dir": "training/runs/20260927_model_b_hero_robustness_consumer_v1",
+  "run_id": "20260927_model_b_hero_robustness_consumer_v1",
+  "schema": "hero-model-b-robustness-consumer-input-schema-ref/v1"
+}

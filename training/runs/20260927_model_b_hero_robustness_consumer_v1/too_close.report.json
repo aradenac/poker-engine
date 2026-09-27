@@ -1,0 +1,30 @@
+{
+  "harness_report_sha256": "ace088e4c5c09e29e572443e5c5aca050027481e16cf0cfde19fb14ffc6e9bfb",
+  "harness_request_sha256": "ce706823bcb4b47e41454de03d8e63d9f88567eae0a2effed746738dbb5229c1",
+  "information_boundary": {
+    "future_cards_consumed": false,
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "opponent_hole_cards_consumed": false,
+    "recommendation_consumed": false,
+    "route_as_predictive_target": false
+  },
+  "input_schema_ref": "hero-model-b-robustness-input/v1",
+  "provenance": {
+    "harness_issue": "344",
+    "parent_issue": "425",
+    "real_issue_314_consumed": false,
+    "real_issue_367_consumed": false,
+    "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+    "synthetic_fixture": true,
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "reason_codes": [
+    "ADVANTAGE_WITHIN_TOLERANCE",
+    "PAIRED_DELTA_WITHIN_TOLERANCE",
+    "SUPPORT_STATUS_TOO_CLOSE"
+  ],
+  "schema": "hero-model-b-hero-robustness-consumer-report/v1",
+  "status": "TOO_CLOSE"
+}

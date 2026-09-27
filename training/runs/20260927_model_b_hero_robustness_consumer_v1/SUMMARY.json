@@ -1,0 +1,113 @@
+{
+  "artifacts": {
+    "INDEPENDENCE_PROOF.json": "5912ca16bc7069d8c1c4765e64d1321c21a6235244c35ec8dc41baf9ea05377c",
+    "INPUT_SCHEMA_REF.json": "6b1ab95e0768492565eaac95f380deb3934b870564727e3b70a19d601bef25d0",
+    "RUN_PROVENANCE.json": "3e6c5d7f47aefcc5fa026b8a8a18ed79309375e043460e1a9856851f64cef6ba"
+  },
+  "determinism": {
+    "guarantee": "two regenerations over the same inputs are byte-identical",
+    "verified_by": "tests/simulation/test_model_b_hero_robustness_consumer_run.py",
+    "verify_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --verify-determinism"
+  },
+  "expectations": {
+    "all_match": true,
+    "expected": {
+      "multi_sizing.json": "SENSITIVE",
+      "ood_unsupported.json": "OOD_UNTESTABLE",
+      "robust_consistent.json": "CONSISTENT",
+      "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
+      "too_close.json": "TOO_CLOSE"
+    },
+    "observed": {
+      "multi_sizing.json": "SENSITIVE",
+      "ood_unsupported.json": "OOD_UNTESTABLE",
+      "robust_consistent.json": "CONSISTENT",
+      "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
+      "too_close.json": "TOO_CLOSE"
+    },
+    "rejected": {
+      "schema_mismatch.json": "SCHEMA_MISMATCH"
+    }
+  },
+  "fixture_count": 5,
+  "independence": {
+    "forbidden_hits": [],
+    "independence_clean": true,
+    "information_boundary_all_false": true
+  },
+  "issue": 425,
+  "next_issue": 315,
+  "parent_issue": 315,
+  "regeneration_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --out-dir training/runs/20260927_model_b_hero_robustness_consumer_v1",
+  "report_schema": "hero-model-b-hero-robustness-consumer-report/v1",
+  "reports": {
+    "multi_sizing.report.json": {
+      "fixture": "multi_sizing.json",
+      "harness_report_sha256": "212e94aa5ffb311dd54983f1baaa2ef578d0570657e5e35abde3e2dab52f352b",
+      "harness_request_sha256": "4c7643cbc7fc5d8ebf9f463574a82327c1cad8e8da64bc828230f3afbc318bb2",
+      "reason_codes": [
+        "ADVANTAGE_WITHIN_SENSITIVITY_BAND",
+        "SIZING_VARIATION_WITHIN_SENSITIVITY_BAND",
+        "SUPPORT_STATUS_SENSITIVE"
+      ],
+      "sha256": "8e8ed45bf678da56e4abeafe1d4d097d96cd3fe38bae71ab100ed8357fd59f91",
+      "status": "SENSITIVE"
+    },
+    "ood_unsupported.report.json": {
+      "fixture": "ood_unsupported.json",
+      "harness_report_sha256": "a5ceddcc1815cb340f5ab6436487f2a718384e466650bfb504058fc12985d687",
+      "harness_request_sha256": "e50ff8bdaf93298e1900fcd215e8547c850e798bf8eb56df24caff35389e2122",
+      "reason_codes": [
+        "SUPPORT_OOD",
+        "SUPPORT_STATUS_OOD"
+      ],
+      "sha256": "d40262b18c6c529b3be6d7b3ba661825edea403b319112d920396b5af9966a92",
+      "status": "OOD_UNTESTABLE"
+    },
+    "robust_consistent.report.json": {
+      "fixture": "robust_consistent.json",
+      "harness_report_sha256": "59871955d26686cb82d2bf17bd6467f1a733d5ef8bd752e069d7c74844bacb3d",
+      "harness_request_sha256": "3a35c458bbbd8e1fe8b4c999a19b1c12235547c71f6e6d3ab018d06a57d1e564",
+      "reason_codes": [
+        "CONSISTENT_WITHIN_POLICY"
+      ],
+      "sha256": "daa307f14f02bc6b14dc83481cd44f41783a67254e54c6ac4fa1800e0f9baf80",
+      "status": "CONSISTENT"
+    },
+    "sparse_high_uncertainty.report.json": {
+      "fixture": "sparse_high_uncertainty.json",
+      "harness_report_sha256": "a2b262c6237bf9fc641f21a20ece856807a23f38ffd9a8d3651710e5e3de0b14",
+      "harness_request_sha256": "5c3a726fa1087d005d8cb622800f84c5833c4c9e3ea20185e008572108f6b807",
+      "reason_codes": [
+        "CI95_WIDTH_EXCEEDS_POLICY",
+        "SPARSE_SUPPORT_TIER",
+        "SUPPORT_STATUS_INSUFFICIENT"
+      ],
+      "sha256": "e19da43c63a8e03798836b03fc648b040e4f8393e419f1aa1244d5e716aebacc",
+      "status": "INSUFFICIENT_SUPPORT"
+    },
+    "too_close.report.json": {
+      "fixture": "too_close.json",
+      "harness_report_sha256": "ace088e4c5c09e29e572443e5c5aca050027481e16cf0cfde19fb14ffc6e9bfb",
+      "harness_request_sha256": "ce706823bcb4b47e41454de03d8e63d9f88567eae0a2effed746738dbb5229c1",
+      "reason_codes": [
+        "ADVANTAGE_WITHIN_TOLERANCE",
+        "PAIRED_DELTA_WITHIN_TOLERANCE",
+        "SUPPORT_STATUS_TOO_CLOSE"
+      ],
+      "sha256": "61c683edc1a25571f390727d8a9d88370a3c5368c1d9a8f513a1b773026520fd",
+      "status": "TOO_CLOSE"
+    }
+  },
+  "run_dir": "training/runs/20260927_model_b_hero_robustness_consumer_v1",
+  "run_id": "20260927_model_b_hero_robustness_consumer_v1",
+  "schema": "hero-model-b-robustness-consumer-run-summary/v1",
+  "status": "READY_FOR_INTEGRATION",
+  "statuses": {
+    "CONSISTENT": 1,
+    "INSUFFICIENT_SUPPORT": 1,
+    "OOD_UNTESTABLE": 1,
+    "SENSITIVE": 1,
+    "TOO_CLOSE": 1
+  }
+}
