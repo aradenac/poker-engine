@@ -54,6 +54,18 @@ its own nullable `ev`, `uncertainty`, `paired_delta`, `route_source`, `support`
 and `posterior_refs`. `decision_id`, `context_id` and `hero_position` are
 optional public Hero-side identity and carry no private or predictive signal.
 
+Until the real evidence exists, the `uncertainty` envelope of the Hero entry
+**and of every compared alternative** is read strictly and fail-closed: `ci95`
+must be two finite numbers with `low <= high`, `width_bb` must be a finite
+non-negative number, and the declared width must agree with `high - low` within a
+small, explicit numerical tolerance (`1e-9` bb) that only absorbs float
+rounding (`1.45 - 1.39` is `0.06000000000000005`, not `0.06`). A contradiction
+(`ci95 = [-10, 10]` declared as `width_bb = 0.06`) is invalid: the width is never
+re-derived or shrunk to make a claim look supported, and the width compared to
+the `MAX_CI95_WIDTH_BB` policy is always the one derived from the bounds. A
+present-but-null envelope stays legal and means *not measured*: it is classified
+`INSUFFICIENT_SUPPORT` and can never produce `CONSISTENT`.
+
 `support.tier` (e.g. `LOW` / `MEDIUM` / `HIGH` / `VERY_HIGH` / `UNKNOWN`) is
 descriptive only: a tier never upgrades an unsupported status and a high tier is
 never a robustness proof.

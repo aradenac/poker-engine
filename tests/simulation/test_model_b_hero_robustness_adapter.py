@@ -467,5 +467,80 @@ class BoundaryTest(unittest.TestCase):
                 self.assertEqual(report["provenance"]["harness_issue"], "344")
 
 
+class UncertaintyRegressionTest(unittest.TestCase):
+    """End-to-end CI95 width regressions (task ``backlog-wxq``).
+
+    The runner may only emit ``CONSISTENT`` when the Hero envelope *and* every
+    compared alternative envelope is coherent and within policy. An incoherent
+    envelope is refused fail-closed (no report, no status); a secondary
+    alternative without (or with an excessive) uncertainty turns the verdict into
+    ``INSUFFICIENT_SUPPORT`` instead of claiming support.
+    """
+
+    def test_secondary_alternative_without_uncertainty_is_not_consistent(self) -> None:
+        self.assertEqual(report_for("robust_consistent.json")["status"], "CONSISTENT")
+
+        document = fixture("robust_consistent.json")
+        document["hero_entry"]["alternatives"][1]["uncertainty"] = None
+        report = adapter.build_report(document, context=context(), **docs_340())
+        self.assertEqual(report["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_MISSING", report["reason_codes"])
+        adapter.validate_report(report)
+
+    def test_secondary_alternative_with_excessive_uncertainty_is_not_consistent(self) -> None:
+        document = fixture("robust_consistent.json")
+        document["hero_entry"]["alternatives"][1]["uncertainty"] = {
+            "ci95": [-4.0, 4.0],
+            "width_bb": 8.0,
+            "source": "synthetic_wide_ci95_v1",
+        }
+        report = adapter.build_report(document, context=context(), **docs_340())
+        self.assertEqual(report["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("CI95_WIDTH_EXCEEDS_POLICY", report["reason_codes"])
+
+    def test_broken_secondary_alternative_verdict_is_order_independent(self) -> None:
+        document = fixture("multi_sizing.json")
+        document["hero_entry"]["alternatives"][-1]["uncertainty"] = None
+        first = adapter.build_report(document, context=context(), **docs_340())
+
+        flipped = copy.deepcopy(document)
+        flipped["hero_entry"]["alternatives"] = list(
+            reversed(flipped["hero_entry"]["alternatives"])
+        )
+        second = adapter.build_report(flipped, context=context(), **docs_340())
+
+        self.assertEqual(first["status"], second["status"])
+        self.assertEqual(first["reason_codes"], second["reason_codes"])
+        self.assertEqual(first["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_MISSING", first["reason_codes"])
+
+    def test_width_contradicting_the_bounds_fails_closed(self) -> None:
+        envelope = {
+            "ci95": [-10.0, 10.0],
+            "width_bb": 0.06,
+            "source": "synthetic_incoherent_ci95_v1",
+        }
+        for label, apply in (
+            ("hero_entry", lambda doc: doc["hero_entry"].__setitem__("uncertainty", envelope)),
+            (
+                "alternatives[1]",
+                lambda doc: doc["hero_entry"]["alternatives"][1].__setitem__(
+                    "uncertainty", envelope
+                ),
+            ),
+        ):
+            with self.subTest(target=label):
+                bad = fixture("robust_consistent.json")
+                apply(bad)
+                with self.assertRaises(adapter.AdapterError) as raised:
+                    adapter.build_report(bad, context=context(), **docs_340())
+                self.assertEqual(
+                    raised.exception.reason_code, "UNCERTAINTY_WIDTH_MISMATCH"
+                )
+                payload = raised.exception.to_dict()
+                self.assertEqual(payload["outcome"], "FAIL_CLOSED")
+                self.assertNotIn("status", payload)
+
+
 if __name__ == "__main__":
     unittest.main()

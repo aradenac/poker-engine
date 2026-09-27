@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.simulation.model_b_hero_robustness_classify import (  # noqa: E402
+    CI95_WIDTH_TOLERANCE_BB,
     DEFAULT_POLICY,
     MAX_CI95_WIDTH_BB,
     REASON_CODES,
@@ -226,6 +227,184 @@ class PrecedenceTests(unittest.TestCase):
         ]
         for probe in probes:
             self.assertIn(classify(probe)["status"], STATUSES)
+
+
+class UncertaintySemanticsTests(unittest.TestCase):
+    """Regressions for the CI95 width semantics (task ``backlog-wxq``).
+
+    The width used by the classifier is always the one *derived from the
+    ``ci95`` bounds*; a declared ``width_bb`` is a claim that must agree with
+    those bounds within :data:`CI95_WIDTH_TOLERANCE_BB`. An incoherent envelope
+    is never a support claim, and the Hero entry is not privileged: every
+    compared alternative is verified as strictly.
+    """
+
+    def _mismatch_envelope(self) -> dict:
+        return {"ci95": [-10.0, 10.0], "width_bb": 0.06, "source": "s"}
+
+    def test_declared_width_contradicting_the_bounds_cannot_be_consistent(self) -> None:
+        entry = _entry(uncertainty=self._mismatch_envelope())
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_WIDTH_MISMATCH", result["reason_codes"])
+        self.assertNotIn("CONSISTENT_WITHIN_POLICY", result["reason_codes"])
+
+    def test_alternative_width_contradicting_the_bounds_cannot_be_consistent(self) -> None:
+        entry = _entry(
+            alternatives=[_alternative(ev=0.5, uncertainty=self._mismatch_envelope())]
+        )
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_WIDTH_MISMATCH", result["reason_codes"])
+
+    def test_reversed_bounds_are_insufficient(self) -> None:
+        entry = _entry(uncertainty={"ci95": [1.0, 0.5], "width_bb": 0.5, "source": "s"})
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_INVALID", result["reason_codes"])
+
+    def test_non_finite_or_malformed_bounds_are_insufficient(self) -> None:
+        probes = (
+            [float("nan"), 1.0],
+            [0.0, float("inf")],
+            [0.0, float("-inf")],
+            [0.5],
+            ["0.0", 1.0],
+            [None, 1.0],
+            "0.0,1.0",
+        )
+        for ci95 in probes:
+            with self.subTest(ci95=ci95):
+                entry = _entry(
+                    uncertainty={"ci95": ci95, "width_bb": 0.06, "source": "s"}
+                )
+                result = classify(entry)
+                self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+                self.assertIn("UNCERTAINTY_INVALID", result["reason_codes"])
+
+    def test_invalid_declared_width_is_insufficient(self) -> None:
+        for declared in (-0.06, float("nan"), float("inf"), "0.06", None, True):
+            with self.subTest(width_bb=declared):
+                entry = _entry(
+                    uncertainty={"ci95": [0.97, 1.03], "width_bb": declared, "source": "s"}
+                )
+                result = classify(entry)
+                self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+                self.assertIn("UNCERTAINTY_INVALID", result["reason_codes"])
+
+    def test_missing_declared_width_is_insufficient(self) -> None:
+        entry = _entry(uncertainty={"ci95": [0.97, 1.03], "source": "s"})
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_INVALID", result["reason_codes"])
+
+    def test_coherent_width_above_the_policy_is_insufficient(self) -> None:
+        entry = _entry(uncertainty={"ci95": [0.0, 6.0], "width_bb": 6.0, "source": "s"})
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("CI95_WIDTH_EXCEEDS_POLICY", result["reason_codes"])
+        self.assertNotIn("UNCERTAINTY_WIDTH_MISMATCH", result["reason_codes"])
+        self.assertGreater(6.0, MAX_CI95_WIDTH_BB)
+
+    def test_coherent_width_at_the_policy_boundary_is_accepted(self) -> None:
+        entry = _entry(
+            uncertainty={
+                "ci95": [1.0, 1.0 + MAX_CI95_WIDTH_BB],
+                "width_bb": MAX_CI95_WIDTH_BB,
+                "source": "s",
+            }
+        )
+        self.assertEqual(classify(entry)["status"], "CONSISTENT")
+
+    def test_float_rounding_of_a_coherent_interval_is_tolerated(self) -> None:
+        # ``1.45 - 1.39 == 0.06000000000000005`` in binary floating point.
+        noisy = 1.45 - 1.39
+        self.assertNotEqual(noisy, 0.06)
+        self.assertLessEqual(abs(noisy - 0.06), CI95_WIDTH_TOLERANCE_BB)
+        for declared in (0.06, noisy):
+            with self.subTest(width_bb=declared):
+                entry = _entry(
+                    uncertainty={"ci95": [1.39, 1.45], "width_bb": declared, "source": "s"}
+                )
+                self.assertEqual(classify(entry)["status"], "CONSISTENT")
+        self.assertGreater(CI95_WIDTH_TOLERANCE_BB, 0.0)
+
+    def test_secondary_alternative_without_uncertainty_forbids_consistent(self) -> None:
+        entry = _entry(
+            alternatives=[
+                _alternative(alternative_id="BEST", ev=0.5),
+                _alternative(alternative_id="SECOND", ev=0.2, uncertainty=None),
+            ]
+        )
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_MISSING", result["reason_codes"])
+
+    def test_secondary_alternative_with_malformed_uncertainty_forbids_consistent(self) -> None:
+        entry = _entry(
+            alternatives=[
+                _alternative(alternative_id="BEST", ev=0.5),
+                _alternative(
+                    alternative_id="SECOND",
+                    ev=0.2,
+                    uncertainty={"ci95": [0.1], "width_bb": 0.06, "source": "s"},
+                ),
+            ]
+        )
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_INVALID", result["reason_codes"])
+
+    def test_secondary_alternative_with_excessive_uncertainty_forbids_consistent(self) -> None:
+        entry = _entry(
+            alternatives=[
+                _alternative(alternative_id="BEST", ev=0.5),
+                _alternative(
+                    alternative_id="SECOND",
+                    ev=0.2,
+                    uncertainty={"ci95": [-4.0, 4.0], "width_bb": 8.0, "source": "s"},
+                ),
+            ]
+        )
+        result = classify(entry)
+        self.assertEqual(result["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("CI95_WIDTH_EXCEEDS_POLICY", result["reason_codes"])
+
+    def test_ood_precedence_survives_an_incoherent_envelope(self) -> None:
+        entry = _entry(
+            support={"status": "OOD_UNTESTABLE", "tier": "UNKNOWN", "ood": True},
+            uncertainty=self._mismatch_envelope(),
+        )
+        self.assertEqual(classify(entry)["status"], "OOD_UNTESTABLE")
+
+    def test_alternative_order_does_not_change_a_broken_uncertainty_verdict(self) -> None:
+        alternatives = [
+            _alternative(alternative_id="BEST", ev=0.5),
+            _alternative(
+                alternative_id="MISMATCH", ev=0.2, uncertainty=self._mismatch_envelope()
+            ),
+            _alternative(alternative_id="MISSING", ev=0.1, uncertainty=None),
+            _alternative(
+                alternative_id="WIDE",
+                ev=0.05,
+                uncertainty={"ci95": [-4.0, 4.0], "width_bb": 8.0, "source": "s"},
+            ),
+        ]
+        entry = _entry(alternatives=copy.deepcopy(alternatives))
+        flipped = _entry(alternatives=list(reversed(copy.deepcopy(alternatives))))
+        first = classify(entry)
+        second = classify(flipped)
+        self.assertEqual(first, second)
+        self.assertEqual(first["status"], "INSUFFICIENT_SUPPORT")
+        self.assertEqual(
+            set(first["reason_codes"]),
+            {
+                "UNCERTAINTY_MISSING",
+                "UNCERTAINTY_WIDTH_MISMATCH",
+                "CI95_WIDTH_EXCEEDS_POLICY",
+            },
+        )
+        self.assertTrue(set(first["reason_codes"]) <= REASON_CODES)
 
 
 class FailClosedTests(unittest.TestCase):

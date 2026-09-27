@@ -51,6 +51,13 @@ from tools.simulation.model_b_preflop_sensitivity_harness import (
     SUPPORTED_HERO_ACTIONS,
     validate_request as validate_harness_request,
 )
+#: The semantic CI95 rules are owned by the canonical T4 classifier (the width
+#: is derived from the ``ci95`` bounds and the declared ``width_bb`` is verified
+#: with an explicit numerical tolerance); the contract layer reuses the very
+#: same constant instead of re-declaring a second tolerance.
+from tools.simulation.model_b_hero_robustness_classify import (
+    CI95_WIDTH_TOLERANCE_BB,
+)
 
 __all__ = [
     "RobustnessContractError",
@@ -65,6 +72,7 @@ __all__ = [
     "INFORMATION_BOUNDARY_FLAGS",
     "HERO_ROBUSTNESS_BOUNDARY_FLAGS",
     "SUPPORT_STATUSES",
+    "CI95_WIDTH_TOLERANCE_BB",
     "FORBIDDEN_MODEL_FEATURES",
     "FORBIDDEN_ALTERNATIVE_LEAK_FIELDS",
     "FORBIDDEN_LEAK_FIELDS",
@@ -478,6 +486,73 @@ def _validate_support(support: Any, path: str) -> None:
         )
 
 
+def _validate_uncertainty(uncertainty: Any, path: str) -> None:
+    """Fail closed on a malformed or incoherent uncertainty envelope.
+
+    A present-but-null ``uncertainty`` is the schema's "not measured" marker: it
+    is legal and is classified as ``INSUFFICIENT_SUPPORT`` by the T4 classifier,
+    never silently accepted as support. A non-null envelope must be structurally
+    sound *and* numerically coherent:
+
+    * ``ci95`` is exactly two finite numbers with ``low <= high`` -- reversed or
+      non-finite bounds are refused;
+    * ``width_bb`` is a finite, non-negative number;
+    * the declared ``width_bb`` agrees with the width derived from the bounds
+      (``high - low``) within :data:`CI95_WIDTH_TOLERANCE_BB`. A contradiction
+      is refused as ``UNCERTAINTY_WIDTH_MISMATCH``: the envelope is never
+      repaired, re-derived or silently shrunk to make a claim look supported.
+    """
+
+    if uncertainty is None:
+        return
+    if not isinstance(uncertainty, Mapping):
+        raise RobustnessContractError(
+            "UNCERTAINTY_INVALID",
+            f"{path}.uncertainty must be an object or null, "
+            f"got {type(uncertainty).__name__}",
+        )
+
+    ci95 = uncertainty.get("ci95")
+    bounds: list[float] | None = None
+    if isinstance(ci95, (list, tuple)) and len(ci95) == 2:
+        if all(_is_finite_number(endpoint) for endpoint in ci95):
+            bounds = [float(endpoint) for endpoint in ci95]
+    if bounds is None or bounds[0] > bounds[1]:
+        raise RobustnessContractError(
+            "UNCERTAINTY_INVALID",
+            f"{path}.uncertainty.ci95 must be two finite ascending numbers "
+            f"(low <= high), got {ci95!r}",
+            details={"ci95": ci95},
+        )
+    width = bounds[1] - bounds[0]
+
+    declared = uncertainty.get("width_bb")
+    if not _is_finite_number(declared) or float(declared) < 0.0:
+        raise RobustnessContractError(
+            "UNCERTAINTY_INVALID",
+            f"{path}.uncertainty.width_bb must be a finite non-negative number, "
+            f"got {declared!r}",
+            details={"width_bb": declared},
+        )
+    if abs(float(declared) - width) > CI95_WIDTH_TOLERANCE_BB:
+        raise RobustnessContractError(
+            "UNCERTAINTY_WIDTH_MISMATCH",
+            f"{path}.uncertainty.width_bb {float(declared)!r} contradicts the "
+            f"ci95 bounds {bounds!r} (derived width {width!r})",
+            details={
+                "width_bb": float(declared),
+                "derived_width_bb": width,
+                "ci95": bounds,
+                "tolerance_bb": CI95_WIDTH_TOLERANCE_BB,
+            },
+        )
+    if not isinstance(uncertainty.get("source"), str) or not uncertainty.get("source"):
+        raise RobustnessContractError(
+            "UNCERTAINTY_INVALID",
+            f"{path}.uncertainty.source must be a non-empty string",
+        )
+
+
 def _validate_hero_entry(document: Mapping[str, Any]) -> Mapping[str, Any]:
     hero_entry = document.get("hero_entry")
     if not isinstance(hero_entry, Mapping):
@@ -486,6 +561,7 @@ def _validate_hero_entry(document: Mapping[str, Any]) -> Mapping[str, Any]:
             "robustness input hero_entry block is required",
         )
     _validate_support(hero_entry.get("support"), "$.hero_entry")
+    _validate_uncertainty(hero_entry.get("uncertainty"), "$.hero_entry")
     alternatives = hero_entry.get("alternatives")
     if not isinstance(alternatives, list) or not alternatives:
         raise RobustnessContractError(
@@ -511,6 +587,7 @@ def _validate_hero_entry(document: Mapping[str, Any]) -> Mapping[str, Any]:
             )
         seen.add(alternative_id)
         _validate_support(alternative.get("support"), path)
+        _validate_uncertainty(alternative.get("uncertainty"), path)
     return hero_entry
 
 

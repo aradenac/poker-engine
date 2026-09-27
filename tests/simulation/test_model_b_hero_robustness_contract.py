@@ -32,6 +32,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from tools.simulation import model_b_hero_robustness_contract as contract  # noqa: E402
+from tools.simulation import model_b_hero_robustness_classify as classifier  # noqa: E402
 from tools.simulation import model_b_preflop_sensitivity_harness as harness  # noqa: E402
 
 FIXTURES = ROOT / "tests/fixtures/model_b_hero_robustness"
@@ -314,6 +315,109 @@ class RobustnessContractTest(unittest.TestCase):
         self.assertIs(contract.load_input, contract.load_robustness_input)
         self.assertIs(contract.load_and_validate, contract.load_robustness_input)
         self.assertIs(contract.project_request, contract.project_to_harness_request)
+
+
+class UncertaintySemanticsTest(unittest.TestCase):
+    """Semantic CI95 width regressions (task ``backlog-wxq``).
+
+    The contract is the fail-closed entry point, so an incoherent envelope is
+    *refused* here instead of being repaired, re-derived or silently shrunk. The
+    rule is the canonical one owned by the T4 classifier: the width is derived
+    from the ``ci95`` bounds and the declared ``width_bb`` must agree with it
+    within the shared numerical tolerance.
+    """
+
+    def document(self) -> dict:
+        return copy.deepcopy(load_json(FIXTURES / "robust_consistent.json"))
+
+    def test_ci95_tolerance_is_shared_with_the_canonical_classifier(self) -> None:
+        self.assertEqual(
+            contract.CI95_WIDTH_TOLERANCE_BB, classifier.CI95_WIDTH_TOLERANCE_BB
+        )
+        self.assertGreater(contract.CI95_WIDTH_TOLERANCE_BB, 0.0)
+
+    def test_width_contradicting_the_bounds_fails_closed(self) -> None:
+        envelope = {"ci95": [-10.0, 10.0], "width_bb": 0.06, "source": "synthetic"}
+        for label, apply in (
+            ("hero_entry", lambda doc: doc["hero_entry"].__setitem__("uncertainty", envelope)),
+            (
+                "alternatives[0]",
+                lambda doc: doc["hero_entry"]["alternatives"][0].__setitem__(
+                    "uncertainty", envelope
+                ),
+            ),
+        ):
+            with self.subTest(target=label):
+                bad = self.document()
+                apply(bad)
+                with self.assertRaises(contract.RobustnessContractError) as raised:
+                    contract.validate_robustness_input(bad)
+                self.assertEqual(raised.exception.reason_code, "UNCERTAINTY_WIDTH_MISMATCH")
+                self.assertIn("UNCERTAINTY_WIDTH_MISMATCH", raised.exception.reason_codes)
+                self.assertEqual(
+                    raised.exception.to_dict()["status"], "FAIL_CLOSED"
+                )
+
+    def test_reversed_or_non_finite_bounds_fail_closed(self) -> None:
+        probes = (
+            [1.0, 0.5],
+            [float("nan"), 1.0],
+            [0.0, float("inf")],
+            [0.0, float("-inf")],
+            [0.5],
+            ["0.0", 1.0],
+        )
+        for ci95 in probes:
+            with self.subTest(ci95=ci95):
+                bad = self.document()
+                bad["hero_entry"]["uncertainty"] = {
+                    "ci95": ci95,
+                    "width_bb": 0.06,
+                    "source": "synthetic",
+                }
+                with self.assertRaises(contract.RobustnessContractError) as raised:
+                    contract.validate_robustness_input(bad)
+                self.assertEqual(raised.exception.reason_code, "UNCERTAINTY_INVALID")
+
+    def test_invalid_declared_width_fails_closed(self) -> None:
+        for declared in (-0.06, float("nan"), float("inf"), "0.06", None, True):
+            with self.subTest(width_bb=declared):
+                bad = self.document()
+                bad["hero_entry"]["uncertainty"]["width_bb"] = declared
+                with self.assertRaises(contract.RobustnessContractError) as raised:
+                    contract.validate_robustness_input(bad)
+                self.assertEqual(raised.exception.reason_code, "UNCERTAINTY_INVALID")
+
+        bad = self.document()
+        bad["hero_entry"]["uncertainty"].pop("width_bb")
+        with self.assertRaises(contract.RobustnessContractError) as raised:
+            contract.validate_robustness_input(bad)
+        self.assertEqual(raised.exception.reason_code, "UNCERTAINTY_INVALID")
+
+    def test_coherent_widths_are_accepted_despite_float_rounding(self) -> None:
+        document = self.document()
+        document["hero_entry"]["uncertainty"] = {
+            "ci95": [1.39, 1.45],
+            # ``1.45 - 1.39 == 0.06000000000000005``: the usual float rounding.
+            "width_bb": 1.45 - 1.39,
+            "source": "synthetic",
+        }
+        self.assertIs(contract.validate_robustness_input(document), document)
+
+    def test_null_uncertainty_is_legal_but_never_support(self) -> None:
+        document = self.document()
+        document["hero_entry"]["uncertainty"] = None
+        self.assertIs(contract.validate_robustness_input(document), document)
+        verdict = classifier.classify(document)
+        self.assertEqual(verdict["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_MISSING", verdict["reason_codes"])
+
+        secondary = self.document()
+        secondary["hero_entry"]["alternatives"][1]["uncertainty"] = None
+        self.assertIs(contract.validate_robustness_input(secondary), secondary)
+        verdict = classifier.classify(secondary)
+        self.assertEqual(verdict["status"], "INSUFFICIENT_SUPPORT")
+        self.assertIn("UNCERTAINTY_MISSING", verdict["reason_codes"])
 
 
 if __name__ == "__main__":

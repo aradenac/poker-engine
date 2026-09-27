@@ -21,8 +21,10 @@ Precedence is fixed and strict, most severe first
    closed vocabulary, so the comparison cannot be tested at all.
 2. ``INSUFFICIENT_SUPPORT`` -- the declared support is present but sparse
    (``INSUFFICIENT_SUPPORT`` status or a sparse tier), the comparison set /
-   evaluated EV is missing, or the Monte-Carlo uncertainty envelope is missing,
-   malformed or wider than :data:`MAX_CI95_WIDTH_BB`.
+   evaluated EV is missing, or the Monte-Carlo uncertainty envelope of the Hero
+   entry or of any compared alternative is missing, malformed, incoherent
+   (``width_bb`` contradicting the ``ci95`` bounds, reversed or non-finite
+   bounds, invalid declared width) or wider than :data:`MAX_CI95_WIDTH_BB`.
 3. ``TOO_CLOSE`` -- the alternative standing sits inside the noise band
    (:data:`TOO_CLOSE_DELTA_BB`): the runner-up is quasi ex-aequo or an explicit
    ``paired_delta`` sits in the band, so no ordering can be asserted. ``TOO_CLOSE``
@@ -62,6 +64,7 @@ __all__ = [
     "TOO_CLOSE_DELTA_BB",
     "SENSITIVE_DELTA_BB",
     "MAX_CI95_WIDTH_BB",
+    "CI95_WIDTH_TOLERANCE_BB",
     "SPARSE_TIERS",
     "REQUIRE_UNCERTAINTY",
     "RobustnessPolicy",
@@ -132,6 +135,15 @@ SENSITIVE_DELTA_BB = 0.25
 #: ``INSUFFICIENT_SUPPORT``.
 MAX_CI95_WIDTH_BB = 1.0
 
+#: Absolute numerical tolerance (bb) used when the declared
+#: ``uncertainty.width_bb`` is verified against the width *derived from the*
+#: ``ci95`` bounds. Float arithmetic on the endpoints reintroduces a few ulps of
+#: noise (``1.45 - 1.39 == 0.06000000000000005``), so the coherence check is an
+#: explicit, named tolerance instead of an exact equality -- and the width used
+#: for the policy comparison is always the derived one, so a declared width can
+#: never shrink (nor widen) a measured envelope.
+CI95_WIDTH_TOLERANCE_BB = 1e-9
+
 #: Support tiers that mean "sparse support" and therefore ``INSUFFICIENT_SUPPORT``
 #: while the support verdict is present. A tier never upgrades a status: this set
 #: only adds severity, it never relaxes one.
@@ -189,6 +201,7 @@ _INSUFFICIENT_REASON_CODES = frozenset(
         "EV_INVALID",
         "UNCERTAINTY_MISSING",
         "UNCERTAINTY_INVALID",
+        "UNCERTAINTY_WIDTH_MISMATCH",
         "CI95_WIDTH_EXCEEDS_POLICY",
     }
 )
@@ -253,6 +266,7 @@ class RobustnessPolicy:
     too_close_delta_bb: float = TOO_CLOSE_DELTA_BB
     sensitive_delta_bb: float = SENSITIVE_DELTA_BB
     max_ci95_width_bb: float = MAX_CI95_WIDTH_BB
+    ci95_width_tolerance_bb: float = CI95_WIDTH_TOLERANCE_BB
     require_uncertainty: bool = REQUIRE_UNCERTAINTY
 
 
@@ -274,21 +288,28 @@ def _coerce_policy(policy: Any) -> RobustnessPolicy:
             too_close_delta_bb=_get("too_close_delta_bb"),
             sensitive_delta_bb=_get("sensitive_delta_bb"),
             max_ci95_width_bb=_get("max_ci95_width_bb"),
+            ci95_width_tolerance_bb=_get("ci95_width_tolerance_bb"),
             require_uncertainty=_get("require_uncertainty"),
         )
     close_band = _finite(candidate.too_close_delta_bb, name="too_close_delta_bb")
     sensitive_band = _finite(candidate.sensitive_delta_bb, name="sensitive_delta_bb")
     max_width = _finite(candidate.max_ci95_width_bb, name="max_ci95_width_bb")
+    width_tolerance = _finite(
+        candidate.ci95_width_tolerance_bb, name="ci95_width_tolerance_bb"
+    )
     if close_band < 0:
         raise ValueError("too_close_delta_bb must be non-negative")
     if sensitive_band < close_band:
         raise ValueError("sensitive_delta_bb must be >= too_close_delta_bb")
     if max_width < 0:
         raise ValueError("max_ci95_width_bb must be non-negative")
+    if width_tolerance < 0:
+        raise ValueError("ci95_width_tolerance_bb must be non-negative")
     return RobustnessPolicy(
         too_close_delta_bb=close_band,
         sensitive_delta_bb=sensitive_band,
         max_ci95_width_bb=max_width,
+        ci95_width_tolerance_bb=width_tolerance,
         require_uncertainty=bool(candidate.require_uncertainty),
     )
 
@@ -314,6 +335,22 @@ def _finite_or_none(value: Any) -> float | None:
         result = float(value)
     except (TypeError, ValueError):
         return None
+    if not math.isfinite(result):
+        return None
+    return result
+
+
+def _envelope_number(value: Any) -> float | None:
+    """Return ``value`` as a finite float only when it is a real JSON number.
+
+    The uncertainty envelope is already evaluated evidence, so it is read
+    strictly: a numeric *string* (``"0.06"``) is malformed input and is refused
+    instead of being coerced, exactly like a non-finite or non-numeric value.
+    """
+
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    result = float(value)
     if not math.isfinite(result):
         return None
     return result
@@ -351,25 +388,79 @@ def _require_fields(
         )
 
 
-def _uncertainty_width(value: Any) -> float | None:
-    """Return the CI95 width of an uncertainty envelope, or ``None`` if invalid."""
+def _uncertainty_diagnostic(
+    value: Any,
+    *,
+    tolerance: float,
+) -> tuple[str | None, float | None]:
+    """Verify one uncertainty envelope and return ``(reason_code, width)``.
 
-    if value is None:
-        return None
+    ``reason_code`` is ``None`` when the envelope is coherent; otherwise it is
+    the ``INSUFFICIENT_SUPPORT`` diagnostic to record. ``width`` is the width
+    **derived from the ``ci95`` bounds** whenever those bounds are usable, even
+    when the envelope is rejected for another reason, so the policy comparison
+    can never be driven by a declared value.
+
+    Fail-closed rules:
+
+    * a non-mapping envelope, a ``ci95`` that is not exactly two finite JSON
+      numbers, or reversed bounds (``low > high``) is ``UNCERTAINTY_INVALID``;
+    * a missing/``null``/non-numeric (a numeric string is malformed, never
+      coerced)/non-finite/negative declared ``width_bb`` is
+      ``UNCERTAINTY_INVALID`` as well;
+    * a declared ``width_bb`` that contradicts ``high - low`` by more than the
+      explicit ``tolerance`` is ``UNCERTAINTY_WIDTH_MISMATCH``.
+    """
+
     if not isinstance(value, Mapping):
-        return None
+        return "UNCERTAINTY_INVALID", None
     ci95 = value.get("ci95")
-    if not isinstance(ci95, Sequence) or isinstance(ci95, (str, bytes)) or len(ci95) != 2:
-        return None
-    low = _finite_or_none(ci95[0])
-    high = _finite_or_none(ci95[1])
+    if (
+        not isinstance(ci95, Sequence)
+        or isinstance(ci95, (str, bytes))
+        or len(ci95) != 2
+    ):
+        return "UNCERTAINTY_INVALID", None
+    low = _envelope_number(ci95[0])
+    high = _envelope_number(ci95[1])
     if low is None or high is None or low > high:
-        return None
-    reported = _finite_or_none(value.get("width_bb"))
-    width = reported if reported is not None else high - low
-    if width < 0:
-        return None
-    return width
+        return "UNCERTAINTY_INVALID", None
+    width = high - low
+
+    reported = _envelope_number(value.get("width_bb"))
+    if reported is None or reported < 0:
+        return "UNCERTAINTY_INVALID", width
+    if abs(reported - width) > tolerance:
+        return "UNCERTAINTY_WIDTH_MISMATCH", width
+    return None, width
+
+
+def _check_uncertainty(
+    entry: Mapping[str, Any],
+    buckets: dict[str, set[str]],
+    policy: RobustnessPolicy,
+) -> None:
+    """Fold one entry's ``uncertainty`` envelope into the reason buckets.
+
+    A present-but-null envelope is the schema's "not measured" marker and is
+    reported as ``UNCERTAINTY_MISSING``; an incoherent envelope is reported with
+    its own diagnostic; a coherent envelope wider than
+    :attr:`RobustnessPolicy.max_ci95_width_bb` is ``CI95_WIDTH_EXCEEDS_POLICY``.
+    """
+
+    uncertainty = entry.get("uncertainty")
+    if uncertainty is None:
+        if policy.require_uncertainty:
+            buckets["INSUFFICIENT_SUPPORT"].add("UNCERTAINTY_MISSING")
+        return
+    reason_code, width = _uncertainty_diagnostic(
+        uncertainty, tolerance=policy.ci95_width_tolerance_bb
+    )
+    if reason_code is not None:
+        buckets["INSUFFICIENT_SUPPORT"].add(reason_code)
+        return
+    if width is not None and width > policy.max_ci95_width_bb + _EPS:
+        buckets["INSUFFICIENT_SUPPORT"].add("CI95_WIDTH_EXCEEDS_POLICY")
 
 
 def _paired_ci_includes_zero(value: Any) -> bool:
@@ -465,16 +556,8 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
     elif hero_ev is None:
         buckets["INSUFFICIENT_SUPPORT"].add("EV_INVALID")
 
-    hero_uncertainty = entry.get("uncertainty")
-    if hero_uncertainty is None:
-        if effective.require_uncertainty:
-            buckets["INSUFFICIENT_SUPPORT"].add("UNCERTAINTY_MISSING")
-    else:
-        width = _uncertainty_width(hero_uncertainty)
-        if width is None:
-            buckets["INSUFFICIENT_SUPPORT"].add("UNCERTAINTY_INVALID")
-        elif width > effective.max_ci95_width_bb + _EPS:
-            buckets["INSUFFICIENT_SUPPORT"].add("CI95_WIDTH_EXCEEDS_POLICY")
+    # The Hero envelope is verified before any comparison can be declared.
+    _check_uncertainty(entry, buckets, effective)
 
     hero_sizing = _finite_or_none(entry.get("sizing"))
 
@@ -508,6 +591,11 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
         )
         _support_verdict(raw, buckets)
 
+        # Every alternative of the comparison set is verified as strictly as the
+        # Hero entry: a secondary alternative that carries no, a malformed or a
+        # too-wide uncertainty envelope forbids CONSISTENT as well.
+        _check_uncertainty(raw, buckets, effective)
+
         raw_ev = raw.get("ev")
         ev = _finite_or_none(raw_ev)
         if raw_ev is None:
@@ -522,7 +610,6 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
                 "ev": ev,
                 "paired_delta": _finite_or_none(raw.get("paired_delta")),
                 "paired_delta_ci95": raw.get("paired_delta_ci95"),
-                "uncertainty": raw.get("uncertainty"),
             }
         )
 
@@ -533,17 +620,6 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
 
     if ranked:
         best = ranked[0]
-
-        # The top-ranked alternative must be verified as well as the Hero entry.
-        if best["uncertainty"] is None:
-            if effective.require_uncertainty:
-                buckets["INSUFFICIENT_SUPPORT"].add("UNCERTAINTY_MISSING")
-        else:
-            width = _uncertainty_width(best["uncertainty"])
-            if width is None:
-                buckets["INSUFFICIENT_SUPPORT"].add("UNCERTAINTY_INVALID")
-            elif width > effective.max_ci95_width_bb + _EPS:
-                buckets["INSUFFICIENT_SUPPORT"].add("CI95_WIDTH_EXCEEDS_POLICY")
 
         for item in ranked:
             delta = item["paired_delta"]
