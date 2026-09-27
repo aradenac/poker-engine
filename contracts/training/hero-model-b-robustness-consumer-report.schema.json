@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hero-model-b-hero-robustness-consumer-report/v1",
+  "title": "Hero -> Model B robustness consumer machine-readable report (#425)",
+  "description": "Deterministic, machine-readable report emitted by the #425 adapter/runner tools/simulation/model_b_hero_robustness_adapter.py. The adapter is the end-to-end chain: synthetic fixture load -> fail-closed #425 contract validation -> projection onto the additive #344 sensitivity harness request -> #344 run_harness execution against the persisted #340 candidate/reference evidence -> #425 Hero robustness classification. The report binds the consumed input contract (input_schema_ref), the single closed-vocabulary verdict (status), its sorted reason codes, the all-false information boundary, synthetic provenance references and the two content hashes (harness_request_sha256 over the projected #344 request, harness_report_sha256 over the #344 report). Every object pins additionalProperties=false and every provenance/boundary flag is a pinned const, so a report can never be enriched with a real #367/#314/VALIDATION/TEST claim after the fact. The report carries no timestamp and no host path, so two runs over the same synthetic fixture are byte-identical.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "input_schema_ref",
+    "status",
+    "reason_codes",
+    "information_boundary",
+    "provenance",
+    "harness_request_sha256",
+    "harness_report_sha256"
+  ],
+  "properties": {
+    "schema": {
+      "const": "hero-model-b-hero-robustness-consumer-report/v1"
+    },
+    "input_schema_ref": {
+      "description": "$id of the fail-closed #425 input contract the fixture was validated against.",
+      "const": "hero-model-b-robustness-input/v1"
+    },
+    "status": {
+      "description": "The exact closed #425 verdict vocabulary; no other value may ever be emitted.",
+      "enum": [
+        "CONSISTENT",
+        "SENSITIVE",
+        "TOO_CLOSE",
+        "INSUFFICIENT_SUPPORT",
+        "OOD_UNTESTABLE"
+      ]
+    },
+    "reason_codes": {
+      "description": "Sorted, non-empty reason codes supporting the verdict; a fail-closed verdict must be legible.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "information_boundary": {
+      "description": "Every #425 boundary flag is pinned false: the report never claims to have consumed Hero EV, Model A, a recommendation, a future card, an unrevealed opponent hole card or the route/source label as a predictive target.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hero_ev_consumed",
+        "model_a_consumed",
+        "recommendation_consumed",
+        "future_cards_consumed",
+        "opponent_hole_cards_consumed",
+        "route_as_predictive_target"
+      ],
+      "properties": {
+        "hero_ev_consumed": {
+          "const": false
+        },
+        "model_a_consumed": {
+          "const": false
+        },
+        "recommendation_consumed": {
+          "const": false
+        },
+        "future_cards_consumed": {
+          "const": false
+        },
+        "opponent_hole_cards_consumed": {
+          "const": false
+        },
+        "route_as_predictive_target": {
+          "const": false
+        }
+      }
+    },
+    "provenance": {
+      "description": "Synthetic provenance references: the report derives from a synthetic #425 fixture and a synthetic-only #344 harness request, and it never consumed real #367/#314 evidence, a VALIDATION hand or a TEST hand.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parent_issue",
+        "harness_issue",
+        "source_kind",
+        "synthetic_fixture",
+        "real_issue_367_consumed",
+        "real_issue_314_consumed",
+        "validation_consumed",
+        "test_consumed"
+      ],
+      "properties": {
+        "parent_issue": {
+          "const": "425"
+        },
+        "harness_issue": {
+          "const": "344"
+        },
+        "source_kind": {
+          "const": "SYNTHETIC_ROBUSTNESS_SHAPED"
+        },
+        "synthetic_fixture": {
+          "const": true
+        },
+        "real_issue_367_consumed": {
+          "const": false
+        },
+        "real_issue_314_consumed": {
+          "const": false
+        },
+        "validation_consumed": {
+          "const": false
+        },
+        "test_consumed": {
+          "const": false
+        }
+      }
+    },
+    "harness_request_sha256": {
+      "description": "canonical_sha256 of the projected #344 harness request actually executed.",
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "harness_report_sha256": {
+      "description": "report_sha256 of the #344 run_harness report produced by that request.",
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
