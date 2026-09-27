@@ -1,18 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "hero-model-b-hero-robustness-input/v1",
-  "title": "Synthetic Hero -> Model B robustness input",
-  "description": "Versioned, fail-closed contract for a synthetic robustness-shaped input that a Model B robustness consumer may read. It is deliberately shaped like post-evaluation robustness evidence (Hero decision, alternatives, per-alternative support and provenance) but every value is synthetic: no real #367 result, no real #314 output, no VALIDATION/TEST hand, no Hero EV, no Model A signal and no recommendation is consumed. additionalProperties is false everywhere and every block is required so an incomplete request fails closed instead of being silently enriched.",
+  "$id": "hero-model-b-robustness-input/v1",
+  "title": "Hero -> Model B robustness input (synthetic, fail-closed)",
+  "description": "Versioned, fail-closed draft 2020-12 contract for a synthetic robustness-shaped input that a Model B robustness consumer (#425) may read. The top-level required blocks are schema, source_kind, provenance, information_boundary and hero_entry, and additionalProperties is false on every object so an incomplete or unknown field fails closed instead of being silently enriched. Everything is synthetic: provenance pins synthetic_fixture=true and every consumption flag false, and information_boundary pins every flag false, so this document can never be read as evidence about a real #367 result, a VALIDATION/TEST hand, a Model A output, a Hero EV or a recommendation. hero_entry carries the Hero action and sizing together with the public EV/uncertainty envelope, the paired delta, the evaluation route/source label, the support verdict (including ood), the posterior references and the candidate alternatives; each of these is explicitly nullable when the synthetic fixture does not provide it (null means not evaluated, never zero).",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema",
     "source_kind",
-    "synthetic_fixture",
-    "decision",
-    "alternatives",
     "provenance",
-    "information_boundary"
+    "information_boundary",
+    "hero_entry"
   ],
   "properties": {
     "schema": {
@@ -21,214 +19,21 @@
     "source_kind": {
       "const": "SYNTHETIC_ROBUSTNESS_SHAPED"
     },
-    "synthetic_fixture": {
-      "const": true
-    },
-    "decision": {
-      "description": "The single Hero decision point being robustness-shaped. Only public Hero-side identity is carried: no Hero EV and no recommendation.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "decision_id",
-        "context_id",
-        "hero_position",
-        "action",
-        "sizing"
-      ],
-      "properties": {
-        "decision_id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "context_id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "hero_position": {
-          "type": "string",
-          "minLength": 1
-        },
-        "action": {
-          "enum": [
-            "FOLD",
-            "OVERLIMP",
-            "ISO"
-          ]
-        },
-        "sizing": {
-          "description": "Hero target total in bb for the decision action, or null when the action has no sizing (e.g. FOLD).",
-          "type": [
-            "number",
-            "null"
-          ],
-          "minimum": 0
-        }
-      }
-    },
-    "alternatives": {
-      "description": "At least one candidate alternative. Each alternative carries the public EV envelope already evaluated for that alternative in the synthetic fixture, together with its route, source, uncertainty, paired delta versus best and support verdict.",
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "alternative_id",
-          "action",
-          "sizing",
-          "route",
-          "source",
-          "ev_bb",
-          "uncertainty",
-          "paired_delta_vs_best_bb",
-          "support",
-          "posterior_refs"
-        ],
-        "properties": {
-          "alternative_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "action": {
-            "enum": [
-              "FOLD",
-              "OVERLIMP",
-              "ISO"
-            ]
-          },
-          "sizing": {
-            "type": [
-              "number",
-              "null"
-            ],
-            "minimum": 0
-          },
-          "route": {
-            "description": "Named evaluation route the alternative's values came through (e.g. the harness/provider route that produced the synthetic EV). A route is a provenance label only: information_boundary.route_as_predictive_target is false and a route must never be used as a predictive target or as an environment weight.",
-            "type": "string",
-            "minLength": 1
-          },
-          "source": {
-            "description": "Provenance of the alternative's values inside the synthetic fixture (e.g. the synthetic or Monte-Carlo source that produced ev_bb). It is not evidence about real Hero strategy.",
-            "type": "string",
-            "minLength": 1
-          },
-          "ev_bb": {
-            "description": "Public EV of the alternative in bb, or null when the synthetic fixture does not evaluate it (e.g. incomplete comparison set). Null means not evaluated, never zero.",
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "uncertainty": {
-            "description": "Monte-Carlo style uncertainty envelope, kept separate from Model-B environment uncertainty, or null when not measured.",
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": false,
-            "required": [
-              "ci95",
-              "width_bb",
-              "source"
-            ],
-            "properties": {
-              "ci95": {
-                "description": "[low, high] 95% interval in bb with low <= high.",
-                "type": "array",
-                "minItems": 2,
-                "maxItems": 2,
-                "items": {
-                  "type": "number"
-                }
-              },
-              "width_bb": {
-                "type": "number",
-                "minimum": 0
-              },
-              "source": {
-                "type": "string",
-                "minLength": 1
-              }
-            }
-          },
-          "paired_delta_vs_best_bb": {
-            "description": "Paired delta of this alternative versus the best alternative of the comparison set, in bb, or null when no paired comparison exists.",
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "support": {
-            "description": "Declared support verdict for the alternative: status uses the consumer status vocabulary, tier is a support tier label, ood marks an out-of-distribution environment that cannot be tested.",
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "status",
-              "tier",
-              "ood"
-            ],
-            "properties": {
-              "status": {
-                "enum": [
-                  "CONSISTENT",
-                  "SENSITIVE",
-                  "TOO_CLOSE",
-                  "INSUFFICIENT_SUPPORT",
-                  "OOD_UNTESTABLE"
-                ]
-              },
-              "tier": {
-                "description": "Support tier label backing the verdict (e.g. LOW / MEDIUM / HIGH / VERY_HIGH / UNKNOWN). A tier never upgrades an unsupported status.",
-                "type": "string",
-                "minLength": 1
-              },
-              "ood": {
-                "type": "boolean"
-              }
-            }
-          },
-          "posterior_refs": {
-            "description": "Opaque references to posterior records used by the synthetic fixture, or null when not computed.",
-            "type": [
-              "array",
-              "null"
-            ],
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        }
-      }
-    },
     "provenance": {
-      "description": "Fail-closed provenance of the synthetic input. All consumption flags are pinned false so this contract cannot be read as real #367 or #314 evidence.",
+      "description": "Fail-closed provenance of the synthetic input. All four flags are pinned so the document cannot be read as real #367/#314 evidence and never consumes a VALIDATION or TEST hand.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "parent_issue",
-        "upstream_result_schema",
         "synthetic_fixture",
         "real_issue_367_consumed",
-        "real_issue_314_consumed",
         "validation_consumed",
         "test_consumed"
       ],
       "properties": {
-        "parent_issue": {
-          "const": 314
-        },
-        "upstream_result_schema": {
-          "const": "poker-issue367-real-iso-ev-result/v1"
-        },
         "synthetic_fixture": {
           "const": true
         },
         "real_issue_367_consumed": {
-          "const": false
-        },
-        "real_issue_314_consumed": {
           "const": false
         },
         "validation_consumed": {
@@ -240,14 +45,13 @@
       }
     },
     "information_boundary": {
-      "description": "Hard information boundary. Every flag is pinned false: this input is built from public Hero-side and Model B information only and must never be enriched with private or predictive-only signals.",
+      "description": "Hard information boundary. Every required flag is pinned false; a document that tries to open the boundary (Hero EV, Model A, recommendation, future cards or unrevealed opponent hole cards) is invalid by construction.",
       "type": "object",
       "additionalProperties": false,
       "required": [
         "hero_ev_consumed",
         "model_a_consumed",
         "recommendation_consumed",
-        "route_as_predictive_target",
         "future_cards_consumed",
         "opponent_hole_cards_consumed"
       ],
@@ -261,14 +65,312 @@
         "recommendation_consumed": {
           "const": false
         },
-        "route_as_predictive_target": {
-          "const": false
-        },
         "future_cards_consumed": {
           "const": false
         },
         "opponent_hole_cards_consumed": {
           "const": false
+        },
+        "route_as_predictive_target": {
+          "description": "Optional reinforcement of the route/source rule: hero_entry.route_source (and alternatives[].route_source) is a provenance label only and must never be used as a predictive target nor as an environment weight. When present it must be false.",
+          "const": false
+        }
+      }
+    },
+    "hero_entry": {
+      "description": "The single Hero robustness entry. Public Hero-side identity (action, sizing, optional decision/context ids) is carried next to the already evaluated public EV envelope, the route/source provenance label, the declared support verdict and the candidate alternatives. Nullable fields (action, sizing, ev, uncertainty, paired_delta, route_source, support, posterior_refs, alternatives) are present but may be null when the synthetic fixture does not provide them; null always means unavailable, never zero, and consumers must fail closed on a null/absent support rather than invent a verdict.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "sizing",
+        "ev",
+        "uncertainty",
+        "paired_delta",
+        "route_source",
+        "support",
+        "posterior_refs",
+        "alternatives"
+      ],
+      "properties": {
+        "decision_id": {
+          "description": "Optional public decision identity, when the synthetic fixture names the Hero decision.",
+          "type": "string",
+          "minLength": 1
+        },
+        "context_id": {
+          "description": "Optional public context identity, when the synthetic fixture names the spot.",
+          "type": "string",
+          "minLength": 1
+        },
+        "hero_position": {
+          "description": "Optional public Hero position (e.g. SB), when the synthetic fixture declares it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "description": "Hero action at the decision point, or null when the synthetic fixture does not provide it.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "FOLD",
+            "OVERLIMP",
+            "ISO",
+            null
+          ]
+        },
+        "sizing": {
+          "description": "Hero target total in bb for the decision action, or null when the action has no sizing (e.g. FOLD) or the fixture does not provide it.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "ev": {
+          "description": "Public Hero EV of the entry in bb, or null when the synthetic fixture does not evaluate it. Null means not evaluated, never zero.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "uncertainty": {
+          "description": "Monte-Carlo style uncertainty envelope for the Hero entry, kept separate from Model-B environment uncertainty, or null when not measured.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "ci95",
+            "width_bb",
+            "source"
+          ],
+          "properties": {
+            "ci95": {
+              "description": "[low, high] 95% interval in bb with low <= high.",
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number"
+              }
+            },
+            "width_bb": {
+              "type": "number",
+              "minimum": 0
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "paired_delta": {
+          "description": "Paired delta of the Hero entry versus the best alternative of the comparison set, in bb, or null when no paired comparison exists.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "route_source": {
+          "description": "Named evaluation route and provenance source the Hero values came through (e.g. the harness/provider route that produced the synthetic EV). A route/source is a provenance label only: information_boundary.route_as_predictive_target is false and it must never be used as a predictive target nor as an environment weight. Null when the fixture does not label it.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "support": {
+          "description": "Declared support verdict for the Hero entry, or null when the synthetic fixture does not declare it. status uses the closed #425 vocabulary, tier is a support tier label and ood marks an out-of-distribution environment that cannot be tested.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "tier",
+            "ood"
+          ],
+          "properties": {
+            "status": {
+              "description": "The closed #425 status vocabulary. Consumers map it onto the #199 robust/sensitive/insufficiently_supported verdicts (see docs/model-b-hero-robustness-consumer.md).",
+              "enum": [
+                "CONSISTENT",
+                "SENSITIVE",
+                "TOO_CLOSE",
+                "INSUFFICIENT_SUPPORT",
+                "OOD_UNTESTABLE"
+              ]
+            },
+            "tier": {
+              "description": "Support tier label backing the verdict (e.g. LOW / MEDIUM / HIGH / VERY_HIGH / UNKNOWN). A tier never upgrades an unsupported status.",
+              "type": "string",
+              "minLength": 1
+            },
+            "ood": {
+              "type": "boolean"
+            }
+          }
+        },
+        "posterior_refs": {
+          "description": "Opaque references to posterior records used by the synthetic fixture, or null when not computed.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "alternatives": {
+          "description": "Candidate alternatives compared against the Hero entry, or null when the synthetic fixture does not carry a comparison set. Each alternative carries the same public action/sizing identity plus its own nullable EV envelope, route/source label, support verdict and posterior references.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "alternative_id",
+              "action",
+              "sizing",
+              "ev",
+              "uncertainty",
+              "paired_delta",
+              "route_source",
+              "support",
+              "posterior_refs"
+            ],
+            "properties": {
+              "alternative_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "action": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "FOLD",
+                  "OVERLIMP",
+                  "ISO",
+                  null
+                ]
+              },
+              "sizing": {
+                "description": "Alternative target total in bb, or null when the alternative has no sizing or the fixture does not provide it.",
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "ev": {
+                "description": "Public EV of the alternative in bb, or null when the synthetic fixture does not evaluate it. Null means not evaluated, never zero.",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "uncertainty": {
+                "description": "Monte-Carlo style uncertainty envelope for the alternative, or null when not measured.",
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "required": [
+                  "ci95",
+                  "width_bb",
+                  "source"
+                ],
+                "properties": {
+                  "ci95": {
+                    "description": "[low, high] 95% interval in bb with low <= high.",
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "width_bb": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "paired_delta": {
+                "description": "Paired delta of this alternative versus the best alternative of the comparison set, in bb, or null when no paired comparison exists.",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "route_source": {
+                "description": "Named evaluation route and provenance source for the alternative's values; a provenance label only, never a predictive target. Null when the fixture does not label it.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1
+              },
+              "support": {
+                "description": "Declared support verdict for the alternative, or null when the synthetic fixture does not declare it.",
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "required": [
+                  "status",
+                  "tier",
+                  "ood"
+                ],
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "CONSISTENT",
+                      "SENSITIVE",
+                      "TOO_CLOSE",
+                      "INSUFFICIENT_SUPPORT",
+                      "OOD_UNTESTABLE"
+                    ]
+                  },
+                  "tier": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "ood": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "posterior_refs": {
+                "description": "Opaque references to posterior records used by the synthetic fixture, or null when not computed.",
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
         }
       }
     }
