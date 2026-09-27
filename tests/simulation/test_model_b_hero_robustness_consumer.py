@@ -1,29 +1,42 @@
 #!/usr/bin/env python3
-"""Acceptance tests for the fail-closed Hero -> Model B robustness consumer (#425).
+"""Consumer acceptance tests for the #425 Hero -> Model B robustness chain (``backlog-m9j``).
 
-This is the ``backlog-hae`` acceptance suite. It covers exactly the six ticket
-points plus the mandated negative case:
+The consumer under test is the single callable #425 entry point,
+``tools/simulation/model_b_hero_robustness_adapter.run_fixture`` (task
+``backlog-m59``), which chains the fail-closed #425 input contract
+(``backlog-uso``), the deterministic status classifier (``backlog-nhg``) and the
+synthetic-only #344 sensitivity harness.
 
-(a) a schema mismatch fails closed with an explicit ``reason_code``;
-(b) a missing ``provenance`` or per-alternative ``support`` block is explicit:
-    the consumer raises a ``reason_code`` and the classifier yields non-empty
-    ``reason_codes`` instead of a silent/empty status;
-(c) an out-of-distribution fixture is classified ``OOD_UNTESTABLE``;
-(d) a too-close fixture stays ``TOO_CLOSE`` and is never requalified
-    ``CONSISTENT`` or ``SENSITIVE``;
-(e) the same fixtures produce byte-identical reports and identical sha256
-    values across two independent passes;
-(f) Model A / Model B independence: every forbidden feature is absent from the
-    projected ``#344`` request and the ``information_boundary`` is entirely
-    false -- plus a negative case injecting a forbidden key
-    (``ev_bb`` / ``recommended_action`` / ``route`` / ``model_a_*``) and
-    checking that the consumer refuses it.
+The suite covers the ticket's eight points on the committed synthetic fixtures
+of ``tests/fixtures/model_b_hero_robustness/`` plus derived in-memory variants
+(no fixture file is ever written or edited):
 
-The whole suite is synthetic and hermetic: it only reads the committed
-synthetic fixtures, the public sensitivity context, the ``#340`` price-response
-run artifacts and the source of the modules under test. It never opens the real
-``#367`` ISO EV run directory, never reads a VALIDATION/TEST hand and never
-performs network I/O. Any failure makes the script exit non-zero.
+1. ``schema_mismatch.json`` fails closed with an explicit ``SCHEMA_MISMATCH``
+   reason code: no report, no status, CLI exit code 2;
+2. a missing ``provenance`` / ``support`` block is an explicit
+   ``MISSING_PROVENANCE`` / ``MISSING_SUPPORT`` rejection that never silently
+   upgrades to a supported verdict;
+3. ``ood_unsupported.json`` is ``OOD_UNTESTABLE``, the most severe status;
+4. ``too_close.json`` stays ``TOO_CLOSE`` and is never requalified
+   ``CONSISTENT`` / ``SENSITIVE``;
+5. ``sparse_high_uncertainty.json`` is ``INSUFFICIENT_SUPPORT``;
+6. ``multi_sizing.json`` classification is deterministic and ``SENSITIVE``
+   because the sizing variation sits outside the close band but inside the
+   sensitivity band; the derived below/above-band variants follow the T4
+   precedence (``TOO_CLOSE`` / ``CONSISTENT``) and every report status equals
+   the T4 classifier status for the same fixture;
+7. re-running the same fixtures yields byte-identical reports with identical
+   ``harness_request_sha256`` / ``harness_report_sha256`` values, including
+   across two distinct ``PYTHONHASHSEED`` values;
+8. Model A / B independence: the projected #344 request carries no
+   ``FORBIDDEN_MODEL_FEATURES`` key, its alternatives are public action identity
+   only and its ``information_boundary`` is entirely false.
+
+The suite is synthetic and hermetic: it only reads the committed fixtures, the
+public #344 context and the persisted #340 response-to-price documents. It never
+opens the real ``#367`` ISO EV run, never reads a VALIDATION/TEST hand and never
+performs network I/O (the two determinism subprocesses are local interpreter
+runs). Any failure makes the script exit non-zero.
 
 Run it with::
 
@@ -34,682 +47,808 @@ from __future__ import annotations
 import copy
 import io
 import json
+import os
+import subprocess
 import sys
 import tempfile
-import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Any, Callable, Mapping
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from tools.simulation import model_b_hero_robustness_consumer as consumer  # noqa: E402
-from tools.simulation.model_b_hero_robustness_consumer import (  # noqa: E402
-    BATCH_REPORT_SCHEMA,
-    CONSUMER_REPORT_SCHEMA,
-    DEFAULT_SOURCE_340_DIR,
-    ConsumerError,
-    assert_source_artifact_allowed,
-    build_consumer_report,
-    consume_batch,
-    consume_fixture,
-    independence_guard,
-    load_source_340_docs,
-    main,
-    scan_forbidden_features,
-    validate_fixture,
-)
-from tools.simulation.model_b_hero_robustness_status import (  # noqa: E402
-    REASON_CODES,
-    STATUSES,
-    classify_robustness,
-)
-from tools.simulation.model_b_preflop_sensitivity_harness import (  # noqa: E402
-    FORBIDDEN_ALTERNATIVE_LEAK_FIELDS,
-    FORBIDDEN_MODEL_FEATURES,
-    canonical_sha256,
-    load_json,
-    project_robustness_input,
-)
+from tools.simulation import model_b_hero_robustness_adapter as adapter  # noqa: E402
+from tools.simulation import model_b_hero_robustness_classify as classifier  # noqa: E402
+from tools.simulation import model_b_hero_robustness_contract as contract  # noqa: E402
+from tools.simulation import model_b_preflop_sensitivity_harness as harness  # noqa: E402
 
-FIXTURES = ROOT / "tests/fixtures/model_b_robustness_consumer"
-CONTEXT = ROOT / "tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json"
-MODULE_PATH = ROOT / "tools/simulation/model_b_hero_robustness_consumer.py"
-
-#: Expected classifier verdict for every synthetic fixture of the T2 folder.
-FIXTURE_STATUSES = {
-    "robust_recommendation.json": "CONSISTENT",
-    "too_close.json": "TOO_CLOSE",
-    "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
-    "ood_unsupported.json": "OOD_UNTESTABLE",
-    "multiple_sizings.json": "SENSITIVE",
-}
-
-#: The full forbidden Model A / EV / recommendation / route vocabulary.
-FORBIDDEN_TOKENS = frozenset(FORBIDDEN_MODEL_FEATURES) | frozenset(
-    FORBIDDEN_ALTERNATIVE_LEAK_FIELDS
+FIXTURES = ROOT / "tests/fixtures/model_b_hero_robustness"
+CONTEXT_PATH = (
+    ROOT / "tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json"
 )
-
-#: Exact key set the projection may emit for one alternative: public action
-#: identity only, no EV / uncertainty / route / support / recommendation.
-PROJECTED_ALTERNATIVE_KEYS = frozenset(
-    {"alternative_id", "action", "target_total_bb", "incremental_cost_bb"}
-)
+ADAPTER_PATH = ROOT / "tools/simulation/model_b_hero_robustness_adapter.py"
+REPORT_SCHEMA_PATH = ROOT / "contracts/training/hero-model-b-robustness-consumer-report.schema.json"
 
 #: Assembled so this guard does not itself hard-code the forbidden run name.
 FORBIDDEN_RUN_MARKER = "real" + "_iso" + "_ev"
 
+#: Every committed fixture that must produce a report, with its expected #425 status.
+FIXTURE_STATUSES = {
+    "robust_consistent.json": "CONSISTENT",
+    "multi_sizing.json": "SENSITIVE",
+    "too_close.json": "TOO_CLOSE",
+    "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
+    "ood_unsupported.json": "OOD_UNTESTABLE",
+}
+INVALID_FIXTURE = "schema_mismatch.json"
 
-def _docs_340() -> dict:
-    cache = getattr(_docs_340, "_cache", None)
-    if cache is None:
-        cache = load_source_340_docs()
-        _docs_340._cache = cache  # type: ignore[attr-defined]
-    return cache
+#: Exact key set the projection may emit for one alternative: public action
+#: identity only -- no EV / uncertainty / support / route / posterior reference.
+PROJECTED_ALTERNATIVE_KEYS = frozenset(
+    {"alternative_id", "action", "target_total_bb", "incremental_cost_bb"}
+)
+
+#: The complete forbidden Model A / EV / recommendation / route vocabulary.
+FORBIDDEN_TOKENS = frozenset(harness.FORBIDDEN_MODEL_FEATURES) | frozenset(
+    harness.FORBIDDEN_ALTERNATIVE_LEAK_FIELDS
+)
+
+_DOCS_340_CACHE: dict[str, Any] | None = None
+_CONTEXT_CACHE: Mapping[str, Any] | None = None
+_REPORT_CACHE: dict[str, dict[str, Any]] = {}
 
 
-def _report(name: str) -> dict:
-    """Return a deep copy of the report for one committed fixture."""
-    cache = getattr(_report, "_cache", None)
-    if cache is None:
-        cache = {}
-        _report._cache = cache  # type: ignore[attr-defined]
-    if name not in cache:
-        cache[name] = consume_fixture(FIXTURES / name, source_340=_docs_340())
-    return copy.deepcopy(cache[name])
+# --------------------------------------------------------------------------- #
+# Helpers
+# --------------------------------------------------------------------------- #
+def check(condition: object, message: str) -> None:
+    """Fail this section with a readable message when ``condition`` is falsy."""
+    if not condition:
+        raise AssertionError(message)
 
 
-def _fresh_report(name: str) -> dict:
-    """Return a report recomputed from scratch (no cache), for determinism."""
-    return consume_fixture(FIXTURES / name, source_340=_docs_340())
+def load_json(path: Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def _projected_request() -> dict:
-    return project_robustness_input(
-        load_json(FIXTURES / "too_close.json"), context=load_json(CONTEXT)
+def fixture(name: str) -> dict[str, Any]:
+    """Return a fresh deep copy of one committed synthetic fixture."""
+    return copy.deepcopy(load_json(FIXTURES / name))
+
+
+def context() -> Mapping[str, Any]:
+    global _CONTEXT_CACHE
+    if _CONTEXT_CACHE is None:
+        _CONTEXT_CACHE = load_json(CONTEXT_PATH)
+    return _CONTEXT_CACHE
+
+
+def docs_340() -> dict[str, Any]:
+    """Load the five persisted #340 documents once for the whole suite."""
+    global _DOCS_340_CACHE
+    if _DOCS_340_CACHE is None:
+        _DOCS_340_CACHE = adapter.load_source_340_docs()
+    return _DOCS_340_CACHE
+
+
+def fresh_report(name: str) -> dict[str, Any]:
+    """Consume one fixture end to end from disk, without any caching."""
+    return adapter.run_fixture(FIXTURES / name, source_340=docs_340())
+
+
+def report_for(name: str) -> dict[str, Any]:
+    """Cached :func:`fresh_report` for the read-only assertions."""
+    if name not in _REPORT_CACHE:
+        _REPORT_CACHE[name] = fresh_report(name)
+    return copy.deepcopy(_REPORT_CACHE[name])
+
+
+def expect_contract_error(
+    call: Callable[[], Any],
+    expected_code: str,
+) -> contract.RobustnessContractError:
+    try:
+        call()
+    except contract.RobustnessContractError as exc:
+        check(
+            exc.reason_code == expected_code,
+            f"expected reason_code {expected_code!r}, got {exc.reason_code!r} ({exc.message})",
+        )
+        return exc
+    raise AssertionError(f"expected a fail-closed {expected_code} rejection")
+
+
+def expect_adapter_error(
+    call: Callable[[], Any],
+    expected_code: str,
+) -> adapter.AdapterError:
+    try:
+        call()
+    except adapter.AdapterError as exc:
+        check(
+            exc.reason_code == expected_code,
+            f"expected reason_code {expected_code!r}, got {exc.reason_code!r} ({exc.message})",
+        )
+        return exc
+    raise AssertionError(f"expected a fail-closed {expected_code} rejection")
+
+
+def alternative_keys(alternative: Mapping[str, Any]) -> frozenset[str]:
+    return frozenset(str(key) for key in alternative)
+
+
+def best_alternative_ev(document: Mapping[str, Any]) -> float:
+    entry = document["hero_entry"]
+    return max(float(alternative["ev"]) for alternative in entry["alternatives"])
+
+
+def iter_keys(value: Any, path: str = "$"):
+    """Yield ``(path, key)`` for every mapping key found anywhere in ``value``."""
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            yield f"{path}.{key}", str(key)
+            yield from iter_keys(child, f"{path}.{key}")
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            yield from iter_keys(child, f"{path}[{index}]")
+
+
+def leaked_feature_paths(request: Mapping[str, Any]) -> list[str]:
+    """Independent forbidden-feature walk over a projected request.
+
+    Mirrors the consumer rule (the ``information_boundary`` block enumerates the
+    boundary flag names themselves and is asserted all-false separately) but
+    re-implements the walk here, so the independence proof does not trust the
+    module under test.
+    """
+    scannable = {key: value for key, value in request.items() if key != "information_boundary"}
+    hits: list[str] = []
+    for path, key in iter_keys(scannable):
+        lowered = key.lower()
+        if lowered in FORBIDDEN_TOKENS or lowered.startswith("model_a"):
+            hits.append(path)
+    return sorted(set(hits))
+
+
+def cli(
+    fixture_path: Path,
+    out_path: Path,
+    *,
+    extra_env: Mapping[str, str] | None = None,
+) -> "subprocess.CompletedProcess[str]":
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(ROOT)
+    if extra_env:
+        env.update(extra_env)
+    return subprocess.run(
+        [sys.executable, str(ADAPTER_PATH), "--fixture", str(fixture_path), "--out", str(out_path)],
+        cwd=str(ROOT),
+        env=env,
+        capture_output=True,
+        text=True,
     )
 
 
-def _iter_keys(value: object, path: str = "$"):
-    """Yield ``(path, key)`` for every mapping key found anywhere in ``value``."""
-    if isinstance(value, dict):
-        for key, child in value.items():
-            yield f"{path}.{key}", str(key)
-            yield from _iter_keys(child, f"{path}.{key}")
-    elif isinstance(value, list):
-        for index, child in enumerate(value):
-            yield from _iter_keys(child, f"{path}[{index}]")
+# --------------------------------------------------------------------------- #
+# (1) schema mismatch => fail-closed with a reason_code
+# --------------------------------------------------------------------------- #
+def test_schema_mismatch_fails_closed() -> None:
+    document = fixture(INVALID_FIXTURE)
+    check(
+        document["schema"] == "hero-model-b-robustness-input/v2",
+        "the committed schema_mismatch.json must carry the v2 schema id",
+    )
+    check(
+        document["schema"] != contract.INPUT_SCHEMA,
+        "the mismatch fixture must not carry the shipped #425 schema id",
+    )
 
+    error = expect_contract_error(
+        lambda: contract.validate_robustness_input(document), "SCHEMA_MISMATCH"
+    )
+    check(
+        "SCHEMA_MISMATCH" in error.reason_codes,
+        f"the fail-closed catalogue must carry SCHEMA_MISMATCH: {error.reason_codes}",
+    )
+    check(
+        error.to_dict()["status"] == "FAIL_CLOSED",
+        "the contract error payload must be FAIL_CLOSED",
+    )
 
-class AcceptanceTests(unittest.TestCase):
-    """One named test per ticket point (a)-(f), plus the negative case."""
+    # The only defect is the schema id: repairing it in memory makes the same
+    # fixture validate, so the rejection really is the schema guard.
+    repaired = fixture(INVALID_FIXTURE)
+    repaired["schema"] = contract.INPUT_SCHEMA
+    check(
+        contract.validate_robustness_input(repaired) is repaired,
+        "the repaired copy must validate (the schema id is the only defect)",
+    )
 
-    @classmethod
-    def setUpClass(cls):
-        cls.context = load_json(CONTEXT)
-        cls.too_close = load_json(FIXTURES / "too_close.json")
-        cls.docs = _docs_340()
+    # The consumer refuses the fixture and emits no report and no status.
+    adapter_error = expect_adapter_error(
+        lambda: adapter.run_fixture(FIXTURES / INVALID_FIXTURE, source_340=docs_340()),
+        "SCHEMA_MISMATCH",
+    )
+    payload = adapter_error.to_dict()
+    check(payload["outcome"] == "FAIL_CLOSED", payload)
+    check(payload["schema"] == adapter.ADAPTER_ERROR_SCHEMA, payload)
+    check("status" not in payload, "a fail-closed payload never carries a robustness status")
 
-    # --- (a) schema mismatch ------------------------------------------------
-    def test_a_schema_mismatch_fails_closed(self):
-        bad = copy.deepcopy(self.too_close)
-        bad["schema"] = "hero-model-b-robustness-input/v2"
-        with self.assertRaises(ConsumerError) as caught:
-            validate_fixture(bad)
-        self.assertEqual(caught.exception.reason_code, "SCHEMA_MISMATCH")
-        self.assertEqual(caught.exception.to_dict()["status"], "FAIL_CLOSED")
-        self.assertIn("SCHEMA_MISMATCH", str(caught.exception))
-
-    def test_a_schema_mismatch_never_yields_a_report(self):
-        bad = copy.deepcopy(self.too_close)
-        bad["schema"] = "poker-preflop-decision/v1"
-        with self.assertRaises(ConsumerError) as caught:
-            build_consumer_report(bad, context=self.context, **self.docs)
-        self.assertEqual(caught.exception.reason_code, "SCHEMA_MISMATCH")
-
-    def test_a_source_kind_mismatch_fails_closed(self):
-        bad = copy.deepcopy(self.too_close)
-        bad["source_kind"] = "REAL_ISSUE_314"
-        with self.assertRaises(ConsumerError) as caught:
-            validate_fixture(bad)
-        self.assertEqual(caught.exception.reason_code, "SOURCE_KIND_MISMATCH")
-
-    # --- (b) missing provenance / support is explicit -----------------------
-    def test_b_missing_provenance_is_explicit_not_silent(self):
-        bad = copy.deepcopy(self.too_close)
-        bad.pop("provenance")
-
-        with self.assertRaises(ConsumerError) as caught:
-            validate_fixture(bad)
-        self.assertEqual(caught.exception.reason_code, "PROVENANCE_MISSING")
-
-        # The classifier must also stay explicit: non-empty reason codes, never
-        # an empty/silent verdict.
-        classified = classify_robustness(bad)
-        self.assertTrue(classified["reason_codes"])
-        self.assertIn("PROVENANCE_MISSING", classified["reason_codes"])
-        self.assertEqual(classified["status"], "INSUFFICIENT_SUPPORT")
-
-        with self.assertRaises(ConsumerError):
-            build_consumer_report(bad, context=self.context, **self.docs)
-
-    def test_b_incomplete_provenance_is_explicit_not_silent(self):
-        bad = copy.deepcopy(self.too_close)
-        bad["provenance"].pop("parent_issue")
-
-        with self.assertRaises(ConsumerError) as caught:
-            validate_fixture(bad)
-        self.assertEqual(caught.exception.reason_code, "PROVENANCE_INCOMPLETE")
-        classified = classify_robustness(bad)
-        self.assertTrue(classified["reason_codes"])
-        self.assertIn("PROVENANCE_INCOMPLETE", classified["reason_codes"])
-
-    def test_b_missing_support_is_explicit_not_silent(self):
-        bad = copy.deepcopy(self.too_close)
-        bad["alternatives"][0].pop("support")
-
-        with self.assertRaises(ConsumerError) as caught:
-            validate_fixture(bad)
-        self.assertEqual(caught.exception.reason_code, "SUPPORT_MISSING")
-        self.assertIn("never be silently upgraded", caught.exception.message)
-
-        # Fail-closed classifier: a missing support block can never be silently
-        # upgraded to a supported verdict.
-        classified = classify_robustness(bad)
-        self.assertTrue(classified["reason_codes"])
-        self.assertIn("SUPPORT_MISSING", classified["reason_codes"])
-        self.assertEqual(classified["status"], "OOD_UNTESTABLE")
-
-    def test_b_no_report_has_an_empty_reason_code_list(self):
-        for name in FIXTURE_STATUSES:
-            report = _report(name)
-            self.assertTrue(report["reason_codes"], name)
-            self.assertTrue(set(report["reason_codes"]).issubset(REASON_CODES), name)
-            self.assertEqual(sorted(report["reason_codes"]), list(report["reason_codes"]))
-
-    # --- (c) OOD => UNTESTABLE ---------------------------------------------
-    def test_c_ood_fixture_is_untestable(self):
-        report = _report("ood_unsupported.json")
-        self.assertEqual(report["status"], "OOD_UNTESTABLE")
-        self.assertIn(report["status"], STATUSES)
-        self.assertTrue(report["reason_codes"])
-
-        evidence = report["classification_evidence"]
-        self.assertTrue(evidence["ood_alternatives"])
-        self.assertTrue(
-            set(report["reason_codes"]).issubset(
-                {
-                    "SUPPORT_OOD",
-                    "SUPPORT_STATUS_OOD",
-                    "SUPPORT_STATUS_UNKNOWN",
-                    "INPUT_NOT_MAPPING",
-                    "ALTERNATIVES_MISSING",
-                    "ALTERNATIVE_INVALID",
-                    "SUPPORT_MISSING",
-                }
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "report.json"
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            code = adapter.main(
+                ["--fixture", str(FIXTURES / INVALID_FIXTURE), "--out", str(out)]
             )
+        check(code == 2, f"the CLI must exit 2 on a fail-closed fixture, got {code}")
+        check(not out.exists(), "a fail-closed fixture must never write a report")
+        check(stdout.getvalue() == "", "a fail-closed fixture must print no report on stdout")
+        cli_payload = json.loads(stderr.getvalue())
+        check(cli_payload["reason_code"] == "SCHEMA_MISMATCH", cli_payload)
+        check("status" not in cli_payload, "the CLI payload must carry no status")
+
+
+# --------------------------------------------------------------------------- #
+# (2) missing provenance / support => explicit rejection
+# --------------------------------------------------------------------------- #
+def test_missing_provenance_and_support_are_explicit() -> None:
+    base = fixture("robust_consistent.json")
+
+    def without_provenance(document: dict[str, Any]) -> None:
+        document.pop("provenance")
+
+    def incomplete_provenance(document: dict[str, Any]) -> None:
+        document["provenance"].pop("test_consumed")
+
+    def opened_provenance(document: dict[str, Any]) -> None:
+        document["provenance"]["validation_consumed"] = True
+
+    def hero_without_support(document: dict[str, Any]) -> None:
+        document["hero_entry"].pop("support")
+
+    def alternative_without_support(document: dict[str, Any]) -> None:
+        document["hero_entry"]["alternatives"][0].pop("support")
+
+    def alternative_null_support(document: dict[str, Any]) -> None:
+        document["hero_entry"]["alternatives"][0]["support"] = None
+
+    cases: tuple[tuple[str, Callable[[dict[str, Any]], None]], ...] = (
+        ("MISSING_PROVENANCE", without_provenance),
+        ("MISSING_PROVENANCE", incomplete_provenance),
+        ("MISSING_PROVENANCE", opened_provenance),
+        ("MISSING_SUPPORT", hero_without_support),
+        ("MISSING_SUPPORT", alternative_without_support),
+        ("MISSING_SUPPORT", alternative_null_support),
+    )
+
+    for expected_code, mutate in cases:
+        document = copy.deepcopy(base)
+        mutate(document)
+
+        error = expect_contract_error(
+            lambda doc=document: contract.validate_robustness_input(doc), expected_code
+        )
+        check(error.to_dict()["status"] == "FAIL_CLOSED", error.to_dict())
+        check(bool(error.message), "the rejection must carry an explicit message")
+
+        # The consumer itself (report builder) must refuse as well.
+        adapter_error = expect_adapter_error(
+            lambda doc=document: adapter.build_report(doc, context=context(), **docs_340()),
+            expected_code,
+        )
+        check(
+            "status" not in adapter_error.to_dict(),
+            "no failing input may ever produce a status",
         )
 
-    def test_c_ood_flag_alone_is_never_downgraded(self):
-        bad = copy.deepcopy(self.too_close)
-        for alternative in bad["alternatives"]:
-            alternative["support"] = {"status": "CONSISTENT", "tier": "VERY_HIGH", "ood": True}
-        classified = classify_robustness(bad)
-        self.assertEqual(classified["status"], "OOD_UNTESTABLE")
-        self.assertNotIn(classified["status"], {"CONSISTENT", "TOO_CLOSE", "SENSITIVE"})
+        # A missing/declared-null support block is never silently upgraded by the
+        # classifier either: it either raises explicitly or returns a
+        # non-CONSISTENT verdict with non-empty reason codes. Provenance is
+        # enforced by the contract layer above, so it is checked there (the
+        # consumer never classifies an input whose provenance failed).
+        if expected_code == "MISSING_SUPPORT":
+            try:
+                result = classifier.classify(document)
+            except classifier.RobustnessClassifyError as exc:
+                check(bool(exc.reason_code), "the classifier error must carry a reason code")
+            else:
+                check(
+                    result["status"] in classifier.STATUSES,
+                    f"non-vocabulary status: {result['status']!r}",
+                )
+                check(
+                    result["status"] != "CONSISTENT",
+                    "a missing support block may never be silently upgraded",
+                )
+                check(bool(result["reason_codes"]), "the verdict must carry reason codes")
 
-    # --- (d) too-close is preserved -----------------------------------------
-    def test_d_too_close_fixture_stays_too_close(self):
-        report = _report("too_close.json")
-        self.assertEqual(report["status"], "TOO_CLOSE")
-        self.assertNotIn(report["status"], {"CONSISTENT", "SENSITIVE"})
-        self.assertTrue(report["reason_codes"])
+    # The incomplete-provenance reason catalogue is explicit too.
+    document = copy.deepcopy(base)
+    incomplete_provenance(document)
+    error = expect_contract_error(
+        lambda: contract.validate_robustness_input(document), "MISSING_PROVENANCE"
+    )
+    check(
+        "PROVENANCE_INCOMPLETE" in error.reason_codes,
+        f"the ordered catalogue must name the incompleteness: {error.reason_codes}",
+    )
 
-    def test_d_too_close_is_never_requalified(self):
-        # Bribe the declared support verdict and tier up to CONSISTENT/VERY_HIGH
-        # and add an explicit instability block: TOO_CLOSE still wins because
-        # the advantage sits inside the declared noise tolerance.
-        bribed = copy.deepcopy(self.too_close)
-        for alternative in bribed["alternatives"]:
-            alternative["support"] = {"status": "CONSISTENT", "tier": "VERY_HIGH", "ood": False}
-            alternative["paired_delta_vs_best_bb"] = 0.0
-        bribed["stability"] = {"action": False, "sizing": False, "ranking": False}
+    # A present-but-null support verdict is "not evaluated", never supported.
+    classifiable = copy.deepcopy(base)
+    classifiable["hero_entry"]["support"] = None
+    verdict = classifier.classify(classifiable)
+    check(verdict["status"] == "OOD_UNTESTABLE", verdict)
+    check("SUPPORT_MISSING" in verdict["reason_codes"], verdict)
 
-        classified = classify_robustness(bribed)
-        self.assertEqual(classified["status"], "TOO_CLOSE")
-        self.assertNotIn(classified["status"], {"CONSISTENT", "SENSITIVE"})
-        self.assertTrue(
-            {"ADVANTAGE_WITHIN_TOLERANCE", "PAIRED_DELTA_WITHIN_TOLERANCE"}
-            & set(classified["reason_codes"]),
-            classified["reason_codes"],
+
+# --------------------------------------------------------------------------- #
+# (3) OOD => OOD_UNTESTABLE
+# --------------------------------------------------------------------------- #
+def test_ood_fixture_is_ood_untestable() -> None:
+    report = report_for("ood_unsupported.json")
+    check(report["status"] == "OOD_UNTESTABLE", report)
+    check(report["status"] in adapter.STATUSES, "the status must be in the closed vocabulary")
+    check(
+        set(report["reason_codes"])
+        <= set(classifier.REASON_CODES_BY_STATUS["OOD_UNTESTABLE"]),
+        f"non-OOD reason codes: {report['reason_codes']}",
+    )
+    check(bool(report["reason_codes"]), "an OOD verdict must carry reason codes")
+    check(
+        {"SUPPORT_OOD", "SUPPORT_STATUS_OOD"} & set(report["reason_codes"]),
+        f"the OOD reason codes must be explicit: {report['reason_codes']}",
+    )
+
+    # Precedence: even when every declared support verdict is bribed to
+    # CONSISTENT, the OOD environment keeps the entry untestable.
+    bribed = fixture("ood_unsupported.json")
+    entry = bribed["hero_entry"]
+    for alternative in [entry, *entry["alternatives"]]:
+        alternative["support"] = {"status": "CONSISTENT", "tier": "HIGH", "ood": True}
+    result = classifier.classify(bribed)
+    check(
+        result["status"] == "OOD_UNTESTABLE",
+        f"an OOD environment may never be requalified: {result}",
+    )
+    check(
+        result["status"] != "CONSISTENT",
+        "OOD_UNTESTABLE has absolute precedence over CONSISTENT",
+    )
+
+    # An OOD alternative (not only the Hero entry) is enough to make the entry
+    # untestable.
+    alternative_ood = fixture("robust_consistent.json")
+    alternative_ood["hero_entry"]["alternatives"][0]["support"] = {
+        "status": "CONSISTENT",
+        "tier": "HIGH",
+        "ood": True,
+    }
+    result = classifier.classify(alternative_ood)
+    check(result["status"] == "OOD_UNTESTABLE", result)
+
+
+# --------------------------------------------------------------------------- #
+# (4) too-close is preserved (never overwritten)
+# --------------------------------------------------------------------------- #
+def test_too_close_is_preserved() -> None:
+    report = report_for("too_close.json")
+    check(report["status"] == "TOO_CLOSE", report)
+    check(
+        report["status"] not in {"CONSISTENT", "SENSITIVE"},
+        f"TOO_CLOSE must never be requalified: {report['status']}",
+    )
+    check(
+        {"ADVANTAGE_WITHIN_TOLERANCE", "PAIRED_DELTA_WITHIN_TOLERANCE"}
+        & set(report["reason_codes"]),
+        f"the close-band reason must be explicit: {report['reason_codes']}",
+    )
+    check(
+        set(report["reason_codes"]) <= set(classifier.REASON_CODES_BY_STATUS["TOO_CLOSE"]),
+        f"non-close reason codes: {report['reason_codes']}",
+    )
+
+    # Bribe the declared support up to CONSISTENT/VERY_HIGH and flatten the
+    # paired deltas: TOO_CLOSE still wins because the advantage itself sits in
+    # the declared noise band.
+    bribed = fixture("too_close.json")
+    entry = bribed["hero_entry"]
+    entry["paired_delta"] = 0.0
+    for alternative in entry["alternatives"]:
+        alternative["support"] = {"status": "CONSISTENT", "tier": "VERY_HIGH", "ood": False}
+        alternative["paired_delta"] = 0.0
+    result = classifier.classify(bribed)
+    check(result["status"] == "TOO_CLOSE", result)
+    check(
+        "ADVANTAGE_WITHIN_TOLERANCE" in result["reason_codes"],
+        f"the measured advantage is the refusal reason: {result['reason_codes']}",
+    )
+
+    # TOO_CLOSE outranks SENSITIVE when both buckets are filled.
+    dual = fixture("multi_sizing.json")
+    dual["hero_entry"]["ev"] = best_alternative_ev(dual) + classifier.TOO_CLOSE_DELTA_BB / 2.0
+    dual_verdict = classifier.classify(dual)
+    check(
+        dual_verdict["status"] == "TOO_CLOSE",
+        f"TOO_CLOSE must precede SENSITIVE: {dual_verdict}",
+    )
+    check("ADVANTAGE_WITHIN_TOLERANCE" in dual_verdict["reason_codes"], dual_verdict)
+
+    # The bands themselves are explicit, ordered policy constants.
+    check(
+        0.0 < classifier.TOO_CLOSE_DELTA_BB < classifier.SENSITIVE_DELTA_BB,
+        "the close band must be a strict subset of the sensitivity band",
+    )
+
+
+# --------------------------------------------------------------------------- #
+# (5) sparse / high uncertainty => INSUFFICIENT_SUPPORT
+# --------------------------------------------------------------------------- #
+def test_sparse_high_uncertainty_is_insufficient_support() -> None:
+    report = report_for("sparse_high_uncertainty.json")
+    check(report["status"] == "INSUFFICIENT_SUPPORT", report)
+    check(
+        set(report["reason_codes"])
+        <= set(classifier.REASON_CODES_BY_STATUS["INSUFFICIENT_SUPPORT"]),
+        f"non-support reason codes: {report['reason_codes']}",
+    )
+    check(
+        {"CI95_WIDTH_EXCEEDS_POLICY", "SPARSE_SUPPORT_TIER", "SUPPORT_STATUS_INSUFFICIENT"}
+        <= set(report["reason_codes"]),
+        f"the sparsity and the CI95 width must both be explicit: {report['reason_codes']}",
+    )
+
+    document = fixture("sparse_high_uncertainty.json")
+    entry = document["hero_entry"]
+    check(
+        float(entry["uncertainty"]["width_bb"]) > classifier.MAX_CI95_WIDTH_BB,
+        "the fixture CI95 width must exceed the policy maximum",
+    )
+
+    # INSUFFICIENT_SUPPORT outranks TOO_CLOSE: putting the standing inside the
+    # close band must not weaken the sparse verdict.
+    bribed = fixture("sparse_high_uncertainty.json")
+    bribed["hero_entry"]["ev"] = (
+        best_alternative_ev(bribed) + classifier.TOO_CLOSE_DELTA_BB / 2.0
+    )
+    result = classifier.classify(bribed)
+    check(
+        result["status"] == "INSUFFICIENT_SUPPORT",
+        f"INSUFFICIENT_SUPPORT must precede TOO_CLOSE: {result}",
+    )
+
+
+# --------------------------------------------------------------------------- #
+# (6) multi-sizing => deterministic SENSITIVE classification
+# --------------------------------------------------------------------------- #
+def test_multi_sizing_is_deterministic_sensitive() -> None:
+    report = report_for("multi_sizing.json")
+    check(report["status"] == "SENSITIVE", report)
+    check(
+        set(report["reason_codes"]) <= set(classifier.REASON_CODES_BY_STATUS["SENSITIVE"]),
+        f"non-sensitive reason codes: {report['reason_codes']}",
+    )
+    check(
+        {"ADVANTAGE_WITHIN_SENSITIVITY_BAND", "SIZING_VARIATION_WITHIN_SENSITIVITY_BAND"}
+        <= set(report["reason_codes"]),
+        f"the sizing variation must be explicit: {report['reason_codes']}",
+    )
+
+    document = fixture("multi_sizing.json")
+    advantage = float(document["hero_entry"]["ev"]) - best_alternative_ev(document)
+    check(
+        classifier.TOO_CLOSE_DELTA_BB < advantage <= classifier.SENSITIVE_DELTA_BB,
+        f"the fixture advantage {advantage} must sit outside the close band and "
+        f"inside the sensitivity band",
+    )
+
+    # Deterministic: repeated calls and a reordered alternative list agree.
+    first = classifier.classify(document)
+    second = classifier.classify(document)
+    check(first == second, f"classification is not deterministic: {first} != {second}")
+    shuffled = fixture("multi_sizing.json")
+    shuffled["hero_entry"]["alternatives"] = list(
+        reversed(shuffled["hero_entry"]["alternatives"])
+    )
+    check(
+        classifier.classify(shuffled) == first,
+        "the order of alternatives must not change the verdict",
+    )
+
+    # Below the close band: TOO_CLOSE (T4 precedence), never SENSITIVE.
+    inside = fixture("multi_sizing.json")
+    inside["hero_entry"]["ev"] = (
+        best_alternative_ev(inside) + classifier.TOO_CLOSE_DELTA_BB / 2.0
+    )
+    inside_verdict = classifier.classify(inside)
+    check(
+        inside_verdict == classifier.classify(inside),
+        "the close-band verdict must be deterministic",
+    )
+    check(
+        inside_verdict["status"] == "TOO_CLOSE",
+        f"a variation inside the close band is TOO_CLOSE: {inside_verdict}",
+    )
+
+    # Above the sensitivity band: CONSISTENT for the settled synthetic entry.
+    outside = fixture("robust_consistent.json")
+    outside_advantage = float(outside["hero_entry"]["ev"]) - best_alternative_ev(outside)
+    check(
+        outside_advantage > classifier.SENSITIVE_DELTA_BB,
+        f"robust_consistent.json must sit outside the sensitivity band: {outside_advantage}",
+    )
+    outside_verdict = classifier.classify(outside)
+    check(
+        outside_verdict["status"] == "CONSISTENT",
+        f"a settled standing is CONSISTENT: {outside_verdict}",
+    )
+
+    # The consumer report must stay coherent with the T4 classifier for every
+    # committed fixture (one source of truth, no re-derivation in the adapter).
+    for name, expected in FIXTURE_STATUSES.items():
+        report = report_for(name)
+        t4 = classifier.classify(fixture(name))
+        check(
+            report["status"] == t4["status"] == expected,
+            f"{name}: report={report['status']!r} t4={t4['status']!r} expected={expected!r}",
         )
-        self.assertIn("TOO_CLOSE", classified["evidence"]["reason_codes_by_status"])
-
-    # --- (e) determinism ----------------------------------------------------
-    def test_e_same_fixtures_same_outputs_across_two_passes(self):
-        for name in sorted(FIXTURE_STATUSES):
-            first = _fresh_report(name)
-            second = _fresh_report(name)
-
-            self.assertEqual(first["status"], second["status"], name)
-            self.assertEqual(first["reason_codes"], second["reason_codes"], name)
-            self.assertEqual(
-                json.dumps(first, sort_keys=True),
-                json.dumps(second, sort_keys=True),
-                name,
-            )
-            self.assertEqual(canonical_sha256(first), canonical_sha256(second), name)
-            self.assertEqual(
-                first["sensitivity"]["request_sha256"],
-                second["sensitivity"]["request_sha256"],
-                name,
-            )
-            self.assertEqual(
-                first["sensitivity"]["report_sha256"],
-                second["sensitivity"]["report_sha256"],
-                name,
-            )
-            self.assertEqual(len(first["sensitivity"]["request_sha256"]), 64, name)
-            self.assertEqual(len(first["sensitivity"]["report_sha256"]), 64, name)
-
-    def test_e_batch_hashes_match_the_single_run_hashes(self):
-        batch = consume_batch(source_340=self.docs)
-        self.assertEqual(batch["schema"], BATCH_REPORT_SCHEMA)
-        for entry in batch["fixtures"]:
-            report = _report(entry["fixture"])
-            self.assertEqual(entry["request_sha256"], report["sensitivity"]["request_sha256"])
-            self.assertEqual(entry["report_sha256"], report["sensitivity"]["report_sha256"])
-
-    # --- (f) Model A / Model B independence ---------------------------------
-    def test_f_projected_request_carries_no_forbidden_feature(self):
-        request = _projected_request()
-        self.assertEqual(scan_forbidden_features(request), [])
-
-        # Mirror the consumer: the projected ``information_boundary`` block
-        # enumerates the boundary flag names themselves and is asserted
-        # all-false separately, so it is not a feature leak.
-        scannable = {k: v for k, v in request.items() if k != "information_boundary"}
-        for name, key in _iter_keys(scannable):
-            lowered = key.lower()
-            self.assertNotIn(lowered, FORBIDDEN_TOKENS, f"{name} leaked {key!r}")
-            self.assertFalse(lowered.startswith("model_a"), f"{name} leaked {key!r}")
-
-    def test_f_projected_request_is_structurally_action_identity_only(self):
-        request = _projected_request()
-        self.assertEqual(
-            {frozenset(alternative) for alternative in request["alternatives"]},
-            {PROJECTED_ALTERNATIVE_KEYS},
+        check(
+            report["reason_codes"] == t4["reason_codes"],
+            f"{name}: report reason codes {report['reason_codes']} != T4 {t4['reason_codes']}",
         )
+
+
+# --------------------------------------------------------------------------- #
+# (7) determinism: same fixtures => same reports and sha256
+# --------------------------------------------------------------------------- #
+def test_same_fixtures_same_outputs() -> None:
+    for name in sorted(FIXTURE_STATUSES):
+        first = fresh_report(name)
+        second = fresh_report(name)
+
+        check(first == second, f"{name}: two runs must yield the same report")
+        check(
+            adapter.render_report(first) == adapter.render_report(second),
+            f"{name}: the rendered report must be byte-identical",
+        )
+        check(
+            harness.canonical_sha256(first) == harness.canonical_sha256(second),
+            f"{name}: canonical report sha256 must be stable",
+        )
+        check(
+            first["harness_request_sha256"] == second["harness_request_sha256"],
+            f"{name}: projected request sha256 must be stable",
+        )
+        check(
+            first["harness_report_sha256"] == second["harness_report_sha256"],
+            f"{name}: #344 harness report sha256 must be stable",
+        )
+        for key in ("harness_request_sha256", "harness_report_sha256"):
+            value = first[key]
+            check(
+                isinstance(value, str) and len(value) == 64 and value == value.lower(),
+                f"{name}: {key} must be a lowercase 64-hex digest, got {value!r}",
+            )
+
+    # Cross-process determinism: two local CLI runs under distinct hash seeds
+    # must write byte-identical reports.
+    with tempfile.TemporaryDirectory() as tmp:
+        outputs = []
+        for seed in ("0", "424242"):
+            out = Path(tmp) / f"report-{seed}.json"
+            result = cli(FIXTURES / "multi_sizing.json", out, extra_env={"PYTHONHASHSEED": seed})
+            check(result.returncode == 0, f"CLI failed for seed {seed}: {result.stderr}")
+            check(out.is_file(), f"CLI did not write the report for seed {seed}")
+            outputs.append(out.read_text(encoding="utf-8"))
+        check(
+            outputs[0] == outputs[1],
+            "two CLI runs with different PYTHONHASHSEED must write identical reports",
+        )
+
+    # The fail-closed path is deterministic too: same reason code, no report.
+    payloads = []
+    for _ in range(2):
+        try:
+            adapter.run_fixture(FIXTURES / INVALID_FIXTURE, source_340=docs_340())
+        except adapter.AdapterError as exc:
+            payloads.append(json.dumps(exc.to_dict(), sort_keys=True))
+        else:
+            raise AssertionError("schema_mismatch.json must always fail closed")
+    check(payloads[0] == payloads[1], "the fail-closed payload must be deterministic")
+
+
+# --------------------------------------------------------------------------- #
+# (8) Model A / B independence on the projected request
+# --------------------------------------------------------------------------- #
+def test_projected_request_is_independent_from_model_a() -> None:
+    check(
+        {"ev_bb", "recommendation", "hero_ev", "route"} <= set(harness.FORBIDDEN_MODEL_FEATURES),
+        "the forbidden vocabulary must be non-empty and carry the expected tokens",
+    )
+    check(
+        REPORT_SCHEMA_PATH.is_file(),
+        f"the shipped #425 report contract is missing: {REPORT_SCHEMA_PATH}",
+    )
+
+    for name in sorted(FIXTURE_STATUSES):
+        document = fixture(name)
+        request = contract.project_to_harness_request(document, context())
+
+        check(
+            contract.check_forbidden_features(request) == [],
+            f"{name}: the #425 leak scan must find nothing",
+        )
+        check(
+            leaked_feature_paths(request) == [],
+            f"{name}: the independent key walk must find no forbidden feature",
+        )
+
+        boundary = request["information_boundary"]
+        check(
+            set(boundary) == set(contract.INFORMATION_BOUNDARY_FLAGS),
+            f"{name}: unexpected information boundary keys {sorted(boundary)}",
+        )
+        check(
+            all(value is False for value in boundary.values()),
+            f"{name}: the projected information_boundary must be entirely false: {boundary}",
+        )
+
         for alternative in request["alternatives"]:
-            for value in alternative.values():
-                self.assertNotIsInstance(value, dict)
-                self.assertNotIsInstance(value, list)
-
-    def test_f_information_boundary_is_entirely_false(self):
-        request = _projected_request()
-        boundary = request.get("information_boundary")
-        self.assertIsInstance(boundary, dict)
-        self.assertTrue(boundary)
-        self.assertTrue(all(flag is False for flag in boundary.values()), boundary)
-        self.assertEqual(
-            independence_guard(request),
-            {
-                "request_has_forbidden_features": False,
-                "forbidden_hits": [],
-                "information_boundary_all_false": True,
-            },
-        )
-
-    def test_f_every_committed_fixture_projects_a_clean_request(self):
-        for name in sorted(FIXTURE_STATUSES):
-            request = project_robustness_input(load_json(FIXTURES / name), context=self.context)
-            self.assertEqual(scan_forbidden_features(request), [], name)
-            self.assertTrue(
-                all(flag is False for flag in request["information_boundary"].values()), name
+            check(
+                alternative_keys(alternative) == PROJECTED_ALTERNATIVE_KEYS,
+                f"{name}: alternatives must be public action identity only, got "
+                f"{sorted(alternative)}",
             )
-            self.assertEqual(_report(name)["independence"]["forbidden_hits"], [])
 
-    # --- negative case: an injected forbidden key must be refused -----------
-    def test_negative_injected_forbidden_keys_are_refused(self):
-        request = _projected_request()
-        injections = (
-            ("ev_bb", lambda bad: bad["alternatives"][0].__setitem__("ev_bb", 1.0)),
-            ("route", lambda bad: bad["alternatives"][0].__setitem__("route", "leaked")),
-            (
-                "support",
-                lambda bad: bad["alternatives"][0].__setitem__(
-                    "support", {"status": "CONSISTENT", "tier": "HIGH", "ood": False}
-                ),
-            ),
-            (
-                "uncertainty",
-                lambda bad: bad["alternatives"][0].__setitem__(
-                    "uncertainty", {"ci95": [0.0, 1.0], "width_bb": 1.0, "source": "x"}
-                ),
-            ),
-            (
-                "posterior_refs",
-                lambda bad: bad["alternatives"][0].__setitem__("posterior_refs", ["x"]),
-            ),
-            ("recommended_action", lambda bad: bad.__setitem__("recommended_action", "ISO@5")),
-            ("recommendation", lambda bad: bad.__setitem__("recommendation", "ISO@5")),
-            ("hero_ev", lambda bad: bad.__setitem__("hero_ev", 1.0)),
-            ("model_a_policy", lambda bad: bad["decision_ref"].__setitem__("model_a_policy", "x")),
+        report = report_for(name)
+        check(
+            adapter.validate_report(report) is report,
+            f"{name}: the report must satisfy the shipped #425 report contract",
         )
-        for key, mutate in injections:
-            with self.subTest(injected=key):
-                bad = copy.deepcopy(request)
-                mutate(bad)
-                hits = scan_forbidden_features(bad)
-                self.assertTrue(any(hit.endswith(key) for hit in hits), (key, hits))
-                with self.assertRaises(ConsumerError) as caught:
-                    independence_guard(bad)
-                self.assertEqual(caught.exception.reason_code, "INDEPENDENCE_LEAK")
-
-    def test_negative_truthy_boundary_flag_is_refused(self):
-        request = _projected_request()
-        bad = copy.deepcopy(request)
-        bad["information_boundary"]["future_cards_consumed"] = True
-        with self.assertRaises(ConsumerError) as caught:
-            independence_guard(bad)
-        self.assertEqual(caught.exception.reason_code, "INFORMATION_BOUNDARY_VIOLATION")
-
-    def test_negative_consumer_refuses_a_leaked_projected_request(self):
-        # End-to-end: even if a future projection leaked a forbidden key, the
-        # consumer refuses to emit a report.
-        leaked = _projected_request()
-        leaked["alternatives"][0]["route"] = "leaked"
-        leaked["recommended_action"] = "ISO@5"
-        with mock.patch.object(consumer, "project_robustness_input", return_value=leaked):
-            with self.assertRaises(ConsumerError) as caught:
-                build_consumer_report(self.too_close, context=self.context, **self.docs)
-        self.assertEqual(caught.exception.reason_code, "INDEPENDENCE_LEAK")
-
-
-class FailClosedTests(unittest.TestCase):
-    """Remaining fail-closed contract points preserved from the T5 work."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.doc = load_json(FIXTURES / "too_close.json")
-        cls.docs = _docs_340()
-        cls.context = load_json(CONTEXT)
-
-    def expect_validate(self, reason_code: str, mutate) -> None:
-        bad = copy.deepcopy(self.doc)
-        mutate(bad)
-        with self.assertRaises(ConsumerError) as caught:
-            validate_fixture(bad)
-        self.assertEqual(caught.exception.reason_code, reason_code)
-        self.assertEqual(caught.exception.to_dict()["status"], "FAIL_CLOSED")
-
-    def test_missing_decision_fails_closed(self):
-        self.expect_validate("DECISION_MISSING", lambda d: d.pop("decision"))
-
-    def test_missing_information_boundary_fails_closed(self):
-        self.expect_validate("INFORMATION_BOUNDARY_MISSING", lambda d: d.pop("information_boundary"))
-
-    def test_unknown_field_fails_closed(self):
-        self.expect_validate("INPUT_SCHEMA_VIOLATION", lambda d: d.__setitem__("extra", 1))
-
-    def test_string_ev_is_not_accepted_as_a_number(self):
-        self.expect_validate(
-            "INPUT_SCHEMA_VIOLATION", lambda d: d["alternatives"][0].__setitem__("ev_bb", "1.0")
+        check(
+            all(value is False for value in report["information_boundary"].values()),
+            f"{name}: the report information boundary must be entirely false",
         )
-
-    def test_provenance_consuming_real_evidence_fails_closed(self):
-        self.expect_validate(
-            "INPUT_SCHEMA_VIOLATION",
-            lambda d: d["provenance"].__setitem__("real_issue_314_consumed", True),
+        check(
+            set(report["information_boundary"]) == set(adapter.REPORT_INFORMATION_BOUNDARY_FLAGS),
+            f"{name}: the report must pin every #425 boundary flag",
         )
-
-    def test_truthy_information_boundary_fails_closed(self):
-        bad = copy.deepcopy(self.doc)
-        bad["information_boundary"]["hero_ev_consumed"] = True
-        with self.assertRaises(ConsumerError) as caught:
-            build_consumer_report(bad, context=self.context, **self.docs)
-        self.assertEqual(caught.exception.reason_code, "INFORMATION_BOUNDARY_VIOLATION")
-
-    def test_fold_with_non_null_sizing_fails_closed_on_projection(self):
-        bad = copy.deepcopy(self.doc)
-        bad["alternatives"].append(
-            {
-                "alternative_id": "FOLD",
-                "action": "FOLD",
-                "sizing": 2.0,
-                "route": "synthetic_robustness_route_fold",
-                "source": "synthetic_monte_carlo_paired_v1",
-                "ev_bb": -0.1,
-                "uncertainty": {
-                    "ci95": [-0.2, 0.0],
-                    "width_bb": 0.2,
-                    "source": "synthetic_paired_ci95_v1",
-                },
-                "paired_delta_vs_best_bb": -1.0,
-                "support": {"status": "CONSISTENT", "tier": "HIGH", "ood": False},
-                "posterior_refs": None,
-            }
-        )
-        with self.assertRaises(ConsumerError) as caught:
-            build_consumer_report(bad, context=self.context, **self.docs)
-        self.assertEqual(caught.exception.reason_code, "PROJECTION_REJECTED")
-
-    def test_public_context_mismatch_fails_closed(self):
-        bad = copy.deepcopy(self.doc)
-        bad["decision"]["hero_position"] = "BTN"
-        with self.assertRaises(ConsumerError) as caught:
-            build_consumer_report(bad, context=self.context, **self.docs)
-        self.assertEqual(caught.exception.reason_code, "PROJECTION_REJECTED")
-
-
-class ReportShapeTests(unittest.TestCase):
-    """Report schema, identity binding and classification evidence."""
-
-    def test_report_schema_and_status_for_every_fixture(self):
-        present = {p.name for p in FIXTURES.glob("*.json")}
-        self.assertTrue(set(FIXTURE_STATUSES).issubset(present), present)
-        for name, expected in FIXTURE_STATUSES.items():
-            report = _report(name)
-            self.assertEqual(report["schema"], CONSUMER_REPORT_SCHEMA)
-            self.assertEqual(
-                sorted(report),
-                [
-                    "classification_evidence",
-                    "decision_id",
-                    "independence",
-                    "reason_codes",
-                    "schema",
-                    "sensitivity",
-                    "status",
-                ],
-            )
-            self.assertEqual(report["status"], expected)
-            self.assertIn(report["status"], STATUSES)
-            self.assertTrue(report["decision_id"].startswith("synthetic-robustness-"))
-
-    def test_independence_guard_flags_are_pinned_on_every_report(self):
-        for name in FIXTURE_STATUSES:
-            independence = _report(name)["independence"]
-            self.assertIs(independence["request_has_forbidden_features"], False)
-            self.assertEqual(independence["forbidden_hits"], [])
-            self.assertIs(independence["information_boundary_all_false"], True)
-
-    def test_sensitivity_block_binds_issue_340_identity_and_hashes(self):
-        sensitivity = _report("robust_recommendation.json")["sensitivity"]
-        self.assertEqual(
-            sensitivity["issue_340_identity"]["candidate_artifact_sha256"],
-            "87736a611a0000a8bc30b142a3c1db0ac2086368c6fa18441cdc211bd17f3a06",
-        )
-        self.assertEqual(sensitivity["issue_340_identity"]["production_effect"], "NONE")
-        self.assertIs(sensitivity["issue_340_identity"]["test_consumed_by_this_harness"], False)
-        self.assertEqual(len(sensitivity["request_sha256"]), 64)
-        self.assertEqual(len(sensitivity["report_sha256"]), 64)
-
-    def test_classification_evidence_is_exposed(self):
-        evidence = _report("too_close.json")["classification_evidence"]
-        self.assertEqual(evidence["schema"], "model-b-hero-robustness-status/v1")
-        self.assertEqual(evidence["input_schema"], "hero-model-b-robustness-input/v1")
-        self.assertIs(evidence["provenance_present"], True)
-        self.assertIs(evidence["information_boundary_present"], True)
-        self.assertEqual(evidence["boundary_violations"], [])
-
-
-class SourceGuardTests(unittest.TestCase):
-    """The consumer must never be wired to the forbidden real upstream runs.
-
-    These checks are purely textual/synthetic: they never list, stat or open the
-    real ``#367`` run directory, and they never reach a VALIDATION/TEST hand.
-    """
-
-    def test_consumer_module_never_hardcodes_forbidden_tokens(self):
-        text = MODULE_PATH.read_text(encoding="utf-8").lower()
-        for token in ("real_iso_ev", "issue367", "model_a", "hero_ev"):
-            self.assertNotIn(token, text)
-
-    def test_consumer_module_performs_no_network_io(self):
-        text = MODULE_PATH.read_text(encoding="utf-8")
-        for token in (
-            "import requests",
-            "import urllib",
-            "import socket",
-            "from urllib",
-            "http.client",
+        for flag in (
+            "real_issue_367_consumed",
+            "real_issue_314_consumed",
+            "validation_consumed",
+            "test_consumed",
         ):
-            self.assertNotIn(token, text)
+            check(
+                report["provenance"][flag] is False,
+                f"{name}: the report must not claim {flag}",
+            )
 
-    def test_forbidden_real_run_artifacts_are_refused(self):
-        fake_run = Path("/synthetic/forbidden") / f"{FORBIDDEN_RUN_MARKER}_v1"
-        for tail in ("RESULT.json", "SUMMARY.json", "model/candidate.json"):
-            with self.subTest(tail=tail):
-                with self.assertRaises(ConsumerError) as caught:
-                    assert_source_artifact_allowed(fake_run / tail)
-                self.assertEqual(caught.exception.reason_code, "FORBIDDEN_UPSTREAM_ARTIFACT")
-
-    def test_default_source_run_is_not_the_forbidden_run(self):
-        normalized = str(DEFAULT_SOURCE_340_DIR).replace("\\", "/").lower()
-        self.assertNotIn(FORBIDDEN_RUN_MARKER, normalized)
-        self.assertEqual(
-            assert_source_artifact_allowed(DEFAULT_SOURCE_340_DIR / "RESULT.json"),
-            DEFAULT_SOURCE_340_DIR / "RESULT.json",
+    # Negative case: an injected forbidden key is refused by the projection guard.
+    projection = contract.project_to_harness_request(fixture("too_close.json"), context())
+    injections = (
+        ("ev_bb", lambda bad: bad["alternatives"][0].__setitem__("ev_bb", 1.0)),
+        ("route", lambda bad: bad["alternatives"][0].__setitem__("route", "leaked_route")),
+        (
+            "support",
+            lambda bad: bad["alternatives"][0].__setitem__(
+                "support", {"status": "CONSISTENT", "tier": "HIGH", "ood": False}
+            ),
+        ),
+        (
+            "uncertainty",
+            lambda bad: bad["alternatives"][0].__setitem__(
+                "uncertainty", {"ci95": [0.0, 1.0], "width_bb": 1.0, "source": "leak"}
+            ),
+        ),
+        (
+            "posterior_refs",
+            lambda bad: bad["alternatives"][0].__setitem__("posterior_refs", ["leak"]),
+        ),
+        ("recommended_action", lambda bad: bad.__setitem__("recommended_action", "ISO@5")),
+        ("hero_ev", lambda bad: bad.__setitem__("hero_ev", 1.0)),
+        (
+            "model_a_policy",
+            lambda bad: bad["decision_ref"].__setitem__("model_a_policy", "leak"),
+        ),
+    )
+    for key, mutate in injections:
+        leaked = copy.deepcopy(projection)
+        mutate(leaked)
+        hits = contract.check_forbidden_features(leaked)
+        check(
+            any(hit.endswith(key) for hit in hits),
+            f"the leak scan must catch the injected {key!r}: {hits}",
+        )
+        expect_contract_error(
+            lambda bad=leaked: contract.validate_projected_request(bad), "FORBIDDEN_FEATURE"
         )
 
-    def test_no_fixture_or_provenance_touches_validation_or_test(self):
-        for name in sorted(FIXTURE_STATUSES):
-            fixture = load_json(FIXTURES / name)
-            provenance = fixture["provenance"]
-            self.assertIs(provenance["validation_consumed"], False, name)
-            self.assertIs(provenance["test_consumed"], False, name)
-            self.assertIs(provenance["real_issue_367_consumed"], False, name)
-            self.assertIs(provenance["real_issue_314_consumed"], False, name)
-            request = project_robustness_input(fixture, context=load_json(CONTEXT))
-            lowered = json.dumps(request).lower()
-            for token in ("validation", "test_consumed", FORBIDDEN_RUN_MARKER):
-                self.assertNotIn(token, lowered, name)
-
-
-class BatchModeTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.docs = _docs_340()
-
-    def test_batch_covers_every_fixture(self):
-        batch = consume_batch(source_340=self.docs)
-        self.assertEqual(batch["schema"], BATCH_REPORT_SCHEMA)
-        self.assertEqual(batch["fixture_count"], len(batch["fixtures"]))
-        by_name = {entry["fixture"]: entry["status"] for entry in batch["fixtures"]}
-        for name, expected in FIXTURE_STATUSES.items():
-            self.assertEqual(by_name.get(name), expected)
-        self.assertEqual(sum(batch["statuses"].values()), len(batch["fixtures"]))
-        self.assertEqual([entry["fixture"] for entry in batch["fixtures"]], sorted(by_name))
-
-    def test_batch_is_deterministic(self):
-        first = consume_batch(source_340=self.docs)
-        second = consume_batch(source_340=self.docs)
-        self.assertEqual(canonical_sha256(first), canonical_sha256(second))
-        self.assertEqual(
-            [entry["report_sha256"] for entry in first["fixtures"]],
-            [entry["report_sha256"] for entry in second["fixtures"]],
+    # End to end: even if a future projection leaked, the consumer still fails
+    # closed and emits no status.
+    leaked_request = copy.deepcopy(projection)
+    leaked_request["alternatives"][0]["route"] = "leaked_route"
+    with mock.patch.object(adapter, "project_to_harness_request", return_value=leaked_request):
+        error = expect_adapter_error(
+            lambda: adapter.build_report(
+                fixture("too_close.json"), context=context(), **docs_340()
+            ),
+            "HARNESS_REJECTED",
         )
+    check("status" not in error.to_dict(), "a leaked projection may never produce a status")
+    check(
+        "forbidden" in error.message.lower(),
+        f"the harness refusal must name the forbidden feature: {error.message}",
+    )
 
-    def test_cli_batch_writes_one_report_per_fixture(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            with redirect_stdout(io.StringIO()):
-                code = main(["--batch", "--out-dir", tmp])
-            self.assertEqual(code, 0)
-            out = Path(tmp)
-            for name in FIXTURE_STATUSES:
-                report = json.loads((out / name).read_text(encoding="utf-8"))
-                self.assertEqual(report["schema"], CONSUMER_REPORT_SCHEMA)
-                self.assertEqual(report["status"], FIXTURE_STATUSES[name])
-            summary = json.loads((out / "BATCH_SUMMARY.json").read_text(encoding="utf-8"))
-            self.assertEqual(summary["schema"], BATCH_REPORT_SCHEMA)
-            self.assertNotIn("reports", summary)
-
-    def test_cli_single_mode_writes_a_report(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            out = Path(tmp) / "report.json"
-            with redirect_stdout(io.StringIO()):
-                code = main(
-                    ["--fixture", str(FIXTURES / "robust_recommendation.json"), "--out", str(out)]
-                )
-            self.assertEqual(code, 0)
-            report = json.loads(out.read_text(encoding="utf-8"))
-            self.assertEqual(report["status"], "CONSISTENT")
-            self.assertIs(report["independence"]["information_boundary_all_false"], True)
-
-    def test_cli_fails_closed_with_reason_code(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            fixture = Path(tmp) / "bad.json"
-            bad = load_json(FIXTURES / "too_close.json")
-            bad["provenance"].pop("synthetic_fixture")
-            fixture.write_text(json.dumps(bad) + "\n", encoding="utf-8")
-            stderr = io.StringIO()
-            with redirect_stdout(io.StringIO()), redirect_stderr(stderr):
-                code = main(["--fixture", str(fixture), "--out", str(Path(tmp) / "out.json")])
-            self.assertEqual(code, 2)
-            payload = json.loads(stderr.getvalue())
-            self.assertEqual(payload["status"], "FAIL_CLOSED")
-            self.assertEqual(payload["reason_code"], "PROVENANCE_INCOMPLETE")
-            self.assertFalse((Path(tmp) / "out.json").exists())
-
-    def test_cli_accepts_the_fixture_folder_as_fixture_argument(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            with redirect_stdout(io.StringIO()):
-                code = main(["--fixture", str(FIXTURES), "--out", tmp])
-            self.assertEqual(code, 0)
-            for name in FIXTURE_STATUSES:
-                self.assertTrue((Path(tmp) / name).is_file())
-
-    def test_cli_reports_an_unreadable_fixture(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            stderr = io.StringIO()
-            with redirect_stdout(io.StringIO()), redirect_stderr(stderr):
-                code = main(
-                    [
-                        "--fixture",
-                        str(Path(tmp) / "nope.json"),
-                        "--out",
-                        str(Path(tmp) / "out.json"),
-                    ]
-                )
-            self.assertEqual(code, 2)
-            self.assertEqual(json.loads(stderr.getvalue())["reason_code"], "FIXTURE_UNREADABLE")
+    # Guard: the adapter is never wired to the forbidden real run.
+    check(
+        FORBIDDEN_RUN_MARKER not in str(adapter.DEFAULT_SOURCE_340_DIR).lower(),
+        "the adapter must not read the real #367 ISO EV run",
+    )
 
 
-def run_suite(verbosity: int = 2) -> bool:
-    """Run the whole acceptance suite; return ``True`` when every test passes."""
-    program = unittest.main(module=__name__, argv=[sys.argv[0]], exit=False, verbosity=verbosity)
-    return bool(program.result.wasSuccessful())
+SECTIONS: tuple[tuple[str, Callable[[], None]], ...] = (
+    (
+        "(1) schema mismatch fails closed with a reason code",
+        test_schema_mismatch_fails_closed,
+    ),
+    (
+        "(2) missing provenance/support is an explicit rejection",
+        test_missing_provenance_and_support_are_explicit,
+    ),
+    ("(3) OOD fixture is OOD_UNTESTABLE", test_ood_fixture_is_ood_untestable),
+    ("(4) too-close is preserved and never overwritten", test_too_close_is_preserved),
+    (
+        "(5) sparse/high uncertainty is INSUFFICIENT_SUPPORT",
+        test_sparse_high_uncertainty_is_insufficient_support,
+    ),
+    (
+        "(6) multi-sizing is deterministically SENSITIVE",
+        test_multi_sizing_is_deterministic_sensitive,
+    ),
+    ("(7) same fixtures produce the same reports and sha256", test_same_fixtures_same_outputs),
+    (
+        "(8) projected request is Model A/B independent",
+        test_projected_request_is_independent_from_model_a,
+    ),
+)
+
+
+def main() -> int:
+    failures: list[str] = []
+    passed = 0
+    for label, section in SECTIONS:
+        try:
+            section()
+        except AssertionError as exc:
+            message = str(exc) or "assertion failed"
+            failures.append(f"{label}: {message}")
+            print(f"FAIL {label}: {message}", file=sys.stderr)
+        except Exception as exc:  # noqa: BLE001 - report every section, keep going
+            message = f"{type(exc).__name__}: {exc}"
+            failures.append(f"{label}: {message}")
+            print(f"ERROR {label}: {message}", file=sys.stderr)
+        else:
+            passed += 1
+            print(f"ok   {label}")
+
+    if failures:
+        print(
+            f"#425 Hero -> Model B robustness consumer: FAIL "
+            f"({len(failures)}/{len(SECTIONS)} sections)",
+            file=sys.stderr,
+        )
+        return 1
+
+    print(
+        f"#425 Hero -> Model B robustness consumer ({passed}/{len(SECTIONS)} sections): PASS"
+    )
+    return 0
 
 
 if __name__ == "__main__":
-    passed = run_suite()
-    stream = sys.stdout if passed else sys.stderr
-    print(
-        "\n#425 backlog-hae acceptance suite: "
-        + ("ALL TESTS PASSED" if passed else "FAILED (at least one test did not pass)"),
-        file=stream,
-    )
-    raise SystemExit(0 if passed else 1)
+    raise SystemExit(main())
