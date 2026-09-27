@@ -21,11 +21,11 @@ payload `9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961`) and
 the eight required artifacts are indexed by
 `analysis/issue423_hybrid_router/ARTIFACTS.json`; the human summary is
 `analysis/issue423_hybrid_router/SUMMARY.md`
-(byte SHA256 `c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876`).
+(byte SHA256 `95e0315a4500af16f364284dd354c29c638d804e5fd96dd28d67ef405a256499`).
 The terminal decision lives in
 `analysis/issue423_hybrid_router/DECISION.json`
-(byte SHA256 `fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd`,
-canonical payload `cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95`)
+(byte SHA256 `879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35`,
+canonical payload `db47983e1208541a7c0a8c7e46b6e22598c561dbb54f51895563c2641fff29cd`)
 and is restated in `.project/decisions/20260926-hybrid-router.md`. The JSON wins
 over this prose; every digest above is recorded outside the payload it describes
 and is recomputed from the persisted bytes.

@@ -110,6 +110,137 @@ DATASET_CONTRACT_REL = "contracts/training/generalized-response-dataset.schema.j
 #: The model #367 currently retains while the hybrid router is not admitted.
 ADMITTED_367_MODEL_ID = "model-a-preflop-sizing-aware-candidate-v2"
 
+#: The offline replay of the #423 suite and the transverse guards, recorded by
+#: the task worker at the final HEAD inside the isolated worktree.  Every row is
+#: an *observation* of a command that was actually run with ``PYTHONPATH=.``;
+#: this tool records them, never re-executes them, so they are non-authoritative
+#: and are never merge evidence.  The authoritative #423 surface stays the runner
+#: ``.github/workflows/issue-423-hybrid-router.yml``.
+OFFLINE_REPLAY_RECORDED_AT = "2026-09-27"
+OFFLINE_REPLAY_INVOCATION = "PYTHONPATH=."
+OFFLINE_REPLAY_NOTE = (
+    "Recorded by the task worker inside the isolated worktree sandbox at the final HEAD "
+    f"({OFFLINE_REPLAY_RECORDED_AT}), with PYTHONPATH=.; they are NON-AUTHORITATIVE, were "
+    "not re-executed by this tool and are never merge evidence. The authoritative #423 "
+    "surface remains the runner .github/workflows/issue-423-hybrid-router.yml"
+)
+OFFLINE_REPLAY_ROWS: tuple[Mapping[str, Any], ...] = (
+    {
+        "command": "PYTHONPATH=. python3 tests/training/test_freeze_hybrid_router_spec.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (32 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/training/test_freeze_hybrid_router_criteria.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (37 tests)",
+    },
+    {
+        "command": (
+            "POKER_HYBRID_ROUTER_CV_FULL=1 PYTHONPATH=. "
+            "python3 tests/training/test_evaluate_hybrid_router_cv.py"
+        ),
+        "observed_exit_code": 0,
+        "observed_result": "OK (47 tests; full derivation re-scored, no skip)",
+        "note": "the non-skipped derivation the ticket requires",
+    },
+    {
+        "command": (
+            "POKER_HYBRID_ROUTER_CV_PINS_ONLY=1 PYTHONPATH=. "
+            "python3 tests/training/test_evaluate_hybrid_router_cv.py"
+        ),
+        "observed_exit_code": 0,
+        "observed_result": "OK (6 tests; nested pins recomputed)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/training/test_hybrid_router_terminal_report.py",
+        "observed_exit_code": 0,
+        "observed_result": (
+            "OK (44 tests; 1 conditional skip: the full re-score test is gated on "
+            "POKER_HYBRID_ROUTER_CV_FULL=1, not on the derivation)"
+        ),
+    },
+    {
+        "command": (
+            "POKER_HYBRID_ROUTER_CV_FULL=1 PYTHONPATH=. "
+            "python3 tests/training/test_hybrid_router_terminal_report.py"
+        ),
+        "observed_exit_code": 0,
+        "observed_result": "OK (44 tests; the full terminal re-score runs unskipped)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/training/test_issue423_evidence_bundle.py",
+        "observed_exit_code": 0,
+        "observed_result": (
+            "OK (bundle --check: 8 required artifacts, 15 content-addressed objects, "
+            "92 cross-references)"
+        ),
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/training/test_issue423_n8n_result.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (11 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/preflop/test_hybrid_response_router.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (40 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/preflop/test_hybrid_response_runtime.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (24 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/preflop/test_generalized_response_calibration.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (34 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/preflop/test_issue423_mandatory_contracts.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (11 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/simulation/test_issue423_preflight.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (25 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/ci/test_issue423_contract_guards.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (11 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/test_github_workflow_audit.py",
+        "observed_exit_code": 0,
+        "observed_result": (
+            "OK (33 tests; 2 conditional skips: the #419/#421 stamped-commit surface "
+            "cross-checks are not applicable on this branch, neither is a derivation skip)"
+        ),
+    },
+    {
+        "command": "PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (12 tests)",
+    },
+    {
+        "command": "PYTHONPATH=. python3 tools/training/build_issue423_evidence_bundle.py --check",
+        "observed_exit_code": 0,
+        "observed_result": (
+            "OK (status=OK; the decision digest and the 92 cross-references recompute "
+            "from the persisted bytes)"
+        ),
+    },
+    {
+        "command": "PYTHONPATH=. python3 tools/audit_active_workflow_dag.py --check",
+        "observed_exit_code": 0,
+        "observed_result": (
+            "PASS (57 workflows; 14 scenarios; decision=NO_FURTHER_CONSOLIDATION_JUSTIFIED)"
+        ),
+    },
+)
+
 #: ``(name, role)`` of the eight artifacts the ticket enumerates, in ticket order.
 REQUIRED_ARTIFACTS: tuple[tuple[str, str], ...] = (
     ("HYBRID_ROUTER_SPEC.json", "T1_T5_PREREGISTRATION_SPEC_AND_FROZEN_CRITERIA"),
@@ -1202,6 +1333,46 @@ def build_decision(inputs: Mapping[str, Any]) -> dict:
         },
         "next_issue": NEXT_ISSUE,
         "next_issue_status": "NOT_EXECUTED",
+        "offline_replay": {
+            "recorded_at": OFFLINE_REPLAY_RECORDED_AT,
+            "invocation": OFFLINE_REPLAY_INVOCATION,
+            "authoritative_runner": ".github/workflows/issue-423-hybrid-router.yml",
+            "note": OFFLINE_REPLAY_NOTE,
+            "rows": [dict(row) for row in OFFLINE_REPLAY_ROWS],
+            "all_rows_passed": all(
+                row["observed_exit_code"] == 0 for row in OFFLINE_REPLAY_ROWS
+            ),
+            "commands_recorded": len(OFFLINE_REPLAY_ROWS),
+            "boundary_recheck": {
+                "source": (
+                    "recomputed by this tool from the persisted evidence (and the pointer "
+                    "bytes on disk) at build and --check time"
+                ),
+                "test_consumed": report["scope"]["test_consumed"],
+                "validation_consumed": report["scope"]["validation_consumed"],
+                "validation_reopened": False,
+                "active_pointer_mutated": False,
+                "product_admissible": False,
+                "issue367_executed": preflight["boundary"]["issue367_executed"],
+                "next_issue": NEXT_ISSUE,
+                "next_issue_status": "NOT_EXECUTED",
+                "active_model_a_pointer_path": report["protocol"]["active_reference"]["path"],
+                "active_model_a_pointer_sha256_pinned": report["protocol"]["active_reference"][
+                    "sha256"
+                ],
+                "active_model_a_pointer_sha256_on_disk": sha256_bytes(
+                    (ROOT / ACTIVE_MODEL_A_REL).read_bytes()
+                ),
+                "active_model_a_pointer_bytes_match_pin": report["protocol"]["active_reference"][
+                    "sha256"
+                ]
+                == sha256_bytes((ROOT / ACTIVE_MODEL_A_REL).read_bytes()),
+                "model_b_pointer_path": MODEL_B_REL,
+                "model_b_pointer_sha256_on_disk": sha256_bytes(
+                    (ROOT / MODEL_B_REL).read_bytes()
+                ),
+            },
+        },
         "downstream": (
             "only the admitting terminal outcome would unblock the #367 analysis; the "
             "retaining outcome keeps the active Model A reference, wires no provider "
@@ -1468,7 +1639,41 @@ def summary_text(inputs: Mapping[str, Any], decision: Mapping[str, Any], decisio
         "`next_issue=" + str(NEXT_ISSUE) + "` is recorded as `NOT_EXECUTED`; no Hero EV, no "
         "rollout and no support-grid extension are computed.",
         "",
-        "## 11. Reproduce and verify",
+        "## 11. Offline replay (recorded, NON-AUTHORITATIVE)",
+        "",
+        "The #423 suite and the transverse guards were replayed at the final HEAD with `"
+        + OFFLINE_REPLAY_INVOCATION + "`. " + decision["offline_replay"]["note"] + ".",
+        "",
+        "| command | exit | observed |",
+        "| --- | --- | --- |",
+    ]
+    for row in decision["offline_replay"]["rows"]:
+        note = row.get("note", "")
+        observed = row["observed_result"] + ((" -- " + note) if note else "")
+        lines.append(
+            "| `" + row["command"] + "` | " + str(row["observed_exit_code"]) + " | "
+            + observed + " |"
+        )
+    recheck = decision["offline_replay"]["boundary_recheck"]
+    lines += [
+        "",
+        "Terminal boundaries re-checked at the final HEAD (`"
+        + recheck["source"] + "`): `test_consumed=" + str(recheck["test_consumed"]).lower()
+        + "`, `validation_consumed=" + str(recheck["validation_consumed"]).lower()
+        + "`, `validation_reopened=" + str(recheck["validation_reopened"]).lower()
+        + "`, `active_pointer_mutated=" + str(recheck["active_pointer_mutated"]).lower()
+        + "`, `product_admissible=" + str(recheck["product_admissible"]).lower()
+        + "`, `issue367_executed=" + str(recheck["issue367_executed"]).lower()
+        + "`, `next_issue=" + str(recheck["next_issue"]) + "` (`"
+        + recheck["next_issue_status"] + "`). The active Model A pointer `"
+        + recheck["active_model_a_pointer_path"] + "` still hashes to `"
+        + recheck["active_model_a_pointer_sha256_on_disk"] + "`"
+        + (" (matches the pinned reference)" if recheck["active_model_a_pointer_bytes_match_pin"]
+           else " (DOES NOT match the pinned reference)")
+        + "; the Model B pointer `" + recheck["model_b_pointer_path"] + "` hashes to `"
+        + recheck["model_b_pointer_sha256_on_disk"] + "`.",
+        "",
+        "## 12. Reproduce and verify",
         "",
         "```text",
         "python3 tools/training/build_issue423_evidence_bundle.py",

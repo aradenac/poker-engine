@@ -11,8 +11,8 @@
   `SPARSE_STRATA_COMPARISON.json`, `GENERALIZED_CALIBRATION_REPORT.json`,
   `ROUTER_MANIFEST.json`, `ISSUE367_PREFLIGHT.json`, `DECISION.json`,
   `SUMMARY.md`) ; `DECISION.json` octets
-  `fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd`, payload
-  canonique `cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95`
+  `879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35`, payload
+  canonique `db47983e1208541a7c0a8c7e46b6e22598c561dbb54f51895563c2641fff29cd`
 - Doc normative associée : `docs/hybrid-response-router.md`
 
 ## Décision terminale

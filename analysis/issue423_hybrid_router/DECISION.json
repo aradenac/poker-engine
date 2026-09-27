@@ -57,7 +57,7 @@
     },
     "validation_recalibrated": false
   },
-  "canonical_payload_sha256": "cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95",
+  "canonical_payload_sha256": "db47983e1208541a7c0a8c7e46b6e22598c561dbb54f51895563c2641fff29cd",
   "channels": [
     "active_model_a",
     "generalized_calibrated",
@@ -308,6 +308,124 @@
   },
   "next_issue": 367,
   "next_issue_status": "NOT_EXECUTED",
+  "offline_replay": {
+    "all_rows_passed": true,
+    "authoritative_runner": ".github/workflows/issue-423-hybrid-router.yml",
+    "boundary_recheck": {
+      "active_model_a_pointer_bytes_match_pin": true,
+      "active_model_a_pointer_path": "training/models/preflop_population_model_v5.json",
+      "active_model_a_pointer_sha256_on_disk": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "active_model_a_pointer_sha256_pinned": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+      "active_pointer_mutated": false,
+      "issue367_executed": false,
+      "model_b_pointer_path": "training/models/postflop_population_model_v5.json",
+      "model_b_pointer_sha256_on_disk": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+      "next_issue": 367,
+      "next_issue_status": "NOT_EXECUTED",
+      "product_admissible": false,
+      "source": "recomputed by this tool from the persisted evidence (and the pointer bytes on disk) at build and --check time",
+      "test_consumed": false,
+      "validation_consumed": false,
+      "validation_reopened": false
+    },
+    "commands_recorded": 18,
+    "invocation": "PYTHONPATH=.",
+    "note": "Recorded by the task worker inside the isolated worktree sandbox at the final HEAD (2026-09-27), with PYTHONPATH=.; they are NON-AUTHORITATIVE, were not re-executed by this tool and are never merge evidence. The authoritative #423 surface remains the runner .github/workflows/issue-423-hybrid-router.yml",
+    "recorded_at": "2026-09-27",
+    "rows": [
+      {
+        "command": "PYTHONPATH=. python3 tests/training/test_freeze_hybrid_router_spec.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (32 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/training/test_freeze_hybrid_router_criteria.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (37 tests)"
+      },
+      {
+        "command": "POKER_HYBRID_ROUTER_CV_FULL=1 PYTHONPATH=. python3 tests/training/test_evaluate_hybrid_router_cv.py",
+        "note": "the non-skipped derivation the ticket requires",
+        "observed_exit_code": 0,
+        "observed_result": "OK (47 tests; full derivation re-scored, no skip)"
+      },
+      {
+        "command": "POKER_HYBRID_ROUTER_CV_PINS_ONLY=1 PYTHONPATH=. python3 tests/training/test_evaluate_hybrid_router_cv.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (6 tests; nested pins recomputed)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/training/test_hybrid_router_terminal_report.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (44 tests; 1 conditional skip: the full re-score test is gated on POKER_HYBRID_ROUTER_CV_FULL=1, not on the derivation)"
+      },
+      {
+        "command": "POKER_HYBRID_ROUTER_CV_FULL=1 PYTHONPATH=. python3 tests/training/test_hybrid_router_terminal_report.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (44 tests; the full terminal re-score runs unskipped)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/training/test_issue423_evidence_bundle.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (bundle --check: 8 required artifacts, 15 content-addressed objects, 92 cross-references)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/training/test_issue423_n8n_result.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (11 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/preflop/test_hybrid_response_router.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (40 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/preflop/test_hybrid_response_runtime.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (24 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/preflop/test_generalized_response_calibration.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (34 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/preflop/test_issue423_mandatory_contracts.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (11 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/simulation/test_issue423_preflight.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (25 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/ci/test_issue423_contract_guards.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (11 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/test_github_workflow_audit.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (33 tests; 2 conditional skips: the #419/#421 stamped-commit surface cross-checks are not applicable on this branch, neither is a derivation skip)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py",
+        "observed_exit_code": 0,
+        "observed_result": "OK (12 tests)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tools/training/build_issue423_evidence_bundle.py --check",
+        "observed_exit_code": 0,
+        "observed_result": "OK (status=OK; the decision digest and the 92 cross-references recompute from the persisted bytes)"
+      },
+      {
+        "command": "PYTHONPATH=. python3 tools/audit_active_workflow_dag.py --check",
+        "observed_exit_code": 0,
+        "observed_result": "PASS (57 workflows; 14 scenarios; decision=NO_FURTHER_CONSOLIDATION_JUSTIFIED)"
+      }
+    ]
+  },
   "ood_gate": {
     "channel_abstention_on_probes": {
       "active_model_a": {

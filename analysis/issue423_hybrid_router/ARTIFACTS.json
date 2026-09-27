@@ -1,14 +1,14 @@
 {
   "artifacts": {
     "DECISION.json": {
-      "bytes": 29169,
-      "canonical_payload_sha256": "cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95",
+      "bytes": 34779,
+      "canonical_payload_sha256": "db47983e1208541a7c0a8c7e46b6e22598c561dbb54f51895563c2641fff29cd",
       "content_addressed": true,
       "media_type": "application/json",
-      "object": "analysis/issue423_hybrid_router/sha256/fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd.json",
+      "object": "analysis/issue423_hybrid_router/sha256/879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35.json",
       "path": "analysis/issue423_hybrid_router/DECISION.json",
       "role": "T9_TERMINAL_DECISION",
-      "sha256": "fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd"
+      "sha256": "879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35"
     },
     "GENERALIZED_CALIBRATION_REPORT.json": {
       "bytes": 243779,
@@ -81,13 +81,13 @@
       "sha256": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
     },
     "SUMMARY.md": {
-      "bytes": 9780,
+      "bytes": 13418,
       "content_addressed": true,
       "media_type": "text/markdown",
-      "object": "analysis/issue423_hybrid_router/sha256/c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876.md",
+      "object": "analysis/issue423_hybrid_router/sha256/95e0315a4500af16f364284dd354c29c638d804e5fd96dd28d67ef405a256499.md",
       "path": "analysis/issue423_hybrid_router/SUMMARY.md",
       "role": "T9_SUMMARY",
-      "sha256": "c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876"
+      "sha256": "95e0315a4500af16f364284dd354c29c638d804e5fd96dd28d67ef405a256499"
     },
     "TRAIN_CV_ROUTER_REPORT.json": {
       "bytes": 126699,
@@ -128,10 +128,10 @@
   },
   "bundle": "analysis/issue423_hybrid_router",
   "decision": {
-    "canonical_payload_sha256": "cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95",
-    "object": "analysis/issue423_hybrid_router/sha256/fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd.json",
+    "canonical_payload_sha256": "db47983e1208541a7c0a8c7e46b6e22598c561dbb54f51895563c2641fff29cd",
+    "object": "analysis/issue423_hybrid_router/sha256/879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35.json",
     "path": "analysis/issue423_hybrid_router/DECISION.json",
-    "sha256": "fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd"
+    "sha256": "879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35"
   },
   "digest_verification": {
     "all_recomputed_digests_match_persisted": true,
@@ -941,9 +941,9 @@
   },
   "evidence_bindings": {
     "DECISION.json": {
-      "object": "analysis/issue423_hybrid_router/sha256/fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd.json",
+      "object": "analysis/issue423_hybrid_router/sha256/879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35.json",
       "path": "analysis/issue423_hybrid_router/DECISION.json",
-      "sha256": "fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd"
+      "sha256": "879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35"
     },
     "GENERALIZED_CALIBRATION_REPORT.json": {
       "object": "analysis/issue423_hybrid_router/sha256/a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd.json",
@@ -979,7 +979,7 @@
   "generated_by": {
     "frozen_at": "2026-09-26T00:00:00Z",
     "tool_path": "tools/training/build_issue423_evidence_bundle.py",
-    "tool_sha256": "7d50f8e391c9b7f782a244a302ecf6256b883e8b5e69ad6b409484abd2a4e71f"
+    "tool_sha256": "153885d9e117224b7ae426ec1fc06d6ec36604d27d7a457daaed8faa42917568"
   },
   "issue": 423,
   "kind": "hybrid_router_evidence_bundle",
@@ -996,9 +996,9 @@
   ],
   "schema": "poker-hybrid-router-evidence-index/v1",
   "summary": {
-    "object": "analysis/issue423_hybrid_router/sha256/c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876.md",
+    "object": "analysis/issue423_hybrid_router/sha256/95e0315a4500af16f364284dd354c29c638d804e5fd96dd28d67ef405a256499.md",
     "path": "analysis/issue423_hybrid_router/SUMMARY.md",
-    "sha256": "c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876"
+    "sha256": "95e0315a4500af16f364284dd354c29c638d804e5fd96dd28d67ef405a256499"
   },
   "supporting_evidence": {
     "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json": {

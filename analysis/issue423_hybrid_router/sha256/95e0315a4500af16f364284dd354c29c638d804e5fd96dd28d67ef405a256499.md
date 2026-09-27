@@ -2,7 +2,7 @@
 
 **RETAIN_REFERENCE_HYBRID_INSUFFICIENT** -- the actual one of the two valid terminal outcomes (`ADMIT_HYBRID_ROUTER_FOR_ANALYSIS` / `RETAIN_REFERENCE_HYBRID_INSUFFICIENT`). On the TRAIN-only, hand-grouped cross-fitted score the routed system passes 4/5 frozen admission criteria and fails `SPARSE_ECE_CEILING`, so the active Model A reference is retained, #367 keeps its currently admitted model and nothing is promoted (`PRODUCT_ADMISSIBLE` is explicitly out of scope).
 
-This bundle persists and content-addresses the eight required #423 artifacts under `analysis/issue423_hybrid_router/sha256/` and binds them in `ARTIFACTS.json`. `DECISION.json` is the terminal decision authored here as a deterministic fold of the frozen evidence (no re-fit, no re-score, no new claim); its byte SHA256 is `fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd` (canonical payload `cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95`).
+This bundle persists and content-addresses the eight required #423 artifacts under `analysis/issue423_hybrid_router/sha256/` and binds them in `ARTIFACTS.json`. `DECISION.json` is the terminal decision authored here as a deterministic fold of the frozen evidence (no re-fit, no re-score, no new claim); its byte SHA256 is `879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35` (canonical payload `db47983e1208541a7c0a8c7e46b6e22598c561dbb54f51895563c2641fff29cd`).
 
 ## 1. Decision (both terminal outcomes)
 
@@ -78,7 +78,7 @@ Every digest this bundle persists is recomputed from the persisted bytes: 92 cro
 | GENERALIZED_CALIBRATION_REPORT.json | `a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd` | `see ARTIFACTS.json` |
 | ROUTER_MANIFEST.json | `c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99` | `see ARTIFACTS.json` |
 | ISSUE367_PREFLIGHT.json | `8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b` | `see ARTIFACTS.json` |
-| DECISION.json | `fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd` | `cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95` |
+| DECISION.json | `879e2cae89086223750aff219edfcb0bf8b1236921c2326ef0630fba646dac35` | `db47983e1208541a7c0a8c7e46b6e22598c561dbb54f51895563c2641fff29cd` |
 | SUMMARY.md | `see ARTIFACTS.json` | n/a |
 
 ## 10. Boundaries
@@ -88,7 +88,34 @@ Every digest this bundle persists is recomputed from the persisted bytes: 92 cro
 - `ACTIVE_POINTER_MUTATED=false` -- the active Model A pointer `training/models/preflop_population_model_v5.json` (`ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca`), the Model B pointer `training/models/postflop_population_model_v5.json` and the model admitted for #367 (`model-a-preflop-sizing-aware-candidate-v2`) are unchanged; no promotion is performed (`automatic_promotion=FORBIDDEN`).
 - `ISSUE367_EXECUTED=false` -- #367 is neither executed nor authorized by this bundle; `next_issue=367` is recorded as `NOT_EXECUTED`; no Hero EV, no rollout and no support-grid extension are computed.
 
-## 11. Reproduce and verify
+## 11. Offline replay (recorded, NON-AUTHORITATIVE)
+
+The #423 suite and the transverse guards were replayed at the final HEAD with `PYTHONPATH=.`. Recorded by the task worker inside the isolated worktree sandbox at the final HEAD (2026-09-27), with PYTHONPATH=.; they are NON-AUTHORITATIVE, were not re-executed by this tool and are never merge evidence. The authoritative #423 surface remains the runner .github/workflows/issue-423-hybrid-router.yml.
+
+| command | exit | observed |
+| --- | --- | --- |
+| `PYTHONPATH=. python3 tests/training/test_freeze_hybrid_router_spec.py` | 0 | OK (32 tests) |
+| `PYTHONPATH=. python3 tests/training/test_freeze_hybrid_router_criteria.py` | 0 | OK (37 tests) |
+| `POKER_HYBRID_ROUTER_CV_FULL=1 PYTHONPATH=. python3 tests/training/test_evaluate_hybrid_router_cv.py` | 0 | OK (47 tests; full derivation re-scored, no skip) -- the non-skipped derivation the ticket requires |
+| `POKER_HYBRID_ROUTER_CV_PINS_ONLY=1 PYTHONPATH=. python3 tests/training/test_evaluate_hybrid_router_cv.py` | 0 | OK (6 tests; nested pins recomputed) |
+| `PYTHONPATH=. python3 tests/training/test_hybrid_router_terminal_report.py` | 0 | OK (44 tests; 1 conditional skip: the full re-score test is gated on POKER_HYBRID_ROUTER_CV_FULL=1, not on the derivation) |
+| `POKER_HYBRID_ROUTER_CV_FULL=1 PYTHONPATH=. python3 tests/training/test_hybrid_router_terminal_report.py` | 0 | OK (44 tests; the full terminal re-score runs unskipped) |
+| `PYTHONPATH=. python3 tests/training/test_issue423_evidence_bundle.py` | 0 | OK (bundle --check: 8 required artifacts, 15 content-addressed objects, 92 cross-references) |
+| `PYTHONPATH=. python3 tests/training/test_issue423_n8n_result.py` | 0 | OK (11 tests) |
+| `PYTHONPATH=. python3 tests/preflop/test_hybrid_response_router.py` | 0 | OK (40 tests) |
+| `PYTHONPATH=. python3 tests/preflop/test_hybrid_response_runtime.py` | 0 | OK (24 tests) |
+| `PYTHONPATH=. python3 tests/preflop/test_generalized_response_calibration.py` | 0 | OK (34 tests) |
+| `PYTHONPATH=. python3 tests/preflop/test_issue423_mandatory_contracts.py` | 0 | OK (11 tests) |
+| `PYTHONPATH=. python3 tests/simulation/test_issue423_preflight.py` | 0 | OK (25 tests) |
+| `PYTHONPATH=. python3 tests/ci/test_issue423_contract_guards.py` | 0 | OK (11 tests) |
+| `PYTHONPATH=. python3 tests/test_github_workflow_audit.py` | 0 | OK (33 tests; 2 conditional skips: the #419/#421 stamped-commit surface cross-checks are not applicable on this branch, neither is a derivation skip) |
+| `PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py` | 0 | OK (12 tests) |
+| `PYTHONPATH=. python3 tools/training/build_issue423_evidence_bundle.py --check` | 0 | OK (status=OK; the decision digest and the 92 cross-references recompute from the persisted bytes) |
+| `PYTHONPATH=. python3 tools/audit_active_workflow_dag.py --check` | 0 | PASS (57 workflows; 14 scenarios; decision=NO_FURTHER_CONSOLIDATION_JUSTIFIED) |
+
+Terminal boundaries re-checked at the final HEAD (`recomputed by this tool from the persisted evidence (and the pointer bytes on disk) at build and --check time`): `test_consumed=false`, `validation_consumed=false`, `validation_reopened=false`, `active_pointer_mutated=false`, `product_admissible=false`, `issue367_executed=false`, `next_issue=367` (`NOT_EXECUTED`). The active Model A pointer `training/models/preflop_population_model_v5.json` still hashes to `ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca` (matches the pinned reference); the Model B pointer `training/models/postflop_population_model_v5.json` hashes to `6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae`.
+
+## 12. Reproduce and verify
 
 ```text
 python3 tools/training/build_issue423_evidence_bundle.py

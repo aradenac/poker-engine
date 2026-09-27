@@ -290,6 +290,93 @@ class Issue423EvidenceBundleTests(unittest.TestCase):
             self.index["terminal_decision"]["decision"], self.report["outcome"]
         )
 
+    # ------------------------------------------------------ offline replay
+    def test_the_offline_replay_record_covers_the_whole_suite(self) -> None:
+        """The recorded replay lists every #423 suite and the two tool checks."""
+        replay = self.decision["offline_replay"]
+        rows = replay["rows"]
+        self.assertEqual(len(rows), replay["commands_recorded"])
+        self.assertTrue(replay["all_rows_passed"], [r for r in rows if r["observed_exit_code"]])
+        for row in rows:
+            with self.subTest(command=row["command"]):
+                self.assertEqual(row["observed_exit_code"], 0)
+                self.assertTrue(row["observed_result"])
+        commands = "\n".join(row["command"] for row in rows)
+        for required in (
+            "tests/training/test_freeze_hybrid_router_spec.py",
+            "tests/training/test_freeze_hybrid_router_criteria.py",
+            "tests/training/test_evaluate_hybrid_router_cv.py",
+            "tests/training/test_hybrid_router_terminal_report.py",
+            "tests/training/test_issue423_evidence_bundle.py",
+            "tests/training/test_issue423_n8n_result.py",
+            "tests/preflop/test_hybrid_response_router.py",
+            "tests/preflop/test_hybrid_response_runtime.py",
+            "tests/preflop/test_generalized_response_calibration.py",
+            "tests/preflop/test_issue423_mandatory_contracts.py",
+            "tests/simulation/test_issue423_preflight.py",
+            "tests/ci/test_issue423_contract_guards.py",
+            "tests/test_github_workflow_audit.py",
+            "tests/ci/test_consolidation_decision.py",
+            "tools/training/build_issue423_evidence_bundle.py --check",
+            "tools/audit_active_workflow_dag.py --check",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, commands)
+        # The non-skipped derivation is recorded, not asserted away.
+        self.assertIn("POKER_HYBRID_ROUTER_CV_FULL=1", commands)
+
+    def test_the_offline_replay_is_labelled_non_authoritative(self) -> None:
+        """A recorded local run may never be promoted to CI evidence."""
+        replay = self.decision["offline_replay"]
+        self.assertEqual(replay["invocation"], "PYTHONPATH=.")
+        self.assertEqual(
+            replay["authoritative_runner"], ".github/workflows/issue-423-hybrid-router.yml"
+        )
+        for token in ("NON-AUTHORITATIVE", "not re-executed by this tool", "never merge evidence"):
+            with self.subTest(token=token):
+                self.assertIn(token, replay["note"])
+                self.assertIn(token, self.summary)
+
+    def test_the_replay_reverifies_the_terminal_boundaries(self) -> None:
+        """The boundaries are recomputed by the tool, not merely restated."""
+        recheck = self.decision["offline_replay"]["boundary_recheck"]
+        self.assertFalse(recheck["test_consumed"])
+        self.assertFalse(recheck["validation_consumed"])
+        self.assertFalse(recheck["validation_reopened"])
+        self.assertFalse(recheck["active_pointer_mutated"])
+        self.assertFalse(recheck["product_admissible"])
+        self.assertFalse(recheck["issue367_executed"])
+        self.assertEqual(recheck["next_issue"], bundle_tool.NEXT_ISSUE)
+        self.assertEqual(recheck["next_issue_status"], "NOT_EXECUTED")
+        # The active Model A pointer is re-hashed on disk and still matches its pin.
+        self.assertEqual(
+            recheck["active_model_a_pointer_sha256_on_disk"],
+            digest_of(ROOT / recheck["active_model_a_pointer_path"]),
+        )
+        self.assertTrue(recheck["active_model_a_pointer_bytes_match_pin"])
+        self.assertEqual(
+            recheck["active_model_a_pointer_sha256_pinned"],
+            recheck["active_model_a_pointer_sha256_on_disk"],
+        )
+        self.assertEqual(
+            recheck["model_b_pointer_sha256_on_disk"],
+            digest_of(ROOT / recheck["model_b_pointer_path"]),
+        )
+        # The same boundaries the decision folds are the ones the replay re-checks.
+        self.assertEqual(
+            recheck["active_pointer_mutated"], self.decision["boundaries"]["active_pointer_mutated"]
+        )
+        self.assertEqual(
+            recheck["test_consumed"], self.decision["boundaries"]["test_consumed"]
+        )
+
+    def test_the_summary_renders_the_offline_replay(self) -> None:
+        self.assertIn("## 11. Offline replay (recorded, NON-AUTHORITATIVE)", self.summary_raw)
+        self.assertIn("## 12. Reproduce and verify", self.summary_raw)
+        for row in self.decision["offline_replay"]["rows"]:
+            with self.subTest(command=row["command"]):
+                self.assertIn(row["command"], self.summary_raw)
+
     # --------------------------------------------------- drift detection
     def test_check_fails_closed_when_an_authored_byte_or_input_drifts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
