@@ -69,7 +69,8 @@
         "covered": {"type": "boolean"},
         "comparable": {"type": "boolean"},
         "within_noise": {"type": "boolean"},
-        "error_type": {"type": "string"}
+        "error_type": {"type": "string"},
+        "hybrid": {"$ref": "#/$defs/hybrid"}
       }
     },
     "deep_link": {
@@ -158,6 +159,34 @@
         }
       }
     },
+    "hybrid": {
+      "description": "Projection optionnelle du résultat hybride (poker-review-hybrid-result/v1) qui documente la confiance et la provenance d'un résultat. Le sous-schéma est nullable et absent par défaut pour rester rétrocompatible : un item sans `hybrid` (ou `hybrid: null`) reste valide, et rien n'est fabriqué à partir de l'absence. `support_state` porte le niveau de support du modèle, `confidence_level` la confiance qualitative, `is_estimate`/`ev_bb`/`uncertainty_note` qualifient une estimation éventuelle, `abstains`/`abstention_reason` une abstention explicite, `too_close` un verdict trop proche, et `provenance` la traçabilité (route, source, model_id, model_hash, ood_status, ood_reason).",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {"const": "poker-review-hybrid-result/v1"},
+        "support_state": {"enum": ["STRONG_SUPPORT", "ROBUST", "SPARSE_ESTIMATED", "OOD_UNSUPPORTED", "LOW_CONFIDENCE_TOO_CLOSE"]},
+        "confidence_level": {"enum": ["HIGH", "MEDIUM", "LOW"]},
+        "is_estimate": {"type": "boolean"},
+        "ev_bb": {"type": ["number", "null"]},
+        "uncertainty_note": {"type": ["string", "null"]},
+        "abstains": {"type": "boolean"},
+        "abstention_reason": {"type": ["string", "null"]},
+        "too_close": {"type": "boolean"},
+        "provenance": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "route": {"type": ["string", "null"]},
+            "source": {"type": ["string", "null"]},
+            "model_id": {"type": ["string", "null"]},
+            "model_hash": {"type": ["string", "null"]},
+            "ood_status": {"type": ["string", "null"]},
+            "ood_reason": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
     "item": {
       "type": "object",
       "required": [
@@ -185,6 +214,11 @@
             "state": {"enum": ["WIN", "LOSS", "EVEN", "UNKNOWN"]},
             "net_bb": {"type": ["number", "null"]}
           }
+        },
+        "hybrid": {
+          "description": "Confiance/provenance optionnelle du résultat hybride (poker-review-hybrid-result/v1). Nullable et non requise (défaut null) : l'absence du champ reste valide et ne doit jamais être convertie en un support fabriqué ; le détail de traçabilité est porté par $defs.hybrid.provenance.",
+          "$ref": "#/$defs/hybrid",
+          "default": null
         },
         "costliest_decision": {"$ref": "#/$defs/decision"},
         "primary_decision": {"$ref": "#/$defs/decision"},
