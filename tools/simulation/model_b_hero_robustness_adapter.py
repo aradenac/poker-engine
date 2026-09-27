@@ -65,13 +65,14 @@ from tools.simulation.model_b_hero_robustness_classify import (  # noqa: E402
     classify,
 )
 from tools.simulation.model_b_hero_robustness_contract import (  # noqa: E402
+    HERO_ROBUSTNESS_BOUNDARY_FLAGS,
     INPUT_SCHEMA,
     RobustnessContractError,
     project_to_harness_request,
     validate_robustness_input,
+    validate_projected_request,
 )
 from tools.simulation.model_b_preflop_sensitivity_harness import (  # noqa: E402
-    HERO_ROBUSTNESS_BOUNDARY_FLAGS,
     canonical_sha256,
     load_json,
     run_harness,
@@ -393,6 +394,16 @@ def build_report(
         request = project_to_harness_request(document, context)
     except RobustnessContractError as exc:
         raise AdapterError.from_error(exc) from exc
+
+    # Defence in depth. The #425 leak catalogue (route/source, EV envelope,
+    # uncertainty, paired delta, support, posterior references) is owned by the
+    # canonical contract layer, not by the #344 harness. Re-assert the projection
+    # boundary here so a leaked or future projection can never reach the harness
+    # even if the projector is bypassed or changed.
+    try:
+        validate_projected_request(request)
+    except RobustnessContractError as exc:
+        raise AdapterError("HARNESS_REJECTED", str(exc)) from exc
 
     try:
         classification = classify(document)

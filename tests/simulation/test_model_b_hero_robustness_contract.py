@@ -39,6 +39,9 @@ CONTEXT_PATH = (
     ROOT / "tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json"
 )
 HARNESS_PATH = ROOT / "tools/simulation/model_b_preflop_sensitivity_harness.py"
+HARNESS_REQUEST_SCHEMA_PATH = (
+    ROOT / "contracts/training/model-b-preflop-sensitivity-harness-request.schema.json"
+)
 VALID_FIXTURES = (
     "robust_consistent.json",
     "multi_sizing.json",
@@ -244,6 +247,29 @@ class RobustnessContractTest(unittest.TestCase):
         ):
             self.assertNotIn(leaked_key, keys, leaked_key)
         self.assertFalse(set(harness.FORBIDDEN_MODEL_FEATURES) & keys)
+
+    def test_projection_satisfies_the_shipped_344_schema(self) -> None:
+        schema = load_json(HARNESS_REQUEST_SCHEMA_PATH)
+        # The #344 reference contract still accepts exactly one source kind: the
+        # #425 projection never adds a second, robustness-specific one.
+        self.assertEqual(
+            schema["properties"]["source_kind"], {"const": "SYNTHETIC_HARNESS_ONLY"}
+        )
+        try:
+            import jsonschema  # type: ignore
+        except ImportError:  # pragma: no cover - jsonschema is not a locked dependency
+            self.skipTest("jsonschema absent; harness.validate_request already ran")
+        validator = jsonschema.Draft202012Validator(schema)
+        public = context()
+        for name in VALID_FIXTURES:
+            with self.subTest(fixture=name):
+                document = contract.load_robustness_input(FIXTURES / name)
+                request = contract.project_to_harness_request(document, public)
+                self.assertEqual(request["source_kind"], "SYNTHETIC_HARNESS_ONLY")
+                errors = sorted(
+                    validator.iter_errors(request), key=lambda e: list(e.path)
+                )
+                self.assertEqual([error.message for error in errors], [], name)
 
     def test_projection_refuses_forbidden_context_and_input_leaks(self) -> None:
         document = contract.load_robustness_input(FIXTURES / "robust_consistent.json")

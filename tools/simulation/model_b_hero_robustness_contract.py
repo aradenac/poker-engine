@@ -45,10 +45,7 @@ from typing import Any, Mapping
 
 from tools.simulation.model_b_preflop_sensitivity_harness import (
     CANONICAL_DECISION_SCHEMA,
-    FORBIDDEN_ALTERNATIVE_LEAK_FIELDS,
     FORBIDDEN_MODEL_FEATURES,
-    HERO_ROBUSTNESS_INPUT_SCHEMA,
-    HERO_ROBUSTNESS_INPUT_SOURCE_KIND,
     SCHEMA as HARNESS_REQUEST_SCHEMA,
     SOURCE_KIND as HARNESS_SOURCE_KIND,
     SUPPORTED_HERO_ACTIONS,
@@ -66,8 +63,10 @@ __all__ = [
     "CONTRACT_PATH",
     "PROVENANCE_FLAGS",
     "INFORMATION_BOUNDARY_FLAGS",
+    "HERO_ROBUSTNESS_BOUNDARY_FLAGS",
     "SUPPORT_STATUSES",
     "FORBIDDEN_MODEL_FEATURES",
+    "FORBIDDEN_ALTERNATIVE_LEAK_FIELDS",
     "FORBIDDEN_LEAK_FIELDS",
     "validate_robustness_input",
     "load_robustness_input",
@@ -88,6 +87,12 @@ __all__ = [
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT_PATH = ROOT / "contracts/training/model-b-hero-robustness-input.schema.json"
+
+#: ``schema`` id of the single accepted #425 input format. Documented and
+#: shipped as ``contracts/training/model-b-hero-robustness-input.schema.json``.
+HERO_ROBUSTNESS_INPUT_SCHEMA = "hero-model-b-robustness-input/v1"
+#: ``source_kind`` of that synthetic robustness input.
+HERO_ROBUSTNESS_INPUT_SOURCE_KIND = "SYNTHETIC_ROBUSTNESS_SHAPED"
 CONTRACT_ID = HERO_ROBUSTNESS_INPUT_SCHEMA
 
 #: ``schema`` id of the #425 input (``CONTRACT_ID`` of the shipped contract).
@@ -121,6 +126,12 @@ INFORMATION_BOUNDARY_FLAGS = (
     "future_cards_consumed",
     "opponent_hole_cards_consumed",
 )
+#: Boundary flags pinned ``False`` in the #425 consumer report. The report
+#: reinforces the request boundary with the route/source rule (a route/source
+#: label is provenance only and may never be a predictive target).
+HERO_ROBUSTNESS_BOUNDARY_FLAGS = INFORMATION_BOUNDARY_FLAGS + (
+    "route_as_predictive_target",
+)
 
 #: The closed #425 support vocabulary.
 SUPPORT_STATUSES = frozenset(
@@ -133,9 +144,24 @@ SUPPORT_STATUSES = frozenset(
     }
 )
 
+#: #425 robustness-shaped fields that may never leak into a #344 alternative.
+#: The route/source label is provenance only, so it is forbidden here even
+#: though the #344 harness itself does not name it.
+FORBIDDEN_ALTERNATIVE_LEAK_FIELDS = frozenset(
+    {
+        "route",
+        "source",
+        "ev_bb",
+        "uncertainty",
+        "paired_delta_vs_best_bb",
+        "support",
+        "posterior_refs",
+    }
+)
+
 #: Every key that may never appear in a projected request: the #344 forbidden
-#: Model A / EV / recommendation / route catalogue plus the robustness-shaped
-#: leak fields (uncertainty, paired delta, support, posterior references, ...).
+#: Model A / EV / recommendation catalogue plus the robustness-shaped leak
+#: fields (route, source, uncertainty, paired delta, support, posterior refs, ...).
 FORBIDDEN_LEAK_FIELDS = frozenset(FORBIDDEN_MODEL_FEATURES) | frozenset(
     FORBIDDEN_ALTERNATIVE_LEAK_FIELDS
 )
@@ -303,11 +329,12 @@ def _schema_violations(
                 if key in properties:
                     continue
                 lowered = str(key).lower()
-                if lowered in FORBIDDEN_MODEL_FEATURES or lowered.startswith("model_a"):
+                if lowered in FORBIDDEN_LEAK_FIELDS or lowered.startswith("model_a"):
                     found.append(
                         (
                             "FORBIDDEN_FEATURE",
-                            f"{path}.{key}: forbidden Model A/EV/recommendation feature",
+                            f"{path}.{key}: forbidden Model A/EV/recommendation/"
+                            "robustness-leak feature",
                         )
                     )
                 else:

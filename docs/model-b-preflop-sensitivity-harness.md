@@ -21,26 +21,6 @@ Canonical EV, uncertainty, confidence, selected/recommended alternative, Model A
 
 The public context is supplied separately: Hero position/current contribution, pot before Hero acts, public preflop sequence, limper count, ordered responders, their public contribution/effective stack/profile, and the #340 response family to use before/after callers.
 
-## Additive consumer projection (#425)
-
-`project_robustness_input(robustness_input, context=public_context)` is an
-additive adapter for the `hero-model-b-robustness-input/v1` contract of #425. It
-maps a robustness-shaped input onto the same #344 request contract by copying
-only the alternative id, the Hero action and the exact sizing identity:
-`target_total_bb` from the robustness `sizing` and `incremental_cost_bb` derived
-from the public `hero_contribution_before_bb`. Decision/context identity and the
-public context are carried over; the synthetic EV envelope, `uncertainty`,
-`route`, `source`, paired delta, `support` and posterior references are dropped
-and never defaulted.
-
-The projection stays synthetic-only: the input must be
-`SYNTHETIC_ROBUSTNESS_SHAPED` with an all-false information boundary and an
-unconsumed provenance block, and the emitted request uses the additional
-`source_kind = "SYNTHETIC_ROBUSTNESS_PROJECTED"` with `synthetic_fixture = true`.
-`project_canonical_decision()` and `run_harness()` are unchanged, so the
-`SYNTHETIC_HARNESS_ONLY` default and the rejection of any non-synthetic request
-are preserved.
-
 ## Diagnostics
 
 For ISO alternatives, the harness evaluates responders sequentially using the #340 response-to-price runtime. It exposes conditional FOLD/CALL/RAISE/JAM probabilities per responder, reach probability, support/backoff level, expected continuers, P(all fold), P(3bet or jam), caller-count partition, and pairwise sizing deltas.

@@ -4,7 +4,7 @@
 
 This document is the contractual companion of
 `contracts/training/model-b-hero-robustness-input.schema.json`
-(`$schema` draft 2020-12, `$id = hero-model-b-hero-robustness-input/v1`).
+(`$schema` draft 2020-12, `$id = hero-model-b-robustness-input/v1`).
 
 It fixes the *input* contract a Model B robustness consumer reads before the
 real upstream evidence exists, so a consumer can be built and reviewed against a
@@ -141,6 +141,9 @@ through its public API only:
   `contracts/training/model-b-preflop-sensitivity-harness-request.schema.json`
   and its tests) are never edited, and its default `source_kind`
   `SYNTHETIC_HARNESS_ONLY` is unchanged;
+- the projected request is the single accepted #344 format: it reuses that
+  unchanged `SYNTHETIC_HARNESS_ONLY` source kind, so there is no second
+  `source_kind` extension and no alternate harness entry point;
 - a projected request copies only the public alternative identity
   (`alternative_id`, `action`, `target_total_bb`, `incremental_cost_bb`) derived
   from `hero_entry.alternatives`; `ev`, `uncertainty`, `paired_delta`,

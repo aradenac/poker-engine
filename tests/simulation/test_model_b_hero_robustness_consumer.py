@@ -91,10 +91,9 @@ PROJECTED_ALTERNATIVE_KEYS = frozenset(
     {"alternative_id", "action", "target_total_bb", "incremental_cost_bb"}
 )
 
-#: The complete forbidden Model A / EV / recommendation / route vocabulary.
-FORBIDDEN_TOKENS = frozenset(harness.FORBIDDEN_MODEL_FEATURES) | frozenset(
-    harness.FORBIDDEN_ALTERNATIVE_LEAK_FIELDS
-)
+#: The complete forbidden Model A / EV / recommendation / robustness-leak
+#: vocabulary, owned by the canonical #425 contract layer.
+FORBIDDEN_TOKENS = frozenset(contract.FORBIDDEN_LEAK_FIELDS)
 
 _DOCS_340_CACHE: dict[str, Any] | None = None
 _CONTEXT_CACHE: Mapping[str, Any] | None = None
@@ -665,7 +664,7 @@ def test_same_fixtures_same_outputs() -> None:
 # --------------------------------------------------------------------------- #
 def test_projected_request_is_independent_from_model_a() -> None:
     check(
-        {"ev_bb", "recommendation", "hero_ev", "route"} <= set(harness.FORBIDDEN_MODEL_FEATURES),
+        {"ev_bb", "recommendation", "hero_ev", "route"} <= set(contract.FORBIDDEN_LEAK_FIELDS),
         "the forbidden vocabulary must be non-empty and carry the expected tokens",
     )
     check(

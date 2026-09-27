@@ -79,10 +79,10 @@ from tools.simulation.model_b_hero_robustness_adapter import (  # noqa: E402
 )
 from tools.simulation.model_b_hero_robustness_contract import (  # noqa: E402
     CONTRACT_PATH,
+    FORBIDDEN_ALTERNATIVE_LEAK_FIELDS,
     project_to_harness_request,
 )
 from tools.simulation.model_b_preflop_sensitivity_harness import (  # noqa: E402
-    FORBIDDEN_ALTERNATIVE_LEAK_FIELDS,
     FORBIDDEN_MODEL_FEATURES,
     canonical_sha256,
     load_json,
