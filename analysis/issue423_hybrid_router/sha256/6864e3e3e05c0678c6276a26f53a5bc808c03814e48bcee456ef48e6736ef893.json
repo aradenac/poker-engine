@@ -1,0 +1,610 @@
+{
+  "assertions": {
+    "byte_stable": true,
+    "derivation_inputs_content_addressed": true,
+    "every_criterion_quantitatively_justified": true,
+    "terminal_evaluation_consumed": false,
+    "terminal_report_absent_at_freeze": true,
+    "test_consumed": false,
+    "train_only": true,
+    "validation_consumed": false
+  },
+  "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+  "derivation_inputs": [
+    {
+      "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+      "role": "train_only_cv_derivation",
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
+    },
+    {
+      "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
+      "role": "derivation_sha256_sidecar",
+      "sha256": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0"
+    },
+    {
+      "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+      "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "role": "preregistration_spec",
+      "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+    },
+    {
+      "path": "tools/training/freeze_hybrid_router_criteria.py",
+      "role": "criteria_generator",
+      "sha256": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63"
+    },
+    {
+      "path": "tools/training/freeze_hybrid_router_spec.py",
+      "role": "spec_generator",
+      "sha256": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26"
+    },
+    {
+      "path": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+      "role": "dataset",
+      "sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2"
+    },
+    {
+      "path": "tools/training/evaluate_generalized_response_cv.py",
+      "role": "cross_validation_harness",
+      "sha256": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff"
+    },
+    {
+      "path": "tools/preflop/hybrid_response_router.py",
+      "role": "router_module",
+      "sha256": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a"
+    },
+    {
+      "path": "training/models/preflop_population_model_v5.json",
+      "role": "active_reference_model",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    {
+      "path": "tools/preflop/generalized_response_calibration.py",
+      "role": "generalized_calibration_module",
+      "sha256": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a"
+    },
+    {
+      "path": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+      "role": "generalized_calibration_report",
+      "sha256": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd"
+    }
+  ],
+  "derivation_procedure": {
+    "derivation_order": [
+      "STRATUM_ASSIGNMENT",
+      "OOD_ABSTENTION_CRITERION",
+      "ROUTE_SELECTION_PROCEDURE",
+      "SUPPORT_STATE_ASSIGNMENT",
+      "GLOBAL_NON_INFERIORITY_MARGIN",
+      "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+      "SPARSE_GAIN_FLOOR",
+      "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+      "SPARSE_ECE_MEASUREMENT",
+      "SPARSE_ECE_CEILING",
+      "FREQUENT_EXACT_NON_DEGRADATION_BOUND"
+    ],
+    "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold",
+    "formulas": [
+      {
+        "derives": "margin_global",
+        "direction": "lower_is_better",
+        "evaluation_surface": "FROZEN_ADMISSION_SUPPORT",
+        "id": "GLOBAL_NON_INFERIORITY_MARGIN"
+      },
+      {
+        "derives": "gain_sparse",
+        "direction": "higher_is_better",
+        "evaluation_surface": "TRAIN_OUT_OF_FOLD",
+        "id": "SPARSE_GAIN_FLOOR"
+      },
+      {
+        "derives": "ece_ceiling_sparse",
+        "direction": "lower_is_better",
+        "evaluation_surface": "FROZEN_ADMISSION_SUPPORT",
+        "id": "SPARSE_ECE_CEILING"
+      },
+      {
+        "derives": "bound_frequent_exact",
+        "direction": "lower_is_better",
+        "evaluation_surface": "FROZEN_ADMISSION_SUPPORT",
+        "id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND"
+      },
+      {
+        "derives": "abstain",
+        "direction": "predicate",
+        "evaluation_surface": "RUNTIME_GATE",
+        "id": "OOD_ABSTENTION_CRITERION"
+      }
+    ],
+    "reference": {
+      "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+      "pointer": "/procedure",
+      "spec": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "spec_schema": "poker-hybrid-router-spec/v1",
+      "spec_sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+    },
+    "resolved_by": "tools/training/freeze_hybrid_router_criteria.py::derive_criteria",
+    "resolved_from": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json"
+  },
+  "frozen_at": "2026-09-26T00:00:00Z",
+  "frozen_at_source": "explicit_freeze_timestamp_recorded_before_the_terminal_router_score",
+  "frozen_criteria": {
+    "criteria": [
+      {
+        "criterion": "margin_global_bits_per_decision <= 0.001 (one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the admission support)",
+        "derivation_rule": "ceil_to_quantum(max(MARGIN_MAX_BITS, one_sided_upper_quantile of the paired hybrid-minus-active bootstrap), MARGIN_ANALYTIC_TOLERANCE_BITS)",
+        "derives": "margin_global",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "admission_strata": [
+            "frequent_exact",
+            "rare_exact",
+            "exact_absent_in_domain"
+          ],
+          "excluded_decisions": 9,
+          "hands": 19016,
+          "rows": 94151,
+          "stratum_rows": {
+            "exact_absent_in_domain": 2547,
+            "frequent_exact": 81186,
+            "rare_exact": 10427
+          }
+        },
+        "id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "inputs": [
+          {
+            "pointer": "/margin_derivation/margin_global_bootstrap_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.000508
+          },
+          {
+            "pointer": "/margin_derivation/margin_global_analytic_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.000338
+          },
+          {
+            "pointer": "/paired/hybrid_router_minus_active_model_a/admission_support/ci95",
+            "source": "train_only_cv_derivation",
+            "value": null
+          }
+        ],
+        "justification": {
+          "bootstrap_analytic_absolute_difference_bits": 0.00017,
+          "bootstrap_analytic_agreement_tolerance_bits": 0.001,
+          "bootstrap_samples": 2000,
+          "bootstrap_seed": 423,
+          "confidence_level": 0.95,
+          "dispersion": {
+            "bootstrap_stddev_bits_per_decision": 0.002864,
+            "bootstrap_variance_bits_squared": 8e-06,
+            "ci95": [
+              -0.009648,
+              0.001598
+            ],
+            "quantiles": {
+              "0.025": -0.009648,
+              "0.05": -0.008764,
+              "0.5": -0.004402,
+              "0.95": 0.000508,
+              "0.975": 0.001598
+            }
+          },
+          "observed_analytic_bits_per_decision": 0.000338,
+          "observed_bootstrap_bits_per_decision": 0.000508,
+          "paired_unit": "hand_id",
+          "point_estimate_bits_per_decision": -0.004301,
+          "preregistered_reference": {
+            "MARGIN_ANALYTIC_TOLERANCE_BITS": 0.001,
+            "MARGIN_MAX_BITS": 0.0
+          },
+          "statement": "the margin is sized by the measured TRAIN out-of-fold dispersion: it is the smallest multiple of the preregistered 0.001-bit resolution that covers the observed one-sided 95% upper bound of the paired hybrid-minus-active loss difference, and the closed-form analytic margin reproduces it within the preregistered tolerance",
+          "statistic": "one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the TRAIN out-of-fold admission support",
+          "upper_quantile": 0.95
+        },
+        "t1_formula_id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.001
+      },
+      {
+        "criterion": "gain_sparse_bits_per_decision >= 0.167 on the pooled (rare_exact, exact_absent_in_domain) support",
+        "derivation_rule": "max(GAIN_FLOOR_BITS, floor_to_quantum(support_weighted_mean of the hybrid channel's gain_bits_per_decision over rare_exact and exact_absent_in_domain, MARGIN_ANALYTIC_TOLERANCE_BITS))",
+        "derives": "gain_sparse",
+        "direction": "higher_is_better",
+        "effectifs": {
+          "minimum_sparse_observations": 20,
+          "sparse_decisions": 12966,
+          "sparse_strata": [
+            "rare_exact",
+            "exact_absent_in_domain"
+          ],
+          "stratum_abstained": {
+            "exact_absent_in_domain": 6,
+            "rare_exact": 2
+          },
+          "stratum_decisions": {
+            "exact_absent_in_domain": 2541,
+            "rare_exact": 10425
+          },
+          "stratum_rows": {
+            "exact_absent_in_domain": 2547,
+            "rare_exact": 10427
+          }
+        },
+        "id": "SPARSE_GAIN_FLOOR",
+        "inputs": [
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/gain_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.226143
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/gain_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": -0.071905
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/n",
+            "source": "train_only_cv_derivation",
+            "value": 10425
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/n",
+            "source": "train_only_cv_derivation",
+            "value": 2541
+          }
+        ],
+        "justification": {
+          "observed_sparse_gain_bits_per_decision": 0.167733,
+          "per_stratum_gain_bits_per_decision": {
+            "exact_absent_in_domain": -0.071905,
+            "rare_exact": 0.226143
+          },
+          "preregistered_reference": {
+            "GAIN_FLOOR_BITS": 0.0,
+            "MINIMUM_SPARSE_OBSERVATIONS": 20
+          },
+          "rounding": {
+            "quantum_bits_per_decision": 0.001,
+            "rationale": "the floor is the gain TRAIN already demonstrated, rounded down to the preregistered resolution so the requirement is never stricter than the measured evidence",
+            "rule": "floor_to_quantum"
+          },
+          "statement": "the minimal sparse gain required of the router is the level the TRAIN out-of-fold evidence already demonstrates on the two strata the generalized channel may cover",
+          "statistic": "support-weighted mean of the hybrid channel's gain_bits_per_decision over rare_exact and exact_absent_in_domain on the TRAIN out-of-fold decisions"
+        },
+        "t1_formula_id": "SPARSE_GAIN_FLOOR",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.167
+      },
+      {
+        "criterion": "ece_sparse <= 0.02",
+        "derivation_rule": "min(ECE_ABSOLUTE_CEILING, ece_active_sparse + ECE_DELTA_CEILING) with ece_active_sparse the support-weighted active-reference ECE on the sparse strata",
+        "derives": "ece_ceiling_sparse",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "active_stratum_decisions": {
+            "exact_absent_in_domain": 2547,
+            "rare_exact": 10427
+          },
+          "calibration_bins_per_action_class": 10,
+          "sparse_decisions": 12966,
+          "stratum_decisions": {
+            "exact_absent_in_domain": 2541,
+            "rare_exact": 10425
+          }
+        },
+        "id": "SPARSE_ECE_CEILING",
+        "inputs": [
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.024273
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.040773
+          },
+          {
+            "pointer": "/models/active_model_a/by_stratum/rare_exact/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.042341
+          },
+          {
+            "pointer": "/models/active_model_a/by_stratum/exact_absent_in_domain/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.043809
+          }
+        ],
+        "justification": {
+          "active_sparse_ece_plus_delta": 0.062629,
+          "binding_term": "ECE_ABSOLUTE_CEILING",
+          "observed_active_sparse_ece": 0.042629,
+          "observed_sparse_ece": 0.027507,
+          "per_stratum_ece": {
+            "active_model_a": {
+              "exact_absent_in_domain": 0.043809,
+              "rare_exact": 0.042341
+            },
+            "hybrid_router": {
+              "exact_absent_in_domain": 0.040773,
+              "rare_exact": 0.024273
+            }
+          },
+          "preregistered_reference": {
+            "ECE_ABSOLUTE_CEILING": 0.02,
+            "ECE_DELTA_CEILING": 0.02
+          },
+          "statement": "the frozen ceiling is the tighter of the preregistered absolute ECE ceiling and the active reference's own sparse ECE plus the preregistered delta; the recorded term name shows which of the two binds",
+          "statistic": "support-weighted expected calibration error over rare_exact and exact_absent_in_domain, measured on the TRAIN out-of-fold decisions"
+        },
+        "t1_formula_id": "SPARSE_ECE_CEILING",
+        "terminal_evaluation_derived": false,
+        "unit": "expected_calibration_error",
+        "value": 0.02
+      },
+      {
+        "criterion": "delta_frequent_exact_bits_per_decision <= 0.0 and paired_ci95_upper(delta_frequent_exact) <= 0.0",
+        "derivation_rule": "max(FREQUENT_EXACT_MAX_DEGRADATION_BITS, ceil_to_quantum(max(point estimate, one-sided upper quantile, ci95 upper) of the paired hybrid-minus-active loss on frequent_exact, MARGIN_ANALYTIC_TOLERANCE_BITS))",
+        "derives": "bound_frequent_exact",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "active_stratum_rows": 81186,
+          "decisions_per_hand": 4.269973,
+          "excluded_decisions": 1,
+          "hands": 19013,
+          "rows": 81185,
+          "stratum_rows": 81186
+        },
+        "id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "inputs": [
+          {
+            "pointer": "/per_stratum/frequent_exact/paired/hybrid_router_minus_active_model_a/point_estimate_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.0
+          },
+          {
+            "pointer": "/per_stratum/frequent_exact/paired/hybrid_router_minus_active_model_a/upper_quantile_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.0
+          }
+        ],
+        "justification": {
+          "dispersion": {
+            "analytic_margin_bits_per_decision": 0.0,
+            "analytic_standard_error_bits_per_decision": 0.0,
+            "bootstrap_stddev_bits_per_decision": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "point_estimate_bits_per_decision": 0.0,
+          "preregistered_reference": {
+            "FREQUENT_EXACT_MAX_DEGRADATION_BITS": 0.0
+          },
+          "statement": "the frequent-exact route may not degrade the active reference beyond the bound derived from the paired dispersion of that stratum, in point estimate and in paired upper quantile",
+          "statistic": "paired-by-hand hybrid-minus-active log-loss delta on the frequent_exact stratum of the TRAIN out-of-fold decisions",
+          "upper_quantile_bits_per_decision": 0.0
+        },
+        "t1_formula_id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.0
+      },
+      {
+        "criterion": "abstain iff hard_reasons is not empty; abstain_rate on the synthetic out-of-domain probe surface == 1.0 and coverage == 0.0",
+        "derivation_rule": "abstain(c) iff reasons(c) intersect OOD_HARD_REASONS is not empty; the soft reason set may only raise the status to high uncertainty, never to abstention",
+        "derives": "abstain",
+        "direction": "predicate",
+        "effectifs": {
+          "declared_probe_kinds": [
+            "extrapolation_sizing",
+            "extrapolation_stack",
+            "missing_domain_axis",
+            "unseen_category"
+          ],
+          "ood_criterion_stratum": "exact_absent_out_of_domain",
+          "ood_stratum_probes": 160,
+          "probes": 640,
+          "probes_abstained": 640,
+          "probes_per_kind": {
+            "extrapolation_sizing": 160,
+            "extrapolation_stack": 160,
+            "missing_domain_axis": 160,
+            "unseen_category": 160
+          }
+        },
+        "id": "OOD_ABSTENTION_CRITERION",
+        "inputs": [
+          {
+            "pointer": "/ood_synthetic_probes/abstain_rate",
+            "source": "train_only_cv_derivation",
+            "value": 1.0
+          },
+          {
+            "pointer": "/ood_synthetic_probes/router_abstained",
+            "source": "train_only_cv_derivation",
+            "value": 640
+          },
+          {
+            "pointer": "/ood_synthetic_probes/n",
+            "source": "train_only_cv_derivation",
+            "value": 640
+          }
+        ],
+        "justification": {
+          "observed_abstention_rate": 1.0,
+          "observed_coverage": 0.0,
+          "paired_unit": "decision",
+          "preregistered_reference": {
+            "FREQUENT_EXACT_MIN_SUPPORT": 20,
+            "OOD_ABSTAIN_is_decisive_for_hard_reasons_only": true,
+            "RARE_EXACT_MIN_SUPPORT": 1
+          },
+          "probe_kinds": [
+            "extrapolation_sizing",
+            "extrapolation_stack",
+            "missing_domain_axis",
+            "unseen_category"
+          ],
+          "probes_per_kind": {
+            "extrapolation_sizing": 160,
+            "extrapolation_stack": 160,
+            "missing_domain_axis": 160,
+            "unseen_category": 160
+          },
+          "statement": "the router must fail closed on every out-of-domain probe: the frozen criterion requires a complete abstention on the probe surface, with the hard reason codes decisive and the soft reasons never abstaining",
+          "statistic": "measured abstention rate of the frozen router on the synthetic out-of-domain probe surface of the TRAIN cross-validation"
+        },
+        "t1_formula_id": "OOD_ABSTENTION_CRITERION",
+        "terminal_evaluation_derived": false,
+        "unit": "required_abstention_rate_on_synthetic_ood_probes",
+        "value": 1.0
+      }
+    ],
+    "criteria_order": [
+      "GLOBAL_NON_INFERIORITY_MARGIN",
+      "SPARSE_GAIN_FLOOR",
+      "SPARSE_ECE_CEILING",
+      "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+      "OOD_ABSTENTION_CRITERION"
+    ],
+    "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+    "derivation": {
+      "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+      "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+      "folds": 5,
+      "hands": 19016,
+      "planner_key": "T4",
+      "rows": 94160,
+      "schema": "poker-hybrid-router-cv-derivation/v1",
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
+    },
+    "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold_cv_derivation",
+    "frozen_at": "2026-09-26T00:00:00Z",
+    "frozen_at_source": "explicit_freeze_timestamp_recorded_before_the_terminal_router_score",
+    "issue": 423,
+    "kind": "frozen_hybrid_router_admission_criteria_and_manifest",
+    "planner_key": "T5",
+    "procedure_reference": {
+      "constants": {
+        "BOOTSTRAP_SAMPLES": 2000.0,
+        "BOOTSTRAP_SEED": 423.0,
+        "ECE_ABSOLUTE_CEILING": 0.02,
+        "ECE_DELTA_CEILING": 0.02,
+        "FREQUENT_EXACT_MAX_DEGRADATION_BITS": 0.0,
+        "FREQUENT_EXACT_MIN_SUPPORT": 20.0,
+        "GAIN_FLOOR_BITS": 0.0,
+        "MARGIN_ANALYTIC_TOLERANCE_BITS": 0.001,
+        "MARGIN_MAX_BITS": 0.0,
+        "MINIMUM_SPARSE_OBSERVATIONS": 20.0,
+        "NON_INFERIORITY_ALPHA": 0.05,
+        "NON_INFERIORITY_CONFIDENCE_LEVEL": 0.95,
+        "NON_INFERIORITY_UPPER_QUANTILE": 0.95,
+        "RARE_EXACT_MIN_SUPPORT": 1.0
+      },
+      "derivation_order": [
+        "STRATUM_ASSIGNMENT",
+        "OOD_ABSTENTION_CRITERION",
+        "ROUTE_SELECTION_PROCEDURE",
+        "SUPPORT_STATE_ASSIGNMENT",
+        "GLOBAL_NON_INFERIORITY_MARGIN",
+        "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+        "SPARSE_GAIN_FLOOR",
+        "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+        "SPARSE_ECE_MEASUREMENT",
+        "SPARSE_ECE_CEILING",
+        "FREQUENT_EXACT_NON_DEGRADATION_BOUND"
+      ],
+      "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold",
+      "formula_ids": [
+        "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+        "GLOBAL_NON_INFERIORITY_MARGIN",
+        "OOD_ABSTENTION_CRITERION",
+        "ROUTE_SELECTION_PROCEDURE",
+        "SPARSE_ECE_CEILING",
+        "SPARSE_ECE_MEASUREMENT",
+        "SPARSE_GAIN_FLOOR",
+        "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+        "STRATUM_ASSIGNMENT",
+        "SUPPORT_STATE_ASSIGNMENT"
+      ],
+      "pointer": "/procedure",
+      "spec": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "spec_schema": "poker-hybrid-router-spec/v1"
+    },
+    "resolution_quantum_bits_per_decision": 0.001,
+    "schema": "poker-hybrid-router-frozen-criteria/v1",
+    "status": "FROZEN_BEFORE_TERMINAL_EVALUATION",
+    "terminal_evaluation": {
+      "consumed": false,
+      "declared_terminal_report_locations": [
+        "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+        "analysis/issue423_hybrid_router/terminal/TRAIN_CV_ROUTER_REPORT.json"
+      ]
+    },
+    "terminal_evaluation_derived": false
+  },
+  "frozen_criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+  "frozen_spec": {
+    "bytes": 62833,
+    "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+    "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+    "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+  },
+  "generated_by": {
+    "criteria_schema": "poker-hybrid-router-frozen-criteria/v1",
+    "spec_generator_path": "tools/training/freeze_hybrid_router_spec.py",
+    "spec_generator_sha256": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
+    "tool_path": "tools/training/freeze_hybrid_router_criteria.py",
+    "tool_sha256": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63"
+  },
+  "issue": 423,
+  "kind": "frozen_hybrid_router_admission_criteria_and_manifest",
+  "manifest": {
+    "name": "ROUTER_MANIFEST.json",
+    "path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json"
+  },
+  "order_guard": {
+    "check": "no_terminal_router_report_exists_before_freeze",
+    "declared_terminal_report_locations": [
+      "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+      "analysis/issue423_hybrid_router/terminal/TRAIN_CV_ROUTER_REPORT.json"
+    ],
+    "declared_terminal_report_locations_present": [],
+    "detail": "the freeze refuses to author numeric admission criteria once a terminal TRAIN_CV_ROUTER_REPORT.json exists",
+    "guard_id": "ROUTER_CRITERIA_ORDER_GUARD",
+    "result": "PASS",
+    "violations": []
+  },
+  "planner_key": "T5",
+  "schema": "poker-hybrid-router-criteria-manifest/v1",
+  "split_policy": {
+    "allowed_splits": [
+      "TRAIN"
+    ],
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "fail_closed_on_refused_split": true,
+    "refused_splits": [
+      "VALIDATION",
+      "TEST"
+    ],
+    "statement": "the numeric freeze is resolved from TRAIN-only out-of-fold evidence; requiring any VALIDATION or TEST split raises a hard error before a byte is written"
+  },
+  "status": "FROZEN_BEFORE_TERMINAL_EVALUATION",
+  "terminal_score_guard": {
+    "declared_terminal_report_locations": [
+      "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+      "analysis/issue423_hybrid_router/terminal/TRAIN_CV_ROUTER_REPORT.json"
+    ],
+    "guard_id": "ROUTER_CRITERIA_ORDER_GUARD",
+    "regeneration_with_different_values_fails_closed": true,
+    "spec_digest_computed_before_terminal_score": true,
+    "terminal_report_absent_at_freeze": true,
+    "terminal_report_name": "TRAIN_CV_ROUTER_REPORT.json"
+  }
+}

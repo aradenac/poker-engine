@@ -1,0 +1,1089 @@
+{
+  "artifacts": {
+    "DECISION.json": {
+      "bytes": 29169,
+      "canonical_payload_sha256": "6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5",
+      "content_addressed": true,
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec.json",
+      "path": "analysis/issue423_hybrid_router/DECISION.json",
+      "role": "T9_TERMINAL_DECISION",
+      "sha256": "8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec"
+    },
+    "GENERALIZED_CALIBRATION_REPORT.json": {
+      "bytes": 243779,
+      "canonical_payload_sha256": "eb862cdb0c5498673b6012dc0a37ff248ac76053ac8daab23e430dd22a3f0b0e",
+      "content_addressed": true,
+      "declared_digest": {
+        "canonical_payload_sha256": "eb862cdb0c5498673b6012dc0a37ff248ac76053ac8daab23e430dd22a3f0b0e",
+        "sha256": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd"
+      },
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd.json",
+      "path": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+      "role": "T2_GENERALIZED_CALIBRATION_REPORT",
+      "sha256": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd"
+    },
+    "HYBRID_ROUTER_SPEC.json": {
+      "bytes": 62833,
+      "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+      "content_addressed": true,
+      "declared_digest": {
+        "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+      },
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075.json",
+      "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "role": "T1_T5_PREREGISTRATION_SPEC_AND_FROZEN_CRITERIA",
+      "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+    },
+    "ISSUE367_PREFLIGHT.json": {
+      "bytes": 723686,
+      "canonical_payload_sha256": "1dba3a67ed4c985f53a43d72cb4d38b3a68c2dde74d9d635822f56138f14e958",
+      "content_addressed": true,
+      "declared_digest": {
+        "canonical_payload_sha256": "1dba3a67ed4c985f53a43d72cb4d38b3a68c2dde74d9d635822f56138f14e958",
+        "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+      },
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d.json",
+      "path": "analysis/issue423_hybrid_router/ISSUE367_PREFLIGHT.json",
+      "role": "T8_ISSUE367_PREFLIGHT",
+      "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+    },
+    "ROUTER_MANIFEST.json": {
+      "bytes": 25278,
+      "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+      "content_addressed": true,
+      "declared_digest": {
+        "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+      },
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893.json",
+      "path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+      "role": "T5_FROZEN_CRITERIA_MANIFEST",
+      "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+    },
+    "SPARSE_STRATA_COMPARISON.json": {
+      "bytes": 15572,
+      "canonical_payload_sha256": "9b3a4a22f082609a27822b1166ddf54a4bef24433d79854bfcd070a848637c4c",
+      "content_addressed": true,
+      "declared_digest": {
+        "canonical_payload_sha256": "9b3a4a22f082609a27822b1166ddf54a4bef24433d79854bfcd070a848637c4c",
+        "sha256": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
+      },
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b.json",
+      "path": "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.json",
+      "role": "T6_SPARSE_STRATA_COMPARISON",
+      "sha256": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
+    },
+    "SUMMARY.md": {
+      "bytes": 9780,
+      "content_addressed": true,
+      "media_type": "text/markdown",
+      "object": "analysis/issue423_hybrid_router/sha256/7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397.md",
+      "path": "analysis/issue423_hybrid_router/SUMMARY.md",
+      "role": "T9_SUMMARY",
+      "sha256": "7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397"
+    },
+    "TRAIN_CV_ROUTER_REPORT.json": {
+      "bytes": 126699,
+      "canonical_payload_sha256": "65d638a3040929d548eabc42813d55763bb23ab0c52720b992ff7722d6688ced",
+      "content_addressed": true,
+      "declared_digest": {
+        "canonical_payload_sha256": "65d638a3040929d548eabc42813d55763bb23ab0c52720b992ff7722d6688ced",
+        "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+      },
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082.json",
+      "path": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+      "role": "T6_TERMINAL_CROSS_FITTED_SCORE",
+      "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+    }
+  },
+  "boundary": {
+    "active_model_pointer_mutation": false,
+    "active_pointer_mutated": false,
+    "automatic_promotion": "FORBIDDEN",
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "hero_ev_executed": false,
+    "issue367_executed": false,
+    "model_b_consumed": false,
+    "next_issue": 367,
+    "product_admissible": false,
+    "refused_splits": [
+      "VALIDATION",
+      "TEST"
+    ],
+    "split": "TRAIN",
+    "test_authorized": false,
+    "test_consumed": false,
+    "validation_consumed": false,
+    "validation_reopened": false
+  },
+  "bundle": "analysis/issue423_hybrid_router",
+  "decision": {
+    "canonical_payload_sha256": "6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5",
+    "object": "analysis/issue423_hybrid_router/sha256/8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec.json",
+    "path": "analysis/issue423_hybrid_router/DECISION.json",
+    "sha256": "8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec"
+  },
+  "digest_verification": {
+    "all_recomputed_digests_match_persisted": true,
+    "artifacts_verified_only_by_cross_reference": [],
+    "cross_reference_checks": [
+      {
+        "artifact": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+        "declared": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff",
+        "source": "HYBRID_ROUTER_SPEC.evidence_bindings[train_out_of_fold_cv_report]"
+      },
+      {
+        "artifact": "contracts/training/generalized-response-ood-gate.schema.json",
+        "declared": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e",
+        "source": "HYBRID_ROUTER_SPEC.evidence_bindings[ood_gate_contract_schema]"
+      },
+      {
+        "artifact": "tools/preflop/generalized_response_model.py",
+        "declared": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "92d7ac94aa03face11dbcd9a3b573d9ed790efb77b924a7ae5458fddcf94dbc3",
+        "source": "HYBRID_ROUTER_SPEC.evidence_bindings[ood_gate_model_module]"
+      },
+      {
+        "artifact": "tools/training/evaluate_generalized_response_cv.py",
+        "declared": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+        "source": "HYBRID_ROUTER_SPEC.evidence_bindings[strata_definition_module]"
+      },
+      {
+        "artifact": "tools/training/freeze_hybrid_router_spec.py",
+        "declared": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
+        "source": "HYBRID_ROUTER_SPEC.evidence_bindings[spec_generator]"
+      },
+      {
+        "artifact": "contracts/training/generalized-response-ood-gate.schema.json",
+        "declared": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e",
+        "source": "HYBRID_ROUTER_SPEC.ood_gate"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+        "declared": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "source": "HYBRID_ROUTER_SPEC.frozen_criteria.derivation"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+        "declared": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+        "source": "HYBRID_ROUTER_SPEC.frozen_criteria.derivation"
+      },
+      {
+        "artifact": "HYBRID_ROUTER_SPEC.json#frozen_criteria",
+        "declared": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "kind": "criteria",
+        "match": true,
+        "recomputed": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "source": "HYBRID_ROUTER_SPEC.frozen_criteria"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+        "declared": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec.manifest"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+        "declared": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec.manifest"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+        "declared": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec.derivation_binding"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+        "declared": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec.derivation_binding"
+      },
+      {
+        "artifact": "HYBRID_ROUTER_SPEC.json#frozen_criteria",
+        "declared": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "kind": "criteria",
+        "match": true,
+        "recomputed": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+        "declared": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_criteria.derivation"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+        "declared": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_criteria.derivation"
+      },
+      {
+        "artifact": "TRAIN_CV_ROUTER_REPORT.json#frozen_criteria",
+        "declared": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "kind": "criteria",
+        "match": true,
+        "recomputed": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "source": "TRAIN_CV_ROUTER_REPORT.frozen_criteria"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.json",
+        "declared": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b",
+        "source": "TRAIN_CV_ROUTER_REPORT.sparse_strata_comparison_binding"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.json",
+        "declared": "9b3a4a22f082609a27822b1166ddf54a4bef24433d79854bfcd070a848637c4c",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "9b3a4a22f082609a27822b1166ddf54a4bef24433d79854bfcd070a848637c4c",
+        "source": "TRAIN_CV_ROUTER_REPORT.sparse_strata_comparison_binding"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "source": "TRAIN_CV_ROUTER_REPORT.sparse_strata_comparison.frozen_spec"
+      },
+      {
+        "artifact": "tools/training/evaluate_hybrid_router_cv.py",
+        "declared": "12e5b2ffa9012e76d08e513e18bf19be26ed7419f375f0040076646de704c8da",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "12e5b2ffa9012e76d08e513e18bf19be26ed7419f375f0040076646de704c8da",
+        "source": "TRAIN_CV_ROUTER_REPORT.module"
+      },
+      {
+        "artifact": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+        "declared": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+        "source": "TRAIN_CV_ROUTER_REPORT.scope.dataset"
+      },
+      {
+        "artifact": "training/models/preflop_population_model_v5.json",
+        "declared": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "source": "TRAIN_CV_ROUTER_REPORT.protocol.active_reference"
+      },
+      {
+        "artifact": "tools/preflop/generalized_response_calibration.py",
+        "declared": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a",
+        "source": "TRAIN_CV_ROUTER_REPORT.protocol.calibration_module"
+      },
+      {
+        "artifact": "tools/training/evaluate_generalized_response_cv.py",
+        "declared": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+        "source": "TRAIN_CV_ROUTER_REPORT.protocol.reused_harness_module"
+      },
+      {
+        "artifact": "tools/preflop/hybrid_response_router.py",
+        "declared": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a",
+        "source": "TRAIN_CV_ROUTER_REPORT.protocol.router_module"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "source": "SPARSE_STRATA_COMPARISON.frozen_spec"
+      },
+      {
+        "artifact": "HYBRID_ROUTER_SPEC.json#frozen_criteria",
+        "declared": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "kind": "criteria",
+        "match": true,
+        "recomputed": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "source": "SPARSE_STRATA_COMPARISON.frozen_spec.criteria"
+      },
+      {
+        "artifact": "tools/training/evaluate_hybrid_router_cv.py",
+        "declared": "12e5b2ffa9012e76d08e513e18bf19be26ed7419f375f0040076646de704c8da",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "12e5b2ffa9012e76d08e513e18bf19be26ed7419f375f0040076646de704c8da",
+        "source": "SPARSE_STRATA_COMPARISON.module"
+      },
+      {
+        "artifact": "tools/preflop/generalized_response_calibration.py",
+        "declared": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a",
+        "source": "GENERALIZED_CALIBRATION_REPORT.module"
+      },
+      {
+        "artifact": "tools/training/evaluate_generalized_response_cv.py",
+        "declared": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+        "source": "GENERALIZED_CALIBRATION_REPORT.harness.module"
+      },
+      {
+        "artifact": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+        "declared": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff",
+        "source": "GENERALIZED_CALIBRATION_REPORT.harness.train_cv_report_consistency"
+      },
+      {
+        "artifact": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+        "declared": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+        "source": "GENERALIZED_CALIBRATION_REPORT.scope.dataset"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "source": "ROUTER_MANIFEST.frozen_spec"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "source": "ROUTER_MANIFEST.frozen_spec"
+      },
+      {
+        "artifact": "ROUTER_MANIFEST.json#frozen_criteria",
+        "declared": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "kind": "criteria",
+        "match": true,
+        "recomputed": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "source": "ROUTER_MANIFEST.frozen_criteria"
+      },
+      {
+        "artifact": "ROUTER_MANIFEST.json#frozen_criteria",
+        "declared": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "kind": "criteria",
+        "match": true,
+        "recomputed": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "source": "ROUTER_MANIFEST.frozen_criteria"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+        "declared": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "source": "ROUTER_MANIFEST.derivation_inputs[train_only_cv_derivation]"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
+        "declared": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0",
+        "source": "ROUTER_MANIFEST.derivation_inputs[derivation_sha256_sidecar]"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "source": "ROUTER_MANIFEST.derivation_inputs[preregistration_spec]"
+      },
+      {
+        "artifact": "HYBRID_ROUTER_SPEC.json#frozen_criteria",
+        "declared": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "kind": "criteria",
+        "match": true,
+        "recomputed": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "source": "ROUTER_MANIFEST.derivation_inputs[preregistration_spec].criteria"
+      },
+      {
+        "artifact": "tools/training/freeze_hybrid_router_criteria.py",
+        "declared": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63",
+        "source": "ROUTER_MANIFEST.derivation_inputs[criteria_generator]"
+      },
+      {
+        "artifact": "tools/training/freeze_hybrid_router_spec.py",
+        "declared": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
+        "source": "ROUTER_MANIFEST.derivation_inputs[spec_generator]"
+      },
+      {
+        "artifact": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+        "declared": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+        "source": "ROUTER_MANIFEST.derivation_inputs[dataset]"
+      },
+      {
+        "artifact": "tools/training/evaluate_generalized_response_cv.py",
+        "declared": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+        "source": "ROUTER_MANIFEST.derivation_inputs[cross_validation_harness]"
+      },
+      {
+        "artifact": "tools/preflop/hybrid_response_router.py",
+        "declared": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a",
+        "source": "ROUTER_MANIFEST.derivation_inputs[router_module]"
+      },
+      {
+        "artifact": "training/models/preflop_population_model_v5.json",
+        "declared": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "source": "ROUTER_MANIFEST.derivation_inputs[active_reference_model]"
+      },
+      {
+        "artifact": "tools/preflop/generalized_response_calibration.py",
+        "declared": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a",
+        "source": "ROUTER_MANIFEST.derivation_inputs[generalized_calibration_module]"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+        "declared": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd",
+        "source": "ROUTER_MANIFEST.derivation_inputs[generalized_calibration_report]"
+      },
+      {
+        "artifact": "tools/training/freeze_hybrid_router_criteria.py",
+        "declared": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63",
+        "source": "ROUTER_MANIFEST.generated_by"
+      },
+      {
+        "artifact": "tools/training/freeze_hybrid_router_spec.py",
+        "declared": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
+        "source": "ROUTER_MANIFEST.generated_by"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "source": "ROUTER_MANIFEST.derivation_procedure.reference"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "source": "ROUTER_MANIFEST.derivation_procedure.reference"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+        "declared": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.calibration_report_path"
+      },
+      {
+        "artifact": "contracts/training/generalized-response-dataset.schema.json",
+        "declared": "15f35cb3a40a6b48a60e0add252d2f0a31bc6d138964e94e9842f7c2a3757255",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15f35cb3a40a6b48a60e0add252d2f0a31bc6d138964e94e9842f7c2a3757255",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.dataset_contract_path"
+      },
+      {
+        "artifact": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+        "declared": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.fixture_path"
+      },
+      {
+        "artifact": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+        "declared": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.frontier_resolution_path"
+      },
+      {
+        "artifact": "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json",
+        "declared": "a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.ood_calibration_path"
+      },
+      {
+        "artifact": "tools/simulation/issue423_issue367_preflight.py",
+        "declared": "d9bfeda33e6cf68c93f52db25503a24c39fa60de475364a2421ce67962f593dd",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "d9bfeda33e6cf68c93f52db25503a24c39fa60de475364a2421ce67962f593dd",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.preflight_tool_path"
+      },
+      {
+        "artifact": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+        "declared": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.required_tree_path"
+      },
+      {
+        "artifact": "tools/preflop/hybrid_response_router.py",
+        "declared": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.router_module_path"
+      },
+      {
+        "artifact": "tools/preflop/hybrid_response_runtime.py",
+        "declared": "6f0e655f09219d3eb0ed64169d60e8157683e88e9cbe227ce6452ab3980131c0",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "6f0e655f09219d3eb0ed64169d60e8157683e88e9cbe227ce6452ab3980131c0",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.runtime_module_path"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+        "declared": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "source": "ISSUE367_PREFLIGHT.evidence_bindings.terminal_report_path"
+      },
+      {
+        "artifact": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+        "declared": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+        "declared": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+        "declared": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+        "declared": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+        "declared": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+        "declared": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "training/models/postflop_population_model_v5.json",
+        "declared": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "6d948f30f6c276ce41e70e83ac35275e30e7841e93e5b1da11782648c6b4d8ae",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "training/models/preflop_population_model_v5.json",
+        "declared": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "training/populations/registry.json",
+        "declared": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "832279cbbdf2f7d53cfd610e227eec17eef39a1ca1f5e344224d8c04d51840e4",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "training/registry.json",
+        "declared": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "28430d61fb8e3a65e116e719af8c521ea838f1dec76d91e058df68840705f6f0",
+        "source": "ISSUE367_PREFLIGHT.protected_files"
+      },
+      {
+        "artifact": "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+        "declared": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "7d7fc9692bf787bd9864f6392dd4dc060992350b776f06d00aa1e17196ba1fdf",
+        "source": "ISSUE367_PREFLIGHT.scenario.fixture"
+      },
+      {
+        "artifact": "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+        "declared": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "9df16dbb741659a8f6983e7ce243e3f1796b9fbf6b71be742fd0bc0b5c05540b",
+        "source": "ISSUE367_PREFLIGHT.scenario.frontier_resolution"
+      },
+      {
+        "artifact": "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+        "declared": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "2c71f747f188af4d03c37ae145ef06cd53db844a8f064ec84b440fee8a02220c",
+        "source": "ISSUE367_PREFLIGHT.scenario.required_tree"
+      },
+      {
+        "artifact": "training/models/preflop_population_model_v5.json",
+        "declared": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "source": "ISSUE367_PREFLIGHT.provider.active_reference"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+        "declared": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd",
+        "source": "ISSUE367_PREFLIGHT.provider.generalized_calibration_report"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+        "declared": "eb862cdb0c5498673b6012dc0a37ff248ac76053ac8daab23e430dd22a3f0b0e",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "eb862cdb0c5498673b6012dc0a37ff248ac76053ac8daab23e430dd22a3f0b0e",
+        "source": "ISSUE367_PREFLIGHT.provider.generalized_calibration_report"
+      },
+      {
+        "artifact": "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json",
+        "declared": "a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71",
+        "source": "ISSUE367_PREFLIGHT.provider.ood_calibration"
+      },
+      {
+        "artifact": "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json#calibration.canonical_payload_sha256",
+        "declared": "d1c6154bee555b727ccee4a9747863912acd09a2b589058946b7631832cc70b6",
+        "kind": "nested",
+        "match": true,
+        "recomputed": "d1c6154bee555b727ccee4a9747863912acd09a2b589058946b7631832cc70b6",
+        "source": "ISSUE367_PREFLIGHT.provider.ood_calibration"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+        "source": "ISSUE367_PREFLIGHT.provider.spec"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+        "declared": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+        "source": "ISSUE367_PREFLIGHT.provider.spec"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+        "declared": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "source": "ISSUE367_PREFLIGHT.provider.spec.manifest"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+        "declared": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "kind": "canonical",
+        "match": true,
+        "recomputed": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "source": "ISSUE367_PREFLIGHT.provider.spec.manifest"
+      },
+      {
+        "artifact": "HYBRID_ROUTER_SPEC.json#frozen_criteria",
+        "declared": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "kind": "criteria",
+        "match": true,
+        "recomputed": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+        "source": "ISSUE367_PREFLIGHT.provider.spec.manifest.entry.criteria"
+      },
+      {
+        "artifact": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+        "declared": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "source": "ISSUE367_PREFLIGHT.admission.authority"
+      },
+      {
+        "artifact": "training/models/preflop_population_model_v5.json",
+        "declared": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca",
+        "source": "ISSUE367_PREFLIGHT.admission.currently_retained_reference"
+      },
+      {
+        "artifact": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+        "declared": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+        "kind": "byte",
+        "match": true,
+        "recomputed": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+        "source": "ISSUE367_PREFLIGHT.admission.evidence_scope.dataset"
+      }
+    ],
+    "recomputation_rule": "byte digests are recomputed from the persisted bytes; canonical payload digests from the repository-wide stable_hash of the JSON document with any top-level canonical_payload_sha256 field excluded; the frozen criteria digest from the stable_hash of the persisted criteria block without its criteria_sha256; nested provenance digests from the persisted JSON path that carries them",
+    "runtime_internal_identifiers_not_recomputable": "per-decision `decision_canonical_sha256`, per-fold calibration `params_sha256` and node identity `node_id`s describe non-persisted runtime documents; they are internal identifiers, never bound as file digests",
+    "sidecar_checks": [
+      {
+        "artifact": "HYBRID_ROUTER_SPEC.json",
+        "canonical_match": true,
+        "declared": {
+          "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+          "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+        },
+        "match": true,
+        "recomputed": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+      },
+      {
+        "artifact": "TRAIN_CV_ROUTER_REPORT.json",
+        "canonical_match": true,
+        "declared": {
+          "canonical_payload_sha256": "65d638a3040929d548eabc42813d55763bb23ab0c52720b992ff7722d6688ced",
+          "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+        },
+        "match": true,
+        "recomputed": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+      },
+      {
+        "artifact": "SPARSE_STRATA_COMPARISON.json",
+        "canonical_match": true,
+        "declared": {
+          "canonical_payload_sha256": "9b3a4a22f082609a27822b1166ddf54a4bef24433d79854bfcd070a848637c4c",
+          "sha256": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
+        },
+        "match": true,
+        "recomputed": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
+      },
+      {
+        "artifact": "GENERALIZED_CALIBRATION_REPORT.json",
+        "canonical_match": true,
+        "declared": {
+          "canonical_payload_sha256": "eb862cdb0c5498673b6012dc0a37ff248ac76053ac8daab23e430dd22a3f0b0e",
+          "sha256": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd"
+        },
+        "match": true,
+        "recomputed": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd"
+      },
+      {
+        "artifact": "ROUTER_MANIFEST.json",
+        "canonical_match": true,
+        "declared": {
+          "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+          "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+        },
+        "match": true,
+        "recomputed": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+      },
+      {
+        "artifact": "ISSUE367_PREFLIGHT.json",
+        "canonical_match": true,
+        "declared": {
+          "canonical_payload_sha256": "1dba3a67ed4c985f53a43d72cb4d38b3a68c2dde74d9d635822f56138f14e958",
+          "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+        },
+        "match": true,
+        "recomputed": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+      }
+    ]
+  },
+  "evidence_bindings": {
+    "DECISION.json": {
+      "object": "analysis/issue423_hybrid_router/sha256/8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec.json",
+      "path": "analysis/issue423_hybrid_router/DECISION.json",
+      "sha256": "8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec"
+    },
+    "GENERALIZED_CALIBRATION_REPORT.json": {
+      "object": "analysis/issue423_hybrid_router/sha256/a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd.json",
+      "path": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+      "sha256": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd"
+    },
+    "HYBRID_ROUTER_SPEC.json": {
+      "object": "analysis/issue423_hybrid_router/sha256/15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075.json",
+      "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+    },
+    "ISSUE367_PREFLIGHT.json": {
+      "object": "analysis/issue423_hybrid_router/sha256/fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d.json",
+      "path": "analysis/issue423_hybrid_router/ISSUE367_PREFLIGHT.json",
+      "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+    },
+    "ROUTER_MANIFEST.json": {
+      "object": "analysis/issue423_hybrid_router/sha256/6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893.json",
+      "path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+      "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+    },
+    "SPARSE_STRATA_COMPARISON.json": {
+      "object": "analysis/issue423_hybrid_router/sha256/f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b.json",
+      "path": "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.json",
+      "sha256": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
+    },
+    "TRAIN_CV_ROUTER_REPORT.json": {
+      "object": "analysis/issue423_hybrid_router/sha256/6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082.json",
+      "path": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+      "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+    }
+  },
+  "generated_by": {
+    "frozen_at": "2026-09-26T00:00:00Z",
+    "tool_path": "tools/training/build_issue423_evidence_bundle.py",
+    "tool_sha256": "dc56620425573625f94fa4c2b7b8d1130ce33f5c0bda228fa0f36f28dcd28c19"
+  },
+  "issue": 423,
+  "kind": "hybrid_router_evidence_bundle",
+  "notes": "ARTIFACTS.json is an index, not a member of the content-addressed set: it cannot carry its own digest. Every other artifact is byte-identical to its copy under analysis/issue423_hybrid_router/sha256/, named <byte-sha256><extension> and listed in `object`.",
+  "required_artifacts": [
+    "HYBRID_ROUTER_SPEC.json",
+    "TRAIN_CV_ROUTER_REPORT.json",
+    "SPARSE_STRATA_COMPARISON.json",
+    "GENERALIZED_CALIBRATION_REPORT.json",
+    "ROUTER_MANIFEST.json",
+    "ISSUE367_PREFLIGHT.json",
+    "DECISION.json",
+    "SUMMARY.md"
+  ],
+  "schema": "poker-hybrid-router-evidence-index/v1",
+  "summary": {
+    "object": "analysis/issue423_hybrid_router/sha256/7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397.md",
+    "path": "analysis/issue423_hybrid_router/SUMMARY.md",
+    "sha256": "7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397"
+  },
+  "supporting_evidence": {
+    "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json": {
+      "bytes": 252801,
+      "canonical_payload_sha256": "e438d99c4114cef37ded4c76d5bdcaf557f47f818bc66fc40fb36de0adca6530",
+      "content_addressed": true,
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71.json",
+      "path": "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json",
+      "role": "REUSED_ISSUE421_OOD_CALIBRATION_REPORT",
+      "sha256": "a8f1b181f0d3ff3fd48dd3d58181a844760409f036e0b11f440ff7553dfc0b71"
+    },
+    "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json": {
+      "bytes": 264373,
+      "canonical_payload_sha256": "dee8ebbdfa8c65e462cf46bfb39a5ff2e0d0e576da85769d90fde9193d618814",
+      "content_addressed": true,
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff.json",
+      "path": "analysis/issue421_generalized_response/TRAIN_CV_REPORT.json",
+      "role": "REUSED_ISSUE421_TRAIN_CV_REPORT",
+      "sha256": "43d9fffff98aeae1f51d0bdd78647a2dedbd58403a0591433d22840a5cf996ff"
+    },
+    "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json": {
+      "bytes": 72138,
+      "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+      "content_addressed": true,
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630.json",
+      "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+      "role": "T4_TRAIN_ONLY_CV_DERIVATION",
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
+    },
+    "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256": {
+      "bytes": 280,
+      "content_addressed": true,
+      "media_type": "text/plain",
+      "object": "analysis/issue423_hybrid_router/sha256/0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0.sha256",
+      "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
+      "role": "T4_TRAIN_ONLY_CV_DERIVATION_SHA256",
+      "sha256": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0"
+    },
+    "contracts/training/generalized-response-dataset.schema.json": {
+      "bytes": 15267,
+      "canonical_payload_sha256": "569e04f51a4cb3341b0f225c63f07d4eb3e4831499c586e4b71639eb96170801",
+      "content_addressed": true,
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/15f35cb3a40a6b48a60e0add252d2f0a31bc6d138964e94e9842f7c2a3757255.json",
+      "path": "contracts/training/generalized-response-dataset.schema.json",
+      "role": "GENERALIZED_RESPONSE_DATASET_CONTRACT_SCHEMA",
+      "sha256": "15f35cb3a40a6b48a60e0add252d2f0a31bc6d138964e94e9842f7c2a3757255"
+    },
+    "contracts/training/generalized-response-ood-gate.schema.json": {
+      "bytes": 13432,
+      "canonical_payload_sha256": "7fd5ed5faf5a82f2774cf53a0cc81a4a841d090b72dd673189463a24eaf2960b",
+      "content_addressed": true,
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e.json",
+      "path": "contracts/training/generalized-response-ood-gate.schema.json",
+      "role": "GENERALIZED_RESPONSE_OOD_GATE_SCHEMA",
+      "sha256": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e"
+    },
+    "contracts/training/hybrid-router-spec.schema.json": {
+      "bytes": 34327,
+      "canonical_payload_sha256": "3fe0e982159e8af1ea8eb779107c7d554781f2ba9f61d234da1fd06e0335a956",
+      "content_addressed": true,
+      "media_type": "application/json",
+      "object": "analysis/issue423_hybrid_router/sha256/cb10abb4d9712c384b1fd4ce2d2cb919e69de3519ba7463998075a4ff1dbd6a6.json",
+      "path": "contracts/training/hybrid-router-spec.schema.json",
+      "role": "HYBRID_ROUTER_SPEC_CONTRACT_SCHEMA",
+      "sha256": "cb10abb4d9712c384b1fd4ce2d2cb919e69de3519ba7463998075a4ff1dbd6a6"
+    }
+  },
+  "terminal_decision": {
+    "actual_terminal_outcome": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+    "criteria_passed": 4,
+    "criteria_total": 5,
+    "decision": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+    "failed_criteria": [
+      "SPARSE_ECE_CEILING"
+    ],
+    "issue367_authorized": false,
+    "next_issue": 367,
+    "terminal_outcomes": [
+      "ADMIT_HYBRID_ROUTER_FOR_ANALYSIS",
+      "RETAIN_REFERENCE_HYBRID_INSUFFICIENT"
+    ]
+  }
+}

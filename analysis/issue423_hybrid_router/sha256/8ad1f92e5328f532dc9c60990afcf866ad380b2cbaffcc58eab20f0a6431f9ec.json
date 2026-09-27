@@ -1,0 +1,832 @@
+{
+  "boundaries": {
+    "active_model_pointer_mutation": false,
+    "active_pointer_mutated": false,
+    "automatic_promotion": "FORBIDDEN",
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "hero_ev_executed": false,
+    "issue367_executed": false,
+    "model_b_consumed": false,
+    "product_admissible": false,
+    "product_admissible_note": "PRODUCT_ADMISSIBLE is explicitly out of scope for #423 and is never a terminal outcome of this decision",
+    "refused_splits": [
+      "VALIDATION",
+      "TEST"
+    ],
+    "split": "TRAIN",
+    "test_authorized": false,
+    "test_consumed": false,
+    "validation_consumed": false,
+    "validation_reopened": false
+  },
+  "calibration": {
+    "module": "tools/training/evaluate_generalized_response_cv.py",
+    "module_sha256": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a",
+    "retained_architecture": "regularized_multinomial_spline",
+    "retained_method": "isotonic",
+    "retained_methods_by_architecture": {
+      "hierarchical_empirical_bayes_dirichlet": "isotonic",
+      "regularized_multinomial_spline": "isotonic"
+    },
+    "scope": {
+      "consumed_splits": [
+        "TRAIN"
+      ],
+      "cross_validated_rows": 94160,
+      "dataset": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+      "dataset_bytes": 41279660,
+      "dataset_sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+      "forbidden_splits": [
+        "TEST"
+      ],
+      "hands": 19016,
+      "recalibrated_splits": [
+        "TRAIN"
+      ],
+      "refused_splits": [
+        "VALIDATION",
+        "TEST"
+      ],
+      "row_stride": 1,
+      "rows": 94160,
+      "split": "TRAIN",
+      "test_consumed": false,
+      "validation_consumed": false
+    },
+    "validation_recalibrated": false
+  },
+  "canonical_payload_sha256": "6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5",
+  "channels": [
+    "active_model_a",
+    "generalized_calibrated",
+    "hybrid_router"
+  ],
+  "criteria_order": [
+    "GLOBAL_NON_INFERIORITY_MARGIN",
+    "SPARSE_GAIN_FLOOR",
+    "SPARSE_ECE_CEILING",
+    "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+    "OOD_ABSTENTION_CRITERION"
+  ],
+  "criteria_passed": 4,
+  "criteria_total": 5,
+  "decided_at": "2026-09-26T00:00:00Z",
+  "decision": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+  "decision_digest_location": "the decision digest cannot live inside the decision payload; it is recorded in DECISION.sha256 and in ARTIFACTS.json",
+  "decision_id": "issue423-hybrid-router-terminal-decision-v1",
+  "decision_rationale": "the hybrid router passes 4/5 frozen criteria but fails SPARSE_ECE_CEILING on the TRAIN-only cross-fitted score; the active Model A reference is retained and #367 keeps its currently admitted model; the terminal outcome is RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+  "downstream": "only the admitting terminal outcome would unblock the #367 analysis; the retaining outcome keeps the active Model A reference, wires no provider into #367 and authorizes no Hero EV, no support-grid extension and no promotion",
+  "evaluation": {
+    "basis": "train_only_hand_grouped_cross_fitted_channel_comparison",
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "cross_validated_rows": 94160,
+    "folds": 5,
+    "forbidden_splits": [
+      "TEST"
+    ],
+    "group_key": "hand_id",
+    "hands": 19016,
+    "probe_rows": 640,
+    "refused_splits": [
+      "VALIDATION",
+      "TEST"
+    ],
+    "rows": 94160,
+    "split": "TRAIN",
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "evidence_bindings": {
+    "GENERALIZED_CALIBRATION_REPORT.json": {
+      "path": "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json",
+      "sha256": "a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd"
+    },
+    "HYBRID_ROUTER_SPEC.json": {
+      "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+    },
+    "ISSUE367_PREFLIGHT.json": {
+      "path": "analysis/issue423_hybrid_router/ISSUE367_PREFLIGHT.json",
+      "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+    },
+    "ROUTER_MANIFEST.json": {
+      "path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+      "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+    },
+    "SPARSE_STRATA_COMPARISON.json": {
+      "path": "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.json",
+      "sha256": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
+    },
+    "TRAIN_CV_ROUTER_REPORT.json": {
+      "path": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+      "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+    }
+  },
+  "failed_criteria": [
+    "SPARSE_ECE_CEILING"
+  ],
+  "frozen_criteria": {
+    "authored_before_terminal_score": true,
+    "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+    "derivation_path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+    "derivation_sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+    "manifest_path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+    "manifest_sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+    "spec_path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+    "spec_sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+  },
+  "gates": [
+    {
+      "comparator": "<=",
+      "derives": "margin_global",
+      "direction": "lower_is_better",
+      "frozen_criterion": "margin_global_bits_per_decision <= 0.001 (one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the admission support)",
+      "id": "GLOBAL_NON_INFERIORITY_MARGIN",
+      "observed": 0.000508,
+      "passed": true,
+      "statistic": "one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the admission support",
+      "threshold": 0.001,
+      "unit": "bits_per_decision"
+    },
+    {
+      "comparator": ">=",
+      "derives": "gain_sparse",
+      "direction": "higher_is_better",
+      "frozen_criterion": "gain_sparse_bits_per_decision >= 0.167 on the pooled (rare_exact, exact_absent_in_domain) support",
+      "id": "SPARSE_GAIN_FLOOR",
+      "observed": {
+        "gain_bits_per_decision": 0.167733,
+        "minimum_sparse_observations": 20,
+        "per_stratum": {
+          "exact_absent_in_domain": -0.071905,
+          "rare_exact": 0.226143
+        },
+        "sparse_decisions": 12966
+      },
+      "passed": true,
+      "statistic": "support-weighted mean of the hybrid channel's gain_bits_per_decision over the pooled sparse strata",
+      "threshold": 0.167,
+      "unit": "bits_per_decision"
+    },
+    {
+      "comparator": "<=",
+      "derives": "ece_ceiling_sparse",
+      "direction": "lower_is_better",
+      "frozen_criterion": "ece_sparse <= 0.02",
+      "id": "SPARSE_ECE_CEILING",
+      "observed": {
+        "active_sparse_ece": 0.042629,
+        "hybrid_ece": 0.027507,
+        "per_stratum_hybrid_ece": {
+          "exact_absent_in_domain": 0.040773,
+          "rare_exact": 0.024273
+        }
+      },
+      "passed": false,
+      "statistic": "support-weighted expected calibration error of the hybrid channel over the pooled sparse strata",
+      "threshold": 0.02,
+      "unit": "expected_calibration_error"
+    },
+    {
+      "comparator": "<=",
+      "derives": "bound_frequent_exact",
+      "direction": "lower_is_better",
+      "frozen_criterion": "delta_frequent_exact_bits_per_decision <= 0.0 and paired_ci95_upper(delta_frequent_exact) <= 0.0",
+      "id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+      "observed": {
+        "paired_ci95_upper_bits_per_decision": 0.0,
+        "point_estimate_bits_per_decision": 0.0,
+        "upper_quantile_bits_per_decision": 0.0
+      },
+      "passed": true,
+      "statistic": "paired-by-hand hybrid-minus-active log-loss delta on the frequent_exact stratum, in point estimate and in paired 95% upper bound",
+      "threshold": 0.0,
+      "unit": "bits_per_decision"
+    },
+    {
+      "comparator": "==",
+      "derives": "abstain",
+      "direction": "predicate",
+      "frozen_criterion": "abstain iff hard_reasons is not empty; abstain_rate on the synthetic out-of-domain probe surface == 1.0 and coverage == 0.0",
+      "id": "OOD_ABSTENTION_CRITERION",
+      "observed": {
+        "abstain_rate": 1.0,
+        "coverage": 0.0,
+        "probes": 640,
+        "probes_abstained": 640,
+        "probes_per_kind": {
+          "extrapolation_sizing": 160,
+          "extrapolation_stack": 160,
+          "missing_domain_axis": 160,
+          "unseen_category": 160
+        }
+      },
+      "passed": true,
+      "statistic": "measured abstention rate of the frozen router on the OOD probe surface",
+      "threshold": 1.0,
+      "unit": "required_abstention_rate_on_synthetic_ood_probes"
+    }
+  ],
+  "global_deltas": {
+    "active_model_a_minus_generalized_calibrated": 0.222283,
+    "hybrid_router_minus_active_model_a": -0.004301,
+    "hybrid_router_minus_generalized_calibrated": 0.218368
+  },
+  "issue": 423,
+  "issue367": {
+    "admitting_outcome": "ADMIT_HYBRID_ROUTER_FOR_ANALYSIS",
+    "authorized": false,
+    "consumption": "FORBIDDEN",
+    "executed": false,
+    "hero_ev_executed": false,
+    "nodes_queried": 38,
+    "outcome": "ABSTAIN_BLOCKED_ADMISSION",
+    "preflight_passed": false,
+    "question": "may the #423 hybrid router be consumed by the #367 Hero EV run?",
+    "retaining_outcome": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+    "rule_id": "ISSUE367_CONSUMES_ONLY_AN_ADMITTED_CANDIDATE",
+    "sizing_frontiers_queried": 7,
+    "terminal_outcome": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT"
+  },
+  "kind": "HYBRID_ROUTER_TERMINAL_DECISION",
+  "limper_vs_iso": {
+    "family": "LIMPER_VS_ISO",
+    "hands": 2614,
+    "models": {
+      "active_model_a": {
+        "coverage": 1.0,
+        "expected_calibration_error": 0.031725,
+        "log_loss_bits_per_decision": 1.031822
+      },
+      "generalized_calibrated": {
+        "coverage": 1.0,
+        "expected_calibration_error": 0.033084,
+        "log_loss_bits_per_decision": 1.008978
+      },
+      "hybrid_router": {
+        "coverage": 0.999677,
+        "expected_calibration_error": 0.030863,
+        "log_loss_bits_per_decision": 1.000974
+      }
+    }
+  },
+  "metrics": {
+    "abstain_rate": {
+      "active_model_a": 0.0,
+      "generalized_calibrated": 0.0,
+      "hybrid_router": 9.6e-05
+    },
+    "accuracy": {
+      "active_model_a": 0.421814,
+      "generalized_calibrated": 0.594945,
+      "hybrid_router": 0.429055
+    },
+    "brier_score": {
+      "active_model_a": 0.638796,
+      "generalized_calibrated": 0.509059,
+      "hybrid_router": 0.630552
+    },
+    "coverage": {
+      "active_model_a": 1.0,
+      "generalized_calibrated": 1.0,
+      "hybrid_router": 0.999904
+    },
+    "expected_calibration_error": {
+      "active_model_a": 0.17112,
+      "generalized_calibrated": 0.012032,
+      "hybrid_router": 0.166441
+    },
+    "log_loss_bits_per_decision": {
+      "active_model_a": 1.437454,
+      "generalized_calibrated": 1.215171,
+      "hybrid_router": 1.433096
+    }
+  },
+  "next_issue": 367,
+  "next_issue_status": "NOT_EXECUTED",
+  "ood_gate": {
+    "channel_abstention_on_probes": {
+      "active_model_a": {
+        "abstain_rate": 0.25,
+        "coverage": 0.75
+      },
+      "generalized_calibrated": {
+        "abstain_rate": 1.0,
+        "coverage": 0.0
+      },
+      "hybrid_router": {
+        "abstain_rate": 1.0,
+        "coverage": 0.0
+      }
+    },
+    "contract_path": "contracts/training/generalized-response-ood-gate.schema.json",
+    "contract_sha256": "99a6fe9c3eeb4b7f61db35f390115938799c8730d41fa0b8e62e4311023f0f1e",
+    "hard_reason_codes": [
+      "UNSEEN_CATEGORY",
+      "EXTRAPOLATION_STACK",
+      "EXTRAPOLATION_SIZING",
+      "EXTRAPOLATION_PRICE",
+      "MISSING_DOMAIN_AXIS"
+    ],
+    "nearest_context_substituted": false,
+    "nearest_price_substituted": false,
+    "required_abstention_rate_on_synthetic_ood_probes": 1.0,
+    "rule_id": "OOD_ABSTENTION_CRITERION",
+    "statuses": [
+      "MODEL_SUPPORTED",
+      "MODEL_SUPPORTED_HIGH_UNCERTAINTY",
+      "MODEL_OOD_ABSTAIN"
+    ],
+    "synthetic_probes": {
+      "abstain_rate": 1.0,
+      "coverage": 0.0,
+      "n": 640,
+      "probes_per_kind": {
+        "extrapolation_sizing": 160,
+        "extrapolation_stack": 160,
+        "missing_domain_axis": 160,
+        "unseen_category": 160
+      }
+    }
+  },
+  "outcome_rule": "ADMIT_HYBRID_ROUTER_FOR_ANALYSIS iff every frozen criterion passes; otherwise RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+  "paired": {
+    "active_model_a_minus_generalized_calibrated": {
+      "admission_support": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.228479,
+          "standard_error_bits_per_decision": 0.003767,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.003846,
+        "bootstrap_variance_bits_squared": 1.5e-05,
+        "ci90": [
+          0.215824,
+          0.228666
+        ],
+        "ci95": [
+          0.214565,
+          0.22955
+        ],
+        "comparison": "active_model_a_minus_generalized_calibrated",
+        "decisions_per_hand": 4.95162,
+        "excluded_decisions": 0,
+        "hands": 19016,
+        "left": "active_model_a",
+        "point_estimate_bits_per_decision": 0.222283,
+        "probability_hybrid_non_degrading": 0.0,
+        "quantiles": {
+          "0.025": 0.214565,
+          "0.05": 0.215824,
+          "0.5": 0.222285,
+          "0.95": 0.228666,
+          "0.975": 0.22955
+        },
+        "right": "generalized_calibrated",
+        "rows": 94160,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.228666,
+        "upper_quantile_level": 0.95
+      },
+      "global": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.228479,
+          "standard_error_bits_per_decision": 0.003767,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.003846,
+        "bootstrap_variance_bits_squared": 1.5e-05,
+        "ci90": [
+          0.215824,
+          0.228666
+        ],
+        "ci95": [
+          0.214565,
+          0.22955
+        ],
+        "comparison": "active_model_a_minus_generalized_calibrated",
+        "decisions_per_hand": 4.95162,
+        "excluded_decisions": 0,
+        "hands": 19016,
+        "left": "active_model_a",
+        "point_estimate_bits_per_decision": 0.222283,
+        "probability_hybrid_non_degrading": 0.0,
+        "quantiles": {
+          "0.025": 0.214565,
+          "0.05": 0.215824,
+          "0.5": 0.222285,
+          "0.95": 0.228666,
+          "0.975": 0.22955
+        },
+        "right": "generalized_calibrated",
+        "rows": 94160,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.228666,
+        "upper_quantile_level": 0.95
+      },
+      "left": "active_model_a",
+      "paired_unit": "hand_id",
+      "right": "generalized_calibrated"
+    },
+    "hybrid_router_minus_active_model_a": {
+      "admission_support": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.000338,
+          "standard_error_bits_per_decision": 0.00282,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.002864,
+        "bootstrap_variance_bits_squared": 8e-06,
+        "ci90": [
+          -0.008764,
+          0.000508
+        ],
+        "ci95": [
+          -0.009648,
+          0.001598
+        ],
+        "comparison": "hybrid_router_minus_active_model_a",
+        "decisions_per_hand": 4.951146,
+        "excluded_decisions": 9,
+        "hands": 19016,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": -0.004301,
+        "probability_hybrid_non_degrading": 0.9325,
+        "quantiles": {
+          "0.025": -0.009648,
+          "0.05": -0.008764,
+          "0.5": -0.004402,
+          "0.95": 0.000508,
+          "0.975": 0.001598
+        },
+        "right": "active_model_a",
+        "rows": 94151,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.000508,
+        "upper_quantile_level": 0.95
+      },
+      "global": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.000338,
+          "standard_error_bits_per_decision": 0.00282,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.002864,
+        "bootstrap_variance_bits_squared": 8e-06,
+        "ci90": [
+          -0.008764,
+          0.000508
+        ],
+        "ci95": [
+          -0.009648,
+          0.001598
+        ],
+        "comparison": "hybrid_router_minus_active_model_a",
+        "decisions_per_hand": 4.951146,
+        "excluded_decisions": 9,
+        "hands": 19016,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": -0.004301,
+        "probability_hybrid_non_degrading": 0.9325,
+        "quantiles": {
+          "0.025": -0.009648,
+          "0.05": -0.008764,
+          "0.5": -0.004402,
+          "0.95": 0.000508,
+          "0.975": 0.001598
+        },
+        "right": "active_model_a",
+        "rows": 94151,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.000508,
+        "upper_quantile_level": 0.95
+      },
+      "left": "hybrid_router",
+      "paired_unit": "hand_id",
+      "right": "active_model_a"
+    },
+    "hybrid_router_minus_generalized_calibrated": {
+      "admission_support": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.222194,
+          "standard_error_bits_per_decision": 0.002326,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.002318,
+        "bootstrap_variance_bits_squared": 5e-06,
+        "ci90": [
+          0.214374,
+          0.222067
+        ],
+        "ci95": [
+          0.213762,
+          0.222714
+        ],
+        "comparison": "hybrid_router_minus_generalized_calibrated",
+        "decisions_per_hand": 4.951146,
+        "excluded_decisions": 9,
+        "hands": 19016,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": 0.218368,
+        "probability_hybrid_non_degrading": 0.0,
+        "quantiles": {
+          "0.025": 0.213762,
+          "0.05": 0.214374,
+          "0.5": 0.218359,
+          "0.95": 0.222067,
+          "0.975": 0.222714
+        },
+        "right": "generalized_calibrated",
+        "rows": 94151,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.222067,
+        "upper_quantile_level": 0.95
+      },
+      "global": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.222194,
+          "standard_error_bits_per_decision": 0.002326,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.002318,
+        "bootstrap_variance_bits_squared": 5e-06,
+        "ci90": [
+          0.214374,
+          0.222067
+        ],
+        "ci95": [
+          0.213762,
+          0.222714
+        ],
+        "comparison": "hybrid_router_minus_generalized_calibrated",
+        "decisions_per_hand": 4.951146,
+        "excluded_decisions": 9,
+        "hands": 19016,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": 0.218368,
+        "probability_hybrid_non_degrading": 0.0,
+        "quantiles": {
+          "0.025": 0.213762,
+          "0.05": 0.214374,
+          "0.5": 0.218359,
+          "0.95": 0.222067,
+          "0.975": 0.222714
+        },
+        "right": "generalized_calibrated",
+        "rows": 94151,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.222067,
+        "upper_quantile_level": 0.95
+      },
+      "left": "hybrid_router",
+      "paired_unit": "hand_id",
+      "right": "generalized_calibrated"
+    }
+  },
+  "passed_criteria": [
+    "GLOBAL_NON_INFERIORITY_MARGIN",
+    "SPARSE_GAIN_FLOOR",
+    "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+    "OOD_ABSTENTION_CRITERION"
+  ],
+  "per_stratum": {
+    "exact_absent_in_domain": {
+      "hybrid_coverage": 0.997644,
+      "hybrid_expected_calibration_error": 0.040773,
+      "hybrid_log_loss_bits_per_decision": 1.462743,
+      "n": 2541
+    },
+    "exact_absent_out_of_domain": {
+      "hybrid_coverage": 0.0,
+      "hybrid_expected_calibration_error": null,
+      "hybrid_log_loss_bits_per_decision": null,
+      "n": 0
+    },
+    "frequent_exact": {
+      "hybrid_coverage": 0.999988,
+      "hybrid_expected_calibration_error": 0.194212,
+      "hybrid_log_loss_bits_per_decision": 1.480957,
+      "n": 81185
+    },
+    "rare_exact": {
+      "hybrid_coverage": 0.999808,
+      "hybrid_expected_calibration_error": 0.024273,
+      "hybrid_log_loss_bits_per_decision": 1.053151,
+      "n": 10425
+    }
+  },
+  "protocol_outcome": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+  "references": {
+    "active_model_a_preflop": {
+      "model_id": "active_model_a_preflop_population",
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "admitted_model_for_issue367": {
+      "model_id": "model-a-preflop-sizing-aware-candidate-v2",
+      "path": "training/models/preflop_population_model_v5.json",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "model_b_postflop": {
+      "path": "training/models/postflop_population_model_v5.json"
+    }
+  },
+  "reproduction": {
+    "build_command": "python3 tools/training/build_issue423_evidence_bundle.py",
+    "check_command": "python3 tools/training/build_issue423_evidence_bundle.py --check",
+    "producer_tools": {
+      "bundle": "tools/training/build_issue423_evidence_bundle.py",
+      "calibration": "tools/preflop/generalized_response_calibration.py",
+      "criteria_freeze": "tools/training/freeze_hybrid_router_criteria.py",
+      "cross_validation": "tools/training/evaluate_hybrid_router_cv.py",
+      "preflight": "tools/simulation/issue423_issue367_preflight.py",
+      "preregistration_spec": "tools/training/freeze_hybrid_router_spec.py",
+      "router": "tools/preflop/hybrid_response_router.py",
+      "runtime": "tools/preflop/hybrid_response_runtime.py"
+    }
+  },
+  "rollback": "no production state is mutated: the terminal decision and this bundle are new evidence artifacts and can be withdrawn by reverting the commit; the active Model A/B pointers are never written",
+  "route_source_counts": {
+    "ACTIVE_STRONG_SUPPORT": 81185,
+    "GENERALIZED_SPARSE_IN_DOMAIN": 12966,
+    "OOD_ABSTAIN": 9
+  },
+  "schema": "poker-hybrid-router-terminal-decision/v1",
+  "sparse_strata_comparison": {
+    "by_stratum": {
+      "exact_absent_in_domain": {
+        "coverage": 0.997644,
+        "hybrid_router": {
+          "accuracy": 0.654073,
+          "baseline_log_loss_bits_per_decision": 1.390838,
+          "brier_score": 0.473006,
+          "calibration_bins_meeting_minimum_support": 40,
+          "calibration_claim_supportable": true,
+          "expected_calibration_error": 0.040773,
+          "gain_bits_per_decision": -0.071905,
+          "illegal_mass_max": 0.0,
+          "log_loss_bits_per_decision": 1.462743,
+          "n": 2541,
+          "observed_action_counts": {
+            "CALL": 1125,
+            "FOLD": 1252,
+            "JAM": 91,
+            "RAISE": 73
+          },
+          "probability_sum_max_abs_error": 0.0
+        }
+      },
+      "rare_exact": {
+        "coverage": 0.999808,
+        "hybrid_router": {
+          "accuracy": 0.716067,
+          "baseline_log_loss_bits_per_decision": 1.279294,
+          "brier_score": 0.407706,
+          "calibration_bins_meeting_minimum_support": 40,
+          "calibration_claim_supportable": true,
+          "expected_calibration_error": 0.024273,
+          "gain_bits_per_decision": 0.226143,
+          "illegal_mass_max": 0.0,
+          "log_loss_bits_per_decision": 1.053151,
+          "n": 10425,
+          "observed_action_counts": {
+            "CALL": 4407,
+            "FOLD": 5561,
+            "JAM": 210,
+            "RAISE": 247
+          },
+          "probability_sum_max_abs_error": 0.0
+        }
+      }
+    },
+    "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold",
+    "paired_unit": "hand_id",
+    "pooled": {
+      "active_ece": 0.042629,
+      "criteria": {
+        "SPARSE_ECE_CEILING": {
+          "comparator": "<=",
+          "derives": "ece_ceiling_sparse",
+          "direction": "lower_is_better",
+          "frozen_criterion": "ece_sparse <= 0.02",
+          "id": "SPARSE_ECE_CEILING",
+          "inputs": {
+            "stratum_active_ece": {
+              "exact_absent_in_domain": 0.043809,
+              "rare_exact": 0.042341
+            },
+            "weights": {
+              "exact_absent_in_domain": 2541.0,
+              "rare_exact": 10425.0
+            }
+          },
+          "observed": {
+            "active_sparse_ece": 0.042629,
+            "hybrid_ece": 0.027507,
+            "per_stratum_hybrid_ece": {
+              "exact_absent_in_domain": 0.040773,
+              "rare_exact": 0.024273
+            }
+          },
+          "passed": false,
+          "statistic": "support-weighted expected calibration error of the hybrid channel over the pooled sparse strata",
+          "t1_formula_id": "SPARSE_ECE_CEILING",
+          "threshold": 0.02,
+          "unit": "expected_calibration_error"
+        },
+        "SPARSE_GAIN_FLOOR": {
+          "comparator": ">=",
+          "derives": "gain_sparse",
+          "direction": "higher_is_better",
+          "frozen_criterion": "gain_sparse_bits_per_decision >= 0.167 on the pooled (rare_exact, exact_absent_in_domain) support",
+          "id": "SPARSE_GAIN_FLOOR",
+          "inputs": {
+            "minimum_sparse_support_satisfied": true,
+            "sparse_decisions": 12966,
+            "weights": {
+              "exact_absent_in_domain": 2541.0,
+              "rare_exact": 10425.0
+            }
+          },
+          "observed": {
+            "gain_bits_per_decision": 0.167733,
+            "minimum_sparse_observations": 20,
+            "per_stratum": {
+              "exact_absent_in_domain": -0.071905,
+              "rare_exact": 0.226143
+            },
+            "sparse_decisions": 12966
+          },
+          "passed": true,
+          "statistic": "support-weighted mean of the hybrid channel's gain_bits_per_decision over the pooled sparse strata",
+          "t1_formula_id": "SPARSE_GAIN_FLOOR",
+          "threshold": 0.167,
+          "unit": "bits_per_decision"
+        }
+      },
+      "gain_bits_per_decision": 0.167733,
+      "hybrid_ece": 0.027507,
+      "log_loss_gain_bits_per_decision": {
+        "per_stratum": {
+          "exact_absent_in_domain": -0.071905,
+          "rare_exact": 0.226143
+        }
+      },
+      "sparse_decisions": 12966,
+      "weights": {
+        "exact_absent_in_domain": 2541.0,
+        "rare_exact": 10425.0
+      }
+    }
+  },
+  "strata": {
+    "counts": {
+      "exact_absent_in_domain": 2547,
+      "exact_absent_out_of_domain": 0,
+      "frequent_exact": 81186,
+      "rare_exact": 10427
+    },
+    "definition": "frozen #423 strata: frequent_exact (exact-cell support >= 20), rare_exact (0 < support < 20), exact_absent_in_domain (support == 0, every single-feature label observed in the fit fold) and exact_absent_out_of_domain (support == 0 with at least one unseen feature value)",
+    "frequent_exact_min_support": 20,
+    "hands": 19016,
+    "rare_exact_min_support": 1,
+    "rows": 94160,
+    "shares": {
+      "exact_absent_in_domain": 0.02705,
+      "exact_absent_out_of_domain": 0.0,
+      "frequent_exact": 0.862213,
+      "rare_exact": 0.110737
+    },
+    "source_module_symbol": "tools/preflop/hybrid_response_router.py::compute_signals"
+  },
+  "terminal": true,
+  "terminal_outcomes": [
+    {
+      "actual": false,
+      "condition": "every frozen #423 admission criterion passes on the TRAIN-only hand-grouped cross-fitted score",
+      "downstream": "unlocks the #367 preflight only: it wires no provider into #367, performs no promotion and mutates no active pointer",
+      "id": "ADMIT_HYBRID_ROUTER_FOR_ANALYSIS",
+      "issue367_authorized": false,
+      "note": "even the admitting outcome only unblocks the #367 analysis; #367 is not executed by this bundle"
+    },
+    {
+      "actual": true,
+      "condition": "at least one frozen #423 admission criterion fails on the TRAIN-only hand-grouped cross-fitted score",
+      "downstream": "the active Model A reference is retained; #367 keeps its currently admitted model; no provider is wired, no Hero EV is computed and no promotion happens",
+      "id": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+      "issue367_authorized": false,
+      "note": "the refused admission is recorded as evidence only"
+    }
+  ],
+  "title": "#423 terminal decision: the frozen-criteria outcome of the TRAIN-only cross-fitted hybrid preflop response router"
+}

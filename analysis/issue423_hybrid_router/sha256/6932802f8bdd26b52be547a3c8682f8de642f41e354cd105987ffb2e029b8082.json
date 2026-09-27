@@ -1,0 +1,3715 @@
+{
+  "assertions": {
+    "frozen_spec_not_drifted": true,
+    "no_hand_on_both_sides_of_a_split": true,
+    "outcome_derived_from_frozen_criteria": true,
+    "router_abstains_on_every_ood_probe": true,
+    "test_never_read": true,
+    "validation_never_read": true
+  },
+  "calibration_admitted_folds": 5,
+  "canonical_payload_sha256": "65d638a3040929d548eabc42813d55763bb23ab0c52720b992ff7722d6688ced",
+  "criteria_evaluation": {
+    "all_passed": false,
+    "criteria": [
+      {
+        "comparator": "<=",
+        "derives": "margin_global",
+        "direction": "lower_is_better",
+        "frozen_criterion": "margin_global_bits_per_decision <= 0.001 (one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the admission support)",
+        "id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "inputs": {
+          "ci95": [
+            -0.009648,
+            0.001598
+          ],
+          "hands": 19016,
+          "paired_unit": "hand_id",
+          "point_estimate_bits_per_decision": -0.004301,
+          "rows": 94151,
+          "upper_quantile_level": 0.95
+        },
+        "observed": 0.000508,
+        "passed": true,
+        "statistic": "one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the admission support",
+        "t1_formula_id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "threshold": 0.001,
+        "unit": "bits_per_decision"
+      },
+      {
+        "comparator": ">=",
+        "derives": "gain_sparse",
+        "direction": "higher_is_better",
+        "frozen_criterion": "gain_sparse_bits_per_decision >= 0.167 on the pooled (rare_exact, exact_absent_in_domain) support",
+        "id": "SPARSE_GAIN_FLOOR",
+        "inputs": {
+          "minimum_sparse_support_satisfied": true,
+          "sparse_decisions": 12966,
+          "weights": {
+            "exact_absent_in_domain": 2541.0,
+            "rare_exact": 10425.0
+          }
+        },
+        "observed": {
+          "gain_bits_per_decision": 0.167733,
+          "minimum_sparse_observations": 20,
+          "per_stratum": {
+            "exact_absent_in_domain": -0.071905,
+            "rare_exact": 0.226143
+          },
+          "sparse_decisions": 12966
+        },
+        "passed": true,
+        "statistic": "support-weighted mean of the hybrid channel's gain_bits_per_decision over the pooled sparse strata",
+        "t1_formula_id": "SPARSE_GAIN_FLOOR",
+        "threshold": 0.167,
+        "unit": "bits_per_decision"
+      },
+      {
+        "comparator": "<=",
+        "derives": "ece_ceiling_sparse",
+        "direction": "lower_is_better",
+        "frozen_criterion": "ece_sparse <= 0.02",
+        "id": "SPARSE_ECE_CEILING",
+        "inputs": {
+          "stratum_active_ece": {
+            "exact_absent_in_domain": 0.043809,
+            "rare_exact": 0.042341
+          },
+          "weights": {
+            "exact_absent_in_domain": 2541.0,
+            "rare_exact": 10425.0
+          }
+        },
+        "observed": {
+          "active_sparse_ece": 0.042629,
+          "hybrid_ece": 0.027507,
+          "per_stratum_hybrid_ece": {
+            "exact_absent_in_domain": 0.040773,
+            "rare_exact": 0.024273
+          }
+        },
+        "passed": false,
+        "statistic": "support-weighted expected calibration error of the hybrid channel over the pooled sparse strata",
+        "t1_formula_id": "SPARSE_ECE_CEILING",
+        "threshold": 0.02,
+        "unit": "expected_calibration_error"
+      },
+      {
+        "comparator": "<=",
+        "derives": "bound_frequent_exact",
+        "direction": "lower_is_better",
+        "frozen_criterion": "delta_frequent_exact_bits_per_decision <= 0.0 and paired_ci95_upper(delta_frequent_exact) <= 0.0",
+        "id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "inputs": {
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "hands": 19013,
+          "paired_unit": "hand_id",
+          "rows": 81185
+        },
+        "observed": {
+          "paired_ci95_upper_bits_per_decision": 0.0,
+          "point_estimate_bits_per_decision": 0.0,
+          "upper_quantile_bits_per_decision": 0.0
+        },
+        "passed": true,
+        "statistic": "paired-by-hand hybrid-minus-active log-loss delta on the frequent_exact stratum, in point estimate and in paired 95% upper bound",
+        "t1_formula_id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "threshold": 0.0,
+        "unit": "bits_per_decision"
+      },
+      {
+        "comparator": "==",
+        "derives": "abstain",
+        "direction": "predicate",
+        "frozen_criterion": "abstain iff hard_reasons is not empty; abstain_rate on the synthetic out-of-domain probe surface == 1.0 and coverage == 0.0",
+        "id": "OOD_ABSTENTION_CRITERION",
+        "inputs": {
+          "required_abstention_rate": 1.0,
+          "required_coverage": 0.0
+        },
+        "observed": {
+          "abstain_rate": 1.0,
+          "coverage": 0.0,
+          "probes": 640,
+          "probes_abstained": 640,
+          "probes_per_kind": {
+            "extrapolation_sizing": 160,
+            "extrapolation_stack": 160,
+            "missing_domain_axis": 160,
+            "unseen_category": 160
+          }
+        },
+        "passed": true,
+        "statistic": "measured abstention rate of the frozen router on the OOD probe surface",
+        "t1_formula_id": "OOD_ABSTENTION_CRITERION",
+        "threshold": 1.0,
+        "unit": "required_abstention_rate_on_synthetic_ood_probes"
+      }
+    ],
+    "criteria_order": [
+      "GLOBAL_NON_INFERIORITY_MARGIN",
+      "SPARSE_GAIN_FLOOR",
+      "SPARSE_ECE_CEILING",
+      "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+      "OOD_ABSTENTION_CRITERION"
+    ],
+    "failed": [
+      "SPARSE_ECE_CEILING"
+    ],
+    "margins_reinvented_here": false,
+    "outcome": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+    "outcome_rule": "ADMIT_HYBRID_ROUTER_FOR_ANALYSIS iff every frozen criterion passes; otherwise RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+    "thresholds_source": "frozen_hybrid_router_criteria"
+  },
+  "deltas": {
+    "global_log_loss_bits_per_decision": {
+      "active_model_a_minus_generalized_calibrated": 0.222283,
+      "hybrid_router_minus_active_model_a": -0.004301,
+      "hybrid_router_minus_generalized_calibrated": 0.218368
+    },
+    "log_loss_by_stratum": {
+      "exact_absent_in_domain": {
+        "active_model_a": 1.232085,
+        "generalized_calibrated": 1.477641,
+        "hybrid_router": 1.462743
+      },
+      "exact_absent_out_of_domain": {
+        "active_model_a": null,
+        "generalized_calibrated": null,
+        "hybrid_router": null
+      },
+      "frequent_exact": {
+        "active_model_a": 1.481022,
+        "generalized_calibrated": 1.227743,
+        "hybrid_router": 1.480957
+      },
+      "rare_exact": {
+        "active_model_a": 1.148395,
+        "generalized_calibrated": 1.053168,
+        "hybrid_router": 1.053151
+      }
+    },
+    "paired_unit": "hand_id",
+    "sign_convention": "negative favors the hybrid channel",
+    "sparse_log_loss_bits_per_decision": {
+      "active_ece": 0.042629,
+      "hybrid_ece": 0.027507,
+      "hybrid_gain_bits_per_decision": 0.167733,
+      "paired_hybrid_minus_active": -0.031234,
+      "per_stratum_paired_hybrid_minus_active": {
+        "exact_absent_in_domain": 0.231417,
+        "rare_exact": -0.095253
+      },
+      "strata": [
+        "rare_exact",
+        "exact_absent_in_domain"
+      ],
+      "weights": {
+        "exact_absent_in_domain": 2541.0,
+        "rare_exact": 10425.0
+      }
+    }
+  },
+  "folds": [
+    {
+      "architecture": "regularized_multinomial_spline",
+      "calibration_admitted": true,
+      "calibration_method": "isotonic",
+      "fit_exact_contexts": 3952,
+      "fit_hands": 15228,
+      "fit_rows": 75388,
+      "fold": 0,
+      "hand_overlap_with_fit": 0,
+      "holdout_exact_contexts": 1849,
+      "holdout_hands": 3788,
+      "holdout_rows": 18772,
+      "route_source_counts": {
+        "ACTIVE_STRONG_SUPPORT": 16201,
+        "GENERALIZED_SPARSE_IN_DOMAIN": 2569,
+        "OOD_ABSTAIN": 2
+      }
+    },
+    {
+      "architecture": "regularized_multinomial_spline",
+      "calibration_admitted": true,
+      "calibration_method": "isotonic",
+      "fit_exact_contexts": 3901,
+      "fit_hands": 15178,
+      "fit_rows": 75118,
+      "fold": 1,
+      "hand_overlap_with_fit": 0,
+      "holdout_exact_contexts": 1881,
+      "holdout_hands": 3838,
+      "holdout_rows": 19042,
+      "route_source_counts": {
+        "ACTIVE_STRONG_SUPPORT": 16332,
+        "GENERALIZED_SPARSE_IN_DOMAIN": 2708,
+        "OOD_ABSTAIN": 2
+      }
+    },
+    {
+      "architecture": "regularized_multinomial_spline",
+      "calibration_admitted": true,
+      "calibration_method": "isotonic",
+      "fit_exact_contexts": 3952,
+      "fit_hands": 15244,
+      "fit_rows": 75547,
+      "fold": 2,
+      "hand_overlap_with_fit": 0,
+      "holdout_exact_contexts": 1823,
+      "holdout_hands": 3772,
+      "holdout_rows": 18613,
+      "route_source_counts": {
+        "ACTIVE_STRONG_SUPPORT": 16085,
+        "GENERALIZED_SPARSE_IN_DOMAIN": 2525,
+        "OOD_ABSTAIN": 3
+      }
+    },
+    {
+      "architecture": "regularized_multinomial_spline",
+      "calibration_admitted": true,
+      "calibration_method": "isotonic",
+      "fit_exact_contexts": 3933,
+      "fit_hands": 15207,
+      "fit_rows": 75314,
+      "fold": 3,
+      "hand_overlap_with_fit": 0,
+      "holdout_exact_contexts": 1853,
+      "holdout_hands": 3809,
+      "holdout_rows": 18846,
+      "route_source_counts": {
+        "ACTIVE_STRONG_SUPPORT": 16224,
+        "GENERALIZED_SPARSE_IN_DOMAIN": 2620,
+        "OOD_ABSTAIN": 2
+      }
+    },
+    {
+      "architecture": "regularized_multinomial_spline",
+      "calibration_admitted": true,
+      "calibration_method": "isotonic",
+      "fit_exact_contexts": 3943,
+      "fit_hands": 15207,
+      "fit_rows": 75273,
+      "fold": 4,
+      "hand_overlap_with_fit": 0,
+      "holdout_exact_contexts": 1828,
+      "holdout_hands": 3809,
+      "holdout_rows": 18887,
+      "route_source_counts": {
+        "ACTIVE_STRONG_SUPPORT": 16343,
+        "GENERALIZED_SPARSE_IN_DOMAIN": 2544,
+        "OOD_ABSTAIN": 0
+      }
+    }
+  ],
+  "frozen_criteria": {
+    "criteria": [
+      {
+        "criterion": "margin_global_bits_per_decision <= 0.001 (one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the admission support)",
+        "derivation_rule": "ceil_to_quantum(max(MARGIN_MAX_BITS, one_sided_upper_quantile of the paired hybrid-minus-active bootstrap), MARGIN_ANALYTIC_TOLERANCE_BITS)",
+        "derives": "margin_global",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "admission_strata": [
+            "frequent_exact",
+            "rare_exact",
+            "exact_absent_in_domain"
+          ],
+          "excluded_decisions": 9,
+          "hands": 19016,
+          "rows": 94151,
+          "stratum_rows": {
+            "exact_absent_in_domain": 2547,
+            "frequent_exact": 81186,
+            "rare_exact": 10427
+          }
+        },
+        "id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "inputs": [
+          {
+            "pointer": "/margin_derivation/margin_global_bootstrap_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.000508
+          },
+          {
+            "pointer": "/margin_derivation/margin_global_analytic_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.000338
+          },
+          {
+            "pointer": "/paired/hybrid_router_minus_active_model_a/admission_support/ci95",
+            "source": "train_only_cv_derivation",
+            "value": null
+          }
+        ],
+        "justification": {
+          "bootstrap_analytic_absolute_difference_bits": 0.00017,
+          "bootstrap_analytic_agreement_tolerance_bits": 0.001,
+          "bootstrap_samples": 2000,
+          "bootstrap_seed": 423,
+          "confidence_level": 0.95,
+          "dispersion": {
+            "bootstrap_stddev_bits_per_decision": 0.002864,
+            "bootstrap_variance_bits_squared": 8e-06,
+            "ci95": [
+              -0.009648,
+              0.001598
+            ],
+            "quantiles": {
+              "0.025": -0.009648,
+              "0.05": -0.008764,
+              "0.5": -0.004402,
+              "0.95": 0.000508,
+              "0.975": 0.001598
+            }
+          },
+          "observed_analytic_bits_per_decision": 0.000338,
+          "observed_bootstrap_bits_per_decision": 0.000508,
+          "paired_unit": "hand_id",
+          "point_estimate_bits_per_decision": -0.004301,
+          "preregistered_reference": {
+            "MARGIN_ANALYTIC_TOLERANCE_BITS": 0.001,
+            "MARGIN_MAX_BITS": 0.0
+          },
+          "statement": "the margin is sized by the measured TRAIN out-of-fold dispersion: it is the smallest multiple of the preregistered 0.001-bit resolution that covers the observed one-sided 95% upper bound of the paired hybrid-minus-active loss difference, and the closed-form analytic margin reproduces it within the preregistered tolerance",
+          "statistic": "one-sided upper percentile of the paired-by-hand bootstrap of mean(log_loss_hybrid - log_loss_active) on the TRAIN out-of-fold admission support",
+          "upper_quantile": 0.95
+        },
+        "t1_formula_id": "GLOBAL_NON_INFERIORITY_MARGIN",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.001
+      },
+      {
+        "criterion": "gain_sparse_bits_per_decision >= 0.167 on the pooled (rare_exact, exact_absent_in_domain) support",
+        "derivation_rule": "max(GAIN_FLOOR_BITS, floor_to_quantum(support_weighted_mean of the hybrid channel's gain_bits_per_decision over rare_exact and exact_absent_in_domain, MARGIN_ANALYTIC_TOLERANCE_BITS))",
+        "derives": "gain_sparse",
+        "direction": "higher_is_better",
+        "effectifs": {
+          "minimum_sparse_observations": 20,
+          "sparse_decisions": 12966,
+          "sparse_strata": [
+            "rare_exact",
+            "exact_absent_in_domain"
+          ],
+          "stratum_abstained": {
+            "exact_absent_in_domain": 6,
+            "rare_exact": 2
+          },
+          "stratum_decisions": {
+            "exact_absent_in_domain": 2541,
+            "rare_exact": 10425
+          },
+          "stratum_rows": {
+            "exact_absent_in_domain": 2547,
+            "rare_exact": 10427
+          }
+        },
+        "id": "SPARSE_GAIN_FLOOR",
+        "inputs": [
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/gain_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.226143
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/gain_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": -0.071905
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/n",
+            "source": "train_only_cv_derivation",
+            "value": 10425
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/n",
+            "source": "train_only_cv_derivation",
+            "value": 2541
+          }
+        ],
+        "justification": {
+          "observed_sparse_gain_bits_per_decision": 0.167733,
+          "per_stratum_gain_bits_per_decision": {
+            "exact_absent_in_domain": -0.071905,
+            "rare_exact": 0.226143
+          },
+          "preregistered_reference": {
+            "GAIN_FLOOR_BITS": 0.0,
+            "MINIMUM_SPARSE_OBSERVATIONS": 20
+          },
+          "rounding": {
+            "quantum_bits_per_decision": 0.001,
+            "rationale": "the floor is the gain TRAIN already demonstrated, rounded down to the preregistered resolution so the requirement is never stricter than the measured evidence",
+            "rule": "floor_to_quantum"
+          },
+          "statement": "the minimal sparse gain required of the router is the level the TRAIN out-of-fold evidence already demonstrates on the two strata the generalized channel may cover",
+          "statistic": "support-weighted mean of the hybrid channel's gain_bits_per_decision over rare_exact and exact_absent_in_domain on the TRAIN out-of-fold decisions"
+        },
+        "t1_formula_id": "SPARSE_GAIN_FLOOR",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.167
+      },
+      {
+        "criterion": "ece_sparse <= 0.02",
+        "derivation_rule": "min(ECE_ABSOLUTE_CEILING, ece_active_sparse + ECE_DELTA_CEILING) with ece_active_sparse the support-weighted active-reference ECE on the sparse strata",
+        "derives": "ece_ceiling_sparse",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "active_stratum_decisions": {
+            "exact_absent_in_domain": 2547,
+            "rare_exact": 10427
+          },
+          "calibration_bins_per_action_class": 10,
+          "sparse_decisions": 12966,
+          "stratum_decisions": {
+            "exact_absent_in_domain": 2541,
+            "rare_exact": 10425
+          }
+        },
+        "id": "SPARSE_ECE_CEILING",
+        "inputs": [
+          {
+            "pointer": "/models/hybrid_router/by_stratum/rare_exact/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.024273
+          },
+          {
+            "pointer": "/models/hybrid_router/by_stratum/exact_absent_in_domain/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.040773
+          },
+          {
+            "pointer": "/models/active_model_a/by_stratum/rare_exact/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.042341
+          },
+          {
+            "pointer": "/models/active_model_a/by_stratum/exact_absent_in_domain/metrics/expected_calibration_error",
+            "source": "train_only_cv_derivation",
+            "value": 0.043809
+          }
+        ],
+        "justification": {
+          "active_sparse_ece_plus_delta": 0.062629,
+          "binding_term": "ECE_ABSOLUTE_CEILING",
+          "observed_active_sparse_ece": 0.042629,
+          "observed_sparse_ece": 0.027507,
+          "per_stratum_ece": {
+            "active_model_a": {
+              "exact_absent_in_domain": 0.043809,
+              "rare_exact": 0.042341
+            },
+            "hybrid_router": {
+              "exact_absent_in_domain": 0.040773,
+              "rare_exact": 0.024273
+            }
+          },
+          "preregistered_reference": {
+            "ECE_ABSOLUTE_CEILING": 0.02,
+            "ECE_DELTA_CEILING": 0.02
+          },
+          "statement": "the frozen ceiling is the tighter of the preregistered absolute ECE ceiling and the active reference's own sparse ECE plus the preregistered delta; the recorded term name shows which of the two binds",
+          "statistic": "support-weighted expected calibration error over rare_exact and exact_absent_in_domain, measured on the TRAIN out-of-fold decisions"
+        },
+        "t1_formula_id": "SPARSE_ECE_CEILING",
+        "terminal_evaluation_derived": false,
+        "unit": "expected_calibration_error",
+        "value": 0.02
+      },
+      {
+        "criterion": "delta_frequent_exact_bits_per_decision <= 0.0 and paired_ci95_upper(delta_frequent_exact) <= 0.0",
+        "derivation_rule": "max(FREQUENT_EXACT_MAX_DEGRADATION_BITS, ceil_to_quantum(max(point estimate, one-sided upper quantile, ci95 upper) of the paired hybrid-minus-active loss on frequent_exact, MARGIN_ANALYTIC_TOLERANCE_BITS))",
+        "derives": "bound_frequent_exact",
+        "direction": "lower_is_better",
+        "effectifs": {
+          "active_stratum_rows": 81186,
+          "decisions_per_hand": 4.269973,
+          "excluded_decisions": 1,
+          "hands": 19013,
+          "rows": 81185,
+          "stratum_rows": 81186
+        },
+        "id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "inputs": [
+          {
+            "pointer": "/per_stratum/frequent_exact/paired/hybrid_router_minus_active_model_a/point_estimate_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.0
+          },
+          {
+            "pointer": "/per_stratum/frequent_exact/paired/hybrid_router_minus_active_model_a/upper_quantile_bits_per_decision",
+            "source": "train_only_cv_derivation",
+            "value": 0.0
+          }
+        ],
+        "justification": {
+          "dispersion": {
+            "analytic_margin_bits_per_decision": 0.0,
+            "analytic_standard_error_bits_per_decision": 0.0,
+            "bootstrap_stddev_bits_per_decision": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "point_estimate_bits_per_decision": 0.0,
+          "preregistered_reference": {
+            "FREQUENT_EXACT_MAX_DEGRADATION_BITS": 0.0
+          },
+          "statement": "the frequent-exact route may not degrade the active reference beyond the bound derived from the paired dispersion of that stratum, in point estimate and in paired upper quantile",
+          "statistic": "paired-by-hand hybrid-minus-active log-loss delta on the frequent_exact stratum of the TRAIN out-of-fold decisions",
+          "upper_quantile_bits_per_decision": 0.0
+        },
+        "t1_formula_id": "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "terminal_evaluation_derived": false,
+        "unit": "bits_per_decision",
+        "value": 0.0
+      },
+      {
+        "criterion": "abstain iff hard_reasons is not empty; abstain_rate on the synthetic out-of-domain probe surface == 1.0 and coverage == 0.0",
+        "derivation_rule": "abstain(c) iff reasons(c) intersect OOD_HARD_REASONS is not empty; the soft reason set may only raise the status to high uncertainty, never to abstention",
+        "derives": "abstain",
+        "direction": "predicate",
+        "effectifs": {
+          "declared_probe_kinds": [
+            "extrapolation_sizing",
+            "extrapolation_stack",
+            "missing_domain_axis",
+            "unseen_category"
+          ],
+          "ood_criterion_stratum": "exact_absent_out_of_domain",
+          "ood_stratum_probes": 160,
+          "probes": 640,
+          "probes_abstained": 640,
+          "probes_per_kind": {
+            "extrapolation_sizing": 160,
+            "extrapolation_stack": 160,
+            "missing_domain_axis": 160,
+            "unseen_category": 160
+          }
+        },
+        "id": "OOD_ABSTENTION_CRITERION",
+        "inputs": [
+          {
+            "pointer": "/ood_synthetic_probes/abstain_rate",
+            "source": "train_only_cv_derivation",
+            "value": 1.0
+          },
+          {
+            "pointer": "/ood_synthetic_probes/router_abstained",
+            "source": "train_only_cv_derivation",
+            "value": 640
+          },
+          {
+            "pointer": "/ood_synthetic_probes/n",
+            "source": "train_only_cv_derivation",
+            "value": 640
+          }
+        ],
+        "justification": {
+          "observed_abstention_rate": 1.0,
+          "observed_coverage": 0.0,
+          "paired_unit": "decision",
+          "preregistered_reference": {
+            "FREQUENT_EXACT_MIN_SUPPORT": 20,
+            "OOD_ABSTAIN_is_decisive_for_hard_reasons_only": true,
+            "RARE_EXACT_MIN_SUPPORT": 1
+          },
+          "probe_kinds": [
+            "extrapolation_sizing",
+            "extrapolation_stack",
+            "missing_domain_axis",
+            "unseen_category"
+          ],
+          "probes_per_kind": {
+            "extrapolation_sizing": 160,
+            "extrapolation_stack": 160,
+            "missing_domain_axis": 160,
+            "unseen_category": 160
+          },
+          "statement": "the router must fail closed on every out-of-domain probe: the frozen criterion requires a complete abstention on the probe surface, with the hard reason codes decisive and the soft reasons never abstaining",
+          "statistic": "measured abstention rate of the frozen router on the synthetic out-of-domain probe surface of the TRAIN cross-validation"
+        },
+        "t1_formula_id": "OOD_ABSTENTION_CRITERION",
+        "terminal_evaluation_derived": false,
+        "unit": "required_abstention_rate_on_synthetic_ood_probes",
+        "value": 1.0
+      }
+    ],
+    "criteria_order": [
+      "GLOBAL_NON_INFERIORITY_MARGIN",
+      "SPARSE_GAIN_FLOOR",
+      "SPARSE_ECE_CEILING",
+      "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+      "OOD_ABSTENTION_CRITERION"
+    ],
+    "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+    "derivation": {
+      "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+      "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+      "folds": 5,
+      "hands": 19016,
+      "planner_key": "T4",
+      "rows": 94160,
+      "schema": "poker-hybrid-router-cv-derivation/v1",
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
+    },
+    "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold_cv_derivation",
+    "frozen_at": "2026-09-26T00:00:00Z",
+    "frozen_at_source": "explicit_freeze_timestamp_recorded_before_the_terminal_router_score",
+    "issue": 423,
+    "kind": "frozen_hybrid_router_admission_criteria_and_manifest",
+    "planner_key": "T5",
+    "procedure_reference": {
+      "constants": {
+        "BOOTSTRAP_SAMPLES": 2000.0,
+        "BOOTSTRAP_SEED": 423.0,
+        "ECE_ABSOLUTE_CEILING": 0.02,
+        "ECE_DELTA_CEILING": 0.02,
+        "FREQUENT_EXACT_MAX_DEGRADATION_BITS": 0.0,
+        "FREQUENT_EXACT_MIN_SUPPORT": 20.0,
+        "GAIN_FLOOR_BITS": 0.0,
+        "MARGIN_ANALYTIC_TOLERANCE_BITS": 0.001,
+        "MARGIN_MAX_BITS": 0.0,
+        "MINIMUM_SPARSE_OBSERVATIONS": 20.0,
+        "NON_INFERIORITY_ALPHA": 0.05,
+        "NON_INFERIORITY_CONFIDENCE_LEVEL": 0.95,
+        "NON_INFERIORITY_UPPER_QUANTILE": 0.95,
+        "RARE_EXACT_MIN_SUPPORT": 1.0
+      },
+      "derivation_order": [
+        "STRATUM_ASSIGNMENT",
+        "OOD_ABSTENTION_CRITERION",
+        "ROUTE_SELECTION_PROCEDURE",
+        "SUPPORT_STATE_ASSIGNMENT",
+        "GLOBAL_NON_INFERIORITY_MARGIN",
+        "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+        "SPARSE_GAIN_FLOOR",
+        "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+        "SPARSE_ECE_MEASUREMENT",
+        "SPARSE_ECE_CEILING",
+        "FREQUENT_EXACT_NON_DEGRADATION_BOUND"
+      ],
+      "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold",
+      "formula_ids": [
+        "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+        "GLOBAL_NON_INFERIORITY_ANALYTIC_CROSS_CHECK",
+        "GLOBAL_NON_INFERIORITY_MARGIN",
+        "OOD_ABSTENTION_CRITERION",
+        "ROUTE_SELECTION_PROCEDURE",
+        "SPARSE_ECE_CEILING",
+        "SPARSE_ECE_MEASUREMENT",
+        "SPARSE_GAIN_FLOOR",
+        "SPARSE_GAIN_FLOOR_PAIRED_LOWER_BOUND",
+        "STRATUM_ASSIGNMENT",
+        "SUPPORT_STATE_ASSIGNMENT"
+      ],
+      "pointer": "/procedure",
+      "spec": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "spec_schema": "poker-hybrid-router-spec/v1"
+    },
+    "resolution_quantum_bits_per_decision": 0.001,
+    "schema": "poker-hybrid-router-frozen-criteria/v1",
+    "status": "FROZEN_BEFORE_TERMINAL_EVALUATION",
+    "terminal_evaluation": {
+      "consumed": false,
+      "declared_terminal_report_locations": [
+        "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
+        "analysis/issue423_hybrid_router/terminal/TRAIN_CV_ROUTER_REPORT.json"
+      ]
+    },
+    "terminal_evaluation_derived": false
+  },
+  "frozen_spec": {
+    "bytes": 62833,
+    "canonical_payload_sha256": "23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7282",
+    "criteria_order": [
+      "GLOBAL_NON_INFERIORITY_MARGIN",
+      "SPARSE_GAIN_FLOOR",
+      "SPARSE_ECE_CEILING",
+      "FREQUENT_EXACT_NON_DEGRADATION_BOUND",
+      "OOD_ABSTENTION_CRITERION"
+    ],
+    "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+    "derivation_binding": {
+      "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+      "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+      "folds": 5,
+      "hands": 19016,
+      "planner_key": "T4",
+      "rows": 94160,
+      "schema": "poker-hybrid-router-cv-derivation/v1",
+      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
+    },
+    "frozen_at": "2026-09-26T00:00:00Z",
+    "manifest": {
+      "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+      "path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
+      "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+    },
+    "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+    "schema": "poker-hybrid-router-spec/v1",
+    "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+    "sidecar": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.sha256",
+    "status": "SPEC_ONLY_PREREGISTERED_NOT_ADMITTED"
+  },
+  "generated_by": "tools/training/evaluate_hybrid_router_cv.py",
+  "guards": {
+    "byte_stable": true,
+    "frozen_spec_verified_before_scoring": true,
+    "hands_never_on_both_sides_of_a_fold": true,
+    "no_holdout_access_scan": {
+      "consumed_splits": [
+        "TRAIN"
+      ],
+      "forbidden_splits": [
+        "TEST"
+      ],
+      "hits": [],
+      "refused_splits": [
+        "VALIDATION",
+        "TEST"
+      ],
+      "result": "PASS",
+      "scanned_module": "tools/training/evaluate_hybrid_router_cv.py"
+    },
+    "no_holdout_loader": true,
+    "test_consumed": false,
+    "train_only": true,
+    "validation_consumed": false
+  },
+  "issue": 423,
+  "kind": "train_only_cross_fitted_hybrid_router_terminal_report",
+  "limper_vs_iso": {
+    "definition": "the limper-versus-isolation family, reported on its own surface so the pooled strata tables never hide it",
+    "family": "LIMPER_VS_ISO",
+    "hands": 2614,
+    "models": {
+      "active_model_a": {
+        "metrics": {
+          "accuracy": 0.660847,
+          "baseline_log_loss_bits_per_decision": 1.301335,
+          "brier_score": 0.449083,
+          "calibration_bins_meeting_minimum_support": 40,
+          "calibration_claim_supportable": true,
+          "expected_calibration_error": 0.031725,
+          "gain_bits_per_decision": 0.269513,
+          "illegal_mass_max": 0.0,
+          "log_loss_bits_per_decision": 1.031822,
+          "n": 3093,
+          "observed_action_counts": {
+            "CALL": 1923,
+            "FOLD": 1103,
+            "JAM": 40,
+            "RAISE": 27
+          },
+          "probability_sum_max_abs_error": 0.0
+        },
+        "model_id": "active_model_a_preflop_population",
+        "scope": {
+          "abstain_rate": 0.0,
+          "abstained": 0,
+          "answered": 3093,
+          "coverage": 1.0,
+          "distinct_hands_answered": 2614,
+          "n": 3093
+        }
+      },
+      "generalized_calibrated": {
+        "metrics": {
+          "accuracy": 0.710314,
+          "baseline_log_loss_bits_per_decision": 1.301335,
+          "brier_score": 0.406807,
+          "calibration_bins_meeting_minimum_support": 40,
+          "calibration_claim_supportable": true,
+          "expected_calibration_error": 0.033084,
+          "gain_bits_per_decision": 0.292356,
+          "illegal_mass_max": 0.0,
+          "log_loss_bits_per_decision": 1.008978,
+          "n": 3093,
+          "observed_action_counts": {
+            "CALL": 1923,
+            "FOLD": 1103,
+            "JAM": 40,
+            "RAISE": 27
+          },
+          "probability_sum_max_abs_error": 0.0
+        },
+        "model_id": "generalized_adverse_response_candidate_v1",
+        "scope": {
+          "abstain_rate": 0.0,
+          "abstained": 0,
+          "answered": 3093,
+          "coverage": 1.0,
+          "distinct_hands_answered": 2614,
+          "n": 3093
+        }
+      },
+      "hybrid_router": {
+        "metrics": {
+          "accuracy": 0.713131,
+          "baseline_log_loss_bits_per_decision": 1.301475,
+          "brier_score": 0.405565,
+          "calibration_bins_meeting_minimum_support": 40,
+          "calibration_claim_supportable": true,
+          "expected_calibration_error": 0.030863,
+          "gain_bits_per_decision": 0.300502,
+          "illegal_mass_max": 0.0,
+          "log_loss_bits_per_decision": 1.000974,
+          "n": 3092,
+          "observed_action_counts": {
+            "CALL": 1923,
+            "FOLD": 1102,
+            "JAM": 40,
+            "RAISE": 27
+          },
+          "probability_sum_max_abs_error": 0.0
+        },
+        "model_id": "hybrid_router",
+        "scope": {
+          "abstain_rate": 0.000323,
+          "abstained": 1,
+          "answered": 3092,
+          "coverage": 0.999677,
+          "distinct_hands_answered": 2614,
+          "n": 3093
+        }
+      }
+    },
+    "n": 3093,
+    "paired": {
+      "hybrid_router_minus_active_model_a": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.00143,
+          "standard_error_bits_per_decision": 0.019649,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.019612,
+        "bootstrap_variance_bits_squared": 0.000385,
+        "ci90": [
+          -0.06021,
+          0.002952
+        ],
+        "ci95": [
+          -0.06512,
+          0.010954
+        ],
+        "comparison": "hybrid_router_minus_active_model_a",
+        "decisions_per_hand": 1.182862,
+        "excluded_decisions": 1,
+        "hands": 2614,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": -0.03089,
+        "probability_hybrid_non_degrading": 0.936,
+        "quantiles": {
+          "0.025": -0.06512,
+          "0.05": -0.06021,
+          "0.5": -0.030728,
+          "0.95": 0.002952,
+          "0.975": 0.010954
+        },
+        "right": "active_model_a",
+        "rows": 3092,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.002952,
+        "upper_quantile_level": 0.95
+      },
+      "hybrid_router_minus_generalized_calibrated": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": -0.000547,
+          "standard_error_bits_per_decision": 0.004668,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.004807,
+        "bootstrap_variance_bits_squared": 2.3e-05,
+        "ci90": [
+          -0.016191,
+          -0.000434
+        ],
+        "ci95": [
+          -0.017596,
+          0.000959
+        ],
+        "comparison": "hybrid_router_minus_generalized_calibrated",
+        "decisions_per_hand": 1.182862,
+        "excluded_decisions": 1,
+        "hands": 2614,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": -0.008225,
+        "probability_hybrid_non_degrading": 0.961,
+        "quantiles": {
+          "0.025": -0.017596,
+          "0.05": -0.016191,
+          "0.5": -0.008322,
+          "0.95": -0.000434,
+          "0.975": 0.000959
+        },
+        "right": "generalized_calibrated",
+        "rows": 3092,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": -0.000434,
+        "upper_quantile_level": 0.95
+      }
+    }
+  },
+  "models": {
+    "active_model_a": {
+      "by_stratum": {
+        "exact_absent_in_domain": {
+          "metrics": {
+            "accuracy": 0.617982,
+            "baseline_log_loss_bits_per_decision": 1.39105,
+            "brier_score": 0.507011,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.043809,
+            "gain_bits_per_decision": 0.158965,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.232085,
+            "n": 2547,
+            "observed_action_counts": {
+              "CALL": 1126,
+              "FOLD": 1256,
+              "JAM": 91,
+              "RAISE": 74
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 2547,
+            "coverage": 1.0,
+            "distinct_hands_answered": 1521,
+            "n": 2547
+          }
+        },
+        "exact_absent_out_of_domain": {
+          "metrics": {
+            "accuracy": null,
+            "baseline_log_loss_bits_per_decision": null,
+            "brier_score": null,
+            "calibration_claim_supportable": false,
+            "expected_calibration_error": null,
+            "gain_bits_per_decision": null,
+            "illegal_mass_max": null,
+            "log_loss_bits_per_decision": null,
+            "n": 0,
+            "observed_action_counts": null,
+            "probability_sum_max_abs_error": null
+          },
+          "scope": {
+            "abstain_rate": null,
+            "abstained": 0,
+            "answered": 0,
+            "coverage": null,
+            "distinct_hands_answered": 0,
+            "n": 0
+          }
+        },
+        "frequent_exact": {
+          "metrics": {
+            "accuracy": 0.385153,
+            "baseline_log_loss_bits_per_decision": 1.336834,
+            "brier_score": 0.664108,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.194207,
+            "gain_bits_per_decision": -0.144188,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.481022,
+            "n": 81186,
+            "observed_action_counts": {
+              "CALL": 30087,
+              "FOLD": 44762,
+              "JAM": 856,
+              "RAISE": 5481
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 81186,
+            "coverage": 1.0,
+            "distinct_hands_answered": 19013,
+            "n": 81186
+          }
+        },
+        "rare_exact": {
+          "metrics": {
+            "accuracy": 0.659346,
+            "baseline_log_loss_bits_per_decision": 1.279215,
+            "brier_score": 0.473909,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.042341,
+            "gain_bits_per_decision": 0.130821,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.148395,
+            "n": 10427,
+            "observed_action_counts": {
+              "CALL": 4407,
+              "FOLD": 5563,
+              "JAM": 210,
+              "RAISE": 247
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 10427,
+            "coverage": 1.0,
+            "distinct_hands_answered": 5827,
+            "n": 10427
+          }
+        }
+      },
+      "by_stratum_note": "held-out TRAIN decisions only; the OOD stratum's synthetic-probe surface is published in per_stratum and ood_synthetic_probes",
+      "definition": "frozen combo-weighted public action marginal of active Model A v5, mapped onto the four response actions",
+      "limper_vs_iso": {
+        "family": "LIMPER_VS_ISO",
+        "metrics": {
+          "accuracy": 0.660847,
+          "baseline_log_loss_bits_per_decision": 1.301335,
+          "brier_score": 0.449083,
+          "calibration_bins_meeting_minimum_support": 40,
+          "calibration_claim_supportable": true,
+          "expected_calibration_error": 0.031725,
+          "gain_bits_per_decision": 0.269513,
+          "illegal_mass_max": 0.0,
+          "log_loss_bits_per_decision": 1.031822,
+          "n": 3093,
+          "observed_action_counts": {
+            "CALL": 1923,
+            "FOLD": 1103,
+            "JAM": 40,
+            "RAISE": 27
+          },
+          "probability_sum_max_abs_error": 0.0
+        },
+        "scope": {
+          "abstain_rate": 0.0,
+          "abstained": 0,
+          "answered": 3093,
+          "coverage": 1.0,
+          "distinct_hands_answered": 2614,
+          "n": 3093
+        }
+      },
+      "metrics": {
+        "accuracy": 0.421814,
+        "baseline_log_loss_bits_per_decision": 1.33192,
+        "brier_score": 0.638796,
+        "calibration_bins_meeting_minimum_support": 40,
+        "calibration_claim_supportable": true,
+        "expected_calibration_error": 0.17112,
+        "gain_bits_per_decision": -0.105534,
+        "illegal_mass_max": 0.0,
+        "log_loss_bits_per_decision": 1.437454,
+        "n": 94160,
+        "observed_action_counts": {
+          "CALL": 35620,
+          "FOLD": 51581,
+          "JAM": 1157,
+          "RAISE": 5802
+        },
+        "probability_sum_max_abs_error": 0.0
+      },
+      "model_id": "active_model_a_preflop_population",
+      "scope": {
+        "abstain_rate": 0.0,
+        "abstained": 0,
+        "answered": 94160,
+        "coverage": 1.0,
+        "distinct_hands_answered": 19016,
+        "n": 94160
+      }
+    },
+    "generalized_calibrated": {
+      "by_stratum": {
+        "exact_absent_in_domain": {
+          "metrics": {
+            "accuracy": 0.65371,
+            "baseline_log_loss_bits_per_decision": 1.39105,
+            "brier_score": 0.473567,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.041297,
+            "gain_bits_per_decision": -0.086591,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.477641,
+            "n": 2547,
+            "observed_action_counts": {
+              "CALL": 1126,
+              "FOLD": 1256,
+              "JAM": 91,
+              "RAISE": 74
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 2547,
+            "coverage": 1.0,
+            "distinct_hands_answered": 1521,
+            "n": 2547
+          }
+        },
+        "exact_absent_out_of_domain": {
+          "metrics": {
+            "accuracy": null,
+            "baseline_log_loss_bits_per_decision": null,
+            "brier_score": null,
+            "calibration_claim_supportable": false,
+            "expected_calibration_error": null,
+            "gain_bits_per_decision": null,
+            "illegal_mass_max": null,
+            "log_loss_bits_per_decision": null,
+            "n": 0,
+            "observed_action_counts": null,
+            "probability_sum_max_abs_error": null
+          },
+          "scope": {
+            "abstain_rate": null,
+            "abstained": 0,
+            "answered": 0,
+            "coverage": null,
+            "distinct_hands_answered": 0,
+            "n": 0
+          }
+        },
+        "frequent_exact": {
+          "metrics": {
+            "accuracy": 0.57755,
+            "baseline_log_loss_bits_per_decision": 1.336834,
+            "brier_score": 0.523188,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.016309,
+            "gain_bits_per_decision": 0.10909,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.227743,
+            "n": 81186,
+            "observed_action_counts": {
+              "CALL": 30087,
+              "FOLD": 44762,
+              "JAM": 856,
+              "RAISE": 5481
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 81186,
+            "coverage": 1.0,
+            "distinct_hands_answered": 19013,
+            "n": 81186
+          }
+        },
+        "rare_exact": {
+          "metrics": {
+            "accuracy": 0.716026,
+            "baseline_log_loss_bits_per_decision": 1.279215,
+            "brier_score": 0.40772,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.02421,
+            "gain_bits_per_decision": 0.226047,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.053168,
+            "n": 10427,
+            "observed_action_counts": {
+              "CALL": 4407,
+              "FOLD": 5563,
+              "JAM": 210,
+              "RAISE": 247
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 10427,
+            "coverage": 1.0,
+            "distinct_hands_answered": 5827,
+            "n": 10427
+          }
+        }
+      },
+      "by_stratum_note": "held-out TRAIN decisions only; the OOD stratum's synthetic-probe surface is published in per_stratum and ood_synthetic_probes",
+      "definition": "the #421 response architecture fitted on the fold's fit rows, recalibrated in-fold with the #423 T2 method and read out-of-fold",
+      "limper_vs_iso": {
+        "family": "LIMPER_VS_ISO",
+        "metrics": {
+          "accuracy": 0.710314,
+          "baseline_log_loss_bits_per_decision": 1.301335,
+          "brier_score": 0.406807,
+          "calibration_bins_meeting_minimum_support": 40,
+          "calibration_claim_supportable": true,
+          "expected_calibration_error": 0.033084,
+          "gain_bits_per_decision": 0.292356,
+          "illegal_mass_max": 0.0,
+          "log_loss_bits_per_decision": 1.008978,
+          "n": 3093,
+          "observed_action_counts": {
+            "CALL": 1923,
+            "FOLD": 1103,
+            "JAM": 40,
+            "RAISE": 27
+          },
+          "probability_sum_max_abs_error": 0.0
+        },
+        "scope": {
+          "abstain_rate": 0.0,
+          "abstained": 0,
+          "answered": 3093,
+          "coverage": 1.0,
+          "distinct_hands_answered": 2614,
+          "n": 3093
+        }
+      },
+      "metrics": {
+        "accuracy": 0.594945,
+        "baseline_log_loss_bits_per_decision": 1.33192,
+        "brier_score": 0.509059,
+        "calibration_bins_meeting_minimum_support": 40,
+        "calibration_claim_supportable": true,
+        "expected_calibration_error": 0.012032,
+        "gain_bits_per_decision": 0.116749,
+        "illegal_mass_max": 0.0,
+        "log_loss_bits_per_decision": 1.215171,
+        "n": 94160,
+        "observed_action_counts": {
+          "CALL": 35620,
+          "FOLD": 51581,
+          "JAM": 1157,
+          "RAISE": 5802
+        },
+        "probability_sum_max_abs_error": 0.0
+      },
+      "model_id": "generalized_adverse_response_candidate_v1",
+      "scope": {
+        "abstain_rate": 0.0,
+        "abstained": 0,
+        "answered": 94160,
+        "coverage": 1.0,
+        "distinct_hands_answered": 19016,
+        "n": 94160
+      }
+    },
+    "hybrid_router": {
+      "by_stratum": {
+        "exact_absent_in_domain": {
+          "metrics": {
+            "accuracy": 0.654073,
+            "baseline_log_loss_bits_per_decision": 1.390838,
+            "brier_score": 0.473006,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.040773,
+            "gain_bits_per_decision": -0.071905,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.462743,
+            "n": 2541,
+            "observed_action_counts": {
+              "CALL": 1125,
+              "FOLD": 1252,
+              "JAM": 91,
+              "RAISE": 73
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 0.002356,
+            "abstained": 6,
+            "answered": 2541,
+            "coverage": 0.997644,
+            "distinct_hands_answered": 1520,
+            "n": 2547
+          }
+        },
+        "exact_absent_out_of_domain": {
+          "metrics": {
+            "accuracy": null,
+            "baseline_log_loss_bits_per_decision": null,
+            "brier_score": null,
+            "calibration_claim_supportable": false,
+            "expected_calibration_error": null,
+            "gain_bits_per_decision": null,
+            "illegal_mass_max": null,
+            "log_loss_bits_per_decision": null,
+            "n": 0,
+            "observed_action_counts": null,
+            "probability_sum_max_abs_error": null
+          },
+          "scope": {
+            "abstain_rate": null,
+            "abstained": 0,
+            "answered": 0,
+            "coverage": null,
+            "distinct_hands_answered": 0,
+            "n": 0
+          }
+        },
+        "frequent_exact": {
+          "metrics": {
+            "accuracy": 0.385157,
+            "baseline_log_loss_bits_per_decision": 1.336773,
+            "brier_score": 0.664098,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.194212,
+            "gain_bits_per_decision": -0.144185,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.480957,
+            "n": 81185,
+            "observed_action_counts": {
+              "CALL": 30087,
+              "FOLD": 44762,
+              "JAM": 855,
+              "RAISE": 5481
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 1.2e-05,
+            "abstained": 1,
+            "answered": 81185,
+            "coverage": 0.999988,
+            "distinct_hands_answered": 19013,
+            "n": 81186
+          }
+        },
+        "rare_exact": {
+          "metrics": {
+            "accuracy": 0.716067,
+            "baseline_log_loss_bits_per_decision": 1.279294,
+            "brier_score": 0.407706,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.024273,
+            "gain_bits_per_decision": 0.226143,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.053151,
+            "n": 10425,
+            "observed_action_counts": {
+              "CALL": 4407,
+              "FOLD": 5561,
+              "JAM": 210,
+              "RAISE": 247
+            },
+            "probability_sum_max_abs_error": 0.0
+          },
+          "scope": {
+            "abstain_rate": 0.000192,
+            "abstained": 2,
+            "answered": 10425,
+            "coverage": 0.999808,
+            "distinct_hands_answered": 5826,
+            "n": 10427
+          }
+        }
+      },
+      "by_stratum_note": "held-out TRAIN decisions only; the OOD stratum's synthetic-probe surface is published in per_stratum and ood_synthetic_probes",
+      "definition": "the #423 T3 route decision: active reference on strong exact support, calibrated generalized channel on sparse in-domain support, abstain otherwise",
+      "limper_vs_iso": {
+        "family": "LIMPER_VS_ISO",
+        "metrics": {
+          "accuracy": 0.713131,
+          "baseline_log_loss_bits_per_decision": 1.301475,
+          "brier_score": 0.405565,
+          "calibration_bins_meeting_minimum_support": 40,
+          "calibration_claim_supportable": true,
+          "expected_calibration_error": 0.030863,
+          "gain_bits_per_decision": 0.300502,
+          "illegal_mass_max": 0.0,
+          "log_loss_bits_per_decision": 1.000974,
+          "n": 3092,
+          "observed_action_counts": {
+            "CALL": 1923,
+            "FOLD": 1102,
+            "JAM": 40,
+            "RAISE": 27
+          },
+          "probability_sum_max_abs_error": 0.0
+        },
+        "scope": {
+          "abstain_rate": 0.000323,
+          "abstained": 1,
+          "answered": 3092,
+          "coverage": 0.999677,
+          "distinct_hands_answered": 2614,
+          "n": 3093
+        }
+      },
+      "metrics": {
+        "accuracy": 0.429055,
+        "baseline_log_loss_bits_per_decision": 1.331868,
+        "brier_score": 0.630552,
+        "calibration_bins_meeting_minimum_support": 40,
+        "calibration_claim_supportable": true,
+        "expected_calibration_error": 0.166441,
+        "gain_bits_per_decision": -0.101229,
+        "illegal_mass_max": 0.0,
+        "log_loss_bits_per_decision": 1.433096,
+        "n": 94151,
+        "observed_action_counts": {
+          "CALL": 35619,
+          "FOLD": 51575,
+          "JAM": 1156,
+          "RAISE": 5801
+        },
+        "probability_sum_max_abs_error": 0.0
+      },
+      "model_id": "hybrid_router",
+      "route_source_counts": {
+        "ACTIVE_STRONG_SUPPORT": 81185,
+        "GENERALIZED_SPARSE_IN_DOMAIN": 12966,
+        "OOD_ABSTAIN": 9
+      },
+      "scope": {
+        "abstain_rate": 9.6e-05,
+        "abstained": 9,
+        "answered": 94151,
+        "coverage": 0.999904,
+        "distinct_hands_answered": 19016,
+        "n": 94160
+      }
+    }
+  },
+  "module_sha256": "12e5b2ffa9012e76d08e513e18bf19be26ed7419f375f0040076646de704c8da",
+  "ood": {
+    "abstain_rate": 1.0,
+    "coverage": 0.0,
+    "n": 640,
+    "probes_per_kind": {
+      "extrapolation_sizing": 160,
+      "extrapolation_stack": 160,
+      "missing_domain_axis": 160,
+      "unseen_category": 160
+    },
+    "source": "synthetic_probes",
+    "stratum": "exact_absent_out_of_domain"
+  },
+  "ood_synthetic_probes": {
+    "abstain_rate": 1.0,
+    "assertions": {
+      "every_probe_carries_its_hard_reason": true,
+      "router_abstains_on_every_probe": true,
+      "unseen_category_probes_are_the_ood_stratum": true
+    },
+    "by_kind": {
+      "extrapolation_sizing": {
+        "abstain_rate": 1.0,
+        "expected_reason": "EXTRAPOLATION_SIZING",
+        "expected_reason_present": true,
+        "n": 160,
+        "router_abstained": 160,
+        "stratum_counts": {
+          "frequent_exact": 147,
+          "rare_exact": 13
+        }
+      },
+      "extrapolation_stack": {
+        "abstain_rate": 1.0,
+        "expected_reason": "EXTRAPOLATION_STACK",
+        "expected_reason_present": true,
+        "n": 160,
+        "router_abstained": 160,
+        "stratum_counts": {
+          "exact_absent_in_domain": 5,
+          "frequent_exact": 137,
+          "rare_exact": 18
+        }
+      },
+      "missing_domain_axis": {
+        "abstain_rate": 1.0,
+        "expected_reason": "MISSING_DOMAIN_AXIS",
+        "expected_reason_present": true,
+        "n": 160,
+        "router_abstained": 160,
+        "stratum_counts": {
+          "exact_absent_out_of_domain": 160
+        }
+      },
+      "unseen_category": {
+        "abstain_rate": 1.0,
+        "expected_reason": "UNSEEN_CATEGORY",
+        "expected_reason_present": true,
+        "n": 160,
+        "router_abstained": 160,
+        "stratum_counts": {
+          "exact_absent_out_of_domain": 160
+        }
+      }
+    },
+    "channels": {
+      "active_model_a": {
+        "abstain_rate": 0.25,
+        "coverage": 0.75
+      },
+      "generalized_calibrated": {
+        "abstain_rate": 1.0,
+        "coverage": 0.0
+      },
+      "hybrid_router": {
+        "abstain_rate": 1.0,
+        "coverage": 0.0
+      }
+    },
+    "coverage": 0.0,
+    "definition": "synthetic out-of-domain probes perturbing a fold's fit rows into a never-seen category (the frozen OOD stratum) or past the calibrated numeric envelope (a hard extrapolation reason); the router must fail closed on every one of them",
+    "n": 640,
+    "ood_stratum_probe_kind": "unseen_category",
+    "ood_stratum_probes": 160,
+    "router_abstained": 640
+  },
+  "outcome": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+  "paired": {
+    "active_model_a_minus_generalized_calibrated": {
+      "admission_support": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.228479,
+          "standard_error_bits_per_decision": 0.003767,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.003846,
+        "bootstrap_variance_bits_squared": 1.5e-05,
+        "ci90": [
+          0.215824,
+          0.228666
+        ],
+        "ci95": [
+          0.214565,
+          0.22955
+        ],
+        "comparison": "active_model_a_minus_generalized_calibrated",
+        "decisions_per_hand": 4.95162,
+        "excluded_decisions": 0,
+        "hands": 19016,
+        "left": "active_model_a",
+        "point_estimate_bits_per_decision": 0.222283,
+        "probability_hybrid_non_degrading": 0.0,
+        "quantiles": {
+          "0.025": 0.214565,
+          "0.05": 0.215824,
+          "0.5": 0.222285,
+          "0.95": 0.228666,
+          "0.975": 0.22955
+        },
+        "right": "generalized_calibrated",
+        "rows": 94160,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.228666,
+        "upper_quantile_level": 0.95
+      },
+      "by_stratum": {
+        "exact_absent_in_domain": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": -0.112889,
+            "standard_error_bits_per_decision": 0.080656,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.079669,
+          "bootstrap_variance_bits_squared": 0.006347,
+          "ci90": [
+            -0.381303,
+            -0.119576
+          ],
+          "ci95": [
+            -0.407901,
+            -0.098351
+          ],
+          "comparison": "active_model_a_minus_generalized_calibrated",
+          "decisions_per_hand": 1.674556,
+          "excluded_decisions": 0,
+          "hands": 1521,
+          "left": "active_model_a",
+          "point_estimate_bits_per_decision": -0.245555,
+          "probability_hybrid_non_degrading": 0.9995,
+          "quantiles": {
+            "0.025": -0.407901,
+            "0.05": -0.381303,
+            "0.5": -0.242922,
+            "0.95": -0.119576,
+            "0.975": -0.098351
+          },
+          "right": "generalized_calibrated",
+          "rows": 2547,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": -0.119576,
+          "upper_quantile_level": 0.95
+        },
+        "exact_absent_out_of_domain": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": null,
+            "standard_error_bits_per_decision": null,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": null,
+          "bootstrap_variance_bits_squared": null,
+          "ci90": [
+            null,
+            null
+          ],
+          "ci95": [
+            null,
+            null
+          ],
+          "comparison": "active_model_a_minus_generalized_calibrated",
+          "decisions_per_hand": null,
+          "excluded_decisions": 0,
+          "hands": 0,
+          "left": "active_model_a",
+          "point_estimate_bits_per_decision": null,
+          "probability_hybrid_non_degrading": null,
+          "quantiles": {
+            "0.025": null,
+            "0.05": null,
+            "0.5": null,
+            "0.95": null,
+            "0.975": null
+          },
+          "right": "generalized_calibrated",
+          "rows": 0,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": null,
+          "upper_quantile_level": 0.95
+        },
+        "frequent_exact": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.257566,
+            "standard_error_bits_per_decision": 0.002607,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.002625,
+          "bootstrap_variance_bits_squared": 7e-06,
+          "ci90": [
+            0.248935,
+            0.25751
+          ],
+          "ci95": [
+            0.248289,
+            0.258374
+          ],
+          "comparison": "active_model_a_minus_generalized_calibrated",
+          "decisions_per_hand": 4.270026,
+          "excluded_decisions": 0,
+          "hands": 19013,
+          "left": "active_model_a",
+          "point_estimate_bits_per_decision": 0.253278,
+          "probability_hybrid_non_degrading": 0.0,
+          "quantiles": {
+            "0.025": 0.248289,
+            "0.05": 0.248935,
+            "0.5": 0.25332,
+            "0.95": 0.25751,
+            "0.975": 0.258374
+          },
+          "right": "generalized_calibrated",
+          "rows": 81186,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.25751,
+          "upper_quantile_level": 0.95
+        },
+        "rare_exact": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.121512,
+            "standard_error_bits_per_decision": 0.015981,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.01585,
+          "bootstrap_variance_bits_squared": 0.000251,
+          "ci90": [
+            0.068497,
+            0.119976
+          ],
+          "ci95": [
+            0.064297,
+            0.124127
+          ],
+          "comparison": "active_model_a_minus_generalized_calibrated",
+          "decisions_per_hand": 1.789429,
+          "excluded_decisions": 0,
+          "hands": 5827,
+          "left": "active_model_a",
+          "point_estimate_bits_per_decision": 0.095226,
+          "probability_hybrid_non_degrading": 0.0,
+          "quantiles": {
+            "0.025": 0.064297,
+            "0.05": 0.068497,
+            "0.5": 0.095652,
+            "0.95": 0.119976,
+            "0.975": 0.124127
+          },
+          "right": "generalized_calibrated",
+          "rows": 10427,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.119976,
+          "upper_quantile_level": 0.95
+        }
+      },
+      "definition": "mean per-decision base-2 log-loss delta of the left channel minus the right channel, paired by hand_id, over the decisions both channels answer",
+      "direction": "lower_is_better",
+      "global": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.228479,
+          "standard_error_bits_per_decision": 0.003767,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.003846,
+        "bootstrap_variance_bits_squared": 1.5e-05,
+        "ci90": [
+          0.215824,
+          0.228666
+        ],
+        "ci95": [
+          0.214565,
+          0.22955
+        ],
+        "comparison": "active_model_a_minus_generalized_calibrated",
+        "decisions_per_hand": 4.95162,
+        "excluded_decisions": 0,
+        "hands": 19016,
+        "left": "active_model_a",
+        "point_estimate_bits_per_decision": 0.222283,
+        "probability_hybrid_non_degrading": 0.0,
+        "quantiles": {
+          "0.025": 0.214565,
+          "0.05": 0.215824,
+          "0.5": 0.222285,
+          "0.95": 0.228666,
+          "0.975": 0.22955
+        },
+        "right": "generalized_calibrated",
+        "rows": 94160,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.228666,
+        "upper_quantile_level": 0.95
+      },
+      "left": "active_model_a",
+      "limper_vs_iso": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.056258,
+          "standard_error_bits_per_decision": 0.020315,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.020387,
+        "bootstrap_variance_bits_squared": 0.000416,
+        "ci90": [
+          -0.011698,
+          0.053036
+        ],
+        "ci95": [
+          -0.020564,
+          0.0591
+        ],
+        "comparison": "active_model_a_minus_generalized_calibrated",
+        "decisions_per_hand": 1.183244,
+        "excluded_decisions": 0,
+        "hands": 2614,
+        "left": "active_model_a",
+        "point_estimate_bits_per_decision": 0.022843,
+        "probability_hybrid_non_degrading": 0.1415,
+        "quantiles": {
+          "0.025": -0.020564,
+          "0.05": -0.011698,
+          "0.5": 0.022517,
+          "0.95": 0.053036,
+          "0.975": 0.0591
+        },
+        "right": "generalized_calibrated",
+        "rows": 3093,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.053036,
+        "upper_quantile_level": 0.95
+      },
+      "paired_unit": "hand_id",
+      "right": "generalized_calibrated"
+    },
+    "hybrid_router_minus_active_model_a": {
+      "admission_support": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.000338,
+          "standard_error_bits_per_decision": 0.00282,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.002864,
+        "bootstrap_variance_bits_squared": 8e-06,
+        "ci90": [
+          -0.008764,
+          0.000508
+        ],
+        "ci95": [
+          -0.009648,
+          0.001598
+        ],
+        "comparison": "hybrid_router_minus_active_model_a",
+        "decisions_per_hand": 4.951146,
+        "excluded_decisions": 9,
+        "hands": 19016,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": -0.004301,
+        "probability_hybrid_non_degrading": 0.9325,
+        "quantiles": {
+          "0.025": -0.009648,
+          "0.05": -0.008764,
+          "0.5": -0.004402,
+          "0.95": 0.000508,
+          "0.975": 0.001598
+        },
+        "right": "active_model_a",
+        "rows": 94151,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.000508,
+        "upper_quantile_level": 0.95
+      },
+      "by_stratum": {
+        "exact_absent_in_domain": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.358366,
+            "standard_error_bits_per_decision": 0.077179,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.075437,
+          "bootstrap_variance_bits_squared": 0.005691,
+          "ci90": [
+            0.11293,
+            0.364029
+          ],
+          "ci95": [
+            0.095094,
+            0.389262
+          ],
+          "comparison": "hybrid_router_minus_active_model_a",
+          "decisions_per_hand": 1.671711,
+          "excluded_decisions": 6,
+          "hands": 1520,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.231417,
+          "probability_hybrid_non_degrading": 0.0005,
+          "quantiles": {
+            "0.025": 0.095094,
+            "0.05": 0.11293,
+            "0.5": 0.230577,
+            "0.95": 0.364029,
+            "0.975": 0.389262
+          },
+          "right": "active_model_a",
+          "rows": 2541,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.364029,
+          "upper_quantile_level": 0.95
+        },
+        "exact_absent_out_of_domain": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": null,
+            "standard_error_bits_per_decision": null,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": null,
+          "bootstrap_variance_bits_squared": null,
+          "ci90": [
+            null,
+            null
+          ],
+          "ci95": [
+            null,
+            null
+          ],
+          "comparison": "hybrid_router_minus_active_model_a",
+          "decisions_per_hand": null,
+          "excluded_decisions": 0,
+          "hands": 0,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": null,
+          "probability_hybrid_non_degrading": null,
+          "quantiles": {
+            "0.025": null,
+            "0.05": null,
+            "0.5": null,
+            "0.95": null,
+            "0.975": null
+          },
+          "right": "active_model_a",
+          "rows": 0,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": null,
+          "upper_quantile_level": 0.95
+        },
+        "frequent_exact": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.0,
+            "standard_error_bits_per_decision": 0.0,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.0,
+          "bootstrap_variance_bits_squared": 0.0,
+          "ci90": [
+            0.0,
+            0.0
+          ],
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "comparison": "hybrid_router_minus_active_model_a",
+          "decisions_per_hand": 4.269973,
+          "excluded_decisions": 1,
+          "hands": 19013,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.0,
+          "probability_hybrid_non_degrading": 1.0,
+          "quantiles": {
+            "0.025": 0.0,
+            "0.05": 0.0,
+            "0.5": 0.0,
+            "0.95": 0.0,
+            "0.975": 0.0
+          },
+          "right": "active_model_a",
+          "rows": 81185,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.0,
+          "upper_quantile_level": 0.95
+        },
+        "rare_exact": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": -0.068963,
+            "standard_error_bits_per_decision": 0.015983,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.01635,
+          "bootstrap_variance_bits_squared": 0.000267,
+          "ci90": [
+            -0.120869,
+            -0.066889
+          ],
+          "ci95": [
+            -0.124742,
+            -0.060566
+          ],
+          "comparison": "hybrid_router_minus_active_model_a",
+          "decisions_per_hand": 1.789392,
+          "excluded_decisions": 2,
+          "hands": 5826,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": -0.095253,
+          "probability_hybrid_non_degrading": 1.0,
+          "quantiles": {
+            "0.025": -0.124742,
+            "0.05": -0.120869,
+            "0.5": -0.095441,
+            "0.95": -0.066889,
+            "0.975": -0.060566
+          },
+          "right": "active_model_a",
+          "rows": 10425,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": -0.066889,
+          "upper_quantile_level": 0.95
+        }
+      },
+      "definition": "mean per-decision base-2 log-loss delta of the left channel minus the right channel, paired by hand_id, over the decisions both channels answer",
+      "direction": "lower_is_better",
+      "global": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.000338,
+          "standard_error_bits_per_decision": 0.00282,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.002864,
+        "bootstrap_variance_bits_squared": 8e-06,
+        "ci90": [
+          -0.008764,
+          0.000508
+        ],
+        "ci95": [
+          -0.009648,
+          0.001598
+        ],
+        "comparison": "hybrid_router_minus_active_model_a",
+        "decisions_per_hand": 4.951146,
+        "excluded_decisions": 9,
+        "hands": 19016,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": -0.004301,
+        "probability_hybrid_non_degrading": 0.9325,
+        "quantiles": {
+          "0.025": -0.009648,
+          "0.05": -0.008764,
+          "0.5": -0.004402,
+          "0.95": 0.000508,
+          "0.975": 0.001598
+        },
+        "right": "active_model_a",
+        "rows": 94151,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.000508,
+        "upper_quantile_level": 0.95
+      },
+      "left": "hybrid_router",
+      "limper_vs_iso": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.00143,
+          "standard_error_bits_per_decision": 0.019649,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.019612,
+        "bootstrap_variance_bits_squared": 0.000385,
+        "ci90": [
+          -0.06021,
+          0.002952
+        ],
+        "ci95": [
+          -0.06512,
+          0.010954
+        ],
+        "comparison": "hybrid_router_minus_active_model_a",
+        "decisions_per_hand": 1.182862,
+        "excluded_decisions": 1,
+        "hands": 2614,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": -0.03089,
+        "probability_hybrid_non_degrading": 0.936,
+        "quantiles": {
+          "0.025": -0.06512,
+          "0.05": -0.06021,
+          "0.5": -0.030728,
+          "0.95": 0.002952,
+          "0.975": 0.010954
+        },
+        "right": "active_model_a",
+        "rows": 3092,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.002952,
+        "upper_quantile_level": 0.95
+      },
+      "paired_unit": "hand_id",
+      "right": "active_model_a"
+    },
+    "hybrid_router_minus_generalized_calibrated": {
+      "admission_support": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.222194,
+          "standard_error_bits_per_decision": 0.002326,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.002318,
+        "bootstrap_variance_bits_squared": 5e-06,
+        "ci90": [
+          0.214374,
+          0.222067
+        ],
+        "ci95": [
+          0.213762,
+          0.222714
+        ],
+        "comparison": "hybrid_router_minus_generalized_calibrated",
+        "decisions_per_hand": 4.951146,
+        "excluded_decisions": 9,
+        "hands": 19016,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": 0.218368,
+        "probability_hybrid_non_degrading": 0.0,
+        "quantiles": {
+          "0.025": 0.213762,
+          "0.05": 0.214374,
+          "0.5": 0.218359,
+          "0.95": 0.222067,
+          "0.975": 0.222714
+        },
+        "right": "generalized_calibrated",
+        "rows": 94151,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.222067,
+        "upper_quantile_level": 0.95
+      },
+      "by_stratum": {
+        "exact_absent_in_domain": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.0,
+            "standard_error_bits_per_decision": 0.0,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.0,
+          "bootstrap_variance_bits_squared": 0.0,
+          "ci90": [
+            0.0,
+            0.0
+          ],
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "comparison": "hybrid_router_minus_generalized_calibrated",
+          "decisions_per_hand": 1.671711,
+          "excluded_decisions": 6,
+          "hands": 1520,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.0,
+          "probability_hybrid_non_degrading": 1.0,
+          "quantiles": {
+            "0.025": 0.0,
+            "0.05": 0.0,
+            "0.5": 0.0,
+            "0.95": 0.0,
+            "0.975": 0.0
+          },
+          "right": "generalized_calibrated",
+          "rows": 2541,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.0,
+          "upper_quantile_level": 0.95
+        },
+        "exact_absent_out_of_domain": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": null,
+            "standard_error_bits_per_decision": null,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": null,
+          "bootstrap_variance_bits_squared": null,
+          "ci90": [
+            null,
+            null
+          ],
+          "ci95": [
+            null,
+            null
+          ],
+          "comparison": "hybrid_router_minus_generalized_calibrated",
+          "decisions_per_hand": null,
+          "excluded_decisions": 0,
+          "hands": 0,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": null,
+          "probability_hybrid_non_degrading": null,
+          "quantiles": {
+            "0.025": null,
+            "0.05": null,
+            "0.5": null,
+            "0.95": null,
+            "0.975": null
+          },
+          "right": "generalized_calibrated",
+          "rows": 0,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": null,
+          "upper_quantile_level": 0.95
+        },
+        "frequent_exact": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.257531,
+            "standard_error_bits_per_decision": 0.002607,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.002624,
+          "bootstrap_variance_bits_squared": 7e-06,
+          "ci90": [
+            0.248877,
+            0.257445
+          ],
+          "ci95": [
+            0.248212,
+            0.258319
+          ],
+          "comparison": "hybrid_router_minus_generalized_calibrated",
+          "decisions_per_hand": 4.269973,
+          "excluded_decisions": 1,
+          "hands": 19013,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.253243,
+          "probability_hybrid_non_degrading": 0.0,
+          "quantiles": {
+            "0.025": 0.248212,
+            "0.05": 0.248877,
+            "0.5": 0.253285,
+            "0.95": 0.257445,
+            "0.975": 0.258319
+          },
+          "right": "generalized_calibrated",
+          "rows": 81185,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.257445,
+          "upper_quantile_level": 0.95
+        },
+        "rare_exact": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.0,
+            "standard_error_bits_per_decision": 0.0,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.0,
+          "bootstrap_variance_bits_squared": 0.0,
+          "ci90": [
+            0.0,
+            0.0
+          ],
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "comparison": "hybrid_router_minus_generalized_calibrated",
+          "decisions_per_hand": 1.789392,
+          "excluded_decisions": 2,
+          "hands": 5826,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.0,
+          "probability_hybrid_non_degrading": 1.0,
+          "quantiles": {
+            "0.025": 0.0,
+            "0.05": 0.0,
+            "0.5": 0.0,
+            "0.95": 0.0,
+            "0.975": 0.0
+          },
+          "right": "generalized_calibrated",
+          "rows": 10425,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.0,
+          "upper_quantile_level": 0.95
+        }
+      },
+      "definition": "mean per-decision base-2 log-loss delta of the left channel minus the right channel, paired by hand_id, over the decisions both channels answer",
+      "direction": "lower_is_better",
+      "global": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": 0.222194,
+          "standard_error_bits_per_decision": 0.002326,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.002318,
+        "bootstrap_variance_bits_squared": 5e-06,
+        "ci90": [
+          0.214374,
+          0.222067
+        ],
+        "ci95": [
+          0.213762,
+          0.222714
+        ],
+        "comparison": "hybrid_router_minus_generalized_calibrated",
+        "decisions_per_hand": 4.951146,
+        "excluded_decisions": 9,
+        "hands": 19016,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": 0.218368,
+        "probability_hybrid_non_degrading": 0.0,
+        "quantiles": {
+          "0.025": 0.213762,
+          "0.05": 0.214374,
+          "0.5": 0.218359,
+          "0.95": 0.222067,
+          "0.975": 0.222714
+        },
+        "right": "generalized_calibrated",
+        "rows": 94151,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": 0.222067,
+        "upper_quantile_level": 0.95
+      },
+      "left": "hybrid_router",
+      "limper_vs_iso": {
+        "analytic": {
+          "margin_analytic_bits_per_decision": -0.000547,
+          "standard_error_bits_per_decision": 0.004668,
+          "z_one_sided_95": 1.644854
+        },
+        "bootstrap_stddev_bits_per_decision": 0.004807,
+        "bootstrap_variance_bits_squared": 2.3e-05,
+        "ci90": [
+          -0.016191,
+          -0.000434
+        ],
+        "ci95": [
+          -0.017596,
+          0.000959
+        ],
+        "comparison": "hybrid_router_minus_generalized_calibrated",
+        "decisions_per_hand": 1.182862,
+        "excluded_decisions": 1,
+        "hands": 2614,
+        "left": "hybrid_router",
+        "point_estimate_bits_per_decision": -0.008225,
+        "probability_hybrid_non_degrading": 0.961,
+        "quantiles": {
+          "0.025": -0.017596,
+          "0.05": -0.016191,
+          "0.5": -0.008322,
+          "0.95": -0.000434,
+          "0.975": 0.000959
+        },
+        "right": "generalized_calibrated",
+        "rows": 3092,
+        "samples": 2000,
+        "seed": 423,
+        "upper_quantile_bits_per_decision": -0.000434,
+        "upper_quantile_level": 0.95
+      },
+      "paired_unit": "hand_id",
+      "right": "generalized_calibrated"
+    }
+  },
+  "per_stratum": {
+    "exact_absent_in_domain": {
+      "hands": 1521,
+      "models": {
+        "active_model_a": {
+          "coverage": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 2547,
+            "coverage": 1.0,
+            "distinct_hands_answered": 1521,
+            "n": 2547
+          },
+          "metrics": {
+            "accuracy": 0.617982,
+            "baseline_log_loss_bits_per_decision": 1.39105,
+            "brier_score": 0.507011,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.043809,
+            "gain_bits_per_decision": 0.158965,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.232085,
+            "n": 2547,
+            "observed_action_counts": {
+              "CALL": 1126,
+              "FOLD": 1256,
+              "JAM": 91,
+              "RAISE": 74
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        },
+        "generalized_calibrated": {
+          "coverage": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 2547,
+            "coverage": 1.0,
+            "distinct_hands_answered": 1521,
+            "n": 2547
+          },
+          "metrics": {
+            "accuracy": 0.65371,
+            "baseline_log_loss_bits_per_decision": 1.39105,
+            "brier_score": 0.473567,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.041297,
+            "gain_bits_per_decision": -0.086591,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.477641,
+            "n": 2547,
+            "observed_action_counts": {
+              "CALL": 1126,
+              "FOLD": 1256,
+              "JAM": 91,
+              "RAISE": 74
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        },
+        "hybrid_router": {
+          "coverage": {
+            "abstain_rate": 0.002356,
+            "abstained": 6,
+            "answered": 2541,
+            "coverage": 0.997644,
+            "distinct_hands_answered": 1520,
+            "n": 2547
+          },
+          "metrics": {
+            "accuracy": 0.654073,
+            "baseline_log_loss_bits_per_decision": 1.390838,
+            "brier_score": 0.473006,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.040773,
+            "gain_bits_per_decision": -0.071905,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.462743,
+            "n": 2541,
+            "observed_action_counts": {
+              "CALL": 1125,
+              "FOLD": 1252,
+              "JAM": 91,
+              "RAISE": 73
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        }
+      },
+      "n": 2547,
+      "paired": {
+        "hybrid_router_minus_active_model_a": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.358366,
+            "standard_error_bits_per_decision": 0.077179,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.075437,
+          "bootstrap_variance_bits_squared": 0.005691,
+          "ci90": [
+            0.11293,
+            0.364029
+          ],
+          "ci95": [
+            0.095094,
+            0.389262
+          ],
+          "comparison": "hybrid_router_minus_active_model_a",
+          "decisions_per_hand": 1.671711,
+          "excluded_decisions": 6,
+          "hands": 1520,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.231417,
+          "probability_hybrid_non_degrading": 0.0005,
+          "quantiles": {
+            "0.025": 0.095094,
+            "0.05": 0.11293,
+            "0.5": 0.230577,
+            "0.95": 0.364029,
+            "0.975": 0.389262
+          },
+          "right": "active_model_a",
+          "rows": 2541,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.364029,
+          "upper_quantile_level": 0.95
+        },
+        "hybrid_router_minus_generalized_calibrated": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.0,
+            "standard_error_bits_per_decision": 0.0,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.0,
+          "bootstrap_variance_bits_squared": 0.0,
+          "ci90": [
+            0.0,
+            0.0
+          ],
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "comparison": "hybrid_router_minus_generalized_calibrated",
+          "decisions_per_hand": 1.671711,
+          "excluded_decisions": 6,
+          "hands": 1520,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.0,
+          "probability_hybrid_non_degrading": 1.0,
+          "quantiles": {
+            "0.025": 0.0,
+            "0.05": 0.0,
+            "0.5": 0.0,
+            "0.95": 0.0,
+            "0.975": 0.0
+          },
+          "right": "generalized_calibrated",
+          "rows": 2541,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.0,
+          "upper_quantile_level": 0.95
+        }
+      },
+      "source": "held_out_train_decisions"
+    },
+    "exact_absent_out_of_domain": {
+      "hands": 160,
+      "models": {
+        "active_model_a": {
+          "coverage": {
+            "abstain_rate": 1.0,
+            "abstained": 160,
+            "answered": 0,
+            "coverage": 0.0,
+            "n": 160
+          },
+          "metrics": {
+            "accuracy": null,
+            "baseline_log_loss_bits_per_decision": null,
+            "brier_score": null,
+            "calibration_claim_supportable": false,
+            "expected_calibration_error": null,
+            "gain_bits_per_decision": null,
+            "illegal_mass_max": null,
+            "log_loss_bits_per_decision": null,
+            "n": 0,
+            "observed_action_counts": null,
+            "probability_sum_max_abs_error": null
+          }
+        },
+        "generalized_calibrated": {
+          "coverage": {
+            "abstain_rate": 1.0,
+            "abstained": 160,
+            "answered": 0,
+            "coverage": 0.0,
+            "n": 160
+          },
+          "metrics": {
+            "accuracy": null,
+            "baseline_log_loss_bits_per_decision": null,
+            "brier_score": null,
+            "calibration_claim_supportable": false,
+            "expected_calibration_error": null,
+            "gain_bits_per_decision": null,
+            "illegal_mass_max": null,
+            "log_loss_bits_per_decision": null,
+            "n": 0,
+            "observed_action_counts": null,
+            "probability_sum_max_abs_error": null
+          }
+        },
+        "hybrid_router": {
+          "coverage": {
+            "abstain_rate": 1.0,
+            "abstained": 160,
+            "answered": 0,
+            "coverage": 0.0,
+            "n": 160
+          },
+          "metrics": {
+            "accuracy": null,
+            "baseline_log_loss_bits_per_decision": null,
+            "brier_score": null,
+            "calibration_claim_supportable": false,
+            "expected_calibration_error": null,
+            "gain_bits_per_decision": null,
+            "illegal_mass_max": null,
+            "log_loss_bits_per_decision": null,
+            "n": 0,
+            "observed_action_counts": null,
+            "probability_sum_max_abs_error": null
+          }
+        }
+      },
+      "n": 160,
+      "probe_block": {
+        "abstain_rate": 1.0,
+        "assertions": {
+          "every_probe_carries_its_hard_reason": true,
+          "router_abstains_on_every_probe": true,
+          "unseen_category_probes_are_the_ood_stratum": true
+        },
+        "by_kind": {
+          "extrapolation_sizing": {
+            "abstain_rate": 1.0,
+            "expected_reason": "EXTRAPOLATION_SIZING",
+            "expected_reason_present": true,
+            "n": 160,
+            "router_abstained": 160,
+            "stratum_counts": {
+              "frequent_exact": 147,
+              "rare_exact": 13
+            }
+          },
+          "extrapolation_stack": {
+            "abstain_rate": 1.0,
+            "expected_reason": "EXTRAPOLATION_STACK",
+            "expected_reason_present": true,
+            "n": 160,
+            "router_abstained": 160,
+            "stratum_counts": {
+              "exact_absent_in_domain": 5,
+              "frequent_exact": 137,
+              "rare_exact": 18
+            }
+          },
+          "missing_domain_axis": {
+            "abstain_rate": 1.0,
+            "expected_reason": "MISSING_DOMAIN_AXIS",
+            "expected_reason_present": true,
+            "n": 160,
+            "router_abstained": 160,
+            "stratum_counts": {
+              "exact_absent_out_of_domain": 160
+            }
+          },
+          "unseen_category": {
+            "abstain_rate": 1.0,
+            "expected_reason": "UNSEEN_CATEGORY",
+            "expected_reason_present": true,
+            "n": 160,
+            "router_abstained": 160,
+            "stratum_counts": {
+              "exact_absent_out_of_domain": 160
+            }
+          }
+        },
+        "channels": {
+          "active_model_a": {
+            "abstain_rate": 0.25,
+            "coverage": 0.75
+          },
+          "generalized_calibrated": {
+            "abstain_rate": 1.0,
+            "coverage": 0.0
+          },
+          "hybrid_router": {
+            "abstain_rate": 1.0,
+            "coverage": 0.0
+          }
+        },
+        "coverage": 0.0,
+        "definition": "synthetic out-of-domain probes perturbing a fold's fit rows into a never-seen category (the frozen OOD stratum) or past the calibrated numeric envelope (a hard extrapolation reason); the router must fail closed on every one of them",
+        "n": 640,
+        "ood_stratum_probe_kind": "unseen_category",
+        "ood_stratum_probes": 160,
+        "router_abstained": 640
+      },
+      "real_holdout_decisions": {
+        "hands": 0,
+        "n": 0,
+        "route_source_counts": {
+          "ACTIVE_STRONG_SUPPORT": 0,
+          "GENERALIZED_SPARSE_IN_DOMAIN": 0,
+          "OOD_ABSTAIN": 0
+        }
+      },
+      "source": "synthetic_probes:unseen_category"
+    },
+    "frequent_exact": {
+      "hands": 19013,
+      "models": {
+        "active_model_a": {
+          "coverage": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 81186,
+            "coverage": 1.0,
+            "distinct_hands_answered": 19013,
+            "n": 81186
+          },
+          "metrics": {
+            "accuracy": 0.385153,
+            "baseline_log_loss_bits_per_decision": 1.336834,
+            "brier_score": 0.664108,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.194207,
+            "gain_bits_per_decision": -0.144188,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.481022,
+            "n": 81186,
+            "observed_action_counts": {
+              "CALL": 30087,
+              "FOLD": 44762,
+              "JAM": 856,
+              "RAISE": 5481
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        },
+        "generalized_calibrated": {
+          "coverage": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 81186,
+            "coverage": 1.0,
+            "distinct_hands_answered": 19013,
+            "n": 81186
+          },
+          "metrics": {
+            "accuracy": 0.57755,
+            "baseline_log_loss_bits_per_decision": 1.336834,
+            "brier_score": 0.523188,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.016309,
+            "gain_bits_per_decision": 0.10909,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.227743,
+            "n": 81186,
+            "observed_action_counts": {
+              "CALL": 30087,
+              "FOLD": 44762,
+              "JAM": 856,
+              "RAISE": 5481
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        },
+        "hybrid_router": {
+          "coverage": {
+            "abstain_rate": 1.2e-05,
+            "abstained": 1,
+            "answered": 81185,
+            "coverage": 0.999988,
+            "distinct_hands_answered": 19013,
+            "n": 81186
+          },
+          "metrics": {
+            "accuracy": 0.385157,
+            "baseline_log_loss_bits_per_decision": 1.336773,
+            "brier_score": 0.664098,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.194212,
+            "gain_bits_per_decision": -0.144185,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.480957,
+            "n": 81185,
+            "observed_action_counts": {
+              "CALL": 30087,
+              "FOLD": 44762,
+              "JAM": 855,
+              "RAISE": 5481
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        }
+      },
+      "n": 81186,
+      "paired": {
+        "hybrid_router_minus_active_model_a": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.0,
+            "standard_error_bits_per_decision": 0.0,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.0,
+          "bootstrap_variance_bits_squared": 0.0,
+          "ci90": [
+            0.0,
+            0.0
+          ],
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "comparison": "hybrid_router_minus_active_model_a",
+          "decisions_per_hand": 4.269973,
+          "excluded_decisions": 1,
+          "hands": 19013,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.0,
+          "probability_hybrid_non_degrading": 1.0,
+          "quantiles": {
+            "0.025": 0.0,
+            "0.05": 0.0,
+            "0.5": 0.0,
+            "0.95": 0.0,
+            "0.975": 0.0
+          },
+          "right": "active_model_a",
+          "rows": 81185,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.0,
+          "upper_quantile_level": 0.95
+        },
+        "hybrid_router_minus_generalized_calibrated": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.257531,
+            "standard_error_bits_per_decision": 0.002607,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.002624,
+          "bootstrap_variance_bits_squared": 7e-06,
+          "ci90": [
+            0.248877,
+            0.257445
+          ],
+          "ci95": [
+            0.248212,
+            0.258319
+          ],
+          "comparison": "hybrid_router_minus_generalized_calibrated",
+          "decisions_per_hand": 4.269973,
+          "excluded_decisions": 1,
+          "hands": 19013,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.253243,
+          "probability_hybrid_non_degrading": 0.0,
+          "quantiles": {
+            "0.025": 0.248212,
+            "0.05": 0.248877,
+            "0.5": 0.253285,
+            "0.95": 0.257445,
+            "0.975": 0.258319
+          },
+          "right": "generalized_calibrated",
+          "rows": 81185,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.257445,
+          "upper_quantile_level": 0.95
+        }
+      },
+      "source": "held_out_train_decisions"
+    },
+    "rare_exact": {
+      "hands": 5827,
+      "models": {
+        "active_model_a": {
+          "coverage": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 10427,
+            "coverage": 1.0,
+            "distinct_hands_answered": 5827,
+            "n": 10427
+          },
+          "metrics": {
+            "accuracy": 0.659346,
+            "baseline_log_loss_bits_per_decision": 1.279215,
+            "brier_score": 0.473909,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.042341,
+            "gain_bits_per_decision": 0.130821,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.148395,
+            "n": 10427,
+            "observed_action_counts": {
+              "CALL": 4407,
+              "FOLD": 5563,
+              "JAM": 210,
+              "RAISE": 247
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        },
+        "generalized_calibrated": {
+          "coverage": {
+            "abstain_rate": 0.0,
+            "abstained": 0,
+            "answered": 10427,
+            "coverage": 1.0,
+            "distinct_hands_answered": 5827,
+            "n": 10427
+          },
+          "metrics": {
+            "accuracy": 0.716026,
+            "baseline_log_loss_bits_per_decision": 1.279215,
+            "brier_score": 0.40772,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.02421,
+            "gain_bits_per_decision": 0.226047,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.053168,
+            "n": 10427,
+            "observed_action_counts": {
+              "CALL": 4407,
+              "FOLD": 5563,
+              "JAM": 210,
+              "RAISE": 247
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        },
+        "hybrid_router": {
+          "coverage": {
+            "abstain_rate": 0.000192,
+            "abstained": 2,
+            "answered": 10425,
+            "coverage": 0.999808,
+            "distinct_hands_answered": 5826,
+            "n": 10427
+          },
+          "metrics": {
+            "accuracy": 0.716067,
+            "baseline_log_loss_bits_per_decision": 1.279294,
+            "brier_score": 0.407706,
+            "calibration_bins_meeting_minimum_support": 40,
+            "calibration_claim_supportable": true,
+            "expected_calibration_error": 0.024273,
+            "gain_bits_per_decision": 0.226143,
+            "illegal_mass_max": 0.0,
+            "log_loss_bits_per_decision": 1.053151,
+            "n": 10425,
+            "observed_action_counts": {
+              "CALL": 4407,
+              "FOLD": 5561,
+              "JAM": 210,
+              "RAISE": 247
+            },
+            "probability_sum_max_abs_error": 0.0
+          }
+        }
+      },
+      "n": 10427,
+      "paired": {
+        "hybrid_router_minus_active_model_a": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": -0.068963,
+            "standard_error_bits_per_decision": 0.015983,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.01635,
+          "bootstrap_variance_bits_squared": 0.000267,
+          "ci90": [
+            -0.120869,
+            -0.066889
+          ],
+          "ci95": [
+            -0.124742,
+            -0.060566
+          ],
+          "comparison": "hybrid_router_minus_active_model_a",
+          "decisions_per_hand": 1.789392,
+          "excluded_decisions": 2,
+          "hands": 5826,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": -0.095253,
+          "probability_hybrid_non_degrading": 1.0,
+          "quantiles": {
+            "0.025": -0.124742,
+            "0.05": -0.120869,
+            "0.5": -0.095441,
+            "0.95": -0.066889,
+            "0.975": -0.060566
+          },
+          "right": "active_model_a",
+          "rows": 10425,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": -0.066889,
+          "upper_quantile_level": 0.95
+        },
+        "hybrid_router_minus_generalized_calibrated": {
+          "analytic": {
+            "margin_analytic_bits_per_decision": 0.0,
+            "standard_error_bits_per_decision": 0.0,
+            "z_one_sided_95": 1.644854
+          },
+          "bootstrap_stddev_bits_per_decision": 0.0,
+          "bootstrap_variance_bits_squared": 0.0,
+          "ci90": [
+            0.0,
+            0.0
+          ],
+          "ci95": [
+            0.0,
+            0.0
+          ],
+          "comparison": "hybrid_router_minus_generalized_calibrated",
+          "decisions_per_hand": 1.789392,
+          "excluded_decisions": 2,
+          "hands": 5826,
+          "left": "hybrid_router",
+          "point_estimate_bits_per_decision": 0.0,
+          "probability_hybrid_non_degrading": 1.0,
+          "quantiles": {
+            "0.025": 0.0,
+            "0.05": 0.0,
+            "0.5": 0.0,
+            "0.95": 0.0,
+            "0.975": 0.0
+          },
+          "right": "generalized_calibrated",
+          "rows": 10425,
+          "samples": 2000,
+          "seed": 423,
+          "upper_quantile_bits_per_decision": 0.0,
+          "upper_quantile_level": 0.95
+        }
+      },
+      "source": "held_out_train_decisions"
+    }
+  },
+  "planner_key": "T6",
+  "protocol": {
+    "active_reference": {
+      "model_id": "active_model_a_preflop_population",
+      "path": "training/models/preflop_population_model_v5.json",
+      "reuse_source": "tools/training/validate_generalized_response.py::active_public_distribution",
+      "sha256": "ff952055ca4ee051a3ac9607d513fdecac0a320a31f658ecfd8a11d8448975ca"
+    },
+    "architecture": "regularized_multinomial_spline",
+    "calibration_fit_max_rows": 12000,
+    "calibration_method": "isotonic",
+    "calibration_module": "tools/preflop/generalized_response_calibration.py",
+    "calibration_module_sha256": "920b276f05800bb7662851f1ca493645dbe11e770ce652740ae73eaf25a9139a",
+    "channels": [
+      "active_model_a",
+      "generalized_calibrated",
+      "hybrid_router"
+    ],
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "fold_assignment": "int(stable_hash('grm-cv/421/<hand_id>')[:8], 16) % 5",
+    "folds": 5,
+    "forbidden_splits": [
+      "TEST"
+    ],
+    "group_key": "hand_id",
+    "kind": "train_only_hand_grouped_cross_fitted_channel_comparison",
+    "main_split": "TRAIN",
+    "metrics": {
+      "abstain_rate": "1 - coverage",
+      "accuracy": "mean arg-max agreement",
+      "baseline_log_loss_bits_per_decision": "same loss under the fit-fold action prior",
+      "brier_score": "mean sum over the four actions of (P(action) - 1[observed])^2",
+      "coverage": "share of decisions the channel answers with a legal, non-abstaining distribution",
+      "expected_calibration_error": "equal-count reliability bins per action class (frozen T2 definition of tools/training/validate_hierarchical_validation.py::expected_calibration_error): for each action, sort rows by predicted probability, cut 10 equal-count bins, accumulate bin-mass-weighted |mean predicted - mean observed| and average over the four action classes",
+      "log_loss_bits_per_decision": "mean -log2 P(observed action), base-2 bits per decision"
+    },
+    "no_leak": {
+      "assertion": "assert not (holdout_hands_i & train_hands_i) for every fold i, and assert the holdout hand sets partition the hand universe",
+      "checked_at_runtime": true,
+      "folds": 5,
+      "group_key": "hand_id",
+      "hands": 19016,
+      "hands_assigned_to_exactly_one_fold": true,
+      "holdout_hands_pairwise_disjoint": true,
+      "holdout_hands_per_fold": [
+        3788,
+        3838,
+        3772,
+        3809,
+        3809
+      ],
+      "max_hand_overlap_between_fit_and_holdout": 0
+    },
+    "ood_probes": {
+      "expected_reason": {
+        "extrapolation_sizing": "EXTRAPOLATION_SIZING",
+        "extrapolation_stack": "EXTRAPOLATION_STACK",
+        "missing_domain_axis": "MISSING_DOMAIN_AXIS",
+        "unseen_category": "UNSEEN_CATEGORY"
+      },
+      "kinds": [
+        "unseen_category",
+        "extrapolation_stack",
+        "extrapolation_sizing",
+        "missing_domain_axis"
+      ],
+      "limit_per_kind_per_fold": 32,
+      "source": "synthetic perturbations of the fold's fit rows"
+    },
+    "paired_bootstrap": {
+      "alpha": 0.05,
+      "confidence_level": 0.95,
+      "method": "paired_percentile_bootstrap",
+      "paired_unit": "hand_id",
+      "quantiles": [
+        0.025,
+        0.05,
+        0.5,
+        0.95,
+        0.975
+      ],
+      "samples": 2000,
+      "seed": 423,
+      "upper_quantile": 0.95
+    },
+    "prior": {
+      "CALL": 0.376453,
+      "FOLD": 0.54869,
+      "JAM": 0.012871,
+      "RAISE": 0.061986
+    },
+    "refused_splits": [
+      "VALIDATION",
+      "TEST"
+    ],
+    "reused_harness_module": "tools/training/evaluate_generalized_response_cv.py",
+    "reused_harness_module_sha256": "956d95b20d4ca5ce09c8130889eb38105fc55e607b61d6d5971089f8540d16ff",
+    "route_rule": {
+      "complexity": 2,
+      "definition": "the frozen preregistered table: abstain on any hard OOD reason; answer from the active model on strong exact support; use the sparse channel only when every single-feature label stays in domain; abstain otherwise",
+      "id": "R2_SUPPORT_GATE",
+      "requires": [
+        "hard_reasons",
+        "support_exact",
+        "feature_in_domain"
+      ]
+    },
+    "route_to_channel": {
+      "ACTIVE_STRONG_SUPPORT": "active_model_a",
+      "GENERALIZED_SPARSE_IN_DOMAIN": "generalized_calibrated",
+      "OOD_ABSTAIN": null
+    },
+    "router_module": "tools/preflop/hybrid_response_router.py",
+    "router_module_sha256": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a",
+    "seed": 421
+  },
+  "schema": "poker-hybrid-router-train-cv-terminal-report/v1",
+  "scope": {
+    "consumed_splits": [
+      "TRAIN"
+    ],
+    "cross_validated_rows": 94160,
+    "dataset": "analysis/issue421_generalized_response/dataset/GENERALIZED_RESPONSE_DATASET.jsonl",
+    "dataset_bytes": 41279660,
+    "dataset_sha256": "4c18872fac5fc443e68e6f99feb0036509999f67f952c02e118671c7c72330a2",
+    "forbidden_splits": [
+      "TEST"
+    ],
+    "hands": 19016,
+    "probe_rows": 640,
+    "refused_splits": [
+      "VALIDATION",
+      "TEST"
+    ],
+    "row_stride": 1,
+    "rows": 94160,
+    "split": "TRAIN",
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "sparse": {
+    "active_ece": 0.042629,
+    "gain_bits_per_decision": 0.167733,
+    "hybrid_ece": 0.027507,
+    "sparse_decisions": 12966,
+    "strata": [
+      "rare_exact",
+      "exact_absent_in_domain"
+    ],
+    "stratum_active_ece": {
+      "exact_absent_in_domain": 0.043809,
+      "rare_exact": 0.042341
+    },
+    "stratum_gain_bits_per_decision": {
+      "exact_absent_in_domain": -0.071905,
+      "rare_exact": 0.226143
+    },
+    "stratum_hybrid_ece": {
+      "exact_absent_in_domain": 0.040773,
+      "rare_exact": 0.024273
+    },
+    "weights": {
+      "exact_absent_in_domain": 2541.0,
+      "rare_exact": 10425.0
+    }
+  },
+  "sparse_strata_comparison": {
+    "assertions": {
+      "margins_reinvented_here": false,
+      "test_consumed": false,
+      "thresholds_are_frozen": true,
+      "train_only": true,
+      "validation_consumed": false
+    },
+    "by_stratum": {
+      "exact_absent_in_domain": {
+        "gate": {
+          "frequent_exact_min_support": 20,
+          "rare_exact_min_support": 1,
+          "route_source_counts": {
+            "ACTIVE_STRONG_SUPPORT": 0,
+            "GENERALIZED_SPARSE_IN_DOMAIN": 2541,
+            "OOD_ABSTAIN": 6
+          }
+        },
+        "models": {
+          "active_model_a": {
+            "metrics": {
+              "accuracy": 0.617982,
+              "baseline_log_loss_bits_per_decision": 1.39105,
+              "brier_score": 0.507011,
+              "calibration_bins_meeting_minimum_support": 40,
+              "calibration_claim_supportable": true,
+              "expected_calibration_error": 0.043809,
+              "gain_bits_per_decision": 0.158965,
+              "illegal_mass_max": 0.0,
+              "log_loss_bits_per_decision": 1.232085,
+              "n": 2547,
+              "observed_action_counts": {
+                "CALL": 1126,
+                "FOLD": 1256,
+                "JAM": 91,
+                "RAISE": 74
+              },
+              "probability_sum_max_abs_error": 0.0
+            },
+            "model_id": "active_model_a_preflop_population",
+            "scope": {
+              "abstain_rate": 0.0,
+              "abstained": 0,
+              "answered": 2547,
+              "coverage": 1.0,
+              "distinct_hands_answered": 1521,
+              "n": 2547
+            }
+          },
+          "generalized_calibrated": {
+            "metrics": {
+              "accuracy": 0.65371,
+              "baseline_log_loss_bits_per_decision": 1.39105,
+              "brier_score": 0.473567,
+              "calibration_bins_meeting_minimum_support": 40,
+              "calibration_claim_supportable": true,
+              "expected_calibration_error": 0.041297,
+              "gain_bits_per_decision": -0.086591,
+              "illegal_mass_max": 0.0,
+              "log_loss_bits_per_decision": 1.477641,
+              "n": 2547,
+              "observed_action_counts": {
+                "CALL": 1126,
+                "FOLD": 1256,
+                "JAM": 91,
+                "RAISE": 74
+              },
+              "probability_sum_max_abs_error": 0.0
+            },
+            "model_id": "generalized_adverse_response_candidate_v1",
+            "scope": {
+              "abstain_rate": 0.0,
+              "abstained": 0,
+              "answered": 2547,
+              "coverage": 1.0,
+              "distinct_hands_answered": 1521,
+              "n": 2547
+            }
+          },
+          "hybrid_router": {
+            "metrics": {
+              "accuracy": 0.654073,
+              "baseline_log_loss_bits_per_decision": 1.390838,
+              "brier_score": 0.473006,
+              "calibration_bins_meeting_minimum_support": 40,
+              "calibration_claim_supportable": true,
+              "expected_calibration_error": 0.040773,
+              "gain_bits_per_decision": -0.071905,
+              "illegal_mass_max": 0.0,
+              "log_loss_bits_per_decision": 1.462743,
+              "n": 2541,
+              "observed_action_counts": {
+                "CALL": 1125,
+                "FOLD": 1252,
+                "JAM": 91,
+                "RAISE": 73
+              },
+              "probability_sum_max_abs_error": 0.0
+            },
+            "model_id": "hybrid_router",
+            "scope": {
+              "abstain_rate": 0.002356,
+              "abstained": 6,
+              "answered": 2541,
+              "coverage": 0.997644,
+              "distinct_hands_answered": 1520,
+              "n": 2547
+            }
+          }
+        },
+        "paired": {
+          "hybrid_router_minus_active_model_a": {
+            "analytic": {
+              "margin_analytic_bits_per_decision": 0.358366,
+              "standard_error_bits_per_decision": 0.077179,
+              "z_one_sided_95": 1.644854
+            },
+            "bootstrap_stddev_bits_per_decision": 0.075437,
+            "bootstrap_variance_bits_squared": 0.005691,
+            "ci90": [
+              0.11293,
+              0.364029
+            ],
+            "ci95": [
+              0.095094,
+              0.389262
+            ],
+            "comparison": "hybrid_router_minus_active_model_a",
+            "decisions_per_hand": 1.671711,
+            "excluded_decisions": 6,
+            "hands": 1520,
+            "left": "hybrid_router",
+            "point_estimate_bits_per_decision": 0.231417,
+            "probability_hybrid_non_degrading": 0.0005,
+            "quantiles": {
+              "0.025": 0.095094,
+              "0.05": 0.11293,
+              "0.5": 0.230577,
+              "0.95": 0.364029,
+              "0.975": 0.389262
+            },
+            "right": "active_model_a",
+            "rows": 2541,
+            "samples": 2000,
+            "seed": 423,
+            "upper_quantile_bits_per_decision": 0.364029,
+            "upper_quantile_level": 0.95
+          },
+          "hybrid_router_minus_generalized_calibrated": {
+            "analytic": {
+              "margin_analytic_bits_per_decision": 0.0,
+              "standard_error_bits_per_decision": 0.0,
+              "z_one_sided_95": 1.644854
+            },
+            "bootstrap_stddev_bits_per_decision": 0.0,
+            "bootstrap_variance_bits_squared": 0.0,
+            "ci90": [
+              0.0,
+              0.0
+            ],
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "comparison": "hybrid_router_minus_generalized_calibrated",
+            "decisions_per_hand": 1.671711,
+            "excluded_decisions": 6,
+            "hands": 1520,
+            "left": "hybrid_router",
+            "point_estimate_bits_per_decision": 0.0,
+            "probability_hybrid_non_degrading": 1.0,
+            "quantiles": {
+              "0.025": 0.0,
+              "0.05": 0.0,
+              "0.5": 0.0,
+              "0.95": 0.0,
+              "0.975": 0.0
+            },
+            "right": "generalized_calibrated",
+            "rows": 2541,
+            "samples": 2000,
+            "seed": 423,
+            "upper_quantile_bits_per_decision": 0.0,
+            "upper_quantile_level": 0.95
+          }
+        }
+      },
+      "rare_exact": {
+        "gate": {
+          "frequent_exact_min_support": 20,
+          "rare_exact_min_support": 1,
+          "route_source_counts": {
+            "ACTIVE_STRONG_SUPPORT": 0,
+            "GENERALIZED_SPARSE_IN_DOMAIN": 10425,
+            "OOD_ABSTAIN": 2
+          }
+        },
+        "models": {
+          "active_model_a": {
+            "metrics": {
+              "accuracy": 0.659346,
+              "baseline_log_loss_bits_per_decision": 1.279215,
+              "brier_score": 0.473909,
+              "calibration_bins_meeting_minimum_support": 40,
+              "calibration_claim_supportable": true,
+              "expected_calibration_error": 0.042341,
+              "gain_bits_per_decision": 0.130821,
+              "illegal_mass_max": 0.0,
+              "log_loss_bits_per_decision": 1.148395,
+              "n": 10427,
+              "observed_action_counts": {
+                "CALL": 4407,
+                "FOLD": 5563,
+                "JAM": 210,
+                "RAISE": 247
+              },
+              "probability_sum_max_abs_error": 0.0
+            },
+            "model_id": "active_model_a_preflop_population",
+            "scope": {
+              "abstain_rate": 0.0,
+              "abstained": 0,
+              "answered": 10427,
+              "coverage": 1.0,
+              "distinct_hands_answered": 5827,
+              "n": 10427
+            }
+          },
+          "generalized_calibrated": {
+            "metrics": {
+              "accuracy": 0.716026,
+              "baseline_log_loss_bits_per_decision": 1.279215,
+              "brier_score": 0.40772,
+              "calibration_bins_meeting_minimum_support": 40,
+              "calibration_claim_supportable": true,
+              "expected_calibration_error": 0.02421,
+              "gain_bits_per_decision": 0.226047,
+              "illegal_mass_max": 0.0,
+              "log_loss_bits_per_decision": 1.053168,
+              "n": 10427,
+              "observed_action_counts": {
+                "CALL": 4407,
+                "FOLD": 5563,
+                "JAM": 210,
+                "RAISE": 247
+              },
+              "probability_sum_max_abs_error": 0.0
+            },
+            "model_id": "generalized_adverse_response_candidate_v1",
+            "scope": {
+              "abstain_rate": 0.0,
+              "abstained": 0,
+              "answered": 10427,
+              "coverage": 1.0,
+              "distinct_hands_answered": 5827,
+              "n": 10427
+            }
+          },
+          "hybrid_router": {
+            "metrics": {
+              "accuracy": 0.716067,
+              "baseline_log_loss_bits_per_decision": 1.279294,
+              "brier_score": 0.407706,
+              "calibration_bins_meeting_minimum_support": 40,
+              "calibration_claim_supportable": true,
+              "expected_calibration_error": 0.024273,
+              "gain_bits_per_decision": 0.226143,
+              "illegal_mass_max": 0.0,
+              "log_loss_bits_per_decision": 1.053151,
+              "n": 10425,
+              "observed_action_counts": {
+                "CALL": 4407,
+                "FOLD": 5561,
+                "JAM": 210,
+                "RAISE": 247
+              },
+              "probability_sum_max_abs_error": 0.0
+            },
+            "model_id": "hybrid_router",
+            "scope": {
+              "abstain_rate": 0.000192,
+              "abstained": 2,
+              "answered": 10425,
+              "coverage": 0.999808,
+              "distinct_hands_answered": 5826,
+              "n": 10427
+            }
+          }
+        },
+        "paired": {
+          "hybrid_router_minus_active_model_a": {
+            "analytic": {
+              "margin_analytic_bits_per_decision": -0.068963,
+              "standard_error_bits_per_decision": 0.015983,
+              "z_one_sided_95": 1.644854
+            },
+            "bootstrap_stddev_bits_per_decision": 0.01635,
+            "bootstrap_variance_bits_squared": 0.000267,
+            "ci90": [
+              -0.120869,
+              -0.066889
+            ],
+            "ci95": [
+              -0.124742,
+              -0.060566
+            ],
+            "comparison": "hybrid_router_minus_active_model_a",
+            "decisions_per_hand": 1.789392,
+            "excluded_decisions": 2,
+            "hands": 5826,
+            "left": "hybrid_router",
+            "point_estimate_bits_per_decision": -0.095253,
+            "probability_hybrid_non_degrading": 1.0,
+            "quantiles": {
+              "0.025": -0.124742,
+              "0.05": -0.120869,
+              "0.5": -0.095441,
+              "0.95": -0.066889,
+              "0.975": -0.060566
+            },
+            "right": "active_model_a",
+            "rows": 10425,
+            "samples": 2000,
+            "seed": 423,
+            "upper_quantile_bits_per_decision": -0.066889,
+            "upper_quantile_level": 0.95
+          },
+          "hybrid_router_minus_generalized_calibrated": {
+            "analytic": {
+              "margin_analytic_bits_per_decision": 0.0,
+              "standard_error_bits_per_decision": 0.0,
+              "z_one_sided_95": 1.644854
+            },
+            "bootstrap_stddev_bits_per_decision": 0.0,
+            "bootstrap_variance_bits_squared": 0.0,
+            "ci90": [
+              0.0,
+              0.0
+            ],
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "comparison": "hybrid_router_minus_generalized_calibrated",
+            "decisions_per_hand": 1.789392,
+            "excluded_decisions": 2,
+            "hands": 5826,
+            "left": "hybrid_router",
+            "point_estimate_bits_per_decision": 0.0,
+            "probability_hybrid_non_degrading": 1.0,
+            "quantiles": {
+              "0.025": 0.0,
+              "0.05": 0.0,
+              "0.5": 0.0,
+              "0.95": 0.0,
+              "0.975": 0.0
+            },
+            "right": "generalized_calibrated",
+            "rows": 10425,
+            "samples": 2000,
+            "seed": 423,
+            "upper_quantile_bits_per_decision": 0.0,
+            "upper_quantile_level": 0.95
+          }
+        }
+      }
+    },
+    "canonical_payload_sha256": "9b3a4a22f082609a27822b1166ddf54a4bef24433d79854bfcd070a848637c4c",
+    "definition": "direct, per-stratum comparison of the active Model A reference, the calibrated generalized channel and the hybrid router on the two sparse strata, with the support-weighted pool the frozen sparse criteria read",
+    "evaluation_basis": "TRAIN_only_hand_grouped_out_of_fold",
+    "frozen_spec": {
+      "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
+      "path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
+      "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+    },
+    "generated_by": "tools/training/evaluate_hybrid_router_cv.py",
+    "issue": 423,
+    "kind": "sparse_strata_side_by_side_comparison",
+    "module_sha256": "12e5b2ffa9012e76d08e513e18bf19be26ed7419f375f0040076646de704c8da",
+    "outcome": "RETAIN_REFERENCE_HYBRID_INSUFFICIENT",
+    "paired_unit": "hand_id",
+    "planner_key": "T6",
+    "pooled": {
+      "active_ece": 0.042629,
+      "criteria": {
+        "SPARSE_ECE_CEILING": {
+          "comparator": "<=",
+          "derives": "ece_ceiling_sparse",
+          "direction": "lower_is_better",
+          "frozen_criterion": "ece_sparse <= 0.02",
+          "id": "SPARSE_ECE_CEILING",
+          "inputs": {
+            "stratum_active_ece": {
+              "exact_absent_in_domain": 0.043809,
+              "rare_exact": 0.042341
+            },
+            "weights": {
+              "exact_absent_in_domain": 2541.0,
+              "rare_exact": 10425.0
+            }
+          },
+          "observed": {
+            "active_sparse_ece": 0.042629,
+            "hybrid_ece": 0.027507,
+            "per_stratum_hybrid_ece": {
+              "exact_absent_in_domain": 0.040773,
+              "rare_exact": 0.024273
+            }
+          },
+          "passed": false,
+          "statistic": "support-weighted expected calibration error of the hybrid channel over the pooled sparse strata",
+          "t1_formula_id": "SPARSE_ECE_CEILING",
+          "threshold": 0.02,
+          "unit": "expected_calibration_error"
+        },
+        "SPARSE_GAIN_FLOOR": {
+          "comparator": ">=",
+          "derives": "gain_sparse",
+          "direction": "higher_is_better",
+          "frozen_criterion": "gain_sparse_bits_per_decision >= 0.167 on the pooled (rare_exact, exact_absent_in_domain) support",
+          "id": "SPARSE_GAIN_FLOOR",
+          "inputs": {
+            "minimum_sparse_support_satisfied": true,
+            "sparse_decisions": 12966,
+            "weights": {
+              "exact_absent_in_domain": 2541.0,
+              "rare_exact": 10425.0
+            }
+          },
+          "observed": {
+            "gain_bits_per_decision": 0.167733,
+            "minimum_sparse_observations": 20,
+            "per_stratum": {
+              "exact_absent_in_domain": -0.071905,
+              "rare_exact": 0.226143
+            },
+            "sparse_decisions": 12966
+          },
+          "passed": true,
+          "statistic": "support-weighted mean of the hybrid channel's gain_bits_per_decision over the pooled sparse strata",
+          "t1_formula_id": "SPARSE_GAIN_FLOOR",
+          "threshold": 0.167,
+          "unit": "bits_per_decision"
+        }
+      },
+      "gain_bits_per_decision": 0.167733,
+      "hybrid_ece": 0.027507,
+      "log_loss_gain_bits_per_decision": {
+        "per_stratum": {
+          "exact_absent_in_domain": -0.071905,
+          "rare_exact": 0.226143
+        }
+      },
+      "sparse_decisions": 12966,
+      "weights": {
+        "exact_absent_in_domain": 2541.0,
+        "rare_exact": 10425.0
+      }
+    },
+    "schema": "poker-hybrid-router-sparse-strata-comparison/v1",
+    "strata": [
+      "rare_exact",
+      "exact_absent_in_domain"
+    ],
+    "title": "#423 T6 sparse strata comparison: rare_exact and exact_absent_in_domain, the two strata the generalized channel may cover"
+  },
+  "sparse_strata_comparison_binding": {
+    "canonical_payload_sha256": "9b3a4a22f082609a27822b1166ddf54a4bef24433d79854bfcd070a848637c4c",
+    "declared_path": "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.json",
+    "name": "SPARSE_STRATA_COMPARISON.json",
+    "sha256": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
+  },
+  "strata": {
+    "counts": {
+      "exact_absent_in_domain": 2547,
+      "exact_absent_out_of_domain": 0,
+      "frequent_exact": 81186,
+      "rare_exact": 10427
+    },
+    "definition": "frozen #423 strata: frequent_exact (exact-cell support >= 20), rare_exact (0 < support < 20), exact_absent_in_domain (support == 0, every single-feature label observed in the fit fold) and exact_absent_out_of_domain (support == 0 with at least one unseen feature value)",
+    "frequent_exact_min_support": 20,
+    "hands": 19016,
+    "rare_exact_min_support": 1,
+    "rows": 94160,
+    "shares": {
+      "exact_absent_in_domain": 0.02705,
+      "exact_absent_out_of_domain": 0.0,
+      "frequent_exact": 0.862213,
+      "rare_exact": 0.110737
+    },
+    "source_module_symbol": "tools/preflop/hybrid_response_router.py::compute_signals"
+  },
+  "title": "#423 T6 terminal score: the cross-fitted TRAIN comparison judged by the frozen numeric admission criteria"
+}
