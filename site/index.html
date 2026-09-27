@@ -7504,7 +7504,37 @@ function paintReviewInboxRows(pageHands,byId){
     const analysisState=item.analysis_state||null;
     const analysisStateLabel=item.analysis_state_label||analysisState?.state||item.status_label;
     const analysisReasons=(analysisState?.reason_codes||item.coverage?.reasons||[]).join(" · ");
-    const decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
+    let decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
+    // #424 T2 — la rangée principale est gatée sur la projection `hybrid` déjà
+    // décidée en amont (passthrough). Seules les entrées autoritaires
+    // (`abstains`, `support_state`, `too_close`) et les formateurs exportés sont
+    // lus ici : aucun EV, aucun support et aucune probabilité ne sont recalculés.
+    // Une main sans projection, en STRONG_SUPPORT ou ROBUST, ne passe jamais par
+    // ce chemin et garde donc la rangée historique à l'identique.
+    const rowHybrid=item.hybrid||null;
+    const rowFormatter=rowHybrid?reviewInboxAdvancedFormatter():null;
+    const rowSupportState=rowHybrid?(reviewInboxAdvancedProvenance(item)?.support_state||null):null;
+    const rowAbstains=!!rowHybrid&&(rowHybrid.abstains===true||String(rowHybrid.abstains||"").toUpperCase()==="TRUE"||rowSupportState===rowFormatter?.SUPPORT_STATES?.OOD_UNSUPPORTED);
+    const rowTooClose=!rowAbstains&&!!(rowFormatter&&rowFormatter.formatTooCloseNotice(rowHybrid));
+    const rowEstimated=!rowAbstains&&rowSupportState===rowFormatter?.SUPPORT_STATES?.SPARSE_ESTIMATED;
+    // Cellule « Perte EV » : le gabarit historique reste la valeur par défaut et
+    // n'est remplacé que dans les états où un montant actionnable serait trompeur
+    // (abstention / non supporté) ou surestimé (estimation).
+    let lossCell=`Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small>`;
+    if(rowAbstains){
+      // Abstention explicite ou spot hors distribution : aucune reco et aucune
+      // perte EV numérique, seulement l'état d'abstention déjà servi.
+      decisionText=REVIEW_INBOX_ADVANCED_ABSTENTION;
+      lossCell=`Perte EV<b>—</b><small>${escapeHtml(REVIEW_INBOX_ADVANCED_ABSTENTION)}</small>`;
+    }else if(rowTooClose){
+      // Verdict trop proche : le formateur interdit de désigner une action unique.
+      decisionText=rowFormatter.formatTooCloseNotice(rowHybrid);
+    }else if(rowEstimated){
+      // Estimation : les marques viennent du formateur (préfixe / suffixe
+      // exportés), jamais d'une chaîne dupliquée dans la coque.
+      decisionText=rowFormatter.ESTIMATE_PREFIX+' '+decisionText+' '+rowFormatter.ESTIMATE_SUFFIX;
+      lossCell=`Perte EV<b>${escapeHtml(rowFormatter.ESTIMATE_PREFIX+' '+formatBB(item.total_loss_bb)+' '+rowFormatter.ESTIMATE_SUFFIX)}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small>`;
+    }
     const robustness=modelBRobustnessViewForDecision(h.id,item.deep_link?.step_index);
     const robustnessText=modelBRobustnessStatusText(robustness);
     const statusCls=analysisState&&analysisState.state!=="ANALYSE_DISPONIBLE"?" incomplete":item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
@@ -7513,7 +7543,7 @@ function paintReviewInboxRows(pageHands,byId){
     open.setAttribute("aria-label",`Ouvrir la main ${h.id} sur ${decisionText}`);
     const display=reviewHandDisplayMeta(h);
     open.innerHTML=`<span class="review-inbox-hand-result"><strong>Hero ${escapeHtml(display.hero_cards)}</strong><small>Résultat réel · <span class="review-real-result ${escapeHtml(display.result.state)}">${escapeHtml(display.result.text)}</span></small></span>
-      <span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
+      <span class="review-inbox-loss">${lossCell}</span>
       <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}</small></span>
       <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")} · ${escapeHtml(robustnessText)}</small></span>`;
     open.onclick=()=>openReviewInboxItem(item);
