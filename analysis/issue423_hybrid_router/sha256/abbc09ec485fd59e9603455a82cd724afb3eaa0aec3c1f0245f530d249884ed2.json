@@ -12,7 +12,7 @@
     "validation_never_read": true
   },
   "calibration_admitted_folds": 5,
-  "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+  "canonical_payload_sha256": "3a69d99d27918644a8c20c8042a345c6d630961d2e6f8b1141f06d817c52cb8a",
   "cv_schema": "poker-hybrid-router-train-cv/v1",
   "folds": [
     {
@@ -2137,7 +2137,7 @@
       },
       "sha256": "54222df24bc52dfad3e84d336bc53a16618a6a7556189a2abcf120b2a6d1029a",
       "spec": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
-      "spec_sha256": "d5a1451423798f04e76103cf9c1db197d81e9e3af405a1c06c3a79e78647ea85"
+      "spec_sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
     }
   },
   "schema": "poker-hybrid-router-cv-derivation/v1",

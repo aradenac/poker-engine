@@ -235,10 +235,13 @@ class DerivedCriteriaTests(unittest.TestCase):
             sorted(reference["formula_ids"]),
             sorted({formula["id"] for formula in self.spec["procedure"]["formulas"]}),
         )
-        self.assertEqual(criteria["derivation"]["sha256"], tool.sha256_file(DERIVATION_PATH))
+        self.assertEqual(
+            criteria["derivation"]["sha256"],
+            tool.projected_derivation_sha256(self.derivation),
+        )
         self.assertEqual(
             criteria["derivation"]["canonical_payload_sha256"],
-            self.derivation["canonical_payload_sha256"],
+            tool.projected_derivation_canonical_payload_sha256(self.derivation),
         )
 
     def test_freeze_refuses_a_derivation_that_read_a_holdout(self):
@@ -286,6 +289,115 @@ class DerivedCriteriaTests(unittest.TestCase):
         scan = tool.verify_no_holdout_access()
         self.assertEqual(scan["result"], "PASS")
         self.assertEqual(scan["hits"], [])
+
+
+def _repin(derivation, spec_sha256):
+    """The derivation as a rebuild against another spec digest would author it."""
+    document = json.loads(json.dumps(derivation))
+    document["reuse"]["router"]["spec_sha256"] = spec_sha256
+    document.pop("canonical_payload_sha256", None)
+    document["canonical_payload_sha256"] = tool.stable_hash(document)
+    return document
+
+
+class CycleBreakTests(unittest.TestCase):
+    """The spec <-> derivation cycle is broken, and the break is a fixed point.
+
+    ``CV_DERIVATION.json`` pins the frozen spec and the frozen spec embeds the
+    criteria that pin the derivation, so a strict fixed point does not exist and
+    iterating the three generators diverges.  The freeze binds the derivation
+    through a published projection that neutralises the self-referential field
+    instead, which makes one turn of the loop stable.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.derivation = tool.load_derivation(DERIVATION_PATH)
+        cls.spec_bytes = SPEC_PATH.read_bytes()
+        cls.spec = json.loads(cls.spec_bytes)
+        cls.criteria = tool.derive_criteria(cls.derivation, cls.spec)
+
+    def test_the_criteria_bind_the_projection_not_the_raw_bytes(self):
+        projection = tool.derivation_projection(self.derivation)
+        self.assertEqual(
+            projection["reuse"]["router"]["spec_sha256"], tool.SELF_REFERENCE_SENTINEL
+        )
+        self.assertEqual(
+            self.criteria["derivation"]["sha256"],
+            tool.sha256_bytes(tool.serialize_derivation_projection(self.derivation)),
+        )
+        # The manifest keeps the literal pin of the derivation bytes, which is the
+        # half of the binding that cannot feed back into the spec.
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        roles = {entry["role"]: entry for entry in manifest["derivation_inputs"]}
+        self.assertEqual(
+            roles["train_only_cv_derivation"]["sha256"], tool.sha256_file(DERIVATION_PATH)
+        )
+        self.assertNotEqual(
+            self.criteria["derivation"]["sha256"], tool.sha256_file(DERIVATION_PATH)
+        )
+
+    def test_the_derivation_keeps_the_literal_pin_of_the_frozen_spec(self):
+        spec_sha256 = tool.sha256_file(SPEC_PATH)
+        self.assertEqual(
+            self.derivation["reuse"]["router"]["spec_sha256"],
+            spec_sha256,
+            "the derivation must record the preregistration it was measured against",
+        )
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        binding = manifest["derivation_binding"]
+        self.assertEqual(binding["spec_pin"]["value"], spec_sha256)
+        self.assertTrue(binding["spec_pin"]["matches_frozen_spec"])
+        self.assertEqual(
+            binding["spec_pin"]["frozen_spec_sha256"], tool.sha256_bytes(self.spec_bytes)
+        )
+
+    def test_the_projection_is_invariant_under_the_self_referential_field(self):
+        for other in ("0" * 64, tool.SELF_REFERENCE_SENTINEL, "f" * 64):
+            with self.subTest(spec_pin=other):
+                repinned = _repin(self.derivation, other)
+                self.assertEqual(
+                    tool.derivation_projection(repinned),
+                    tool.derivation_projection(self.derivation),
+                )
+                self.assertEqual(
+                    tool.derive_criteria(repinned, self.spec)["derivation"],
+                    self.criteria["derivation"],
+                )
+
+    def test_one_iteration_of_the_loop_is_a_fixed_point(self):
+        # The frozen criteria reproduce byte for byte from the persisted
+        # derivation: the criteria do not move.
+        self.assertEqual(self.criteria, self.spec["frozen_criteria"])
+        # Rebuild the derivation against the digest the rebuilt spec carries and
+        # rebuild the spec from the re-derived criteria: nothing moves.
+        repinned = _repin(self.derivation, tool.sha256_bytes(self.spec_bytes))
+        again = tool.derive_criteria(repinned, self.spec)
+        self.assertEqual(again, self.criteria)
+        rebuilt = spec_tool.serialize(spec_tool.build_spec(frozen_criteria=again))
+        self.assertEqual(rebuilt, self.spec_bytes)
+        self.assertEqual(tool.sha256_bytes(rebuilt), tool.sha256_file(SPEC_PATH))
+        self.assertEqual(
+            repinned["reuse"]["router"]["spec_sha256"], tool.sha256_bytes(rebuilt)
+        )
+        self.assertEqual(again["derivation"]["sha256"], self.criteria["derivation"]["sha256"])
+
+    def test_freeze_refuses_a_derivation_pinned_to_another_spec(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with _IsolatedLayout(Path(tmp)) as layout:
+                document = json.loads(layout.paths["derivation"].read_text(encoding="utf-8"))
+                document["reuse"]["router"]["spec_sha256"] = "0" * 64
+                document.pop("canonical_payload_sha256", None)
+                document["canonical_payload_sha256"] = tool.stable_hash(document)
+                payload = (json.dumps(document, sort_keys=True, indent=2) + "\n").encode("utf-8")
+                layout.paths["derivation"].write_bytes(payload)
+                layout.paths["derivation_digest"].write_text(
+                    f"{hashlib.sha256(payload).hexdigest()}  {tool.DERIVATION_NAME}\n",
+                    encoding="utf-8",
+                )
+                with self.assertRaises(tool.HybridRouterCriteriaError) as caught:
+                    tool.freeze()
+                self.assertIn("spec pin", str(caught.exception))
 
 
 class PersistedArtifactTests(unittest.TestCase):

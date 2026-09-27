@@ -60,6 +60,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.preflop import generalized_response_model as M  # noqa: E402
+from tools.training import freeze_hybrid_router_criteria as criteria_tool  # noqa: E402
 
 # --------------------------------------------------------------------------
 # layout
@@ -284,7 +285,7 @@ def _declared_references(docs: Mapping[str, dict]) -> list[dict]:
     refs.append(
         _reference(
             "HYBRID_ROUTER_SPEC.frozen_criteria.derivation",
-            "byte",
+            "derivation_projection",
             derivation["artifact"],
             derivation["sha256"],
         )
@@ -292,7 +293,7 @@ def _declared_references(docs: Mapping[str, dict]) -> list[dict]:
     refs.append(
         _reference(
             "HYBRID_ROUTER_SPEC.frozen_criteria.derivation",
-            "canonical",
+            "derivation_projection_canonical",
             derivation["artifact"],
             derivation["canonical_payload_sha256"],
         )
@@ -337,12 +338,17 @@ def _declared_references(docs: Mapping[str, dict]) -> list[dict]:
     )
     binding = frozen_spec["derivation_binding"]
     refs.append(
-        _reference("TRAIN_CV_ROUTER_REPORT.frozen_spec.derivation_binding", "byte", binding["artifact"], binding["sha256"])
+        _reference(
+            "TRAIN_CV_ROUTER_REPORT.frozen_spec.derivation_binding",
+            "derivation_projection",
+            binding["artifact"],
+            binding["sha256"],
+        )
     )
     refs.append(
         _reference(
             "TRAIN_CV_ROUTER_REPORT.frozen_spec.derivation_binding",
-            "canonical",
+            "derivation_projection_canonical",
             binding["artifact"],
             binding["canonical_payload_sha256"],
         )
@@ -354,7 +360,7 @@ def _declared_references(docs: Mapping[str, dict]) -> list[dict]:
     refs.append(
         _reference(
             "TRAIN_CV_ROUTER_REPORT.frozen_criteria.derivation",
-            "byte",
+            "derivation_projection",
             report_derivation["artifact"],
             report_derivation["sha256"],
         )
@@ -362,7 +368,7 @@ def _declared_references(docs: Mapping[str, dict]) -> list[dict]:
     refs.append(
         _reference(
             "TRAIN_CV_ROUTER_REPORT.frozen_criteria.derivation",
-            "canonical",
+            "derivation_projection_canonical",
             report_derivation["artifact"],
             report_derivation["canonical_payload_sha256"],
         )
@@ -721,6 +727,17 @@ def _recompute_reference(docs: Mapping[str, dict], kind: str, target: str) -> st
             return sha256_bytes((ROOT / target).read_bytes())
         if kind == "canonical":
             return canonical_payload_sha256(json.loads((ROOT / target).read_text(encoding="utf-8")))
+        if kind == "derivation_projection":
+            # The frozen criteria bind the derivation through the published
+            # projection, not through its raw bytes: the raw bytes carry the spec
+            # pin, and pinning them would close the spec <-> derivation cycle.
+            return criteria_tool.projected_derivation_sha256(
+                json.loads((ROOT / target).read_text(encoding="utf-8"))
+            )
+        if kind == "derivation_projection_canonical":
+            return criteria_tool.projected_derivation_canonical_payload_sha256(
+                json.loads((ROOT / target).read_text(encoding="utf-8"))
+            )
         if kind == "criteria":
             document, pointer = target.split("#", 1)
             block = docs[document][pointer]
@@ -1556,8 +1573,12 @@ def build() -> dict[str, Any]:
                 "byte digests are recomputed from the persisted bytes; canonical payload digests "
                 "from the repository-wide stable_hash of the JSON document with any top-level "
                 "canonical_payload_sha256 field excluded; the frozen criteria digest from the "
-                "stable_hash of the persisted criteria block without its criteria_sha256; nested "
-                "provenance digests from the persisted JSON path that carries them"
+                "stable_hash of the persisted criteria block without its criteria_sha256; the two "
+                "derivation digests the frozen criteria publish from the frozen projection that "
+                "neutralises /reuse/router/spec_sha256 (see "
+                "tools/training/freeze_hybrid_router_criteria.py::derivation_projection), because "
+                "the raw derivation bytes depend on the spec digest that embeds those criteria; "
+                "nested provenance digests from the persisted JSON path that carries them"
             ),
             "sidecar_checks": [
                 {

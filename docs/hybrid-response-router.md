@@ -16,16 +16,16 @@ canonical payload `23d9408f320630bd1b1bf632a6cb90f9e89ca29580cf717afb9f9a86d56a7
 The frozen numeric admission criteria are bound by
 `analysis/issue423_hybrid_router/ROUTER_MANIFEST.json`
 (`poker-hybrid-router-criteria-manifest/v1`, byte SHA256
-`6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893`, canonical
-payload `9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7`) and
+`c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99`, canonical
+payload `9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961`) and
 the eight required artifacts are indexed by
 `analysis/issue423_hybrid_router/ARTIFACTS.json`; the human summary is
 `analysis/issue423_hybrid_router/SUMMARY.md`
-(byte SHA256 `7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397`).
+(byte SHA256 `c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876`).
 The terminal decision lives in
 `analysis/issue423_hybrid_router/DECISION.json`
-(byte SHA256 `8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec`,
-canonical payload `6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5`)
+(byte SHA256 `fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd`,
+canonical payload `cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95`)
 and is restated in `.project/decisions/20260926-hybrid-router.md`. The JSON wins
 over this prose; every digest above is recorded outside the payload it describes
 and is recomputed from the persisted bytes.
@@ -273,7 +273,10 @@ fails closed. The spec records `authored_before_validation_read = true`,
 
 The evaluation basis is `TRAIN_only_hand_grouped_out_of_fold`: 94160 rows over
 19016 hands in 5 folds grouped by `hand_id` (`derivation/CV_DERIVATION.json`,
-byte SHA256 `519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630`).
+byte SHA256 `abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2`).
+That derivation pins the preregistration it was measured against
+(`reuse.router.spec_sha256 = sha256_file(HYBRID_ROUTER_SPEC.json) =
+15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075`).
 The derivation order is frozen:
 
 `STRATUM_ASSIGNMENT`, `OOD_ABSTENTION_CRITERION`, `ROUTE_SELECTION_PROCEDURE`,
@@ -297,6 +300,39 @@ The frozen criteria block has canonical digest
 `e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2`; every
 criterion below is resolved from TRAIN-only out-of-fold evidence and carries a
 quantitative justification and its `derivation_rule`.
+
+### 6.1.1 Breaking the spec <-> derivation cycle
+
+The derivation pins the frozen spec and the frozen spec embeds the criteria that
+pin the derivation, so a *strict* fixed point does not exist: re-pinning the
+derivation to the true spec digest moves its bytes, which moves the criteria,
+which moves the spec, which moves the derivation again. The freeze breaks the
+cycle on one side, and it does so without moving a byte of the preregistration:
+
+* the **derivation** keeps the literal pin of the spec bytes, and its `.sha256`
+  sidecar plus
+  `ROUTER_MANIFEST.json::derivation_inputs[role=train_only_cv_derivation]` keep
+  the literal pin of the derivation bytes;
+* the **frozen criteria** bind the derivation through
+  `derivation_projection`
+  (`tools/training/freeze_hybrid_router_criteria.py`), a published and
+  recomputable rule that replaces `/reuse/router/spec_sha256` with the frozen
+  sentinel `d5a1451423798f04e76103cf9c1db197d81e9e3af405a1c06c3a79e78647ea85`
+  and recomputes `/canonical_payload_sha256` over the neutralised payload. The
+  rule, the sentinel, the literal pins and the spec pin are published in
+  `ROUTER_MANIFEST.json::derivation_binding`; the evidence index recomputes both
+  projected digests on every `--check`.
+
+The projection is invariant under the self-referential field, so one turn of the
+loop is a fixed point: rebuilding `CV_DERIVATION.json` against the spec digest it
+already pins re-derives byte-identical criteria, re-serialises byte-identical
+spec bytes (byte SHA256
+`15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075`) and
+re-serialises a byte-identical manifest — a second
+`freeze_hybrid_router_criteria.py` run reports `UNCHANGED`, and
+`check()` refuses a derivation that pins any other spec digest.
+`tests/training/test_freeze_hybrid_router_criteria.py::CycleBreakTests` exercises
+the invariance, the fixed point and the refusal.
 
 ### 6.2 The five frozen criteria and their justification
 

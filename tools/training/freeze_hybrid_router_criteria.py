@@ -44,6 +44,35 @@ Only the Python standard library and repository modules are used.  The tool
 parses no hand history and no decision JSONL: it consumes the content-addressed
 TRAIN-only derivation and the frozen T1 spec, and it fails closed on any
 artifact that declares a VALIDATION or TEST read.
+
+Breaking the spec <-> derivation cycle
+--------------------------------------
+``CV_DERIVATION.json`` pins the frozen spec (``reuse.router.spec_sha256``) and
+the frozen spec embeds ``frozen_criteria``, which pins the derivation
+(``derivation.sha256`` and ``derivation.canonical_payload_sha256``, both of them
+digests over a document that carries the spec pin).  The two pins close a
+cycle, so a *strict* fixed point does not exist: re-pinning the derivation to
+the true spec digest moves the derivation bytes, which moves the criteria,
+which moves the spec, which moves the derivation again -- iterating the three
+generators does not converge.
+
+The freeze therefore breaks the cycle on exactly one side, and it breaks it the
+way that keeps the *preregistration* immutable:
+
+* the derivation keeps the literal pin of the spec bytes (that is the evidence
+  of which preregistration the run was measured against), and its own
+  ``.sha256`` sidecar plus the manifest's ``derivation_inputs`` keep pinning the
+  derivation *bytes*;
+* the frozen criteria bind the derivation through :func:`derivation_projection`,
+  a published, recomputable projection that neutralises the one self-referential
+  field (``reuse.router.spec_sha256``) and recomputes the derivation's own
+  canonical payload digest over the neutralised payload.
+
+The projection is invariant under the derivation's spec pin, so the criteria
+-- and therefore the frozen spec -- are invariant too: re-pinning the derivation
+to the true spec digest leaves every frozen byte in place.  ``check()``
+re-derives the criteria from the persisted derivation through the projection, so
+the property is verified on every run instead of promised here.
 """
 from __future__ import annotations
 
@@ -161,6 +190,28 @@ REQUIRED_CONSTANTS = (
     "RARE_EXACT_MIN_SUPPORT",
 )
 
+#: ---------------------------------------------------------------------------
+#: The spec <-> derivation cycle.
+#: ---------------------------------------------------------------------------
+#: ``CV_DERIVATION.json`` carries the digest of the frozen spec and the frozen
+#: spec carries the digests of the derivation, so a strict fixed point does not
+#: exist.  The freeze binds the derivation through a *projection* that
+#: neutralises the self-referential field below (and recomputes the derivation's
+#: own canonical payload digest over the neutralised payload), which makes the
+#: frozen criteria -- and therefore the frozen spec -- invariant under the
+#: derivation's spec pin.
+SELF_REFERENCE_POINTER = "/reuse/router/spec_sha256"
+
+#: The value the projection substitutes for the neutralised field.  Any frozen
+#: constant breaks the cycle; this one is the digest the derivation carried when
+#: the criteria were first frozen, which makes the projection the identity on the
+#: already published derivation: the repair cannot move a byte of the
+#: preregistration, it only makes the binding recomputable.
+SELF_REFERENCE_SENTINEL = "d5a1451423798f04e76103cf9c1db197d81e9e3af405a1c06c3a79e78647ea85"
+SELF_REFERENCE_CANONICAL_POINTER = "/canonical_payload_sha256"
+PROJECTED_BINDING_RULE = "projection_neutralising_the_self_referential_spec_pin"
+PROJECTED_SERIALIZATION = "json.dumps(sort_keys=True, indent=2, ensure_ascii=True, allow_nan=False) + '\\n'"
+
 #: Symbols that would indicate a holdout (VALIDATION/TEST) read.
 HOLDOUT_LOADER_SYMBOLS = (
     "load_validation_records",
@@ -229,6 +280,52 @@ def _finalize(value: Any) -> Any:
     if isinstance(value, float):
         return _round(value)
     return value
+
+
+def derivation_projection(derivation: Mapping[str, Any]) -> dict[str, Any]:
+    """The derivation with its self-referential spec pin neutralised.
+
+    The projected document is the one the frozen criteria bind: the same run,
+    with ``reuse.router.spec_sha256`` replaced by the frozen sentinel and with
+    ``canonical_payload_sha256`` recomputed over the neutralised payload.  Both
+    edits touch exactly the fields that depend on the spec digest, so the
+    projection is invariant under re-pinning the derivation to the true spec
+    digest -- which is what makes the criteria (and the frozen spec that embeds
+    them) converge instead of oscillating.
+    """
+    payload = json.loads(json.dumps(_finalize(derivation)))
+    reuse = payload.get("reuse")
+    if isinstance(reuse, Mapping):
+        router_block = reuse.get("router")
+        if isinstance(router_block, Mapping) and "spec_sha256" in router_block:
+            router_block["spec_sha256"] = SELF_REFERENCE_SENTINEL
+    payload.pop("canonical_payload_sha256", None)
+    payload["canonical_payload_sha256"] = stable_hash(payload)
+    return payload
+
+
+def serialize_derivation_projection(derivation: Mapping[str, Any]) -> bytes:
+    """The projected derivation, serialized exactly like the persisted artifact."""
+    return (
+        json.dumps(
+            derivation_projection(derivation),
+            sort_keys=True,
+            indent=2,
+            ensure_ascii=True,
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+
+
+def projected_derivation_sha256(derivation: Mapping[str, Any]) -> str:
+    """Byte-style digest of the projection: the criteria's ``derivation.sha256``."""
+    return sha256_bytes(serialize_derivation_projection(derivation))
+
+
+def projected_derivation_canonical_payload_sha256(derivation: Mapping[str, Any]) -> str:
+    """Canonical payload digest of the projection (``stable_hash`` of the payload)."""
+    return str(derivation_projection(derivation)["canonical_payload_sha256"])
 
 
 def _ceil_to_quantum(value: float, quantum: float) -> float:
@@ -987,13 +1084,22 @@ def derive_criteria(
     spec: Mapping[str, Any],
     *,
     frozen_at: str = DEFAULT_FROZEN_AT,
-    derivation_sha256: str | None = None,
 ) -> dict[str, Any]:
-    """Resolve T1's symbolic procedure into the frozen numeric criteria."""
+    """Resolve T1's symbolic procedure into the frozen numeric criteria.
+
+    The resolved criteria bind the derivation through
+    :func:`derivation_projection` rather than through the derivation's raw bytes:
+    the raw digest is a function of the very spec digest the criteria end up
+    feeding, so pinning it here would close the spec <-> derivation cycle and no
+    fixed point would exist.  The literal byte pin of the derivation lives in the
+    manifest's ``derivation_inputs`` and in the derivation's own ``.sha256``
+    sidecar, neither of which is embedded in the spec.
+    """
     assert_train_only_derivation(derivation)
     constants = assert_preregistered_procedure(spec)
     quantum = float(constants["MARGIN_ANALYTIC_TOLERANCE_BITS"])
-    digest = derivation_sha256 if derivation_sha256 is not None else sha256_file(DERIVATION_PATH)
+    digest = projected_derivation_sha256(derivation)
+    canonical_payload_digest = projected_derivation_canonical_payload_sha256(derivation)
     criteria = [
         _margin_criterion(derivation, constants, quantum),
         _sparse_gain_criterion(derivation, constants, quantum),
@@ -1016,7 +1122,7 @@ def derive_criteria(
             "schema": derivation.get("schema"),
             "planner_key": derivation.get("planner_key"),
             "sha256": digest,
-            "canonical_payload_sha256": derivation.get("canonical_payload_sha256"),
+            "canonical_payload_sha256": canonical_payload_digest,
             "rows": int((derivation.get("scope") or {}).get("rows", 0)),
             "hands": int((derivation.get("scope") or {}).get("hands", 0)),
             "folds": int((derivation.get("protocol") or {}).get("folds", 0)),
@@ -1229,6 +1335,49 @@ def build_manifest(
             ),
         },
         "order_guard": dict(order_guard),
+        "derivation_binding": {
+            "artifact": DERIVATION_LOGICAL_PATH,
+            "rule": PROJECTED_BINDING_RULE,
+            "rationale": (
+                "the derivation pins the frozen spec and the frozen spec embeds the criteria that "
+                "pin the derivation, so a strict fixed point does not exist; the criteria therefore "
+                "bind the derivation through a projection that neutralises the self-referential "
+                "field, while the derivation keeps the literal pin of the spec bytes and the "
+                "manifest's derivation_inputs keep the literal pin of the derivation bytes"
+            ),
+            "projection": {
+                "neutralised_pointer": SELF_REFERENCE_POINTER,
+                "neutralised_value": SELF_REFERENCE_SENTINEL,
+                "recomputed_pointer": SELF_REFERENCE_CANONICAL_POINTER,
+                "serialization": PROJECTED_SERIALIZATION,
+                "resolved_by": (
+                    "tools/training/freeze_hybrid_router_criteria.py::derivation_projection"
+                ),
+            },
+            "projected_sha256": projected_derivation_sha256(derivation),
+            "projected_canonical_payload_sha256": (
+                projected_derivation_canonical_payload_sha256(derivation)
+            ),
+            "literal_pin": {
+                "artifact_path": DERIVATION_LOGICAL_PATH,
+                "artifact_sha256": sha256_file(DERIVATION_PATH),
+                "sidecar_path": DERIVATION_DIGEST_LOGICAL_PATH,
+                "sidecar_sha256": sha256_file(DERIVATION_DIGEST_PATH),
+                "recorded_as": (
+                    "derivation_inputs[role=train_only_cv_derivation] and "
+                    "derivation_inputs[role=derivation_sha256_sidecar]"
+                ),
+            },
+            "spec_pin": {
+                "pointer": SELF_REFERENCE_POINTER,
+                "value": ((derivation.get("reuse") or {}).get("router") or {}).get("spec_sha256"),
+                "frozen_spec_sha256": sha256_bytes(spec_bytes),
+                "matches_frozen_spec": (
+                    ((derivation.get("reuse") or {}).get("router") or {}).get("spec_sha256")
+                    == sha256_bytes(spec_bytes)
+                ),
+            },
+        },
         "derivation_procedure": {
             "reference": {
                 "spec": SPEC_LOGICAL_PATH,
@@ -1332,17 +1481,15 @@ def freeze(
     """
     order_guard = assert_terminal_report_absent(terminal_paths)
     derivation = load_derivation(DERIVATION_PATH)
-    derivation_digest = assert_derivation_digest(
-        DERIVATION_PATH, DERIVATION_DIGEST_PATH, derivation
-    )
+    # The derivation's own sidecar still pins its bytes; the *criteria* bind the
+    # projection, because the raw bytes carry the spec pin that closes the cycle.
+    assert_derivation_digest(DERIVATION_PATH, DERIVATION_DIGEST_PATH, derivation)
     if not SPEC_PATH.is_file():
         raise HybridRouterCriteriaError(
             f"the T1 preregistration spec is missing: {_relative(SPEC_PATH)}"
         )
     spec = json.loads(SPEC_PATH.read_text(encoding="utf-8"))
-    criteria = derive_criteria(
-        derivation, spec, frozen_at=frozen_at, derivation_sha256=derivation_digest
-    )
+    criteria = derive_criteria(derivation, spec, frozen_at=frozen_at)
     persisted_criteria = spec.get("frozen_criteria")
     manifest = (
         json.loads(MANIFEST_PATH.read_text(encoding="utf-8")) if MANIFEST_PATH.is_file() else None
@@ -1405,6 +1552,9 @@ def freeze(
             raise HybridRouterCriteriaError(reason)
     frozen_spec = build_frozen_spec(criteria)
     spec_bytes = serialize_spec(frozen_spec)
+    # The half of the cycle break the evidence owns: the derivation must have been
+    # measured against the very spec this freeze is about to write.
+    assert_derivation_pins_frozen_spec(derivation, sha256_bytes(spec_bytes))
     document = build_manifest(
         criteria=criteria,
         spec=frozen_spec,
@@ -1460,6 +1610,63 @@ def _criteria_diff(left: Mapping[str, Any], right: Mapping[str, Any]) -> str:
     return "; ".join(changes)
 
 
+def assert_derivation_pins_frozen_spec(
+    derivation: Mapping[str, Any],
+    spec_sha256: str,
+) -> None:
+    """Fail closed unless the derivation pins the *persisted* frozen spec bytes.
+
+    This is the half of the cycle the repair keeps literal: the evidence records
+    which preregistration it was measured against, so an unpinned or stale pin is
+    a broken cycle break rather than a formatting difference.
+    """
+    pin = ((derivation.get("reuse") or {}).get("router") or {}).get("spec_sha256")
+    if pin != spec_sha256:
+        raise HybridRouterCriteriaError(
+            "the derivation records spec pin "
+            f"{pin!r} instead of the frozen spec digest {spec_sha256!r}"
+        )
+
+
+def _derivation_binding_problems(manifest: Mapping[str, Any], spec_bytes: bytes) -> list[str]:
+    """Verify the published cycle-break rule against the persisted derivation."""
+    problems: list[str] = []
+    binding = manifest.get("derivation_binding")
+    if not isinstance(binding, Mapping):
+        return ["the manifest publishes no derivation binding rule"]
+    if binding.get("rule") != PROJECTED_BINDING_RULE:
+        problems.append(f"the derivation binding rule must be {PROJECTED_BINDING_RULE}")
+    projection = binding.get("projection") or {}
+    if projection.get("neutralised_pointer") != SELF_REFERENCE_POINTER:
+        problems.append(f"the neutralised pointer must be {SELF_REFERENCE_POINTER}")
+    if projection.get("neutralised_value") != SELF_REFERENCE_SENTINEL:
+        problems.append("the neutralised sentinel drifted from the frozen constant")
+    try:
+        derivation = load_derivation(DERIVATION_PATH)
+    except HybridRouterCriteriaError as error:
+        return problems + [str(error)]
+    spec_sha256 = sha256_bytes(spec_bytes)
+    if binding.get("projected_sha256") != projected_derivation_sha256(derivation):
+        problems.append("the published projected derivation digest does not recompute")
+    if binding.get("projected_canonical_payload_sha256") != (
+        projected_derivation_canonical_payload_sha256(derivation)
+    ):
+        problems.append("the published projected derivation canonical digest does not recompute")
+    literal = binding.get("literal_pin") or {}
+    if literal.get("artifact_sha256") != sha256_file(DERIVATION_PATH):
+        problems.append("the published literal derivation digest drifted from the artifact")
+    if literal.get("sidecar_sha256") != sha256_file(DERIVATION_DIGEST_PATH):
+        problems.append("the published literal derivation sidecar digest drifted")
+    spec_pin = binding.get("spec_pin") or {}
+    if spec_pin.get("value") != spec_sha256:
+        problems.append("the derivation does not pin the persisted frozen spec digest")
+    if spec_pin.get("matches_frozen_spec") is not True:
+        problems.append("the derivation binding does not record a matching spec pin")
+    if spec_pin.get("frozen_spec_sha256") != spec_sha256:
+        problems.append("the derivation binding records a stale frozen spec digest")
+    return problems
+
+
 def check(*, terminal_paths: Sequence[str | Path] | None = None) -> list[str]:
     """Verify the persisted frozen criteria, the manifest and the re-derivation."""
     problems: list[str] = []
@@ -1512,15 +1719,12 @@ def check(*, terminal_paths: Sequence[str | Path] | None = None) -> list[str]:
         f"derivation input: {problem}"
         for problem in verify_input_bindings(manifest.get("derivation_inputs") or ())
     )
+    problems.extend(_derivation_binding_problems(manifest, spec_bytes))
     problems.extend(terminal_absence_problems(terminal_paths))
     try:
         derivation = load_derivation(DERIVATION_PATH)
-        derivation_digest = assert_derivation_digest(
-            DERIVATION_PATH, DERIVATION_DIGEST_PATH, derivation
-        )
-        expected = derive_criteria(
-            derivation, spec, frozen_at=criteria["frozen_at"], derivation_sha256=derivation_digest
-        )
+        assert_derivation_digest(DERIVATION_PATH, DERIVATION_DIGEST_PATH, derivation)
+        expected = derive_criteria(derivation, spec, frozen_at=criteria["frozen_at"])
     except HybridRouterCriteriaError as error:
         problems.append(f"re-derivation failed: {error}")
         return problems

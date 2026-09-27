@@ -57,7 +57,7 @@
     },
     "validation_recalibrated": false
   },
-  "canonical_payload_sha256": "6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5",
+  "canonical_payload_sha256": "cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95",
   "channels": [
     "active_model_a",
     "generalized_calibrated",
@@ -111,11 +111,11 @@
     },
     "ISSUE367_PREFLIGHT.json": {
       "path": "analysis/issue423_hybrid_router/ISSUE367_PREFLIGHT.json",
-      "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+      "sha256": "8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b"
     },
     "ROUTER_MANIFEST.json": {
       "path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
-      "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+      "sha256": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99"
     },
     "SPARSE_STRATA_COMPARISON.json": {
       "path": "analysis/issue423_hybrid_router/SPARSE_STRATA_COMPARISON.json",
@@ -123,7 +123,7 @@
     },
     "TRAIN_CV_ROUTER_REPORT.json": {
       "path": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
-      "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+      "sha256": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052"
     }
   },
   "failed_criteria": [
@@ -133,9 +133,9 @@
     "authored_before_terminal_score": true,
     "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
     "derivation_path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
-    "derivation_sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+    "derivation_sha256": "abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2",
     "manifest_path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
-    "manifest_sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+    "manifest_sha256": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99",
     "spec_path": "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json",
     "spec_sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
   },

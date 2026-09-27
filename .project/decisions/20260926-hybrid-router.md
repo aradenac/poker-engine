@@ -11,8 +11,8 @@
   `SPARSE_STRATA_COMPARISON.json`, `GENERALIZED_CALIBRATION_REPORT.json`,
   `ROUTER_MANIFEST.json`, `ISSUE367_PREFLIGHT.json`, `DECISION.json`,
   `SUMMARY.md`) ; `DECISION.json` octets
-  `8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec`, payload
-  canonique `6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5`
+  `fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd`, payload
+  canonique `cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95`
 - Doc normative associée : `docs/hybrid-response-router.md`
 
 ## Décision terminale
@@ -41,7 +41,7 @@ false`).
 ## Résultat par strate (TRAIN-only, cross-fitté, groupé par `hand_id`)
 
 Surface : 94160 lignes sur 19016 mains, 5 folds (`derivation/CV_DERIVATION.json`,
-octets `519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630`).
+octets `abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2`).
 VALIDATION et TEST sont refusés par le loader, le harnais, le gel des critères
 et la préflight (`validation_consumed=false`, `test_consumed=false`).
 
@@ -87,7 +87,7 @@ ECE sparse hybride `0.027507` contre la référence active `0.042629`, plafond
 
 Bloc de critères canonique
 `e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2` ; manifeste
-octets `6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893` ;
+octets `c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99` ;
 spec octets `15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075`.
 Les constantes de pré-enregistrement sont gelées
 (`terminal_evaluation_derived=false`) :

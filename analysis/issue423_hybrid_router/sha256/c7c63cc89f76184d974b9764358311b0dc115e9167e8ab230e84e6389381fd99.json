@@ -9,17 +9,44 @@
     "train_only": true,
     "validation_consumed": false
   },
-  "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+  "canonical_payload_sha256": "9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961",
+  "derivation_binding": {
+    "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+    "literal_pin": {
+      "artifact_path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
+      "artifact_sha256": "abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2",
+      "recorded_as": "derivation_inputs[role=train_only_cv_derivation] and derivation_inputs[role=derivation_sha256_sidecar]",
+      "sidecar_path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
+      "sidecar_sha256": "2595d233d4903bcea7112456ed9a33084ff198af72b22f04cb4900cc6773a889"
+    },
+    "projected_canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+    "projected_sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+    "projection": {
+      "neutralised_pointer": "/reuse/router/spec_sha256",
+      "neutralised_value": "d5a1451423798f04e76103cf9c1db197d81e9e3af405a1c06c3a79e78647ea85",
+      "recomputed_pointer": "/canonical_payload_sha256",
+      "resolved_by": "tools/training/freeze_hybrid_router_criteria.py::derivation_projection",
+      "serialization": "json.dumps(sort_keys=True, indent=2, ensure_ascii=True, allow_nan=False) + '\\n'"
+    },
+    "rationale": "the derivation pins the frozen spec and the frozen spec embeds the criteria that pin the derivation, so a strict fixed point does not exist; the criteria therefore bind the derivation through a projection that neutralises the self-referential field, while the derivation keeps the literal pin of the spec bytes and the manifest's derivation_inputs keep the literal pin of the derivation bytes",
+    "rule": "projection_neutralising_the_self_referential_spec_pin",
+    "spec_pin": {
+      "frozen_spec_sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075",
+      "matches_frozen_spec": true,
+      "pointer": "/reuse/router/spec_sha256",
+      "value": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
+    }
+  },
   "derivation_inputs": [
     {
       "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
       "role": "train_only_cv_derivation",
-      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
+      "sha256": "abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2"
     },
     {
       "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
       "role": "derivation_sha256_sidecar",
-      "sha256": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0"
+      "sha256": "2595d233d4903bcea7112456ed9a33084ff198af72b22f04cb4900cc6773a889"
     },
     {
       "criteria_sha256": "e9f1ebc48fe384c2bf28fcb8d3359c54d1faa318dda42a0a518d48bb1be037e2",
@@ -30,7 +57,7 @@
     {
       "path": "tools/training/freeze_hybrid_router_criteria.py",
       "role": "criteria_generator",
-      "sha256": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63"
+      "sha256": "e7d436e679e279af685e26278bcffb708fe84a59ac83285f14f8d0b1614a2ff4"
     },
     {
       "path": "tools/training/freeze_hybrid_router_spec.py",
@@ -559,7 +586,7 @@
     "spec_generator_path": "tools/training/freeze_hybrid_router_spec.py",
     "spec_generator_sha256": "37e790581e98fb0ac24d008f7e4f201bbc766682954cea9710d1474d7a3b3d26",
     "tool_path": "tools/training/freeze_hybrid_router_criteria.py",
-    "tool_sha256": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63"
+    "tool_sha256": "e7d436e679e279af685e26278bcffb708fe84a59ac83285f14f8d0b1614a2ff4"
   },
   "issue": 423,
   "kind": "frozen_hybrid_router_admission_criteria_and_manifest",

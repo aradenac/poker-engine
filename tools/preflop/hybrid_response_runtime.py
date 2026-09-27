@@ -113,7 +113,7 @@ SPEC_PATH = ROOT / "analysis/issue423_hybrid_router/HYBRID_ROUTER_SPEC.json"
 SPEC_SHA256 = "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
 SPEC_SCHEMA = "poker-hybrid-router-spec/v1"
 MANIFEST_PATH = ROOT / "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json"
-MANIFEST_SHA256 = "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+MANIFEST_SHA256 = "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99"
 MANIFEST_SCHEMA = "poker-hybrid-router-criteria-manifest/v1"
 CALIBRATION_REPORT_PATH = (
     ROOT / "analysis/issue423_hybrid_router/GENERALIZED_CALIBRATION_REPORT.json"

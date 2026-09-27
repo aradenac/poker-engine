@@ -2,13 +2,13 @@
   "artifacts": {
     "DECISION.json": {
       "bytes": 29169,
-      "canonical_payload_sha256": "6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5",
+      "canonical_payload_sha256": "cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95",
       "content_addressed": true,
       "media_type": "application/json",
-      "object": "analysis/issue423_hybrid_router/sha256/8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec.json",
+      "object": "analysis/issue423_hybrid_router/sha256/fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd.json",
       "path": "analysis/issue423_hybrid_router/DECISION.json",
       "role": "T9_TERMINAL_DECISION",
-      "sha256": "8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec"
+      "sha256": "fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd"
     },
     "GENERALIZED_CALIBRATION_REPORT.json": {
       "bytes": 243779,
@@ -40,31 +40,31 @@
     },
     "ISSUE367_PREFLIGHT.json": {
       "bytes": 723686,
-      "canonical_payload_sha256": "1dba3a67ed4c985f53a43d72cb4d38b3a68c2dde74d9d635822f56138f14e958",
+      "canonical_payload_sha256": "47f46f539f436cc7f8dd8dd7724935f30f5fd8a505733ecebef79e7779333107",
       "content_addressed": true,
       "declared_digest": {
-        "canonical_payload_sha256": "1dba3a67ed4c985f53a43d72cb4d38b3a68c2dde74d9d635822f56138f14e958",
-        "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+        "canonical_payload_sha256": "47f46f539f436cc7f8dd8dd7724935f30f5fd8a505733ecebef79e7779333107",
+        "sha256": "8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b"
       },
       "media_type": "application/json",
-      "object": "analysis/issue423_hybrid_router/sha256/fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d.json",
+      "object": "analysis/issue423_hybrid_router/sha256/8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b.json",
       "path": "analysis/issue423_hybrid_router/ISSUE367_PREFLIGHT.json",
       "role": "T8_ISSUE367_PREFLIGHT",
-      "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+      "sha256": "8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b"
     },
     "ROUTER_MANIFEST.json": {
-      "bytes": 25278,
-      "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+      "bytes": 27311,
+      "canonical_payload_sha256": "9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961",
       "content_addressed": true,
       "declared_digest": {
-        "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
-        "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+        "canonical_payload_sha256": "9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961",
+        "sha256": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99"
       },
       "media_type": "application/json",
-      "object": "analysis/issue423_hybrid_router/sha256/6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893.json",
+      "object": "analysis/issue423_hybrid_router/sha256/c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99.json",
       "path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
       "role": "T5_FROZEN_CRITERIA_MANIFEST",
-      "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+      "sha256": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99"
     },
     "SPARSE_STRATA_COMPARISON.json": {
       "bytes": 15572,
@@ -84,24 +84,24 @@
       "bytes": 9780,
       "content_addressed": true,
       "media_type": "text/markdown",
-      "object": "analysis/issue423_hybrid_router/sha256/7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397.md",
+      "object": "analysis/issue423_hybrid_router/sha256/c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876.md",
       "path": "analysis/issue423_hybrid_router/SUMMARY.md",
       "role": "T9_SUMMARY",
-      "sha256": "7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397"
+      "sha256": "c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876"
     },
     "TRAIN_CV_ROUTER_REPORT.json": {
       "bytes": 126699,
-      "canonical_payload_sha256": "65d638a3040929d548eabc42813d55763bb23ab0c52720b992ff7722d6688ced",
+      "canonical_payload_sha256": "c350547b3794f8c5727e83fde2f469526fbb6ff62dfa8e3e66da26ce4a361777",
       "content_addressed": true,
       "declared_digest": {
-        "canonical_payload_sha256": "65d638a3040929d548eabc42813d55763bb23ab0c52720b992ff7722d6688ced",
-        "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+        "canonical_payload_sha256": "c350547b3794f8c5727e83fde2f469526fbb6ff62dfa8e3e66da26ce4a361777",
+        "sha256": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052"
       },
       "media_type": "application/json",
-      "object": "analysis/issue423_hybrid_router/sha256/6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082.json",
+      "object": "analysis/issue423_hybrid_router/sha256/072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052.json",
       "path": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
       "role": "T6_TERMINAL_CROSS_FITTED_SCORE",
-      "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+      "sha256": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052"
     }
   },
   "boundary": {
@@ -128,10 +128,10 @@
   },
   "bundle": "analysis/issue423_hybrid_router",
   "decision": {
-    "canonical_payload_sha256": "6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5",
-    "object": "analysis/issue423_hybrid_router/sha256/8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec.json",
+    "canonical_payload_sha256": "cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95",
+    "object": "analysis/issue423_hybrid_router/sha256/fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd.json",
     "path": "analysis/issue423_hybrid_router/DECISION.json",
-    "sha256": "8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec"
+    "sha256": "fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd"
   },
   "digest_verification": {
     "all_recomputed_digests_match_persisted": true,
@@ -188,7 +188,7 @@
       {
         "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
         "declared": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
-        "kind": "byte",
+        "kind": "derivation_projection",
         "match": true,
         "recomputed": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
         "source": "HYBRID_ROUTER_SPEC.frozen_criteria.derivation"
@@ -196,7 +196,7 @@
       {
         "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
         "declared": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
-        "kind": "canonical",
+        "kind": "derivation_projection_canonical",
         "match": true,
         "recomputed": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
         "source": "HYBRID_ROUTER_SPEC.frozen_criteria.derivation"
@@ -227,24 +227,24 @@
       },
       {
         "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
-        "declared": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "declared": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99",
         "kind": "byte",
         "match": true,
-        "recomputed": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "recomputed": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99",
         "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec.manifest"
       },
       {
         "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
-        "declared": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "declared": "9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961",
         "kind": "canonical",
         "match": true,
-        "recomputed": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "recomputed": "9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961",
         "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec.manifest"
       },
       {
         "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
         "declared": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
-        "kind": "byte",
+        "kind": "derivation_projection",
         "match": true,
         "recomputed": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
         "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec.derivation_binding"
@@ -252,7 +252,7 @@
       {
         "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
         "declared": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
-        "kind": "canonical",
+        "kind": "derivation_projection_canonical",
         "match": true,
         "recomputed": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
         "source": "TRAIN_CV_ROUTER_REPORT.frozen_spec.derivation_binding"
@@ -268,7 +268,7 @@
       {
         "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
         "declared": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
-        "kind": "byte",
+        "kind": "derivation_projection",
         "match": true,
         "recomputed": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
         "source": "TRAIN_CV_ROUTER_REPORT.frozen_criteria.derivation"
@@ -276,7 +276,7 @@
       {
         "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
         "declared": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
-        "kind": "canonical",
+        "kind": "derivation_projection_canonical",
         "match": true,
         "recomputed": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
         "source": "TRAIN_CV_ROUTER_REPORT.frozen_criteria.derivation"
@@ -451,18 +451,18 @@
       },
       {
         "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
-        "declared": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "declared": "abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2",
         "kind": "byte",
         "match": true,
-        "recomputed": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630",
+        "recomputed": "abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2",
         "source": "ROUTER_MANIFEST.derivation_inputs[train_only_cv_derivation]"
       },
       {
         "artifact": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
-        "declared": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0",
+        "declared": "2595d233d4903bcea7112456ed9a33084ff198af72b22f04cb4900cc6773a889",
         "kind": "byte",
         "match": true,
-        "recomputed": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0",
+        "recomputed": "2595d233d4903bcea7112456ed9a33084ff198af72b22f04cb4900cc6773a889",
         "source": "ROUTER_MANIFEST.derivation_inputs[derivation_sha256_sidecar]"
       },
       {
@@ -483,10 +483,10 @@
       },
       {
         "artifact": "tools/training/freeze_hybrid_router_criteria.py",
-        "declared": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63",
+        "declared": "e7d436e679e279af685e26278bcffb708fe84a59ac83285f14f8d0b1614a2ff4",
         "kind": "byte",
         "match": true,
-        "recomputed": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63",
+        "recomputed": "e7d436e679e279af685e26278bcffb708fe84a59ac83285f14f8d0b1614a2ff4",
         "source": "ROUTER_MANIFEST.derivation_inputs[criteria_generator]"
       },
       {
@@ -547,10 +547,10 @@
       },
       {
         "artifact": "tools/training/freeze_hybrid_router_criteria.py",
-        "declared": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63",
+        "declared": "e7d436e679e279af685e26278bcffb708fe84a59ac83285f14f8d0b1614a2ff4",
         "kind": "byte",
         "match": true,
-        "recomputed": "711f292888143579a9d28f09529703ef494da554ea0a007f8659a79fd8963f63",
+        "recomputed": "e7d436e679e279af685e26278bcffb708fe84a59ac83285f14f8d0b1614a2ff4",
         "source": "ROUTER_MANIFEST.generated_by"
       },
       {
@@ -643,18 +643,18 @@
       },
       {
         "artifact": "tools/preflop/hybrid_response_runtime.py",
-        "declared": "6f0e655f09219d3eb0ed64169d60e8157683e88e9cbe227ce6452ab3980131c0",
+        "declared": "8a9ddaa377028d83a7bac0e8ff4d7e9e3cf7db1a35fdfbbbe095f5f24ed85895",
         "kind": "byte",
         "match": true,
-        "recomputed": "6f0e655f09219d3eb0ed64169d60e8157683e88e9cbe227ce6452ab3980131c0",
+        "recomputed": "8a9ddaa377028d83a7bac0e8ff4d7e9e3cf7db1a35fdfbbbe095f5f24ed85895",
         "source": "ISSUE367_PREFLIGHT.evidence_bindings.runtime_module_path"
       },
       {
         "artifact": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
-        "declared": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "declared": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052",
         "kind": "byte",
         "match": true,
-        "recomputed": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "recomputed": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052",
         "source": "ISSUE367_PREFLIGHT.evidence_bindings.terminal_report_path"
       },
       {
@@ -691,18 +691,18 @@
       },
       {
         "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
-        "declared": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "declared": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99",
         "kind": "byte",
         "match": true,
-        "recomputed": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "recomputed": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99",
         "source": "ISSUE367_PREFLIGHT.protected_files"
       },
       {
         "artifact": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
-        "declared": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "declared": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052",
         "kind": "byte",
         "match": true,
-        "recomputed": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "recomputed": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052",
         "source": "ISSUE367_PREFLIGHT.protected_files"
       },
       {
@@ -827,18 +827,18 @@
       },
       {
         "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
-        "declared": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "declared": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99",
         "kind": "byte",
         "match": true,
-        "recomputed": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893",
+        "recomputed": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99",
         "source": "ISSUE367_PREFLIGHT.provider.spec.manifest"
       },
       {
         "artifact": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
-        "declared": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "declared": "9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961",
         "kind": "canonical",
         "match": true,
-        "recomputed": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
+        "recomputed": "9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961",
         "source": "ISSUE367_PREFLIGHT.provider.spec.manifest"
       },
       {
@@ -851,10 +851,10 @@
       },
       {
         "artifact": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
-        "declared": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "declared": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052",
         "kind": "byte",
         "match": true,
-        "recomputed": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082",
+        "recomputed": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052",
         "source": "ISSUE367_PREFLIGHT.admission.authority"
       },
       {
@@ -874,7 +874,7 @@
         "source": "ISSUE367_PREFLIGHT.admission.evidence_scope.dataset"
       }
     ],
-    "recomputation_rule": "byte digests are recomputed from the persisted bytes; canonical payload digests from the repository-wide stable_hash of the JSON document with any top-level canonical_payload_sha256 field excluded; the frozen criteria digest from the stable_hash of the persisted criteria block without its criteria_sha256; nested provenance digests from the persisted JSON path that carries them",
+    "recomputation_rule": "byte digests are recomputed from the persisted bytes; canonical payload digests from the repository-wide stable_hash of the JSON document with any top-level canonical_payload_sha256 field excluded; the frozen criteria digest from the stable_hash of the persisted criteria block without its criteria_sha256; the two derivation digests the frozen criteria publish from the frozen projection that neutralises /reuse/router/spec_sha256 (see tools/training/freeze_hybrid_router_criteria.py::derivation_projection), because the raw derivation bytes depend on the spec digest that embeds those criteria; nested provenance digests from the persisted JSON path that carries them",
     "runtime_internal_identifiers_not_recomputable": "per-decision `decision_canonical_sha256`, per-fold calibration `params_sha256` and node identity `node_id`s describe non-persisted runtime documents; they are internal identifiers, never bound as file digests",
     "sidecar_checks": [
       {
@@ -891,11 +891,11 @@
         "artifact": "TRAIN_CV_ROUTER_REPORT.json",
         "canonical_match": true,
         "declared": {
-          "canonical_payload_sha256": "65d638a3040929d548eabc42813d55763bb23ab0c52720b992ff7722d6688ced",
-          "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+          "canonical_payload_sha256": "c350547b3794f8c5727e83fde2f469526fbb6ff62dfa8e3e66da26ce4a361777",
+          "sha256": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052"
         },
         "match": true,
-        "recomputed": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+        "recomputed": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052"
       },
       {
         "artifact": "SPARSE_STRATA_COMPARISON.json",
@@ -921,29 +921,29 @@
         "artifact": "ROUTER_MANIFEST.json",
         "canonical_match": true,
         "declared": {
-          "canonical_payload_sha256": "9a2d02f57f9f4612c7ead47f26fb8bd500c43c9097560bd2c9244008fabc5ce7",
-          "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+          "canonical_payload_sha256": "9c70634f9ea6cf836f0108c5d86da718b85e19c4eb09fbc17c3969bda29b8961",
+          "sha256": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99"
         },
         "match": true,
-        "recomputed": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+        "recomputed": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99"
       },
       {
         "artifact": "ISSUE367_PREFLIGHT.json",
         "canonical_match": true,
         "declared": {
-          "canonical_payload_sha256": "1dba3a67ed4c985f53a43d72cb4d38b3a68c2dde74d9d635822f56138f14e958",
-          "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+          "canonical_payload_sha256": "47f46f539f436cc7f8dd8dd7724935f30f5fd8a505733ecebef79e7779333107",
+          "sha256": "8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b"
         },
         "match": true,
-        "recomputed": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+        "recomputed": "8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b"
       }
     ]
   },
   "evidence_bindings": {
     "DECISION.json": {
-      "object": "analysis/issue423_hybrid_router/sha256/8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec.json",
+      "object": "analysis/issue423_hybrid_router/sha256/fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd.json",
       "path": "analysis/issue423_hybrid_router/DECISION.json",
-      "sha256": "8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec"
+      "sha256": "fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd"
     },
     "GENERALIZED_CALIBRATION_REPORT.json": {
       "object": "analysis/issue423_hybrid_router/sha256/a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd.json",
@@ -956,14 +956,14 @@
       "sha256": "15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075"
     },
     "ISSUE367_PREFLIGHT.json": {
-      "object": "analysis/issue423_hybrid_router/sha256/fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d.json",
+      "object": "analysis/issue423_hybrid_router/sha256/8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b.json",
       "path": "analysis/issue423_hybrid_router/ISSUE367_PREFLIGHT.json",
-      "sha256": "fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d"
+      "sha256": "8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b"
     },
     "ROUTER_MANIFEST.json": {
-      "object": "analysis/issue423_hybrid_router/sha256/6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893.json",
+      "object": "analysis/issue423_hybrid_router/sha256/c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99.json",
       "path": "analysis/issue423_hybrid_router/ROUTER_MANIFEST.json",
-      "sha256": "6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893"
+      "sha256": "c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99"
     },
     "SPARSE_STRATA_COMPARISON.json": {
       "object": "analysis/issue423_hybrid_router/sha256/f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b.json",
@@ -971,15 +971,15 @@
       "sha256": "f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b"
     },
     "TRAIN_CV_ROUTER_REPORT.json": {
-      "object": "analysis/issue423_hybrid_router/sha256/6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082.json",
+      "object": "analysis/issue423_hybrid_router/sha256/072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052.json",
       "path": "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.json",
-      "sha256": "6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082"
+      "sha256": "072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052"
     }
   },
   "generated_by": {
     "frozen_at": "2026-09-26T00:00:00Z",
     "tool_path": "tools/training/build_issue423_evidence_bundle.py",
-    "tool_sha256": "dc56620425573625f94fa4c2b7b8d1130ce33f5c0bda228fa0f36f28dcd28c19"
+    "tool_sha256": "7d50f8e391c9b7f782a244a302ecf6256b883e8b5e69ad6b409484abd2a4e71f"
   },
   "issue": 423,
   "kind": "hybrid_router_evidence_bundle",
@@ -996,9 +996,9 @@
   ],
   "schema": "poker-hybrid-router-evidence-index/v1",
   "summary": {
-    "object": "analysis/issue423_hybrid_router/sha256/7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397.md",
+    "object": "analysis/issue423_hybrid_router/sha256/c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876.md",
     "path": "analysis/issue423_hybrid_router/SUMMARY.md",
-    "sha256": "7c15caf06e1e404063f5f596d3ce2f71b447bd2b986c9de492f5a9837cc43397"
+    "sha256": "c06630fc50df4c7f9d1d130527fb2bb785a94851af8336dd8632a218f2f08876"
   },
   "supporting_evidence": {
     "analysis/issue421_generalized_response/OOD_CALIBRATION_REPORT.json": {
@@ -1023,22 +1023,22 @@
     },
     "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json": {
       "bytes": 72138,
-      "canonical_payload_sha256": "6ba345478b2b407460584ac5779e9247e27214574fef977c6451acc7e3379e2a",
+      "canonical_payload_sha256": "3a69d99d27918644a8c20c8042a345c6d630961d2e6f8b1141f06d817c52cb8a",
       "content_addressed": true,
       "media_type": "application/json",
-      "object": "analysis/issue423_hybrid_router/sha256/519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630.json",
+      "object": "analysis/issue423_hybrid_router/sha256/abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2.json",
       "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
       "role": "T4_TRAIN_ONLY_CV_DERIVATION",
-      "sha256": "519ce5addc849da752512ed8bfa5218f0051fd4bf5898634961b8fbe11974630"
+      "sha256": "abbc09ec485fd59e9603455a82cd724afb3eaa0aec3c1f0245f530d249884ed2"
     },
     "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256": {
       "bytes": 280,
       "content_addressed": true,
       "media_type": "text/plain",
-      "object": "analysis/issue423_hybrid_router/sha256/0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0.sha256",
+      "object": "analysis/issue423_hybrid_router/sha256/2595d233d4903bcea7112456ed9a33084ff198af72b22f04cb4900cc6773a889.sha256",
       "path": "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
       "role": "T4_TRAIN_ONLY_CV_DERIVATION_SHA256",
-      "sha256": "0214c2be7c7751a6a9d5ff3846881637564379e1e1c40ff7e6897f507047fbe0"
+      "sha256": "2595d233d4903bcea7112456ed9a33084ff198af72b22f04cb4900cc6773a889"
     },
     "contracts/training/generalized-response-dataset.schema.json": {
       "bytes": 15267,

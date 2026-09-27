@@ -2,7 +2,7 @@
 
 **RETAIN_REFERENCE_HYBRID_INSUFFICIENT** -- the actual one of the two valid terminal outcomes (`ADMIT_HYBRID_ROUTER_FOR_ANALYSIS` / `RETAIN_REFERENCE_HYBRID_INSUFFICIENT`). On the TRAIN-only, hand-grouped cross-fitted score the routed system passes 4/5 frozen admission criteria and fails `SPARSE_ECE_CEILING`, so the active Model A reference is retained, #367 keeps its currently admitted model and nothing is promoted (`PRODUCT_ADMISSIBLE` is explicitly out of scope).
 
-This bundle persists and content-addresses the eight required #423 artifacts under `analysis/issue423_hybrid_router/sha256/` and binds them in `ARTIFACTS.json`. `DECISION.json` is the terminal decision authored here as a deterministic fold of the frozen evidence (no re-fit, no re-score, no new claim); its byte SHA256 is `8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec` (canonical payload `6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5`).
+This bundle persists and content-addresses the eight required #423 artifacts under `analysis/issue423_hybrid_router/sha256/` and binds them in `ARTIFACTS.json`. `DECISION.json` is the terminal decision authored here as a deterministic fold of the frozen evidence (no re-fit, no re-score, no new claim); its byte SHA256 is `fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd` (canonical payload `cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95`).
 
 ## 1. Decision (both terminal outcomes)
 
@@ -73,12 +73,12 @@ Every digest this bundle persists is recomputed from the persisted bytes: 92 cro
 | artifact | byte SHA256 | canonical payload SHA256 |
 | --- | --- | --- |
 | HYBRID_ROUTER_SPEC.json | `15c14c4ad0acddc65e240673cf8d148e2cd40dfb3d6fc43170ab8c2bb814d075` | `see ARTIFACTS.json` |
-| TRAIN_CV_ROUTER_REPORT.json | `6932802f8bdd26b52be547a3c8682f8de642f41e354cd105987ffb2e029b8082` | `see ARTIFACTS.json` |
+| TRAIN_CV_ROUTER_REPORT.json | `072d83091abf5bfb5b233b3204a16da87de4f5f104e6733f44a758c5bf033052` | `see ARTIFACTS.json` |
 | SPARSE_STRATA_COMPARISON.json | `f9ebfe62c48f36a40b2f50efdf69a373915cce2f8484531bb55e212b25ca656b` | `see ARTIFACTS.json` |
 | GENERALIZED_CALIBRATION_REPORT.json | `a79d89c21610d42f4f083c43d3b7f1f9dfaf6ea5e104be558b3b06704f3be5cd` | `see ARTIFACTS.json` |
-| ROUTER_MANIFEST.json | `6864e3e3e05c0678c6276a26f53a5bc808c03814e48bcee456ef48e6736ef893` | `see ARTIFACTS.json` |
-| ISSUE367_PREFLIGHT.json | `fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d` | `see ARTIFACTS.json` |
-| DECISION.json | `8ad1f92e5328f532dc9c60990afcf866ad380b2cbaffcc58eab20f0a6431f9ec` | `6b3068d73efd4c07498af74cf21650766bf874ca54c1d1ce6fd5a9b6b034d4d5` |
+| ROUTER_MANIFEST.json | `c7c63cc89f76184d974b9764358311b0dc115e9167e8ab230e84e6389381fd99` | `see ARTIFACTS.json` |
+| ISSUE367_PREFLIGHT.json | `8ab43718bc3132341667c89b48868b13587ebde5f959429e91123a237a251f0b` | `see ARTIFACTS.json` |
+| DECISION.json | `fdca3922726b0feee166aac31f585c6305e5687f0243581389e1dbe258862abd` | `cf8a506d44033e477c3b4147c2a3b02395529715510642359b63a2b71d099e95` |
 | SUMMARY.md | `see ARTIFACTS.json` | n/a |
 
 ## 10. Boundaries
