@@ -1,0 +1,127 @@
+{
+  "schema": "hero-model-b-robustness-input/v1",
+  "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+  "provenance": {
+    "synthetic_fixture": true,
+    "real_issue_367_consumed": false,
+    "validation_consumed": false,
+    "test_consumed": false
+  },
+  "information_boundary": {
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "recommendation_consumed": false,
+    "future_cards_consumed": false,
+    "opponent_hole_cards_consumed": false,
+    "route_as_predictive_target": false
+  },
+  "hero_entry": {
+    "decision_id": "synthetic-multi-sizing-001",
+    "context_id": "synthetic-multi-sizing-context-001",
+    "hero_position": "SB",
+    "action": "ISO",
+    "sizing": 5.0,
+    "ev": 1.28,
+    "uncertainty": {
+      "ci95": [1.25, 1.31],
+      "width_bb": 0.06,
+      "source": "synthetic_paired_ci95_v1"
+    },
+    "paired_delta": 0.0,
+    "route_source": "synthetic_robustness_route_iso_5",
+    "support": {
+      "status": "SENSITIVE",
+      "tier": "MEDIUM",
+      "ood": false
+    },
+    "posterior_refs": [
+      "synthetic-posterior-multi-sizing-iso-5-01"
+    ],
+    "alternatives": [
+      {
+        "alternative_id": "ISO@4",
+        "action": "ISO",
+        "sizing": 4.0,
+        "ev": 1.1,
+        "uncertainty": {
+          "ci95": [1.06, 1.14],
+          "width_bb": 0.08,
+          "source": "synthetic_paired_ci95_v1"
+        },
+        "paired_delta": -0.18,
+        "route_source": "synthetic_robustness_route_iso_4",
+        "support": {
+          "status": "SENSITIVE",
+          "tier": "MEDIUM",
+          "ood": false
+        },
+        "posterior_refs": [
+          "synthetic-posterior-multi-sizing-iso-4-01"
+        ]
+      },
+      {
+        "alternative_id": "ISO@6",
+        "action": "ISO",
+        "sizing": 6.0,
+        "ev": 0.91,
+        "uncertainty": {
+          "ci95": [0.87, 0.95],
+          "width_bb": 0.08,
+          "source": "synthetic_paired_ci95_v1"
+        },
+        "paired_delta": -0.37,
+        "route_source": "synthetic_robustness_route_iso_6",
+        "support": {
+          "status": "SENSITIVE",
+          "tier": "MEDIUM",
+          "ood": false
+        },
+        "posterior_refs": [
+          "synthetic-posterior-multi-sizing-iso-6-01"
+        ]
+      },
+      {
+        "alternative_id": "OVERLIMP@1",
+        "action": "OVERLIMP",
+        "sizing": 1.0,
+        "ev": 0.26,
+        "uncertainty": {
+          "ci95": [0.22, 0.3],
+          "width_bb": 0.08,
+          "source": "synthetic_paired_ci95_v1"
+        },
+        "paired_delta": -1.02,
+        "route_source": "synthetic_robustness_route_overlimp_1",
+        "support": {
+          "status": "CONSISTENT",
+          "tier": "HIGH",
+          "ood": false
+        },
+        "posterior_refs": [
+          "synthetic-posterior-multi-sizing-overlimp-1-01"
+        ]
+      },
+      {
+        "alternative_id": "FOLD",
+        "action": "FOLD",
+        "sizing": null,
+        "ev": -0.02,
+        "uncertainty": {
+          "ci95": [-0.06, 0.02],
+          "width_bb": 0.08,
+          "source": "synthetic_paired_ci95_v1"
+        },
+        "paired_delta": -1.3,
+        "route_source": "synthetic_robustness_route_fold",
+        "support": {
+          "status": "CONSISTENT",
+          "tier": "HIGH",
+          "ood": false
+        },
+        "posterior_refs": [
+          "synthetic-posterior-multi-sizing-fold-01"
+        ]
+      }
+    ]
+  }
+}
