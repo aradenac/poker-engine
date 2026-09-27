@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import json
+import os
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -8,8 +11,255 @@ ROOT = Path(__file__).resolve().parents[2]
 PAIRS = (
     ("src/analytics/leak-analyzer.js", "site/analytics/leak-analyzer.js"),
     ("src/analytics/review-score-adapter.js", "site/analytics/review-score-adapter.js"),
+    ("src/analytics/review-confidence-formatter.js", "site/analytics/review-confidence-formatter.js"),
     ("src/analytics/review-inbox.js", "site/analytics/review-inbox.js"),
 )
+
+# #424 T4 — the advanced (confidence/provenance) view is a per-item panel painted
+# by the *real* served source against a minimal measured DOM: the plain row must
+# stay exactly `[open, status]` (no panel, no toggle, no provenance), the hybrid
+# row must carry a panel that is `hidden` until the explicit toggle opens it, and
+# every displayed value must come from the mirrored formatter. Non-vacuity is
+# replayed: two in-memory mutations of the served bytes must each break the
+# harness, so a panel promoted into the simple view or opened by default fails
+# here instead of passing on a weaker guard.
+ADVANCED_VIEW_RUNTIME = r"""
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+
+let source=fs.readFileSync('site/index.html','utf8');
+const formatterSource=fs.readFileSync('site/analytics/review-confidence-formatter.js','utf8');
+
+// The two regressions the static contract must not accept silently: a panel
+// painted opened, and a panel promoted into the row of a hand with no hybrid.
+const MUTATIONS={
+  'default-open':['panel.hidden=!reviewInboxAdvancedIsOpen(handId);','panel.hidden=false;'],
+  'ungated':['if(item.hybrid){','if(true){'],
+};
+const mutation=process.env.ADVANCED_VIEW_MUTATION||'';
+if(mutation){
+  const [token,replacement]=MUTATIONS[mutation];
+  assert.ok(token&&replacement,'unknown mutation: '+mutation);
+  assert.equal(source.split(token).length-1,1,'mutation token must occur exactly once: '+mutation);
+  source=source.replace(token,replacement);
+}
+
+function extractFn(src,name){
+  const start=src.indexOf('function '+name+'(');
+  if(start<0)throw new Error('missing '+name);
+  let cursor=src.indexOf('(',start+'function '.length),depth=0;
+  for(;cursor<src.length;cursor++){
+    const ch=src[cursor];
+    if(ch==='(')depth++;
+    else if(ch===')'){depth--;if(depth===0)break;}
+  }
+  cursor=src.indexOf('{',cursor);depth=0;
+  for(;cursor<src.length;cursor++){
+    const ch=src[cursor];
+    if(ch==='{')depth++;
+    else if(ch==='}'){depth--;if(depth===0)return src.slice(start,cursor+1);}
+  }
+  throw new Error('unbalanced '+name);
+}
+
+// Minimal DOM: only what `paintReviewInboxRows` and the advanced panel touch.
+function makeElement(tag){
+  return {
+    tagName:String(tag),className:'',id:'',hidden:false,textContent:'',innerHTML:'',
+    children:[],handlers:{},attrs:{},dataset:{},
+    append(...nodes){for(const node of nodes)this.children.push(node);},
+    appendChild(node){this.children.push(node);return node;},
+    setAttribute(name,value){this.attrs[String(name)]=String(value);},
+    getAttribute(name){
+      return Object.prototype.hasOwnProperty.call(this.attrs,String(name))?this.attrs[String(name)]:null;
+    },
+    addEventListener(type,handler){(this.handlers[type]=this.handlers[type]||[]).push(handler);},
+    querySelector(){return null;},
+    click(){for(const handler of this.handlers.click||[])handler({});},
+  };
+}
+function findAll(node,className,out=[]){
+  for(const child of node.children||[]){
+    if(String(child.className||'').split(/\s+/).includes(className))out.push(child);
+    findAll(child,className,out);
+  }
+  return out;
+}
+function flatText(node){
+  return [String(node.textContent||''),...(node.children||[]).map(flatText)].join(' ');
+}
+
+const hhHandsEl=makeElement('div');
+Object.defineProperty(hhHandsEl,'innerHTML',{
+  get(){return '';},
+  set(value){if(!value)this.children=[];},
+});
+
+const sandbox={
+  console,Set,String,Number,Boolean,Math,JSON,
+  document:{createElement:makeElement},
+  hhHandsEl,
+  state:{selectedHand:null},
+  escapeHtml:s=>String(s==null?'':s),
+  formatBB:v=>Number(v).toFixed(2)+' BB',
+  reviewHandDisplayMeta:()=>({hero_cards:'A K',result:{state:'win',text:'Gagne'}}),
+  modelBRobustnessViewForDecision:()=>null,
+  modelBRobustnessStatusText:()=>'robustesse indisponible',
+  openReviewInboxItem:()=>{},
+  setReviewInboxReviewed:()=>{},
+};
+vm.createContext(sandbox);
+vm.runInContext('var window=globalThis;',sandbox);
+vm.runInContext(formatterSource,sandbox);
+assert.ok(sandbox.window.PokerReviewConfidenceFormatter,'the mirrored formatter must expose its API');
+
+// The two served inbox-level declarations are replayed from the served bytes,
+// never re-typed here: the open state must be the served `Set` and the
+// abstention wording the served literal.
+function servedConst(name){
+  const match=source.match(new RegExp('^const '+name+'=(.*);$','m'));
+  assert.ok(match,'missing served constant: '+name);
+  return match[1];
+}
+vm.runInContext([
+  'const REVIEW_INBOX_ADVANCED_OPEN='+servedConst('REVIEW_INBOX_ADVANCED_OPEN')+';',
+  'const REVIEW_INBOX_ADVANCED_ABSTENTION='+servedConst('REVIEW_INBOX_ADVANCED_ABSTENTION')+';',
+  ...[
+    'reviewInboxAdvancedIsOpen','reviewInboxAdvancedFormatter','reviewInboxAdvancedProvenance',
+    'reviewInboxAdvancedView','reviewInboxAdvancedModelLabel','reviewInboxAdvancedOodLabel',
+    'reviewInboxAdvancedField','reviewInboxAdvancedPanel','toggleReviewInboxAdvanced','paintReviewInboxRows',
+  ].map(name=>extractFn(source,name)),
+].join('\n'),sandbox);
+
+const hybrid={
+  schema:'poker-review-hybrid-result/v1',support_state:'SPARSE_ESTIMATED',confidence_level:'MEDIUM',
+  is_estimate:true,ev_bb:-0.35,uncertainty_note:'Intervalle large sur cet \u00e9chantillon',
+  abstains:false,abstention_reason:null,too_close:false,
+  provenance:{route:'HYBRID_BACKOFF',source:'model_b+model_a',model_id:'gbm-2026-09',model_hash:'sha256:abcd',ood_status:'IN_DISTRIBUTION',ood_reason:null},
+};
+const plainItem={hand_id:'10',status:'TO_REVIEW',status_label:'A revoir',
+  coverage:{decisions_covered:1,decisions_total:2,decisions_comparable:1},
+  analysis_state:{state:'ANALYSE_DISPONIBLE',reason_codes:[]},
+  costliest_decision:{loss_bb:0.5},action_played:'call',action_recommended:'fold',
+  position:'IP',spot_family:'SRP',main_street:'Flop',user_review:{reviewed:false}};
+
+function paint(items){
+  hhHandsEl.children=[];
+  sandbox.paintReviewInboxRows(items.map(item=>({id:Number(item.hand_id)})),new Map(items.map(item=>[String(item.hand_id),item])));
+  return hhHandsEl.children;
+}
+function fieldValues(panel){
+  const map={};
+  for(const field of findAll(panel,'review-inbox-advanced-field')){
+    map[String(field.children[0].textContent)]=String(field.children[1].textContent);
+  }
+  return map;
+}
+
+// 1. The simple view stays simple: a hand without `hybrid` keeps exactly its
+//    `[open, status]` row, with no panel, no toggle and no provenance text.
+{
+  const rows=paint([plainItem]);
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].children.length,2,'la rangee simple garde exactement [open,status]');
+  assert.equal(findAll(rows[0],'review-inbox-advanced').length,0,'aucun panneau sans hybrid');
+  assert.equal(findAll(rows[0],'review-inbox-advanced-toggle').length,0,'aucun toggle sans hybrid');
+  for(const leaked of ['HYBRID_BACKOFF','sha256:abcd','model_b+model_a','Intervalle large']){
+    assert.ok(!flatText(rows[0]).includes(leaked),'la vue simple ne peint pas '+leaked);
+  }
+}
+
+// 2. A hybrid hand carries the collapsed panel and the explicit toggle; the
+//    toggle only lives in the status cell, never inside the row action.
+{
+  const hybridItem={...plainItem,hand_id:'11',hybrid};
+  const rows=paint([hybridItem]);
+  assert.equal(rows[0].children.length,3);
+  const panel=findAll(rows[0],'review-inbox-advanced')[0];
+  const toggle=findAll(rows[0],'review-inbox-advanced-toggle')[0];
+  assert.ok(panel&&toggle,'panneau et toggle presents');
+  assert.equal(panel.hidden,true,'le panneau est replie par defaut');
+  assert.equal(toggle.getAttribute('aria-expanded'),'false');
+  assert.equal(toggle.getAttribute('aria-controls'),panel.id);
+  assert.equal(toggle.textContent,'D\u00e9tails avanc\u00e9s');
+  assert.ok(findAll(rows[0].children[1],'review-inbox-advanced-toggle').length===1,'le toggle vit dans la cellule statut');
+  assert.ok(!flatText(rows[0].children[0]).includes('sha256:abcd'),'la rangee simple ne peint pas le hash du modele');
+
+  // The displayed values are the formatter outputs, never a local recomputation.
+  const values=fieldValues(panel);
+  assert.deepEqual(Object.keys(values),[
+    'Support','Confiance','EV','Note d\u2019incertitude','Abstention / verdict','Route','Source','Mod\u00e8le','OOD',
+  ]);
+  assert.equal(values['Support'],'Support limit\u00e9 (estimation)');
+  assert.equal(values['Confiance'],'Confiance moyenne');
+  assert.equal(values['EV'],'\u2248 -0.35 bb (estimation)');
+  assert.equal(values['Note d\u2019incertitude'],'Intervalle large sur cet \u00e9chantillon');
+  assert.equal(values['Abstention / verdict'],'\u2014');
+  assert.equal(values['Route'],'HYBRID_BACKOFF');
+  assert.equal(values['Source'],'model_b+model_a');
+  assert.equal(values['Mod\u00e8le'],'gbm-2026-09 \u00b7 sha256:abcd');
+  assert.equal(values['OOD'],'IN_DISTRIBUTION');
+  assert.ok(findAll(panel,'tone-caution').length>=1,'le support estim\u00e9 porte son ton');
+
+  // The explicit action opens and closes the panel, following `aria-expanded`.
+  toggle.click();
+  assert.equal(panel.hidden,false,'le toggle ouvre le panneau');
+  assert.equal(toggle.getAttribute('aria-expanded'),'true');
+  assert.equal(toggle.textContent,'Masquer les d\u00e9tails');
+  toggle.click();
+  assert.equal(panel.hidden,true,'le toggle referme le panneau');
+  assert.equal(toggle.getAttribute('aria-expanded'),'false');
+
+  // An opened panel survives the repaint of a pager step.
+  toggle.click();
+  const repainted=paint([hybridItem]);
+  assert.equal(findAll(repainted[0],'review-inbox-advanced')[0].hidden,false,'un panneau ouvert reste ouvert apres repaint');
+}
+
+// 3. Abstention and too-close verdicts keep their dedicated, non-actionable
+//    wording on top of the support state.
+{
+  const abstain={...plainItem,hand_id:'12',hybrid:{...hybrid,abstains:true,support_state:'OOD_UNSUPPORTED'}};
+  const abstainValues=fieldValues(findAll(paint([abstain])[0],'review-inbox-advanced')[0]);
+  assert.equal(abstainValues['Support'],'Hors distribution (non support\u00e9)');
+  assert.equal(abstainValues['Abstention / verdict'],'Abstention \u00b7 aucune action mise en avant');
+  assert.doesNotMatch(abstainValues['Abstention / verdict'],/\b(recommand|conseil|jouer|folder|call|raise)\w*/i);
+
+  const close={...plainItem,hand_id:'13',hybrid:{...hybrid,too_close:true,support_state:'LOW_CONFIDENCE_TOO_CLOSE'}};
+  const closeValues=fieldValues(findAll(paint([close])[0],'review-inbox-advanced')[0]);
+  assert.equal(closeValues['Support'],'Verdict trop proche');
+  assert.match(closeValues['Abstention / verdict'],/trop proche/i);
+}
+
+// 4. Without the mirrored formatter the panel fabricates nothing: it stays
+//    collapsed and empty instead of rendering a invented support state.
+{
+  delete sandbox.window.PokerReviewConfidenceFormatter;
+  const rows=paint([{...plainItem,hand_id:'14',hybrid:{...hybrid}}]);
+  const panel=findAll(rows[0],'review-inbox-advanced')[0];
+  assert.equal(panel.hidden,true);
+  assert.equal(panel.children.length,0,'aucune valeur fabriquee sans formateur');
+}
+
+// 5. A hybrid projection without provenance fabricates no trace either: the
+//    decision fields render, every absent provenance cell keeps its placeholder.
+{
+  // Step 4 removed the formatter; reload the served module for the last case.
+  vm.runInContext(formatterSource,sandbox);
+  assert.ok(sandbox.window.PokerReviewConfidenceFormatter,'the formatter is served again');
+  const bare={...plainItem,hand_id:'15',hybrid:{support_state:'ROBUST',confidence_level:'HIGH',ev_bb:0.5}};
+  const values=fieldValues(findAll(paint([bare])[0],'review-inbox-advanced')[0]);
+  assert.equal(values['Support'],'Support robuste');
+  assert.equal(values['Confiance'],'Confiance \u00e9lev\u00e9e');
+  assert.equal(values['EV'],'0.50 bb');
+  for(const key of ['Note d\u2019incertitude','Abstention / verdict','Route','Source','Mod\u00e8le','OOD']){
+    assert.equal(values[key],'\u2014','aucune provenance inventee pour '+key);
+  }
+}
+
+process.stdout.write(JSON.stringify({status:'PASS',mutation:mutation||null}));
+"""
 
 
 def select_option_values(html: str, element_id: str) -> list:
@@ -19,11 +269,45 @@ def select_option_values(html: str, element_id: str) -> list:
     return re.findall(r'<option value="([^"]*)"', block)
 
 
+def run_advanced_view_runtime(mutation: str | None = None) -> subprocess.CompletedProcess:
+    """Drive the served row painter (and its advanced panel) on a minimal DOM."""
+    node = shutil.which("node")
+    assert node is not None, "node runtime is required for the review inbox advanced-view contract"
+    env = dict(os.environ)
+    if mutation:
+        env["ADVANCED_VIEW_MUTATION"] = mutation
+    else:
+        env.pop("ADVANCED_VIEW_MUTATION", None)
+    return subprocess.run(
+        [node, "-e", ADVANCED_VIEW_RUNTIME],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
 def main() -> None:
     for source, runtime in PAIRS:
         source_text = (ROOT / source).read_text(encoding="utf-8")
         runtime_text = (ROOT / runtime).read_text(encoding="utf-8")
         assert runtime_text == source_text, (source, runtime)
+
+    # #424 T4 — runtime invariance of the advanced view: the real served
+    # `paintReviewInboxRows` source is executed against a minimal measured DOM
+    # (no browser, no server). The simple row stays `[open, status]`, the hybrid
+    # row carries a collapsed panel opened only by its toggle, and the displayed
+    # values are the mirrored formatter outputs. Two in-memory mutations of the
+    # served bytes are replayed to prove the harness is not vacuous.
+    base = run_advanced_view_runtime()
+    assert base.returncode == 0, base.stderr
+    assert json.loads(base.stdout)["mutation"] is None, base.stdout
+    for regression in ("default-open", "ungated"):
+        mutated = run_advanced_view_runtime(regression)
+        assert mutated.returncode != 0, (
+            f"the {regression} regression must fail the advanced-view harness",
+            mutated.stdout,
+        )
 
     index = (ROOT / "site/index.html").read_text(encoding="utf-8")
     assert '<script src="./analytics/analysis-state.js"></script>' in index
@@ -31,6 +315,15 @@ def main() -> None:
     assert '<script src="./analytics/leak-analyzer.js"></script>' in index
     assert '<script src="./analytics/review-score-adapter.js"></script>' in index
     assert '<script src="./analytics/review-inbox.js"></script>' in index
+    # #424 T4 — the advanced (confidence/provenance) view is served by its own
+    # mirrored module, loaded after the adapter that carries the `hybrid`
+    # projection and before the inbox layer that paints it.
+    assert '<script src="./analytics/review-confidence-formatter.js"></script>' in index
+    assert (
+        index.index('<script src="./analytics/review-score-adapter.js"></script>')
+        < index.index('<script src="./analytics/review-confidence-formatter.js"></script>')
+        < index.index('<script src="./analytics/review-inbox.js"></script>')
+    )
     assert "Inbox.queryInbox(inbox,reviewInboxFiltersInput(),reviewInboxSortMode())" in index
     assert "Inbox.setReviewed" in index
     assert 'REVIEW_INBOX_METADATA_DB_KEY="reviewInboxUserMetadataByScope"' in index
@@ -203,6 +496,92 @@ def main() -> None:
     assert "item.analysis_state_label||analysisState?.state||item.status_label" in row_paint
     assert "Support ${item.coverage?.decisions_covered??0}/${item.coverage?.decisions_total??0}" in row_paint
     assert "row.append(open,status);" in row_paint
+
+    # #424 T4 — la vue avancée est un panneau *par item*, construit par des
+    # fonctions dédiées, à partir de la seule projection `hybrid` déjà décidée en
+    # amont (le formateur mirroir n'est jamais exécuté à la place du modèle : il
+    # ne fait que formater). Elle affiche support_state, confidence_level, EV
+    # formaté, uncertainty_note, abstention / verdict trop proche et la
+    # provenance (route / source / modèle id-hash / OOD).
+    formatter = (ROOT / "src/analytics/review-confidence-formatter.js").read_text(encoding="utf-8")
+    assert "root.PokerReviewConfidenceFormatter=api;" in formatter
+    for exposed in (
+        "formatSupportStateLabel",
+        "formatConfidenceLevel",
+        "formatEvDisplay",
+        "formatAbstentionReason",
+        "formatTooCloseNotice",
+        "formatAdvancedProvenance",
+    ):
+        assert f"{exposed}," in formatter, exposed
+    assert "window.PokerReviewConfidenceFormatter" in index
+    for declared in (
+        "function reviewInboxAdvancedFormatter(",
+        "function reviewInboxAdvancedProvenance(",
+        "function reviewInboxAdvancedView(",
+        "function reviewInboxAdvancedModelLabel(",
+        "function reviewInboxAdvancedOodLabel(",
+        "function reviewInboxAdvancedField(",
+        "function reviewInboxAdvancedPanel(",
+        "function toggleReviewInboxAdvanced(",
+    ):
+        assert declared in index, declared
+    for consumed in (
+        "Formatter.formatSupportStateLabel(hybrid.support_state)",
+        "Formatter.formatConfidenceLevel(hybrid.confidence_level)",
+        "Formatter.formatEvDisplay(hybrid)",
+        "Formatter.formatAbstentionReason(hybrid)",
+        "Formatter.formatTooCloseNotice(hybrid)",
+        "Formatter.formatAdvancedProvenance(item?.hybrid||null)",
+    ):
+        assert consumed in index, consumed
+    # Les marqueurs de la vue avancée, au gabarit servi : chacun des champs
+    # demandés a sa ligne, et la provenance est nommée explicitement.
+    advanced_panel = index[index.index("function reviewInboxAdvancedPanel("):index.index("function toggleReviewInboxAdvanced(")]
+    for field in ("Support", "Confiance", "EV", "Note d’incertitude", "Abstention / verdict", "Route", "Source", "Modèle", "OOD"):
+        assert f'reviewInboxAdvancedField("{field}"' in advanced_panel, field
+    assert 'reviewInboxAdvancedField("Modèle",reviewInboxAdvancedModelLabel(view.provenance))' in advanced_panel
+    assert 'reviewInboxAdvancedField("OOD",reviewInboxAdvancedOodLabel(view.provenance))' in advanced_panel
+    assert 'panel.className="review-inbox-advanced";' in advanced_panel
+    assert "panel.dataset.reviewInboxAdvanced=String(handId||\"\");" in advanced_panel
+
+    # La vue simple reste la vue par défaut : le panneau est peint *replié* et
+    # seul le toggle explicite peut l'ouvrir. Le gabarit de rangée ne contient
+    # aucun marqueur de provenance, et une main sans projection hybride ne reçoit
+    # ni bouton ni panneau (rien n'est fabriqué à partir de l'absence).
+    assert "const REVIEW_INBOX_ADVANCED_OPEN=new Set();" in index
+    assert 'const REVIEW_INBOX_ADVANCED_ABSTENTION="Abstention · aucune action mise en avant";' in index
+    assert "return REVIEW_INBOX_ADVANCED_OPEN.has(String(handId||\"\"));" in index
+    assert "panel.hidden=!reviewInboxAdvancedIsOpen(handId);" in advanced_panel
+    toggle = index[index.index("function toggleReviewInboxAdvanced("):index.index("function paintReviewInboxRows(")]
+    assert "REVIEW_INBOX_ADVANCED_OPEN.add(id)" in toggle
+    assert "REVIEW_INBOX_ADVANCED_OPEN.delete(id)" in toggle
+    assert 'button.setAttribute("aria-expanded",String(!open));' in toggle
+    assert 'button.textContent=open?"Détails avancés":"Masquer les détails";' in toggle
+    row_template = row_paint[row_paint.index("open.innerHTML=`"):row_paint.index("`;", row_paint.index("open.innerHTML=`"))]
+    for advanced_only in ("model_hash", "model_id", "ood_status", "uncertainty_note", "provenance", "review-inbox-advanced"):
+        assert advanced_only not in row_template, advanced_only
+    assert "if(item.hybrid){" in row_paint
+    advanced_row = row_paint[row_paint.index("if(item.hybrid){"):]
+    for token in (
+        "const advanced=reviewInboxAdvancedPanel(item,h.id);",
+        'advancedToggle.type="button";advancedToggle.className="review-inbox-advanced-toggle";',
+        'advancedToggle.setAttribute("aria-controls",advanced.id);',
+        'advancedToggle.setAttribute("aria-expanded",String(reviewInboxAdvancedIsOpen(h.id)));',
+        'advancedToggle.addEventListener("click",()=>toggleReviewInboxAdvanced(h.id,advancedToggle,advanced));',
+        "status.append(advancedToggle);",
+        "row.append(advanced);",
+    ):
+        assert token in advanced_row, token
+
+    # Le CSS ne doit jamais neutraliser l'attribut `hidden` : le `display:grid`
+    # n'est déclaré que sur l'état déplié, donc la rangée simple ne réserve aucune
+    # hauteur au détail avancé (la cible de pagination du shell reste mesurée sur
+    # la même géométrie déclarée).
+    assert ".review-inbox-advanced{grid-column:1/-1;" in index
+    assert ".review-inbox-advanced:not([hidden]){display:grid;" in index
+    assert ".review-inbox-advanced-toggle[aria-expanded=\"true\"]" in index
+    assert ".review-inbox-status:has(.review-inbox-advanced-toggle){flex-wrap:wrap}" in index
 
     # #394 T3/T1: Review is a dedicated view made of exactly three panes — the
     # pilotage dashboard, the import surface and the review inbox. The import

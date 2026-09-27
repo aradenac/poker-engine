@@ -24,6 +24,9 @@
         "site/analytics/model-b-robustness.js": {
           "git_blob_sha": "740a02d9bb9c0f6a2b37fc9c0904bd7aa374a8eb"
         },
+        "site/analytics/review-confidence-formatter.js": {
+          "git_blob_sha": "77169c91e0286084ca184bfc33e866cadc906ea3"
+        },
         "site/analytics/review-dashboard.js": {
           "git_blob_sha": "ed9983e978e2ab7ab2c4959d40bb6a0a6fb54add"
         },
@@ -61,7 +64,7 @@
           "git_blob_sha": "211bf60f5dbc8b14794554cc763059fabf58948d"
         },
         "site/index.html": {
-          "git_blob_sha": "367b5eb1c4482d97ddea116946d676f86b860a1a"
+          "git_blob_sha": "bdb751d478755de84f526b4e4fcf6e779332a563"
         },
         "site/pack-identity.js": {
           "git_blob_sha": "fa3fb310e75cff31bf7abe34ec8c83fc3de410ea"

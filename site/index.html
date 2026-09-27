@@ -260,6 +260,24 @@
   .review-inbox-status-badge.incomplete{border-color:rgba(241,198,109,.38);color:#f1c66d}
   .review-inbox-reviewed-toggle{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:8px;white-space:nowrap}
   .review-inbox-reviewed-toggle input{width:auto}
+  /* #424 T4 — vue avancée d'une main : repliée par défaut, la rangée simple ne
+     peint ni route, ni hash de modèle, ni note d'incertitude. Le `:not([hidden])`
+     est volontaire : le `display:grid` déclaré ne doit jamais neutraliser
+     l'attribut `hidden`, sinon la vue simple afficherait le détail sans action. */
+  .review-inbox-advanced-toggle{display:inline-flex;align-items:center;gap:4px;width:auto;padding:2px 6px;
+    border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--muted);font-size:8px;font-weight:800}
+  .review-inbox-advanced-toggle[aria-expanded="true"]{border-color:rgba(92,225,185,.38);color:var(--accent2)}
+  .review-inbox-advanced{grid-column:1/-1;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:#0d1627;color:var(--muted)}
+  .review-inbox-advanced:not([hidden]){display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 10px}
+  .review-inbox-advanced-field{min-width:0}
+  .review-inbox-advanced-field span{display:block;font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .review-inbox-advanced-field b{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:var(--text);word-break:break-word}
+  .review-inbox-advanced-field.tone-positive b{color:var(--accent2)}
+  .review-inbox-advanced-field.tone-caution b{color:#f1c66d}
+  .review-inbox-advanced-field.tone-abstain b{color:var(--muted)}
+  /* La cellule statut reste sur une ligne pour la vue simple : seul un panneau
+     avancé (donc une main hybridée) fait replier le toggle sous le badge. */
+  .review-inbox-status:has(.review-inbox-advanced-toggle){flex-wrap:wrap}
   @media(max-width:900px){
     .review-inbox-row{grid-template-columns:minmax(0,1fr) 132px}
     .review-inbox-open{grid-template-columns:126px 90px 1fr}
@@ -1865,6 +1883,7 @@
 <script src="./analytics/analysis-state.js"></script>
 <script src="./analytics/leak-analyzer.js"></script>
 <script src="./analytics/review-score-adapter.js"></script>
+<script src="./analytics/review-confidence-formatter.js"></script>
 <script src="./analytics/review-inbox.js"></script>
 <script src="./analytics/leak-training-target.js"></script>
 <script src="./training/leak-scenario-selector.js"></script>
@@ -7376,6 +7395,99 @@ function renderReviewInboxPage(hands,byId){
   state.reviewInboxPageSize=Math.max(1,size);
   updateReviewInboxPager({page:pageWindow.page,pages:pageWindow.pages,total:hands.length,first:pageWindow.start,last:pageWindow.end});
 }
+/* #424 T4 — vue avancée d'un item de Review Inbox. C'est une couche de
+   présentation pure : elle ne lit que la projection `hybrid`
+   (`poker-review-hybrid-result/v1`) déjà décidée en amont, à travers
+   `review-confidence-formatter.js`. Aucun EV, aucun support et aucune
+   probabilité ne sont recalculés ici. Le panneau reste replié par défaut : la
+   rangée simple ne peint ni route, ni hash de modèle, ni note d'incertitude tant
+   que l'utilisateur n'a pas déplié le détail (action explicite). Une main sans
+   projection hybride ne reçoit ni bouton ni panneau : rien n'est fabriqué à
+   partir de l'absence. */
+const REVIEW_INBOX_ADVANCED_OPEN=new Set();
+const REVIEW_INBOX_ADVANCED_ABSTENTION="Abstention · aucune action mise en avant";
+function reviewInboxAdvancedIsOpen(handId){
+  return REVIEW_INBOX_ADVANCED_OPEN.has(String(handId||""));
+}
+function reviewInboxAdvancedFormatter(){
+  return window.PokerReviewConfidenceFormatter||null;
+}
+function reviewInboxAdvancedProvenance(item){
+  const Formatter=reviewInboxAdvancedFormatter();
+  if(!Formatter?.formatAdvancedProvenance)return null;
+  return Formatter.formatAdvancedProvenance(item?.hybrid||null);
+}
+function reviewInboxAdvancedView(item){
+  const Formatter=reviewInboxAdvancedFormatter(),hybrid=item?.hybrid||null;
+  if(!Formatter||!hybrid)return null;
+  const provenance=reviewInboxAdvancedProvenance(item);
+  const support=Formatter.formatSupportStateLabel(hybrid.support_state);
+  const abstentionReason=Formatter.formatAbstentionReason(hybrid);
+  const tooClose=Formatter.formatTooCloseNotice(hybrid);
+  // L'état d'abstention est lu sur les entrées autoritaires (`abstains`,
+  // `support_state`) ; il n'est jamais déduit de l'EV ni d'un texte de raison.
+  const abstains=hybrid.abstains===true||String(hybrid.abstains||"").toUpperCase()==="TRUE"||provenance?.support_state===Formatter.SUPPORT_STATES.OOD_UNSUPPORTED;
+  return {
+    support_state:provenance?.support_state||null,
+    support_state_label:support.label_fr,
+    support_state_tone:support.tone,
+    confidence_level:Formatter.formatConfidenceLevel(hybrid.confidence_level),
+    ev_display:Formatter.formatEvDisplay(hybrid),
+    uncertainty_note:provenance?.uncertainty_note||"",
+    abstention_reason:abstentionReason,
+    too_close_notice:tooClose,
+    verdict:tooClose||abstentionReason||(abstains?REVIEW_INBOX_ADVANCED_ABSTENTION:""),
+    provenance
+  };
+}
+function reviewInboxAdvancedModelLabel(provenance){
+  const id=provenance?.model_id||null,hash=provenance?.model_hash||null;
+  if(id&&hash)return `${id} · ${hash}`;
+  return id||hash||"";
+}
+function reviewInboxAdvancedOodLabel(provenance){
+  const status=provenance?.ood_status||null,reason=provenance?.ood_reason||null;
+  if(status&&reason)return `${status} · ${reason}`;
+  return status||reason||"";
+}
+function reviewInboxAdvancedField(label,value,tone){
+  const field=document.createElement("div");
+  field.className="review-inbox-advanced-field"+(tone?` tone-${tone}`:"");
+  const name=document.createElement("span");name.textContent=label;
+  const text=document.createElement("b");text.textContent=value||"—";
+  field.append(name,text);
+  return field;
+}
+function reviewInboxAdvancedPanel(item,handId){
+  const panel=document.createElement("div");
+  panel.className="review-inbox-advanced";
+  panel.id=`reviewInboxAdvanced${String(handId||"")}`;
+  panel.dataset.reviewInboxAdvanced=String(handId||"");
+  // Replié par défaut : seul `toggleReviewInboxAdvanced` peut l'ouvrir.
+  panel.hidden=!reviewInboxAdvancedIsOpen(handId);
+  const view=reviewInboxAdvancedView(item);
+  if(!view)return panel;
+  panel.append(
+    reviewInboxAdvancedField("Support",view.support_state_label,view.support_state_tone),
+    reviewInboxAdvancedField("Confiance",view.confidence_level),
+    reviewInboxAdvancedField("EV",view.ev_display),
+    reviewInboxAdvancedField("Note d’incertitude",view.uncertainty_note),
+    reviewInboxAdvancedField("Abstention / verdict",view.verdict),
+    reviewInboxAdvancedField("Route",view.provenance?.route),
+    reviewInboxAdvancedField("Source",view.provenance?.source),
+    reviewInboxAdvancedField("Modèle",reviewInboxAdvancedModelLabel(view.provenance)),
+    reviewInboxAdvancedField("OOD",reviewInboxAdvancedOodLabel(view.provenance))
+  );
+  return panel;
+}
+function toggleReviewInboxAdvanced(handId,button,panel){
+  const id=String(handId||""),open=!panel.hidden;
+  if(open)REVIEW_INBOX_ADVANCED_OPEN.delete(id);else REVIEW_INBOX_ADVANCED_OPEN.add(id);
+  panel.hidden=open;
+  button.setAttribute("aria-expanded",String(!open));
+  button.textContent=open?"Détails avancés":"Masquer les détails";
+  return !open;
+}
 function paintReviewInboxRows(pageHands,byId){
   hhHandsEl.innerHTML="";
   for(const h of pageHands){
@@ -7410,6 +7522,20 @@ function paintReviewInboxRows(pageHands,byId){
     status.innerHTML=`<span class="review-inbox-status-badge${statusCls}" title="${escapeHtml([item.status_label,analysisReasons].filter(Boolean).join(" · "))}" data-analysis-state="${escapeHtml(analysisState?.state||"")}">${escapeHtml(analysisStateLabel)}</span><label class="review-inbox-reviewed-toggle"><input type="checkbox" data-review-inbox-reviewed="${escapeHtml(h.id)}" ${item.user_review?.reviewed?"checked":""}> Revue</label>`;
     status.querySelector("[data-review-inbox-reviewed]")?.addEventListener("change",ev=>setReviewInboxReviewed(h.id,ev.currentTarget.checked));
     row.append(open,status);
+    // #424 T4 — la vue avancée n'existe que pour une main qui porte la projection
+    // hybride : sans elle la rangée reste exactement la rangée simple (ni bouton,
+    // ni panneau), et le détail de provenance n'est peint qu'après un toggle.
+    if(item.hybrid){
+      const advanced=reviewInboxAdvancedPanel(item,h.id);
+      const advancedToggle=document.createElement("button");
+      advancedToggle.type="button";advancedToggle.className="review-inbox-advanced-toggle";
+      advancedToggle.setAttribute("aria-controls",advanced.id);
+      advancedToggle.setAttribute("aria-expanded",String(reviewInboxAdvancedIsOpen(h.id)));
+      advancedToggle.textContent=reviewInboxAdvancedIsOpen(h.id)?"Masquer les détails":"Détails avancés";
+      advancedToggle.addEventListener("click",()=>toggleReviewInboxAdvanced(h.id,advancedToggle,advanced));
+      status.append(advancedToggle);
+      row.append(advanced);
+    }
     hhHandsEl.appendChild(row);
   }
 }

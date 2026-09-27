@@ -40,6 +40,7 @@ FUNCTIONAL_FILES = (
     ROOT / "site" / "analytics" / "leak-analyzer.js",
     ROOT / "site" / "analytics" / "leak-training-target.js",
     ROOT / "site" / "analytics" / "model-b-robustness.js",
+    ROOT / "site" / "analytics" / "review-confidence-formatter.js",
     ROOT / "site" / "analytics" / "review-dashboard.js",
     ROOT / "site" / "analytics" / "review-inbox.js",
     ROOT / "site" / "analytics" / "review-score-adapter.js",
