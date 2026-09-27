@@ -983,6 +983,7 @@
       "path": ".github/workflows/issue-423-hybrid-router.yml",
       "path_scopes": [
         ".github",
+        ".project",
         "analysis",
         "contracts",
         "docs",

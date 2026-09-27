@@ -336,7 +336,9 @@ ISSUE_423_CHANGED_PATHS=(
     "analysis/issue423_hybrid_router/TRAIN_CV_ROUTER_REPORT.sha256",
     "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.json",
     "analysis/issue423_hybrid_router/derivation/CV_DERIVATION.sha256",
-    # documentation
+    # documentation and decision record
+    "docs/hybrid-response-router.md",
+    ".project/decisions/20260926-hybrid-router.md",
     "docs/ci-workflow-dag.md",
     # the runner and the regenerated audit evidence it ships
     ISSUE_423_WORKFLOW,

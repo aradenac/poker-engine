@@ -50,7 +50,7 @@
     "job and artifact names are preserved and digest-pinned for every workflow"
   ],
   "frozen_name_digest": "7a76159adfda8b69e8914ce33de0ba92305d5f96ef483b39af1a98cc3e13765e",
-  "inventory_sha256": "dbf6a24e812d4245270bf8f66bdf94c4f34761ee7871e381e6af5cc229c1b837",
+  "inventory_sha256": "34eb6298fdb1c18d5f41d9cf5e7449b7ab915521c5559111dc38396ac4a71ef8",
   "inventory_source": "analysis/workflow_audit/workflows.json",
   "issue": 382,
   "measurement_method": {
@@ -1892,7 +1892,9 @@
             "analysis/issue421_generalized_response/**",
             "training/models/preflop_population_model_v5.json",
             "training/models/postflop_population_model_v5.json",
+            "docs/hybrid-response-router.md",
             "docs/ci-workflow-dag.md",
+            ".project/decisions/*hybrid-router*.md",
             "analysis/issue423_hybrid_router/**",
             "analysis/workflow_audit/workflows.json",
             "analysis/workflow_audit/active_workflow_dag_v2.json",
@@ -1936,7 +1938,9 @@
             "analysis/issue421_generalized_response/**",
             "training/models/preflop_population_model_v5.json",
             "training/models/postflop_population_model_v5.json",
+            "docs/hybrid-response-router.md",
             "docs/ci-workflow-dag.md",
+            ".project/decisions/*hybrid-router*.md",
             "analysis/issue423_hybrid_router/**",
             "analysis/workflow_audit/workflows.json",
             "analysis/workflow_audit/active_workflow_dag_v2.json",
