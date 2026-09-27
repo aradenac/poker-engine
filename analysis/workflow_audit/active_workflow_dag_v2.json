@@ -1,23 +1,23 @@
 {
   "active_definition": "workflow file present at HEAD with at least one automatic trigger; the #373 manual-only historical workflows are excluded explicitly",
-  "active_workflow_count": 56,
+  "active_workflow_count": 57,
   "aggregate": {
-    "job_count": 98,
+    "job_count": 99,
     "repro_statuses": {
       "REPRO_COMPOSITE_VERIFIED": 15,
       "REPRO_HELPER_VERIFIED": 7,
       "REPRO_INCOMPLETE": 2,
-      "REPRO_NOT_VERIFIED": 25,
+      "REPRO_NOT_VERIFIED": 26,
       "REPRO_STRONG_IDENTITY_BOUND": 7
     },
     "side_effect_classes": {
       "ARTIFACT_ONLY": 13,
       "PUBLICATION_CAPABLE": 1,
-      "READ_ONLY": 19,
+      "READ_ONLY": 20,
       "REPOSITORY_WRITE": 19,
       "UNKNOWN": 4
     },
-    "static_cost_proxy": 608
+    "static_cost_proxy": 613
   },
   "base_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
   "excluded_manual_only_workflows": [
@@ -37,10 +37,10 @@
     ".github/workflows/unseen-preflop-context-audit.yml",
     ".github/workflows/v84-strategy-candidate.yml"
   ],
-  "inventory_sha256": "57697e3c37dd6c04ee6af39c8bd4c605692cb4db3d7a16c95f6ba74f3d440c81",
+  "inventory_sha256": "dbf6a24e812d4245270bf8f66bdf94c4f34761ee7871e381e6af5cc229c1b837",
   "inventory_snapshot_base_sha": "4559315b08fd224409c5469a4073e07ee89225b3",
   "inventory_source": "analysis/workflow_audit/workflows.json",
-  "inventory_workflow_count": 71,
+  "inventory_workflow_count": 72,
   "issue": 382,
   "manual_only_count": 15,
   "parent_issue": 204,
@@ -1568,13 +1568,14 @@
         "changed_paths": [
           "training/models/preflop_population_model_v5.json"
         ],
-        "cost_proxy": 53,
+        "cost_proxy": 58,
         "event": "pull_request",
         "id": "preflop_model",
-        "job_count": 9,
+        "job_count": 10,
         "matched_workflows": [
           ".github/workflows/hero-calculated-range-export.yml",
           ".github/workflows/hero-full-169-evidence.yml",
+          ".github/workflows/issue-423-hybrid-router.yml",
           ".github/workflows/model-a-continuation.yml",
           ".github/workflows/project-state-consistency.yml",
           ".github/workflows/user-artifact-bundle.yml"
@@ -1617,6 +1618,19 @@
             "path": ".github/workflows/hero-full-169-evidence.yml",
             "reason": "event/branch matched; path filter matched",
             "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/issue-423-hybrid-router.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
           },
           {
             "activation_event": "pull_request",
@@ -1668,7 +1682,7 @@
           ".github/workflows/hero-full-169-evidence.yml:generate-shards",
           ".github/workflows/hero-full-169-evidence.yml:merge-full-169"
         ],
-        "workflow_count": 5,
+        "workflow_count": 6,
         "write_capable_jobs_potentially_reachable": []
       },
       "before": {
@@ -1676,13 +1690,14 @@
         "changed_paths": [
           "training/models/preflop_population_model_v5.json"
         ],
-        "cost_proxy": 53,
+        "cost_proxy": 58,
         "event": "pull_request",
         "id": "preflop_model",
-        "job_count": 9,
+        "job_count": 10,
         "matched_workflows": [
           ".github/workflows/hero-calculated-range-export.yml",
           ".github/workflows/hero-full-169-evidence.yml",
+          ".github/workflows/issue-423-hybrid-router.yml",
           ".github/workflows/model-a-continuation.yml",
           ".github/workflows/project-state-consistency.yml",
           ".github/workflows/user-artifact-bundle.yml"
@@ -1725,6 +1740,19 @@
             "path": ".github/workflows/hero-full-169-evidence.yml",
             "reason": "event/branch matched; path filter matched",
             "side_effect_class": "ARTIFACT_ONLY"
+          },
+          {
+            "activation_event": "pull_request",
+            "cost_proxy": 5,
+            "jobs": [
+              {
+                "id": "contract",
+                "reachability": "POTENTIAL"
+              }
+            ],
+            "path": ".github/workflows/issue-423-hybrid-router.yml",
+            "reason": "event/branch matched; path filter matched",
+            "side_effect_class": "READ_ONLY"
           },
           {
             "activation_event": "pull_request",
@@ -1776,7 +1804,7 @@
           ".github/workflows/hero-full-169-evidence.yml:generate-shards",
           ".github/workflows/hero-full-169-evidence.yml:merge-full-169"
         ],
-        "workflow_count": 5,
+        "workflow_count": 6,
         "write_capable_jobs_potentially_reachable": []
       },
       "scenario": "preflop_model"
@@ -6659,6 +6687,248 @@
             "analysis/workflow_audit/active_workflow_dag_v2.json",
             "analysis/workflow_audit/consolidation_decision_v1.json",
             ".github/workflows/issue-421-generalized-response-model.yml"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "workflow_run_dependencies": []
+    },
+    {
+      "artifacts": [],
+      "concurrency": {
+        "cancel_in_progress": false,
+        "group": "issue-423-hybrid-router-${{ github.event_name }}-${{ github.ref }}"
+      },
+      "concurrency_recommendation": {
+        "blockers": [],
+        "cancel_in_progress": false,
+        "group": "issue-423-hybrid-router-${{ github.event_name }}-${{ github.ref }}",
+        "has_concurrency": true,
+        "justification": "No repository/publication capability detected; cancellation may be evaluated separately.",
+        "safe_candidate_for_future_cancellation_change": true,
+        "side_effect_class": "READ_ONLY"
+      },
+      "jobs": [
+        {
+          "id": "contract",
+          "if": null,
+          "permissions": {
+            "contents": "read"
+          },
+          "runner": "ubuntu-24.04",
+          "write_capable": false
+        }
+      ],
+      "lifecycle": "current",
+      "name": "Execute issue 423 hybrid response router",
+      "path": ".github/workflows/issue-423-hybrid-router.yml",
+      "path_filters": {
+        "pull_request": {
+          "paths": [
+            "tools/preflop/hybrid_response_router.py",
+            "tools/preflop/hybrid_response_runtime.py",
+            "tools/preflop/generalized_response_calibration.py",
+            "tools/simulation/issue423_issue367_preflight.py",
+            "tools/training/build_issue423_evidence_bundle.py",
+            "tools/training/evaluate_hybrid_router_cv.py",
+            "tools/training/freeze_hybrid_router_criteria.py",
+            "tools/training/freeze_hybrid_router_spec.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/hybrid-router-spec.schema.json",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "tests/ci/test_issue423_contract_guards.py",
+            "tests/preflop/test_generalized_response_calibration.py",
+            "tests/preflop/test_hybrid_response_*.py",
+            "tests/preflop/test_issue423_mandatory_contracts.py",
+            "tests/simulation/test_issue423_preflight.py",
+            "tests/training/test_freeze_hybrid_router_*.py",
+            "tests/training/test_evaluate_hybrid_router_cv.py",
+            "tests/training/test_hybrid_router_terminal_report.py",
+            "tests/training/test_issue423_evidence_bundle.py",
+            "tests/training/test_issue423_n8n_result.py",
+            "tests/test_github_workflow_audit.py",
+            "tests/ci/test_consolidation_decision.py",
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "analysis/issue421_generalized_response/**",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "docs/ci-workflow-dag.md",
+            "analysis/issue423_hybrid_router/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-423-hybrid-router.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/preflop/hybrid_response_router.py",
+            "tools/preflop/hybrid_response_runtime.py",
+            "tools/preflop/generalized_response_calibration.py",
+            "tools/simulation/issue423_issue367_preflight.py",
+            "tools/training/build_issue423_evidence_bundle.py",
+            "tools/training/evaluate_hybrid_router_cv.py",
+            "tools/training/freeze_hybrid_router_criteria.py",
+            "tools/training/freeze_hybrid_router_spec.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/hybrid-router-spec.schema.json",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "tests/ci/test_issue423_contract_guards.py",
+            "tests/preflop/test_generalized_response_calibration.py",
+            "tests/preflop/test_hybrid_response_*.py",
+            "tests/preflop/test_issue423_mandatory_contracts.py",
+            "tests/simulation/test_issue423_preflight.py",
+            "tests/training/test_freeze_hybrid_router_*.py",
+            "tests/training/test_evaluate_hybrid_router_cv.py",
+            "tests/training/test_hybrid_router_terminal_report.py",
+            "tests/training/test_issue423_evidence_bundle.py",
+            "tests/training/test_issue423_n8n_result.py",
+            "tests/test_github_workflow_audit.py",
+            "tests/ci/test_consolidation_decision.py",
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "analysis/issue421_generalized_response/**",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "docs/ci-workflow-dag.md",
+            "analysis/issue423_hybrid_router/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-423-hybrid-router.yml"
+          ]
+        }
+      },
+      "permissions": {
+        "raw": "permissions:\n  contents: read",
+        "workflow": {
+          "contents": "read"
+        }
+      },
+      "repro_status": "REPRO_NOT_VERIFIED",
+      "role": "validation_or_utility",
+      "scientific_boundaries": {
+        "TEST": true,
+        "TRAIN": true,
+        "VALIDATION": false
+      },
+      "sha256": "0f45e34969a44b7a190746442d1c9d375dd56b43e3013bda7d18191948237824",
+      "side_effect_class": "READ_ONLY",
+      "static_cost_proxy": {
+        "band": "low",
+        "components": {
+          "checkout": 1,
+          "download_artifact": 0,
+          "npm_install": 0,
+          "pip_install": 0,
+          "playwright_install": 0,
+          "setup_node": 0,
+          "setup_python": 1,
+          "upload_artifact": 0
+        },
+        "method": "static structural proxy; not GitHub-billed minutes",
+        "score": 5
+      },
+      "triggers": {
+        "pull_request": {
+          "paths": [
+            "tools/preflop/hybrid_response_router.py",
+            "tools/preflop/hybrid_response_runtime.py",
+            "tools/preflop/generalized_response_calibration.py",
+            "tools/simulation/issue423_issue367_preflight.py",
+            "tools/training/build_issue423_evidence_bundle.py",
+            "tools/training/evaluate_hybrid_router_cv.py",
+            "tools/training/freeze_hybrid_router_criteria.py",
+            "tools/training/freeze_hybrid_router_spec.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/hybrid-router-spec.schema.json",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "tests/ci/test_issue423_contract_guards.py",
+            "tests/preflop/test_generalized_response_calibration.py",
+            "tests/preflop/test_hybrid_response_*.py",
+            "tests/preflop/test_issue423_mandatory_contracts.py",
+            "tests/simulation/test_issue423_preflight.py",
+            "tests/training/test_freeze_hybrid_router_*.py",
+            "tests/training/test_evaluate_hybrid_router_cv.py",
+            "tests/training/test_hybrid_router_terminal_report.py",
+            "tests/training/test_issue423_evidence_bundle.py",
+            "tests/training/test_issue423_n8n_result.py",
+            "tests/test_github_workflow_audit.py",
+            "tests/ci/test_consolidation_decision.py",
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "analysis/issue421_generalized_response/**",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "docs/ci-workflow-dag.md",
+            "analysis/issue423_hybrid_router/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-423-hybrid-router.yml"
+          ]
+        },
+        "push": {
+          "paths": [
+            "tools/preflop/hybrid_response_router.py",
+            "tools/preflop/hybrid_response_runtime.py",
+            "tools/preflop/generalized_response_calibration.py",
+            "tools/simulation/issue423_issue367_preflight.py",
+            "tools/training/build_issue423_evidence_bundle.py",
+            "tools/training/evaluate_hybrid_router_cv.py",
+            "tools/training/freeze_hybrid_router_criteria.py",
+            "tools/training/freeze_hybrid_router_spec.py",
+            "tools/audit_github_workflows.py",
+            "tools/audit_active_workflow_dag.py",
+            "contracts/training/hybrid-router-spec.schema.json",
+            "contracts/training/generalized-response-dataset.schema.json",
+            "contracts/training/generalized-response-ood-gate.schema.json",
+            "tests/ci/test_issue423_contract_guards.py",
+            "tests/preflop/test_generalized_response_calibration.py",
+            "tests/preflop/test_hybrid_response_*.py",
+            "tests/preflop/test_issue423_mandatory_contracts.py",
+            "tests/simulation/test_issue423_preflight.py",
+            "tests/training/test_freeze_hybrid_router_*.py",
+            "tests/training/test_evaluate_hybrid_router_cv.py",
+            "tests/training/test_hybrid_router_terminal_report.py",
+            "tests/training/test_issue423_evidence_bundle.py",
+            "tests/training/test_issue423_n8n_result.py",
+            "tests/test_github_workflow_audit.py",
+            "tests/ci/test_consolidation_decision.py",
+            "tools/preflop/generalized_response_model.py",
+            "tools/preflop/generalized_response_runtime.py",
+            "tools/training/evaluate_generalized_response_cv.py",
+            "analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json",
+            "analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json",
+            "tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json",
+            "analysis/issue421_generalized_response/**",
+            "training/models/preflop_population_model_v5.json",
+            "training/models/postflop_population_model_v5.json",
+            "docs/ci-workflow-dag.md",
+            "analysis/issue423_hybrid_router/**",
+            "analysis/workflow_audit/workflows.json",
+            "analysis/workflow_audit/active_workflow_dag_v2.json",
+            "analysis/workflow_audit/consolidation_decision_v1.json",
+            ".github/workflows/issue-423-hybrid-router.yml"
           ]
         },
         "workflow_dispatch": {}

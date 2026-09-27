@@ -1,0 +1,258 @@
+name: Execute issue 423 hybrid response router
+
+# Issue #423 composes the frozen Model A exact-context channel and the learned
+# #421 generalized adverse-response channel behind a fail-closed hybrid router.
+# Every claim the ticket makes is asserted by a frozen, offline suite:
+#
+#   * `tests/training/test_freeze_hybrid_router_spec.py` fails closed on the
+#     preregistered spec, on the frozen criteria schema and on hash drift;
+#   * `tests/training/test_freeze_hybrid_router_criteria.py` fails closed on the
+#     frozen criteria manifest and on the global non-inferiority thresholds;
+#   * `tests/preflop/test_generalized_response_calibration.py` pins the reused
+#     #421 calibration channel (TRAIN-only, no holdout read, no re-fit);
+#   * `tests/training/test_evaluate_hybrid_router_cv.py` fails closed on the
+#     hand-grouped cross-fitted score and on the sparse-strata comparison;
+#   * `tests/preflop/test_hybrid_response_router.py` fails closed on source
+#     selection, on the abstention rule and on neighbour substitution;
+#   * `tests/preflop/test_hybrid_response_runtime.py` fails closed on the
+#     runtime provider, on determinism and on the fail-closed OOD status;
+#   * `tests/simulation/test_issue423_preflight.py` fails closed on the
+#     #423 -> #367 preflight (no Hero EV, no nearest lookup, TEST unconsumed);
+#   * `tests/training/test_hybrid_router_terminal_report.py` pins the terminal
+#     outcome vocabulary and the two admissible terminal outcomes;
+#   * `tests/preflop/test_issue423_mandatory_contracts.py` is the consolidated
+#     mandatory suite, guarded by `tests/ci/test_issue423_contract_guards.py`;
+#   * `tests/training/test_issue423_evidence_bundle.py` pins the eight
+#     content-addressed artifacts and their recomputed digests.
+#
+# This workflow is the authoritative runner: it executes each of those suites as
+# a real step (not a declaration) and then re-proves that no suite went missing.
+# The no-op guard's `required` tuple spans the union the audit declares
+# (`ISSUE_423_SUITES ∪ ISSUE_423_EXTRA_SUITES ∪ ISSUE_423_CI_SUITES` in
+# `tests/test_github_workflow_audit.py`).
+# Its `paths` filters must cover every file #423 ships; that coverage, the
+# no-op guard, and the simulated drift/substitution negatives are asserted by
+# `tests/test_github_workflow_audit.py`, run as its own visible step below.
+# It is read-only: it publishes no artifact and mutates no evidence digest.
+# `HISTORICAL_EVIDENCE_SHA256` in tools/audit_github_workflows.py is never
+# touched by this change, and no #423 evidence artifact is rewritten here.
+
+on:
+  push:
+    paths:
+      # production surface: the frozen router, the runtime provider, the
+      # calibration channel, the #367 preflight and every tools/training
+      # generator #423 ships.
+      - 'tools/preflop/hybrid_response_router.py'
+      - 'tools/preflop/hybrid_response_runtime.py'
+      - 'tools/preflop/generalized_response_calibration.py'
+      - 'tools/simulation/issue423_issue367_preflight.py'
+      - 'tools/training/build_issue423_evidence_bundle.py'
+      - 'tools/training/evaluate_hybrid_router_cv.py'
+      - 'tools/training/freeze_hybrid_router_criteria.py'
+      - 'tools/training/freeze_hybrid_router_spec.py'
+      # the two workflow-audit generators this job actually executes
+      - 'tools/audit_github_workflows.py'
+      - 'tools/audit_active_workflow_dag.py'
+      # the router spec contract and the reused #421 dataset/gate contracts
+      - 'contracts/training/hybrid-router-spec.schema.json'
+      - 'contracts/training/generalized-response-dataset.schema.json'
+      - 'contracts/training/generalized-response-ood-gate.schema.json'
+      # the entire #423 test surface (the audit guard itself included)
+      - 'tests/ci/test_issue423_contract_guards.py'
+      - 'tests/preflop/test_generalized_response_calibration.py'
+      - 'tests/preflop/test_hybrid_response_*.py'
+      - 'tests/preflop/test_issue423_mandatory_contracts.py'
+      - 'tests/simulation/test_issue423_preflight.py'
+      - 'tests/training/test_freeze_hybrid_router_*.py'
+      - 'tests/training/test_evaluate_hybrid_router_cv.py'
+      - 'tests/training/test_hybrid_router_terminal_report.py'
+      - 'tests/training/test_issue423_evidence_bundle.py'
+      - 'tests/training/test_issue423_n8n_result.py'
+      - 'tests/test_github_workflow_audit.py'
+      # the shared #204 consolidation-decision guard this job re-proves last
+      - 'tests/ci/test_consolidation_decision.py'
+      # resolved inputs the router consumes but the issue does not ship
+      - 'tools/preflop/generalized_response_model.py'
+      - 'tools/preflop/generalized_response_runtime.py'
+      - 'tools/training/evaluate_generalized_response_cv.py'
+      - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
+      - 'analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json'
+      - 'tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json'
+      - 'analysis/issue421_generalized_response/**'
+      - 'training/models/preflop_population_model_v5.json'
+      - 'training/models/postflop_population_model_v5.json'
+      # documentation
+      - 'docs/ci-workflow-dag.md'
+      # content-addressed evidence
+      - 'analysis/issue423_hybrid_router/**'
+      - 'analysis/workflow_audit/workflows.json'
+      - 'analysis/workflow_audit/active_workflow_dag_v2.json'
+      - 'analysis/workflow_audit/consolidation_decision_v1.json'
+      - '.github/workflows/issue-423-hybrid-router.yml'
+  pull_request:
+    paths:
+      - 'tools/preflop/hybrid_response_router.py'
+      - 'tools/preflop/hybrid_response_runtime.py'
+      - 'tools/preflop/generalized_response_calibration.py'
+      - 'tools/simulation/issue423_issue367_preflight.py'
+      - 'tools/training/build_issue423_evidence_bundle.py'
+      - 'tools/training/evaluate_hybrid_router_cv.py'
+      - 'tools/training/freeze_hybrid_router_criteria.py'
+      - 'tools/training/freeze_hybrid_router_spec.py'
+      - 'tools/audit_github_workflows.py'
+      - 'tools/audit_active_workflow_dag.py'
+      - 'contracts/training/hybrid-router-spec.schema.json'
+      - 'contracts/training/generalized-response-dataset.schema.json'
+      - 'contracts/training/generalized-response-ood-gate.schema.json'
+      - 'tests/ci/test_issue423_contract_guards.py'
+      - 'tests/preflop/test_generalized_response_calibration.py'
+      - 'tests/preflop/test_hybrid_response_*.py'
+      - 'tests/preflop/test_issue423_mandatory_contracts.py'
+      - 'tests/simulation/test_issue423_preflight.py'
+      - 'tests/training/test_freeze_hybrid_router_*.py'
+      - 'tests/training/test_evaluate_hybrid_router_cv.py'
+      - 'tests/training/test_hybrid_router_terminal_report.py'
+      - 'tests/training/test_issue423_evidence_bundle.py'
+      - 'tests/training/test_issue423_n8n_result.py'
+      - 'tests/test_github_workflow_audit.py'
+      - 'tests/ci/test_consolidation_decision.py'
+      - 'tools/preflop/generalized_response_model.py'
+      - 'tools/preflop/generalized_response_runtime.py'
+      - 'tools/training/evaluate_generalized_response_cv.py'
+      - 'analysis/issue388_exact_tree/REQUIRED_EXACT_TREE.json'
+      - 'analysis/issue419_hierarchical_tree/raise_sizing_frontiers_v2/RAISE_SIZING_FRONTIER_RESOLUTION.json'
+      - 'tests/fixtures/repro/kts_sb_two_limp_iso4_three_calls.snapshots.json'
+      - 'analysis/issue421_generalized_response/**'
+      - 'training/models/preflop_population_model_v5.json'
+      - 'training/models/postflop_population_model_v5.json'
+      - 'docs/ci-workflow-dag.md'
+      - 'analysis/issue423_hybrid_router/**'
+      - 'analysis/workflow_audit/workflows.json'
+      - 'analysis/workflow_audit/active_workflow_dag_v2.json'
+      - 'analysis/workflow_audit/consolidation_decision_v1.json'
+      - '.github/workflows/issue-423-hybrid-router.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issue-423-hybrid-router-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so the path-coverage guard can attribute the branch
+          # diff to the #423 commits instead of trusting a curated list.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: '.python-version'
+      - name: Compile #423 tools and suites
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            tools/preflop/hybrid_response_router.py \
+            tools/preflop/hybrid_response_runtime.py \
+            tools/preflop/generalized_response_calibration.py \
+            tools/simulation/issue423_issue367_preflight.py \
+            tools/training/build_issue423_evidence_bundle.py \
+            tools/training/evaluate_hybrid_router_cv.py \
+            tools/training/freeze_hybrid_router_criteria.py \
+            tools/training/freeze_hybrid_router_spec.py \
+            tests/training/test_freeze_hybrid_router_spec.py \
+            tests/training/test_freeze_hybrid_router_criteria.py \
+            tests/training/test_evaluate_hybrid_router_cv.py \
+            tests/preflop/test_generalized_response_calibration.py \
+            tests/preflop/test_hybrid_response_router.py \
+            tests/preflop/test_hybrid_response_runtime.py \
+            tests/simulation/test_issue423_preflight.py \
+            tests/training/test_hybrid_router_terminal_report.py \
+            tests/preflop/test_issue423_mandatory_contracts.py \
+            tests/ci/test_issue423_contract_guards.py \
+            tests/training/test_issue423_evidence_bundle.py \
+            tests/training/test_issue423_n8n_result.py \
+            tests/test_github_workflow_audit.py \
+            tests/ci/test_consolidation_decision.py
+      - name: Preregistered hybrid-router spec and frozen criteria schema
+        run: PYTHONPATH=. python3 tests/training/test_freeze_hybrid_router_spec.py
+      - name: Frozen criteria manifest and non-inferiority thresholds
+        run: PYTHONPATH=. python3 tests/training/test_freeze_hybrid_router_criteria.py
+      - name: Reused generalized calibration channel (TRAIN-only)
+        run: PYTHONPATH=. python3 tests/preflop/test_generalized_response_calibration.py
+      - name: Hand-grouped cross-fitted score and sparse strata
+        run: PYTHONPATH=. python3 tests/training/test_evaluate_hybrid_router_cv.py
+      - name: Source selection, abstention rule and no neighbour substitution
+        run: PYTHONPATH=. python3 tests/preflop/test_hybrid_response_router.py
+      - name: Runtime provider determinism and fail-closed OOD
+        run: PYTHONPATH=. python3 tests/preflop/test_hybrid_response_runtime.py
+      - name: #423 -> #367 preflight (no Hero EV, no nearest lookup)
+        run: PYTHONPATH=. python3 tests/simulation/test_issue423_preflight.py
+      - name: Terminal report outcome vocabulary and boundaries
+        run: PYTHONPATH=. python3 tests/training/test_hybrid_router_terminal_report.py
+      - name: Consolidated mandatory contract suite
+        run: PYTHONPATH=. python3 tests/preflop/test_issue423_mandatory_contracts.py
+      - name: Mandatory-suite guardrails and frozen pointer identity
+        run: PYTHONPATH=. python3 tests/ci/test_issue423_contract_guards.py
+      - name: Content-addressed #423 evidence bundle
+        run: PYTHONPATH=. python3 tests/training/test_issue423_evidence_bundle.py
+      - name: n8n output block (N8N_TASK_RESULT) matches the terminal evidence
+        run: PYTHONPATH=. python3 tests/training/test_issue423_n8n_result.py
+      - name: Prove every #423 suite is actually executed (no-op guard)
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/issue-423-hybrid-router.yml').read_text(encoding='utf-8')
+          executed = '\n'.join(
+              line for line in workflow.splitlines() if not line.lstrip().startswith('#'))
+          required = (
+              'tests/training/test_freeze_hybrid_router_spec.py',
+              'tests/training/test_freeze_hybrid_router_criteria.py',
+              'tests/preflop/test_generalized_response_calibration.py',
+              'tests/training/test_evaluate_hybrid_router_cv.py',
+              'tests/preflop/test_hybrid_response_router.py',
+              'tests/preflop/test_hybrid_response_runtime.py',
+              'tests/simulation/test_issue423_preflight.py',
+              'tests/training/test_hybrid_router_terminal_report.py',
+              'tests/preflop/test_issue423_mandatory_contracts.py',
+              'tests/ci/test_issue423_contract_guards.py',
+              'tests/training/test_issue423_evidence_bundle.py',
+              'tests/training/test_issue423_n8n_result.py',
+              'tests/test_github_workflow_audit.py',
+              'tests/ci/test_consolidation_decision.py',
+          )
+          missing = [suite for suite in required
+                     if not re.search(r'python3\s+' + re.escape(suite) + r'(?:\s|$)', executed)]
+          assert not missing, f'suite declared in paths but never executed: {missing}'
+          print(f'#423 no-op guard: {len(required)}/{len(required)} suites executed')
+          PY
+      - name: Trigger path coverage, no-op and drift/substitution guards
+        run: PYTHONPATH=. python3 tests/test_github_workflow_audit.py
+      - name: Workflow audit and DAG evidence stay regenerable
+        run: |
+          set -euo pipefail
+          python3 tools/audit_github_workflows.py --inventory /tmp/workflows.inventory.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          committed_path = Path('analysis/workflow_audit/workflows.json')
+          regenerated_path = Path('/tmp/workflows.inventory.json')
+          committed = json.loads(committed_path.read_text(encoding='utf-8'))
+          regenerated = json.loads(regenerated_path.read_text(encoding='utf-8'))
+          assert committed == regenerated, 'analysis/workflow_audit/workflows.json is stale'
+          assert committed_path.read_bytes() == regenerated_path.read_bytes(), (
+              'analysis/workflow_audit/workflows.json is not byte-stable')
+          print('workflow inventory: regenerable and byte-identical')
+          PY
+          python3 tools/audit_active_workflow_dag.py --check
+      - name: Workflow audit and DAG evidence mutation guards
+        run: PYTHONPATH=. python3 tests/ci/test_consolidation_decision.py
