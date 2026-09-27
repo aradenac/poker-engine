@@ -94,6 +94,16 @@ class StateOpsTests(unittest.TestCase):
             self.assertEqual(json.loads(pointer.read_text())["terminal_reason"], dangerous)
             self.assertEqual(gh.call_args.args[0][0:2], ["issue", "comment"])
 
+    def test_resume_is_explicit_and_preserves_context(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            pointer = Path(directory) / "active_run.json"
+            pointer.write_text(json.dumps({"phase":"INTEGRATION_FAILED_NEEDS_HUMAN","merge_gate_context":{"pr_number":428}}))
+            result = state_ops.resume({"pointer":str(pointer),"mode":"ci"})
+            self.assertEqual(result["phase"], "CI_PENDING")
+            saved = json.loads(pointer.read_text())
+            self.assertEqual(saved["merge_gate_context"]["pr_number"], 428)
+            self.assertIsNone(saved["terminal_reason"])
+
 
 class RebaseResolverTests(unittest.TestCase):
     def git(self, cwd: Path, *args: str) -> str:

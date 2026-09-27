@@ -82,14 +82,38 @@ def mark_needs_human(payload: dict[str, Any]) -> dict[str, Any]:
     return {"status": "OK", "phase": current["phase"], "claim_warning": claim_error}
 
 
+def resume(payload: dict[str, Any]) -> dict[str, Any]:
+    pointer = Path(payload["pointer"])
+    if not pointer.exists():
+        raise FileNotFoundError(pointer)
+    current = json.loads(pointer.read_text(encoding="utf-8"))
+    mode = payload["mode"]
+    if mode == "ci" and not isinstance(current.get("merge_gate_context"), dict):
+        raise ValueError("CI resume requires merge_gate_context")
+    phase = "CI_PENDING" if mode == "ci" else "INTEGRATION_RETRY"
+    now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    current.update(
+        {
+            "phase": phase,
+            "phase_updated_at": now,
+            "terminal_reason": None,
+            "recovery_attempt": 0,
+            "active_task_id": None,
+            "active_execution_id": None,
+        }
+    )
+    _atomic_json(pointer, current)
+    return {"status": "OK", "phase": phase, "pointer": str(pointer)}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["mark-needs-human"])
+    parser.add_argument("command", choices=["mark-needs-human", "resume"])
     parser.add_argument("--payload-b64", required=True)
     args = parser.parse_args()
     try:
         payload = json.loads(base64.b64decode(args.payload_b64).decode())
-        result = mark_needs_human(payload)
+        result = mark_needs_human(payload) if args.command == "mark-needs-human" else resume(payload)
         print(json.dumps(result, ensure_ascii=False))
         return 0
     except Exception as exc:

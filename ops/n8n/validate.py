@@ -16,6 +16,7 @@ IDS = {
     "ci": "B8Hxpq5HCUKjhnwQ",
     "dispatcher": "7U3ji3e7qXSAw9Go",
     "pipeline": "1AbV6ckDpTZLPvm0",
+    "reconciliation": "zjzqbFEWJdNsTD6u",
 }
 
 
@@ -85,6 +86,13 @@ def main() -> int:
         raw = json.dumps(workflows[label]["nodes"], ensure_ascii=False)
         if "sed -n '/<!-- n8n-claim:v1" in raw:
             errors.append(f"{label}: delimiter-fragile claim parser remains")
+
+    if "reconciliation" in workflows:
+        nodes = workflows["reconciliation"]["nodes"]
+        scan = nodes.get("Build sweep scan", {}).get("parameters", {}).get("jsCode", "")
+        route = json.dumps(nodes.get("Route by phase", {}), ensure_ascii=False)
+        if "INTEGRATION_RETRY" not in scan or "INTEGRATION_RETRY" not in route:
+            errors.append("reconciliation: explicit integration retry route missing")
 
     for helper in ("review_events.py", "state_ops.py", "rebase_resolver.py"):
         path = Path("/home/abel/.config/poker-engine-orchestrator") / helper

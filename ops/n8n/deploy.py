@@ -20,6 +20,7 @@ ISSUE_PLANNING = "wQvUWKRWFjwQvVEd"
 ISSUE_INTEGRATION = "qoLuUYV7PeiAJpxn"
 DISPATCHER = "7U3ji3e7qXSAw9Go"
 ISSUE_PIPELINE = "1AbV6ckDpTZLPvm0"
+RECONCILIATION = "zjzqbFEWJdNsTD6u"
 INSTALL_DIR = Path("/home/abel/.config/poker-engine-orchestrator")
 HELPERS = ("review_events.py", "state_ops.py", "rebase_resolver.py")
 
@@ -198,6 +199,33 @@ def patch_claim_parsers(workflow: dict) -> list[str]:
     return changed
 
 
+def patch_reconciliation(workflow: dict) -> list[str]:
+    changed: list[str] = []
+    scan = node(workflow, "Build sweep scan")
+    scan_code = scan["parameters"]["jsCode"]
+    if '.phase == "INTEGRATION_RETRY"' not in scan_code:
+        scan["parameters"]["jsCode"] = scan_code.replace(
+            'or .phase == "CI_PENDING"',
+            'or .phase == "CI_PENDING"\n  or .phase == "INTEGRATION_RETRY"',
+            1,
+        )
+        changed.append(scan["name"])
+    route = node(workflow, "Route by phase")
+    values = route["parameters"]["rules"]["values"]
+    if not any(item.get("outputKey") == "INTEGRATION_RETRY" for item in values):
+        template = copy.deepcopy(values[2])
+        condition = template["conditions"]["conditions"][0]
+        condition["id"] = str(uuid.uuid4())
+        condition["rightValue"] = "INTEGRATION_RETRY"
+        template["outputKey"] = "INTEGRATION_RETRY"
+        values.append(template)
+        workflow["connections"]["Route by phase"]["main"].append(
+            [{"node": "Resume Issue Integration v8", "type": "main", "index": 0}]
+        )
+        changed.append(route["name"])
+    return changed
+
+
 def payload(workflow: dict) -> dict:
     return {
         "name": workflow["name"],
@@ -224,6 +252,7 @@ def main() -> int:
         (CI_GATE, patch_ci_gate),
         (DISPATCHER, patch_claim_parsers),
         (ISSUE_PIPELINE, patch_claim_parsers),
+        (RECONCILIATION, patch_reconciliation),
     )
     updated: list[dict] = []
     if args.apply:
