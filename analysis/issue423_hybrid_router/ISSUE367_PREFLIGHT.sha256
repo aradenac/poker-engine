@@ -1,0 +1,5 @@
+fb31bd45618345d6fbf780b7150d2df0ee30d1c817d232e27b018aad8fcb5f7d  ISSUE367_PREFLIGHT.json
+# canonical_payload_sha256 1dba3a67ed4c985f53a43d72cb4d38b3a68c2dde74d9d635822f56138f14e958
+# outcome ABSTAIN_BLOCKED_ADMISSION
+# terminal_outcome RETAIN_REFERENCE_HYBRID_INSUFFICIENT
+# issue367_preflight_passed false
