@@ -334,6 +334,21 @@ re-serialises a byte-identical manifest — a second
 `tests/training/test_freeze_hybrid_router_criteria.py::CycleBreakTests` exercises
 the invariance, the fixed point and the refusal.
 
+The cycle break is also re-proved, fail-closed, from the persisted bytes alone:
+`tests/training/test_evaluate_hybrid_router_cv.py::PersistedPinRecomputationTests`
+recomputes **every** digest the bundle nests — the spec and its frozen criteria,
+the derivation (bytes, sidecar, canonical payload, literal spec pin, harness
+module), the terminal report and its sparse companion (bytes, sidecar, canonical
+payload, spec/criteria/manifest pins, module), the criteria manifest (bytes,
+sidecar, canonical payload, `generated_by` tools, `derivation_inputs`,
+`frozen_spec`) and the projection that neutralises `/reuse/router/spec_sha256` —
+and fails as soon as one of them stops matching the file it pins. Nothing is
+compared against a declared value: a *stale* pin nested inside a self-consistent
+envelope is the defect class the guard closes, and a negative test rewrites the
+manifest with its own canonical digest and sidecar recomputed to prove the guard
+catches exactly that. The #423 runner executes the guard in its own always-active
+step, so the persisted bundle can never carry a pin that no longer matches.
+
 ### 6.2 The five frozen criteria and their justification
 
 **`GLOBAL_NON_INFERIORITY_MARGIN`** — `margin_global_bits_per_decision <= 0.001`.

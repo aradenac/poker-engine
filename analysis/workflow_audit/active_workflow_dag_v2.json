@@ -6829,7 +6829,7 @@
         "TRAIN": true,
         "VALIDATION": false
       },
-      "sha256": "97e298ef08bdfed581388216522c25a46ecbef6a950f305d3ed3b13d2fcfcf5e",
+      "sha256": "5478cd4675dd1faf52a24f81fc042ef0599ea0ba3eda9afbf6746ebf2807310c",
       "side_effect_class": "READ_ONLY",
       "static_cost_proxy": {
         "band": "low",

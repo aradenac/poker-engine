@@ -11,7 +11,11 @@ name: Execute issue 423 hybrid response router
 #   * `tests/preflop/test_generalized_response_calibration.py` pins the reused
 #     #421 calibration channel (TRAIN-only, no holdout read, no re-fit);
 #   * `tests/training/test_evaluate_hybrid_router_cv.py` fails closed on the
-#     hand-grouped cross-fitted score and on the sparse-strata comparison;
+#     hand-grouped cross-fitted score and on the sparse-strata comparison, and --
+#     in its own always-active step -- recomputes every digest nested in a
+#     persisted #423 file (spec, criteria, derivation, report, manifest) from the
+#     persisted bytes, failing closed on a stale pin and proving the spec <->
+#     derivation self-reference is bound through the documented projection;
 #   * `tests/preflop/test_hybrid_response_router.py` fails closed on source
 #     selection, on the abstention rule and on neighbour substitution;
 #   * `tests/preflop/test_hybrid_response_runtime.py` fails closed on the
@@ -192,6 +196,14 @@ jobs:
       - name: Reused generalized calibration channel (TRAIN-only)
         run: PYTHONPATH=. python3 tests/preflop/test_generalized_response_calibration.py
       - name: Hand-grouped cross-fitted score and sparse strata
+        run: PYTHONPATH=. python3 tests/training/test_evaluate_hybrid_router_cv.py
+      - name: Recomputed nested pins fail closed (spec, criteria, derivation, report, manifest)
+        # The guard is the same suite's `PersistedPinRecomputationTests`, run alone
+        # so a stale pin fails in seconds instead of after the full cross-fitted
+        # suite; it re-hashes every nested pin from the persisted bytes, so no
+        # declared digest is ever trusted.
+        env:
+          POKER_HYBRID_ROUTER_CV_PINS_ONLY: '1'
         run: PYTHONPATH=. python3 tests/training/test_evaluate_hybrid_router_cv.py
       - name: Source selection, abstention rule and no neighbour substitution
         run: PYTHONPATH=. python3 tests/preflop/test_hybrid_response_router.py

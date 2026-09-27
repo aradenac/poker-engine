@@ -15,6 +15,14 @@ Covers every acceptance criterion of the task:
   intervals and the effectifs every stratum contributed;
 * two runs are byte-identical and the persisted derivation is pinned by its
   ``.sha256`` sidecar.
+* every digest nested in a persisted #423 file (the spec, its frozen criteria,
+  the derivation, the terminal report and its sparse companion, the criteria
+  manifest) is recomputed from the persisted bytes and fails closed when it is
+  stale; the spec <-> derivation self-reference is bound through the documented
+  projection ``projection_neutralising_the_self_referential_spec_pin``.
+
+``POKER_HYBRID_ROUTER_CV_PINS_ONLY=1`` runs the nested-pin recomputation guard
+alone; the #423 runner executes it in an always-active step of its own.
 
 ``pytest`` is not a declared dependency of this repository; the suite is a
 plain ``unittest`` module, run with ``python3 -m unittest`` like its siblings.
@@ -23,9 +31,11 @@ from __future__ import annotations
 
 import ast
 import contextlib
+import hashlib
 import io
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -38,6 +48,8 @@ sys.path.insert(0, str(ROOT))
 from tools.preflop import generalized_response_model as model  # noqa: E402
 from tools.training import evaluate_generalized_response_cv as cv  # noqa: E402
 from tools.training import evaluate_hybrid_router_cv as harness  # noqa: E402
+from tools.training import freeze_hybrid_router_criteria as freeze  # noqa: E402
+from tools.training import freeze_hybrid_router_spec as spec_tool  # noqa: E402
 
 MODULE_PATH = ROOT / "tools/training/evaluate_hybrid_router_cv.py"
 HARNESS_PATH = ROOT / "tools/training/evaluate_generalized_response_cv.py"
@@ -49,6 +61,11 @@ FORBIDDEN_SPLITS = ("VALIDATION", "TEST")
 
 #: ``POKER_HYBRID_ROUTER_CV_FULL=1`` refits the persisted derivation (~minutes).
 FULL = os.environ.get("POKER_HYBRID_ROUTER_CV_FULL", "") == "1"
+
+#: ``POKER_HYBRID_ROUTER_CV_PINS_ONLY=1`` runs the nested-pin recomputation guard
+#: alone.  The #423 runner executes the guard in its own always-active step, so a
+#: stale pin fails the workflow in seconds instead of after a full refit.
+PINS_ONLY = os.environ.get("POKER_HYBRID_ROUTER_CV_PINS_ONLY", "") == "1"
 
 
 def synthetic_rows(count: int = 900, hands: int = 90) -> list[dict]:
@@ -81,6 +98,355 @@ def fast_artifact(stride: int = 400) -> dict:
         samples=64,
         fit_max_rows=1500,
     )
+
+
+# ---------------------------------------------------------------------------
+# the persisted-bundle nested-pin recomputation guard
+# ---------------------------------------------------------------------------
+#: The five persisted files the #423 bundle exposes.  Every digest nested in one
+#: of them that names another persisted file is recomputed from the persisted
+#: bytes by ``recompute_nested_pin_problems``.  A *stale pin* -- a digest that no
+#: longer matches the bytes it claims to pin while the envelope around it stays
+#: self-consistent -- is the defect class this guard makes impossible to re-land.
+BUNDLE_DIR = ROOT / "analysis/issue423_hybrid_router"
+BUNDLE_SPEC_PATH = BUNDLE_DIR / "HYBRID_ROUTER_SPEC.json"
+BUNDLE_MANIFEST_PATH = BUNDLE_DIR / "ROUTER_MANIFEST.json"
+BUNDLE_REPORT_PATH = BUNDLE_DIR / "TRAIN_CV_ROUTER_REPORT.json"
+BUNDLE_SPARSE_PATH = BUNDLE_DIR / "SPARSE_STRATA_COMPARISON.json"
+
+#: The rule that breaks the spec <-> derivation cycle.  ``CV_DERIVATION.json``
+#: pins the frozen spec and the frozen spec embeds the criteria that pin the
+#: derivation, so a strict fixed point does not exist: the manifest binds the
+#: derivation through the *projection* below, which neutralises the single
+#: self-referential field (``/reuse/router/spec_sha256``) with a frozen sentinel
+#: and recomputes the derivation's canonical payload digest over the neutralised
+#: payload.  The projection is the identity on the already-published derivation,
+#: so the repair moves no byte of the preregistration.
+BUNDLE_SELF_REFERENCE_POINTER = "/reuse/router/spec_sha256"
+BUNDLE_SELF_REFERENCE_CANONICAL_POINTER = "/canonical_payload_sha256"
+
+
+def bundle_digest(path: Path) -> str:
+    """The sha256 of a persisted file's bytes."""
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _bundle_canonical_digest(document: dict) -> str:
+    """The canonical payload digest of a harness-persisted document."""
+    payload = {
+        key: value
+        for key, value in document.items()
+        if key != "canonical_payload_sha256"
+    }
+    return model.stable_hash(harness._finalize(payload))
+
+
+def recompute_nested_pin_problems(
+    bundle_dir: Path | None = None, *, module_path: Path | None = None
+) -> list[str]:
+    """Recompute *every* digest the #423 bundle nests and return the drift.
+
+    The guard is exhaustive over the pins that name a persisted file (the spec
+    and its frozen criteria, the derivation, the terminal report and its sparse
+    companion, the criteria manifest) and over the ``.sha256`` sidecar that pins
+    each file's own bytes.  It never trusts a declared value: every entry is
+    recomputed from the persisted bytes, so a stale pin -- including one nested
+    several levels deep, such as the manifest's literal derivation digest or the
+    report's manifest digest -- is reported instead of being carried forward.
+
+    The two self-references the cycle creates are handled explicitly:
+
+    * ``/canonical_payload_sha256`` is recomputed over the payload *without*
+      itself (a digest cannot contain itself);
+    * ``/reuse/router/spec_sha256`` inside the derivation is the literal pin of
+      the persisted spec bytes and is recomputed as such, while the manifest's
+      ``derivation_binding`` binds the derivation through the documented
+      projection ``projection_neutralising_the_self_referential_spec_pin``.
+
+    ``bundle_dir`` defaults to the committed bundle; it exists so the guard can
+    be pointed at an isolated copy whose pins have been deliberately mutated.
+    """
+    root = Path(bundle_dir) if bundle_dir is not None else BUNDLE_DIR
+    module = Path(module_path) if module_path is not None else MODULE_PATH
+    problems: list[str] = []
+
+    def check(label: str, declared: object, computed: object) -> None:
+        if declared != computed:
+            problems.append(f"{label}: declared {declared!r} != recomputed {computed!r}")
+
+    paths = {
+        "spec": root / BUNDLE_SPEC_PATH.name,
+        "manifest": root / BUNDLE_MANIFEST_PATH.name,
+        "derivation": root / DERIVATION_PATH.parent.name / DERIVATION_PATH.name,
+        "report": root / BUNDLE_REPORT_PATH.name,
+        "sparse": root / BUNDLE_SPARSE_PATH.name,
+    }
+    documents: dict[str, dict] = {}
+    for label, path in paths.items():
+        if not path.is_file():
+            problems.append(f"the {label} is missing from the bundle ({path.name})")
+            continue
+        documents[label] = json.loads(path.read_bytes().decode("utf-8"))
+        sidecar = path.with_suffix(".sha256")
+        if not sidecar.is_file():
+            problems.append(f"the {label} carries no .sha256 sidecar")
+            continue
+        lines = sidecar.read_text(encoding="utf-8").splitlines()
+        if not lines:
+            problems.append(f"the {label} .sha256 sidecar is empty")
+            continue
+        check(f"{label} .sha256 sidecar", lines[0].split()[0], bundle_digest(path))
+
+    for label, document in documents.items():
+        if label == "spec":
+            # The spec generator serialises the raw document (no float rounding),
+            # so its canonical digest is the raw payload without itself.
+            payload = {
+                key: value
+                for key, value in document.items()
+                if key != "canonical_payload_sha256"
+            }
+            check(
+                "spec canonical payload digest",
+                document.get("canonical_payload_sha256"),
+                spec_tool.stable_hash(payload),
+            )
+        else:
+            check(
+                f"{label} canonical payload digest",
+                document.get("canonical_payload_sha256"),
+                _bundle_canonical_digest(document),
+            )
+
+    spec = documents.get("spec")
+    manifest = documents.get("manifest")
+    derivation = documents.get("derivation")
+    report = documents.get("report")
+    sparse = documents.get("sparse")
+
+    if spec is not None:
+        criteria = spec.get("frozen_criteria")
+        if isinstance(criteria, dict):
+            payload = {
+                key: value
+                for key, value in criteria.items()
+                if key != "criteria_sha256"
+            }
+            check(
+                "frozen criteria digest",
+                criteria.get("criteria_sha256"),
+                freeze.stable_hash(freeze._finalize(payload)),
+            )
+        else:
+            problems.append("the spec carries no frozen criteria block")
+        # Every evidence binding the spec publishes is a pin of a persisted file.
+        for entry in spec.get("evidence_bindings") or ():
+            source = ROOT / str(entry.get("path"))
+            if not source.is_file():
+                problems.append(
+                    f"the spec binds a missing evidence file: {entry.get('path')}"
+                )
+                continue
+            check(
+                f"spec evidence binding {entry.get('role')!r}",
+                entry.get("sha256"),
+                bundle_digest(source),
+            )
+
+    spec_digest = bundle_digest(paths["spec"]) if paths["spec"].is_file() else None
+    derivation_digest = (
+        bundle_digest(paths["derivation"]) if paths["derivation"].is_file() else None
+    )
+    manifest_digest = (
+        bundle_digest(paths["manifest"]) if paths["manifest"].is_file() else None
+    )
+    sparse_digest = bundle_digest(paths["sparse"]) if paths["sparse"].is_file() else None
+
+    if manifest is not None and spec is not None:
+        frozen_spec = manifest.get("frozen_spec") or {}
+        check("manifest frozen spec digest", frozen_spec.get("sha256"), spec_digest)
+        check(
+            "manifest frozen spec canonical digest",
+            frozen_spec.get("canonical_payload_sha256"),
+            spec.get("canonical_payload_sha256"),
+        )
+        check(
+            "manifest frozen spec byte count",
+            frozen_spec.get("bytes"),
+            len(paths["spec"].read_bytes()),
+        )
+        check("manifest frozen criteria digest", manifest.get("frozen_criteria_sha256"),
+              (spec.get("frozen_criteria") or {}).get("criteria_sha256"))
+        check("manifest frozen criteria payload", manifest.get("frozen_criteria"),
+              spec.get("frozen_criteria"))
+        check(
+            "manifest derivation procedure spec digest",
+            ((manifest.get("derivation_procedure") or {}).get("reference") or {}).get(
+                "spec_sha256"
+            ),
+            spec_digest,
+        )
+        # The manifest re-hashes every derivation input; each is a pinned file.
+        for entry in manifest.get("derivation_inputs") or ():
+            source = ROOT / str(entry.get("path"))
+            if not source.is_file():
+                problems.append(
+                    f"the manifest binds a missing derivation input: {entry.get('path')}"
+                )
+                continue
+            check(
+                f"manifest derivation input {entry.get('role')!r}",
+                entry.get("sha256"),
+                bundle_digest(source),
+            )
+        generated_by = manifest.get("generated_by") or {}
+        for label, key, source in (
+            ("criteria generator", "tool_sha256", freeze.SOURCE_PATH),
+            (
+                "spec generator",
+                "spec_generator_sha256",
+                Path(spec_tool.__file__).resolve(),
+            ),
+        ):
+            if not Path(source).is_file():
+                problems.append(f"the manifest pins a missing {label}: {source}")
+                continue
+            check(
+                f"manifest {label} digest",
+                generated_by.get(key),
+                bundle_digest(Path(source)),
+            )
+        binding = manifest.get("derivation_binding")
+        if not isinstance(binding, dict):
+            problems.append("the manifest publishes no derivation binding")
+        else:
+            check("derivation binding rule", binding.get("rule"), freeze.PROJECTED_BINDING_RULE)
+            projection = binding.get("projection") or {}
+            check(
+                "derivation binding neutralised pointer",
+                projection.get("neutralised_pointer"),
+                BUNDLE_SELF_REFERENCE_POINTER,
+            )
+            check(
+                "derivation binding neutralised sentinel",
+                projection.get("neutralised_value"),
+                freeze.SELF_REFERENCE_SENTINEL,
+            )
+            check(
+                "derivation binding recomputed pointer",
+                projection.get("recomputed_pointer"),
+                BUNDLE_SELF_REFERENCE_CANONICAL_POINTER,
+            )
+            check(
+                "derivation binding serialization",
+                projection.get("serialization"),
+                freeze.PROJECTED_SERIALIZATION,
+            )
+            literal = binding.get("literal_pin") or {}
+            check("manifest literal derivation pin", literal.get("artifact_sha256"),
+                  derivation_digest)
+            check("manifest literal derivation sidecar pin", literal.get("sidecar_sha256"),
+                  bundle_digest(paths["derivation"].with_suffix(".sha256")))
+            spec_pin = binding.get("spec_pin") or {}
+            check("manifest spec pin target", spec_pin.get("frozen_spec_sha256"), spec_digest)
+            check("manifest spec pin matches the frozen spec", spec_pin.get("matches_frozen_spec"),
+                  True)
+            if derivation is not None:
+                reuse = derivation.get("reuse")
+                router_block = reuse.get("router") if isinstance(reuse, dict) else None
+                check(
+                    "manifest projected derivation digest",
+                    binding.get("projected_sha256"),
+                    freeze.projected_derivation_sha256(derivation),
+                )
+                check(
+                    "manifest projected derivation canonical digest",
+                    binding.get("projected_canonical_payload_sha256"),
+                    freeze.projected_derivation_canonical_payload_sha256(derivation),
+                )
+                check(
+                    "manifest spec pin value",
+                    spec_pin.get("value"),
+                    router_block.get("spec_sha256") if isinstance(router_block, dict) else None,
+                )
+
+    if derivation is not None:
+        check(
+            "derivation harness module digest",
+            derivation.get("module_sha256"),
+            bundle_digest(module),
+        )
+        check(
+            "derivation literal spec pin",
+            ((derivation.get("reuse") or {}).get("router") or {}).get("spec_sha256"),
+            spec_digest,
+        )
+
+    if report is not None:
+        bound = report.get("frozen_spec") or {}
+        check("report module digest", report.get("module_sha256"), bundle_digest(module))
+        check("report frozen spec digest", bound.get("sha256"), spec_digest)
+        check(
+            "report frozen spec canonical digest",
+            bound.get("canonical_payload_sha256"),
+            (spec or {}).get("canonical_payload_sha256"),
+        )
+        check(
+            "report frozen criteria digest",
+            bound.get("criteria_sha256"),
+            ((spec or {}).get("frozen_criteria") or {}).get("criteria_sha256"),
+        )
+        check("report frozen criteria payload", report.get("frozen_criteria"),
+              (spec or {}).get("frozen_criteria"))
+        check(
+            "report embedded derivation binding",
+            bound.get("derivation_binding"),
+            ((spec or {}).get("frozen_criteria") or {}).get("derivation"),
+        )
+        check("report frozen manifest digest", (bound.get("manifest") or {}).get("sha256"),
+              manifest_digest)
+        check(
+            "report frozen manifest canonical digest",
+            (bound.get("manifest") or {}).get("canonical_payload_sha256"),
+            (manifest or {}).get("canonical_payload_sha256"),
+        )
+        comparison = report.get("sparse_strata_comparison_binding") or {}
+        check("report sparse companion digest", comparison.get("sha256"), sparse_digest)
+        check(
+            "report sparse companion canonical digest",
+            comparison.get("canonical_payload_sha256"),
+            (sparse or {}).get("canonical_payload_sha256"),
+        )
+        check("report sparse companion payload", report.get("sparse_strata_comparison"), sparse)
+
+    if sparse is not None:
+        check(
+            "sparse companion frozen spec digest",
+            (sparse.get("frozen_spec") or {}).get("sha256"),
+            spec_digest,
+        )
+        check("sparse companion module digest", sparse.get("module_sha256"),
+              bundle_digest(module))
+
+    return problems
+
+
+def copy_bundle(destination: Path) -> Path:
+    """Copy the five persisted bundle files (sidecars included) into ``destination``."""
+    root = destination / BUNDLE_DIR.name
+    for path in (
+        BUNDLE_SPEC_PATH,
+        BUNDLE_MANIFEST_PATH,
+        BUNDLE_REPORT_PATH,
+        BUNDLE_SPARSE_PATH,
+        DERIVATION_PATH,
+    ):
+        (root / path.relative_to(BUNDLE_DIR)).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, root / path.relative_to(BUNDLE_DIR))
+        sidecar = path.with_suffix(".sha256")
+        if sidecar.is_file():
+            shutil.copy2(sidecar, root / sidecar.relative_to(BUNDLE_DIR))
+    return root
 
 
 # ---------------------------------------------------------------------------
@@ -648,6 +1014,152 @@ class PersistedDerivationTests(unittest.TestCase):
         )
 
 
+class PersistedPinRecomputationTests(unittest.TestCase):
+    """The fail-closed guard on every digest nested in a persisted #423 file.
+
+    A pin that stopped matching the bytes it claims to pin is the defect class
+    the ticket names: it survives a self-consistent envelope (the document's own
+    ``canonical_payload_sha256`` and ``.sha256`` sidecar keep matching) while the
+    nested value points at an older spec, derivation, report or manifest.  The
+    guard recomputes every one of them from the persisted bytes, and the negative
+    test below proves the failure is real rather than declared.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Only a worktree that does not carry the bundle at all is skipped: a bundle
+        # directory with a missing or unpinned member is a failure, not a skip.
+        if not BUNDLE_DIR.is_dir():
+            raise unittest.SkipTest("the #423 persisted bundle is absent from this worktree")
+
+    def test_every_nested_pin_recomputes_from_the_persisted_bytes(self) -> None:
+        problems = recompute_nested_pin_problems()
+        self.assertEqual([], problems, "\n".join(problems))
+
+    def test_the_isolated_copy_of_the_bundle_is_clean(self) -> None:
+        """The guard must pass on the committed layout *and* on a faithful copy."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = copy_bundle(Path(directory))
+            self.assertEqual([], recompute_nested_pin_problems(root))
+
+    def test_the_self_reference_projection_rule_is_documented_and_recomputable(self) -> None:
+        """The one auto-referential pin is documented, and the binding still recomputes."""
+        manifest = json.loads(BUNDLE_MANIFEST_PATH.read_text(encoding="utf-8"))
+        derivation = json.loads(DERIVATION_PATH.read_text(encoding="utf-8"))
+        binding = manifest["derivation_binding"]
+        self.assertEqual(binding["rule"], freeze.PROJECTED_BINDING_RULE)
+        projection = binding["projection"]
+        self.assertEqual(projection["neutralised_pointer"], BUNDLE_SELF_REFERENCE_POINTER)
+        self.assertEqual(projection["neutralised_value"], freeze.SELF_REFERENCE_SENTINEL)
+        self.assertEqual(
+            projection["recomputed_pointer"], BUNDLE_SELF_REFERENCE_CANONICAL_POINTER
+        )
+        self.assertEqual(projection["serialization"], freeze.PROJECTED_SERIALIZATION)
+        # The derivation keeps the *literal* pin of the persisted spec bytes ...
+        self.assertEqual(
+            binding["spec_pin"]["value"], derivation["reuse"]["router"]["spec_sha256"]
+        )
+        self.assertEqual(
+            binding["spec_pin"]["frozen_spec_sha256"], bundle_digest(BUNDLE_SPEC_PATH)
+        )
+        self.assertTrue(binding["spec_pin"]["matches_frozen_spec"])
+        # ... while the manifest binds the derivation through the projection, which
+        # neutralises only that self-referential field before hashing.
+        self.assertEqual(
+            binding["projected_sha256"], freeze.projected_derivation_sha256(derivation)
+        )
+        self.assertEqual(
+            binding["projected_canonical_payload_sha256"],
+            freeze.projected_derivation_canonical_payload_sha256(derivation),
+        )
+        neutralised = freeze.derivation_projection(derivation)
+        self.assertEqual(
+            neutralised["reuse"]["router"]["spec_sha256"], freeze.SELF_REFERENCE_SENTINEL
+        )
+
+    def test_a_stale_nested_pin_fails_closed(self) -> None:
+        """Negative proof: one stale pin inside a self-consistent envelope must fail.
+
+        The manifest is rewritten *with* its own canonical payload digest and its
+        ``.sha256`` sidecar recomputed, and the terminal report's manifest pin is
+        re-frozen onto the rewritten bytes, so nothing about the bundle envelope
+        is broken -- only the nested literal derivation pin points at bytes that
+        no longer match.  A guard that trusted the declared values (or that only
+        re-hashed the top-level documents) would pass; this one must fail.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = copy_bundle(Path(directory))
+            manifest_path = root / BUNDLE_MANIFEST_PATH.name
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["derivation_binding"]["literal_pin"]["artifact_sha256"] = "0" * 64
+            manifest["canonical_payload_sha256"] = freeze.stable_hash(
+                freeze._finalize(
+                    {
+                        key: value
+                        for key, value in manifest.items()
+                        if key != "canonical_payload_sha256"
+                    }
+                )
+            )
+            manifest_path.write_bytes(freeze.serialize_manifest(manifest))
+            manifest_path.with_suffix(".sha256").write_text(
+                freeze.manifest_sidecar_text(manifest), encoding="utf-8"
+            )
+            # keep the report's manifest pin consistent with the rewritten bytes,
+            # so the stale derivation pin is the *only* drift left in the bundle
+            report_path = root / BUNDLE_REPORT_PATH.name
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            report["frozen_spec"]["manifest"] = {
+                **report["frozen_spec"]["manifest"],
+                "sha256": bundle_digest(manifest_path),
+                "canonical_payload_sha256": manifest["canonical_payload_sha256"],
+            }
+            report["canonical_payload_sha256"] = _bundle_canonical_digest(report)
+            report_path.write_text(
+                harness.persisted_artifact_text(report), encoding="utf-8"
+            )
+            report_path.with_suffix(".sha256").write_text(
+                harness.terminal_sidecar_text(report, name=report_path.name),
+                encoding="utf-8",
+            )
+            # the envelope is self-consistent again: same canonical digest, same sidecar rule
+            expected = (
+                f"manifest literal derivation pin: declared {'0' * 64!r} != recomputed "
+                f"{bundle_digest(root / 'derivation' / DERIVATION_PATH.name)!r}"
+            )
+            self.assertEqual(recompute_nested_pin_problems(root), [expected])
+
+    def test_each_persisted_pin_source_is_individually_guarded(self) -> None:
+        """Every pinned file is recomputed, so tampering with any of them is caught."""
+        for name in (
+            BUNDLE_SPEC_PATH.name,
+            BUNDLE_MANIFEST_PATH.name,
+            DERIVATION_PATH.name,
+            BUNDLE_REPORT_PATH.name,
+            BUNDLE_SPARSE_PATH.name,
+        ):
+            with self.subTest(artifact=name), tempfile.TemporaryDirectory() as directory:
+                root = copy_bundle(Path(directory))
+                relative = (
+                    Path("derivation") / DERIVATION_PATH.name
+                    if name == DERIVATION_PATH.name
+                    else Path(name)
+                )
+                target = root / relative
+                # append a byte to the artifact: its own sidecar no longer pins it,
+                # and every parent pin that names it drifts with it.
+                target.write_bytes(target.read_bytes() + b"\n")
+                problems = recompute_nested_pin_problems(root)
+                self.assertTrue(problems, f"a mutated {name} was not detected")
+
+    def test_a_missing_sidecar_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = copy_bundle(Path(directory))
+            (root / BUNDLE_MANIFEST_PATH.name).with_suffix(".sha256").unlink()
+            problems = recompute_nested_pin_problems(root)
+            self.assertIn("the manifest carries no .sha256 sidecar", problems)
+
+
 class DependencySurfaceTests(unittest.TestCase):
     def test_module_depends_on_the_standard_library_only(self) -> None:
         tree = ast.parse(MODULE_PATH.read_text(encoding="utf-8"))
@@ -665,4 +1177,11 @@ class DependencySurfaceTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    if PINS_ONLY:
+        # The workflow's nested-pin step runs the guard in isolation: a stale pin
+        # must fail in seconds instead of after the full cross-fitted suite.
+        outcome = unittest.TextTestRunner(verbosity=2).run(
+            unittest.TestLoader().loadTestsFromTestCase(PersistedPinRecomputationTests)
+        )
+        raise SystemExit(0 if outcome.wasSuccessful() else 1)
     unittest.main(verbosity=2)

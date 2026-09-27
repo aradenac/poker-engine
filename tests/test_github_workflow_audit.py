@@ -378,6 +378,19 @@ ISSUE_423_EXTERNAL_DEPENDENCIES=(
 )
 ISSUE_423_TRIGGER_REQUIRED_PATHS=*ISSUE_423_CHANGED_PATHS,*ISSUE_423_EXTERNAL_DEPENDENCIES
 
+# The #423 nested-pin recomputation guard: the fail-closed assertion that every
+# digest nested in a persisted #423 file -- the spec, its frozen criteria, the
+# derivation, the terminal report and its sparse companion, the criteria manifest
+# -- is recomputed from the persisted bytes, with the documented projection rule
+# (``projection_neutralising_the_self_referential_spec_pin``) breaking the
+# self-referential spec <-> derivation cycle.  The guard lives in the
+# cross-fitted-harness suite (``PersistedPinRecomputationTests``) and the runner
+# must execute it as its own always-active step, gated by the flag below: a
+# `paths` declaration that never runs the guard is not enough.
+ISSUE_423_PIN_GUARD_SUITE="tests/training/test_evaluate_hybrid_router_cv.py"
+ISSUE_423_PIN_GUARD_FLAG="POKER_HYBRID_ROUTER_CV_PINS_ONLY"
+ISSUE_423_PIN_GUARD_TEST="PersistedPinRecomputationTests"
+
 
 def executed_suites(text: str, required: tuple[str, ...]) -> set[str]:
     """Suites the workflow really runs: a `python3 <suite>` command outside a comment."""
@@ -499,6 +512,52 @@ def issue423_uncovered_paths(text: str, paths=ISSUE_423_TRIGGER_REQUIRED_PATHS) 
 def issue423_changed_paths() -> list[str] | None:
     """The real #423 change surface, or None when git history is unavailable."""
     return issue_changed_paths(423)
+
+
+def workflow_steps(text: str) -> list[tuple[str, str]]:
+    """`(name, body)` for every step of a single-job workflow, comments dropped.
+
+    Only the flat shape the issue runners use is supported.  Comments are removed
+    before a step is inspected, so a commented-out command can never satisfy the
+    nested-pin guard.
+    """
+    lines=text.splitlines()
+    start=next((index for index,line in enumerate(lines) if line.rstrip()=="    steps:"),None)
+    if start is None: return []
+    steps: list[tuple[str,str]]=[]
+    name: str | None=None
+    body: list[str]=[]
+    for raw in lines[start+1:]:
+        line="" if raw.lstrip().startswith("#") else raw
+        match=re.match(r"^\s*-\s*(?:name|uses):\s*(.*?)\s*$",line)
+        if match:
+            if name is not None: steps.append((name,"\n".join(body)))
+            name=match.group(1)
+            body=[line]
+            continue
+        if name is not None: body.append(line)
+    if name is not None: steps.append((name,"\n".join(body)))
+    return steps
+
+
+def pin_guard_steps(text: str) -> list[str]:
+    """The bodies of the *always-active* steps that execute the #423 nested-pin guard.
+
+    A step gated by an ``if:`` condition can be skipped, so it is not the
+    always-active guard the ticket asks for and does not count.
+    """
+    running=[]
+    for _name,body in workflow_steps(text):
+        if ISSUE_423_PIN_GUARD_FLAG not in body: continue
+        if re.search(r"^\s*if:",body,re.M): continue
+        running.append(body)
+    return running
+
+
+def pin_guard_executes_the_suite(text: str) -> bool:
+    """True when a guard step really runs the guard-bearing suite (not just names it)."""
+    body="\n".join(pin_guard_steps(text))
+    return bool(re.search(r"python3\s+"+re.escape(ISSUE_423_PIN_GUARD_SUITE)+r"(?:\s|$)",body))
 
 
 HISTORICAL_EVIDENCE=(
@@ -943,6 +1002,54 @@ jobs:
             with self.subTest(suite=suite):
                 dropped="\n".join(line for line in text.splitlines() if suite not in line)
                 self.assertIn(suite,set(ISSUE_423_REQUIRED_SUITES)-issue423_executed_suites(dropped))
+
+    def test_issue423_workflow_executes_the_nested_pin_guard(self):
+        """The nested-pin recomputation guard must be a real, always-active step.
+
+        The guard lives in ``ISSUE_423_PIN_GUARD_SUITE`` (the cross-fitted harness
+        suite) and is executed in a dedicated step gated by
+        ``ISSUE_423_PIN_GUARD_FLAG``; that step must run ``python3 <suite>``
+        itself, and the suite must stay in the required set so the runner's
+        ``paths`` filters keep covering it.
+        """
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        self.assertIn(ISSUE_423_PIN_GUARD_SUITE,ISSUE_423_REQUIRED_SUITES)
+        self.assertTrue(pin_guard_steps(text),"the runner declares no nested-pin guard step")
+        self.assertTrue(pin_guard_executes_the_suite(text),
+                        "the nested-pin guard step does not execute the guard suite")
+        # The manifest constant must name the real guard class, so it cannot rot.
+        self.assertIn(f"class {ISSUE_423_PIN_GUARD_TEST}(",
+                      (ROOT/ISSUE_423_PIN_GUARD_SUITE).read_text())
+        # The guard-bearing suite also keeps its own scored step, so a green run
+        # always covered both the score and the pin recomputation.
+        self.assertIn(ISSUE_423_PIN_GUARD_SUITE,issue423_executed_suites(text))
+
+    def test_issue423_nested_pin_guard_is_not_a_mere_declaration(self):
+        """Negative guard: declaring the suite in ``paths`` -- or dropping the guard step -- must be flagged."""
+        text=(ROOT/ISSUE_423_WORKFLOW).read_text()
+        # (a) a runner that only declares the suite in its `paths` filters carries no guard step.
+        declaration_only="\n".join(
+            line for line in text.splitlines()
+            if line.lstrip().startswith(("-","'")) or line.startswith("on:") or line.startswith("  paths:"))
+        self.assertEqual([],pin_guard_steps(declaration_only))
+        self.assertFalse(pin_guard_executes_the_suite(declaration_only))
+        # (b) dropping (renaming) the guard flag leaves the guard unexecuted.
+        renamed=text.replace(ISSUE_423_PIN_GUARD_FLAG,"POKER_HYBRID_ROUTER_CV_PINS_DISABLED")
+        self.assertEqual([],pin_guard_steps(renamed))
+        self.assertFalse(pin_guard_executes_the_suite(renamed))
+        # (c) a guard step that runs some other suite is not the guard either.
+        substituted=text.replace(
+            f"python3 {ISSUE_423_PIN_GUARD_SUITE}",
+            "python3 tests/training/test_evaluate_hybrid_router_cv_v2.py")
+        self.assertFalse(pin_guard_executes_the_suite(substituted))
+        # (d) a guard step gated by an `if:` condition can be skipped, so it is not
+        # an always-active guard.
+        gated=text.replace(
+            "        env:\n          "+ISSUE_423_PIN_GUARD_FLAG,
+            "        if: false\n        env:\n          "+ISSUE_423_PIN_GUARD_FLAG)
+        self.assertNotEqual(gated,text,"the gated-step negative control did not apply")
+        self.assertEqual([],pin_guard_steps(gated))
+        self.assertFalse(pin_guard_executes_the_suite(gated))
 
     def test_issue423_workflow_is_read_only_and_registered(self):
         """The #423 runner publishes no artifact and never widens the write surface."""
