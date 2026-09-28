@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -114,6 +115,19 @@ def _changed_paths(repo: Path) -> set[str]:
     )
 
 
+def _content_snapshot(repo: Path, paths: set[str]) -> dict[str, str | None]:
+    snapshot: dict[str, str | None] = {}
+    for relative in sorted(paths):
+        path = repo / relative
+        if path.is_symlink():
+            snapshot[relative] = "symlink:" + os.readlink(path)
+        elif path.is_file():
+            snapshot[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+        else:
+            snapshot[relative] = None
+    return snapshot
+
+
 def resolve(repo: Path, issue_dir: Path, branch: str, max_conflicts: int, attempts_per_conflict: int) -> dict[str, Any]:
     if _run(repo, ["status", "--porcelain", "--untracked-files=all"]).stdout.strip():
         raise RuntimeError("managed worktree is dirty before rebase")
@@ -138,6 +152,10 @@ def resolve(repo: Path, issue_dir: Path, branch: str, max_conflicts: int, attemp
                     _run(repo, ["rebase", "--abort"], check=False)
                     raise RuntimeError("rebase failed without unmerged paths")
                 conflict_head = _run(repo, ["rev-parse", "HEAD"]).stdout.strip()
+                baseline_changed = _changed_paths(repo)
+                baseline_outside = baseline_changed - conflicts
+                baseline_outside_content = _content_snapshot(repo, baseline_outside)
+                baseline_index = _run(repo, ["diff", "--cached", "--binary"], check=False).stdout
                 resolved = False
                 diagnostics: list[dict[str, Any]] = []
                 for attempt in range(1, attempts_per_conflict + 1):
@@ -147,8 +165,13 @@ def resolve(repo: Path, issue_dir: Path, branch: str, max_conflicts: int, attemp
                         _run(repo, ["rebase", "--abort"], check=False)
                         raise RuntimeError("resolver changed HEAD")
                     outside = _changed_paths(repo) - conflicts
+                    outside_changed = (
+                        outside != baseline_outside
+                        or _content_snapshot(repo, baseline_outside) != baseline_outside_content
+                        or _run(repo, ["diff", "--cached", "--binary"], check=False).stdout != baseline_index
+                    )
                     markers = _has_markers(repo, conflicts)
-                    if result["returncode"] == 0 and not outside and not markers:
+                    if result["returncode"] == 0 and not outside_changed and not markers:
                         resolved = True
                         break
                 if not resolved:

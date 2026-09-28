@@ -162,7 +162,9 @@ class RebaseResolverTests(unittest.TestCase):
             self.git(seed, "push", "-u", "origin", "main")
             self.git(seed, "checkout", "-b", "feature")
             (seed / "conflict.txt").write_text("feature\n")
-            self.git(seed, "commit", "-am", "feature")
+            (seed / "companion.txt").write_text("feature companion\n")
+            self.git(seed, "add", "conflict.txt", "companion.txt")
+            self.git(seed, "commit", "-m", "feature")
             self.git(seed, "push", "-u", "origin", "feature")
             feature_head = self.git(seed, "rev-parse", "HEAD")
             self.git(seed, "checkout", "main")
@@ -184,6 +186,7 @@ class RebaseResolverTests(unittest.TestCase):
             inner = json.loads(result["stdout"])
             self.assertEqual(inner["expected_remote_head"], feature_head)
             self.assertEqual((work / "conflict.txt").read_text(), "main + feature\n")
+            self.assertEqual((work / "companion.txt").read_text(), "feature companion\n")
             self.assertTrue(self.git(work, "merge-base", "--is-ancestor", "origin/main", "HEAD") == "")
 
 
