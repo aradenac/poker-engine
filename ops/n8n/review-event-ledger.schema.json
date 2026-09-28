@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "poker-orchestrator-review-event-ledger/v1",
+  "title": "Processed pull-request review event ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "pr_number", "processed"],
+  "properties": {
+    "version": {"const": 1},
+    "pr_number": {"type": "integer", "minimum": 1},
+    "processed": {
+      "type": "object",
+      "propertyNames": {"pattern": "^(review|review_comment):[0-9]+$"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fingerprint", "outcome"],
+        "properties": {
+          "fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "outcome": {"enum": ["IGNORED_NON_ACTIONABLE", "PLANNED", "ALREADY_SATISFIED"]},
+          "updated_at": {"type": ["string", "null"]},
+          "commit_id": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}
