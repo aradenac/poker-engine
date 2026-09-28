@@ -138,8 +138,8 @@ vm.runInContext([
   ...[
     'reviewInboxAdvancedIsOpen','reviewInboxAdvancedFormatter','reviewInboxAdvancedProvenance',
     'reviewInboxAdvancedView','reviewInboxAdvancedModelLabel','reviewInboxAdvancedOodLabel',
-    'reviewInboxAdvancedField','reviewInboxAdvancedPanel','toggleReviewInboxAdvanced','paintReviewInboxRows',
-    'reviewInboxKeepAdvancedVisible',
+    'reviewInboxAdvancedField','reviewInboxAdvancedPanel','reviewInboxCloseOtherAdvancedPanels',
+    'toggleReviewInboxAdvanced','paintReviewInboxRows','reviewInboxKeepAdvancedVisible',
   ].map(name=>extractFn(source,name)),
 ].join('\n'),sandbox);
 

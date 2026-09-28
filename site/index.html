@@ -7496,9 +7496,38 @@ function reviewInboxAdvancedPanel(item,handId){
   );
   return panel;
 }
+/* #424 backlog — accès garanti aux détails : au plus un panneau avancé est
+   ouvert à la fois. `.hh-list` est `overflow:hidden` (contrats #394/#395) et
+   `reviewInboxKeepAdvancedVisible` ne replie jamais une ligne dont le panneau
+   est visible : avec 2+ panneaux ouverts, plus aucune ligne n'était repliable
+   et un panneau ouvert pouvait rester clippé derrière la coque. Ouvrir un
+   panneau referme donc tout autre panneau visible (id retiré de l'ensemble
+   ouvert, `hidden=true`, bouton de bascule réinitialisé). Le panneau ciblé est
+   épargné par la comparaison d'`id`. Couche de présentation pure : ni la
+   fenêtre paginée ni la taille de page ne changent. */
+function reviewInboxCloseOtherAdvancedPanels(handId){
+  const list=hhHandsEl;if(!list?.querySelectorAll)return;
+  const keepId=`reviewInboxAdvanced${String(handId||"")}`;
+  for(const panel of Array.from(list.querySelectorAll(".review-inbox-advanced:not([hidden])"))){
+    if(panel.id===keepId)continue;
+    REVIEW_INBOX_ADVANCED_OPEN.delete(String(panel.dataset?.reviewInboxAdvanced||""));
+    panel.hidden=true;
+    const toggle=list.querySelector(`[aria-controls="${panel.id}"]`);
+    if(toggle){
+      toggle.setAttribute("aria-expanded","false");
+      toggle.textContent="Détails avancés";
+    }
+  }
+}
 function toggleReviewInboxAdvanced(handId,button,panel){
   const id=String(handId||""),open=!panel.hidden;
-  if(open)REVIEW_INBOX_ADVANCED_OPEN.delete(id);else REVIEW_INBOX_ADVANCED_OPEN.add(id);
+  if(open)REVIEW_INBOX_ADVANCED_OPEN.delete(id);
+  else{
+    // Un seul panneau ouvert : on referme tout autre panneau encore visible
+    // *avant* d'ouvrir celui demandé.
+    reviewInboxCloseOtherAdvancedPanels(id);
+    REVIEW_INBOX_ADVANCED_OPEN.add(id);
+  }
   panel.hidden=open;
   button.setAttribute("aria-expanded",String(!open));
   button.textContent=open?"Détails avancés":"Masquer les détails";

@@ -124,6 +124,22 @@ FOLD_WIRING = (
     "[data-review-inbox-folded]{display:none}",
 )
 
+# #424 backlog — acces garanti aux details : au plus un panneau avance est
+# ouvert a la fois. Le helper est declare, il ferme tout autre panneau visible
+# (selecteur servi `:not([hidden])`), retire son id de l'ensemble ouvert et
+# reinitialise son bouton de bascule via `[aria-controls="<panelId>"]` ; le
+# toggle l'appelle *avant* d'ajouter le panneau demande.
+SINGLE_PANEL_WIRING = (
+    "function reviewInboxCloseOtherAdvancedPanels(handId){",
+    'Array.from(list.querySelectorAll(".review-inbox-advanced:not([hidden])"))',
+    "REVIEW_INBOX_ADVANCED_OPEN.delete(String(panel.dataset?.reviewInboxAdvanced||\"\"));",
+    "panel.hidden=true;",
+    'const toggle=list.querySelector(`[aria-controls="${panel.id}"]`);',
+    'toggle.setAttribute("aria-expanded","false");',
+    'toggle.textContent="Détails avancés";',
+    "    reviewInboxCloseOtherAdvancedPanels(id);\n",
+)
+
 # #424 F2 — la marque d'estimation de la *rangee principale* est independante du
 # verdict trop proche. `rowEstimated` reflète le drapeau `is_estimate` *ou* le
 # support `SPARSE_ESTIMATED` (les deux signaux du formateur, jamais recalculés),
@@ -165,6 +181,9 @@ MUTATIONS = {
     "drop-pager": ('id="hhListPager"', ""),
     # le repli borne perd son effet CSS : une ligne repliee reserverait sa hauteur
     "drop-fold-css": ("[data-review-inbox-folded]{display:none}", ""),
+    # #424 backlog — ouvrir un panneau ne referme plus les autres : rien ne
+    # garantit l'acces aux details quand deux panneaux sont ouverts.
+    "drop-single-panel-close": ("    reviewInboxCloseOtherAdvancedPanels(id);\n", ""),
     # #424 F2 — `rowEstimated` ignore le drapeau independant `is_estimate`
     "row-estimate-ignores-flag": ("rowHybrid.is_estimate===true||", ""),
     # #424 F2 — la marque d'estimation disparait derriere le verdict trop proche
@@ -235,6 +254,12 @@ def check(index_text: str) -> None:
     for token in ADVANCED_VERDICT_PRIORITY:
         present(token)
 
+    # 10. #424 backlog — l'acces aux details est garanti par un seul panneau
+    #     avance ouvert a la fois : le helper est declare, il referme tout autre
+    #     panneau visible et reinitialise son bouton, et le toggle l'appelle.
+    for token in SINGLE_PANEL_WIRING:
+        present(token)
+
 
 # --------------------------------------------------------------------------- #
 # #424 F1 — smoke reproductible de l'ouverture du panneau avance sur une page
@@ -267,6 +292,12 @@ const MUTATIONS={
   ],
   // la regle CSS du repli disparait : une ligne repliee reserverait sa hauteur
   'drop-fold-css':[FOLD_RULE,''],
+  // #424 backlog : ouvrir un second panneau ne referme plus le premier, donc
+  // deux panneaux restent visibles en meme temps dans la coque bornee.
+  'no-single-panel-close':[
+    '    reviewInboxCloseOtherAdvancedPanels(id);\n',
+    '',
+  ],
 };
 let source=fs.readFileSync('site/index.html','utf8');
 const mutation=process.env.ADVANCED_FOLD_MUTATION||'';
@@ -318,6 +349,9 @@ function matches(el,sel){
   if(sel==='.review-inbox-advanced')return tokens(el).includes('review-inbox-advanced');
   if(sel==='.review-inbox-advanced:not([hidden])')
     return tokens(el).includes('review-inbox-advanced')&&el.hidden!==true;
+  // `[aria-controls="<panelId>"]` : le bouton de bascule d'un panneau avance.
+  const attr=sel.match(/^\[aria-controls="([^"]*)"\]$/);
+  if(attr)return el.getAttribute('aria-controls')===attr[1];
   throw new Error('unsupported selector: '+sel);
 }
 function descendants(el,out=[]){for(const child of el.children||[]){out.push(child);descendants(child,out);}return out;}
@@ -346,10 +380,19 @@ function makeRow(id){
   row.className='hh-hand review-inbox-row';
   row.dataset.handId=String(id);
   row.baseHeight=ROW_HEIGHT;
+  const toggle=makeElement('button');
+  toggle.className='review-inbox-advanced-toggle';
+  toggle.setAttribute('aria-controls','reviewInboxAdvanced'+String(id));
+  toggle.setAttribute('aria-expanded','false');
+  toggle.textContent='Détails avancés';
+  row.append(toggle);
   const panel=makeElement('div');
   panel.className='review-inbox-advanced';
+  panel.id='reviewInboxAdvanced'+String(id);
+  panel.dataset.reviewInboxAdvanced=String(id);
   panel.hidden=true;
   row.appendChild(panel);
+  row.toggle=toggle;
   row.panel=panel;
   return row;
 }
@@ -390,7 +433,8 @@ function harness(){
     ...[
       'reviewInboxAdvancedIsOpen','reviewInboxIsHeightBound','reviewInboxRowPitch','reviewInboxFitCount',
       'reviewInboxBoundedSize','reviewInboxPageSizeGuess','updateReviewInboxPager','reviewInboxPageWindow',
-      'renderReviewInboxPage','toggleReviewInboxAdvanced','reviewInboxKeepAdvancedVisible',
+      'renderReviewInboxPage','reviewInboxCloseOtherAdvancedPanels','toggleReviewInboxAdvanced',
+      'reviewInboxKeepAdvancedVisible',
     ].map(name=>extractFn(source,name)),
   ].join('\n'),sandbox);
   return {sandbox,state,hhHandsEl,paints};
@@ -427,7 +471,51 @@ function openScenario({total=32,index='last'}={}){
   return {opened,closed};
 }
 
-const results={last:openScenario({index:'last'}),middle:openScenario({index:5}),mutation};
+// #424 backlog — deux ouvertures successives *sans* fermeture intermediaire :
+// le second panneau ne peut s'ouvrir qu'en refermant le premier (au plus un
+// `.review-inbox-advanced` visible a la fois), sinon le repli borne ne peut
+// plus garantir l'acces aux details dans `.hh-list` (`overflow:hidden`).
+function successiveOpenScenario({total=32,firstIndex=null,secondIndex=null}={}){
+  const h=harness();
+  const hands=Array.from({length:total},(_,i)=>({id:String(i+1)}));
+  h.sandbox.renderReviewInboxPage(hands,new Map());
+  const rows=h.hhHandsEl.children;
+  const openIds=()=>Array.from(vm.runInContext('REVIEW_INBOX_ADVANCED_OPEN',h.sandbox));
+  const firstRow=rows[firstIndex==null?rows.length-1:firstIndex];
+  const secondRow=rows[secondIndex==null?Math.max(0,rows.length-3):secondIndex];
+  const read=()=>({
+    openIds:openIds(),
+    openPanels:rows.filter(row=>row.panel.hidden===false).map(row=>String(row.dataset.handId)),
+    firstHand:String(firstRow.dataset.handId),
+    secondHand:String(secondRow.dataset.handId),
+    firstHidden:firstRow.panel.hidden,
+    firstExpanded:firstRow.toggle.getAttribute('aria-expanded'),
+    firstText:firstRow.toggle.textContent,
+    secondHidden:secondRow.panel.hidden,
+    secondExpanded:secondRow.toggle.getAttribute('aria-expanded'),
+    secondText:secondRow.toggle.textContent,
+    secondFolded:folded(secondRow),
+    foldedIds:rows.filter(folded).map(row=>String(row.dataset.handId)),
+    scrollHeight:h.hhHandsEl.scrollHeight,
+    clientHeight:h.hhHandsEl.clientHeight,
+    overflow:h.hhHandsEl.scrollHeight>h.hhHandsEl.clientHeight+1,
+  });
+  const initial=read();
+  h.sandbox.toggleReviewInboxAdvanced(firstRow.dataset.handId,firstRow.toggle,firstRow.panel);
+  const afterFirst=read();
+  // 2e ouverture, sans fermer la 1re : le toggle servi referme le premier
+  // panneau (id retire, bouton reinitialise) avant d'ouvrir le second.
+  h.sandbox.toggleReviewInboxAdvanced(secondRow.dataset.handId,secondRow.toggle,secondRow.panel);
+  const afterSecond=read();
+  return {initial,afterFirst,afterSecond};
+}
+
+const results={
+  last:openScenario({index:'last'}),
+  middle:openScenario({index:5}),
+  successive:successiveOpenScenario(),
+  mutation,
+};
 process.stdout.write(JSON.stringify(results));
 """
 
@@ -856,6 +944,36 @@ def check_fold_runtime() -> None:
     assert middle["openedHand"] in middle["visibleIds"], middle
     assert set(middle["visibleIds"]) - {middle["openedHand"]}, middle
 
+    # #424 backlog — deux ouvertures successives, sans fermeture intermediaire :
+    # le second panneau ne s'ouvre qu'en refermant le premier, dont le bouton de
+    # bascule est reinitialise ; le panneau restant ouvert reste atteignable dans
+    # la coque bornee (pas de depassement, ligne ouverte non repliee).
+    successive = results["successive"]
+    before = successive["initial"]
+    after_first = successive["afterFirst"]
+    after_second = successive["afterSecond"]
+    assert before["openIds"] == [] and before["openPanels"] == [], before
+    assert after_first["firstHand"] != after_second["secondHand"], successive
+    assert after_first["firstHidden"] is False, after_first
+    assert after_first["firstExpanded"] == "true", after_first
+    assert after_first["firstText"] == "Masquer les détails", after_first
+    assert after_first["openIds"] == [after_first["firstHand"]], after_first
+    assert after_first["openPanels"] == [after_first["firstHand"]], after_first
+    # Le premier panneau est referme et son bouton reinitialise, le second est
+    # le seul ouvert et il n'est jamais replie.
+    assert after_second["firstHidden"] is True, after_second
+    assert after_second["firstExpanded"] == "false", after_second
+    assert after_second["firstText"] == "Détails avancés", after_second
+    assert after_second["openIds"] == [after_second["secondHand"]], after_second
+    assert after_second["openPanels"] == [after_second["secondHand"]], after_second
+    assert after_second["secondHidden"] is False, after_second
+    assert after_second["secondExpanded"] == "true", after_second
+    assert after_second["secondText"] == "Masquer les détails", after_second
+    assert after_second["secondFolded"] is False, after_second
+    assert after_second["secondHand"] not in after_second["foldedIds"], after_second
+    assert after_second["scrollHeight"] <= after_second["clientHeight"] + 1, after_second
+    assert not after_second["overflow"], after_second
+
     # Non-vacuite : sans l'appel de repli, sans son effet, ou sans la regle CSS,
     # la page deborde derriere `overflow:hidden`.
     for name in ("no-fold-call", "fold-keeps-rows-visible", "drop-fold-css"):
@@ -864,6 +982,14 @@ def check_fold_runtime() -> None:
             f"la mutation {name} doit faire deborder la page ouverte (repli non load-bearing)",
             mutated,
         )
+
+    # Non-vacuite : sans la fermeture des autres panneaux, les deux panneaux
+    # restent visibles en meme temps (acces aux details non garanti).
+    unguarded = run_fold_harness("no-single-panel-close")["successive"]["afterSecond"]
+    assert len(unguarded["openPanels"]) > 1, (
+        "la mutation no-single-panel-close doit laisser deux panneaux ouverts",
+        unguarded,
+    )
 
 
 def run_row_estimate_harness(mutation: str | None = None) -> dict:
