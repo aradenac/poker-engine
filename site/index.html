@@ -260,6 +260,32 @@
   .review-inbox-status-badge.incomplete{border-color:rgba(241,198,109,.38);color:#f1c66d}
   .review-inbox-reviewed-toggle{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:8px;white-space:nowrap}
   .review-inbox-reviewed-toggle input{width:auto}
+  /* #424 T4 — vue avancée d'une main : repliée par défaut, la rangée simple ne
+     peint ni route, ni hash de modèle, ni note d'incertitude. Le `:not([hidden])`
+     est volontaire : le `display:grid` déclaré ne doit jamais neutraliser
+     l'attribut `hidden`, sinon la vue simple afficherait le détail sans action. */
+  .review-inbox-advanced-toggle{display:inline-flex;align-items:center;gap:4px;width:auto;padding:2px 6px;
+    border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--muted);font-size:8px;font-weight:800}
+  .review-inbox-advanced-toggle[aria-expanded="true"]{border-color:rgba(92,225,185,.38);color:var(--accent2)}
+  .review-inbox-advanced{grid-column:1/-1;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:#0d1627;color:var(--muted)}
+  .review-inbox-advanced:not([hidden]){display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 10px}
+  .review-inbox-advanced-field{min-width:0}
+  .review-inbox-advanced-field span{display:block;font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .review-inbox-advanced-field b{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:var(--text);word-break:break-word}
+  .review-inbox-advanced-field.tone-positive b{color:var(--accent2)}
+  .review-inbox-advanced-field.tone-caution b{color:#f1c66d}
+  .review-inbox-advanced-field.tone-abstain b{color:var(--muted)}
+  /* La cellule statut reste sur une ligne pour la vue simple : seul un panneau
+     avancé (donc une main hybridée) fait replier le toggle sous le badge. */
+  .review-inbox-status:has(.review-inbox-advanced-toggle){flex-wrap:wrap}
+  /* #424 F1 — repli borné des lignes sans panneau ouvert. Dans la coque desktop
+     `.hh-list` ne défile pas (`overflow:hidden`, contrats #394/#395) : ouvrir le
+     panneau avancé d'une ligne ajoute de la hauteur et ferait passer la ligne
+     ouverte (et son panneau) derrière la coque. `reviewInboxKeepAdvancedVisible`
+     replie (`display:none`) les lignes sans panneau ouvert jusqu'à ce que la
+     coque porte l'ensemble — la fenêtre paginée et la taille de page ne changent
+     pas, et le repli est levé avant toute nouvelle peinture. */
+  [data-review-inbox-folded]{display:none}
   @media(max-width:900px){
     .review-inbox-row{grid-template-columns:minmax(0,1fr) 132px}
     .review-inbox-open{grid-template-columns:126px 90px 1fr}
@@ -1865,6 +1891,7 @@
 <script src="./analytics/analysis-state.js"></script>
 <script src="./analytics/leak-analyzer.js"></script>
 <script src="./analytics/review-score-adapter.js"></script>
+<script src="./analytics/review-confidence-formatter.js"></script>
 <script src="./analytics/review-inbox.js"></script>
 <script src="./analytics/leak-training-target.js"></script>
 <script src="./training/leak-scenario-selector.js"></script>
@@ -7316,6 +7343,7 @@ function renderHistoryHands(){
   }
 
   renderReviewInboxPage(hands,byId);
+  reviewInboxKeepAdvancedVisible();
 }
 /* Peint une page bornée de l'inbox. La barre de pagination est rendue *avant* la
    mesure (elle fait partie de la hauteur contrainte) : sinon la place rendue à
@@ -7376,6 +7404,160 @@ function renderReviewInboxPage(hands,byId){
   state.reviewInboxPageSize=Math.max(1,size);
   updateReviewInboxPager({page:pageWindow.page,pages:pageWindow.pages,total:hands.length,first:pageWindow.start,last:pageWindow.end});
 }
+/* #424 T4 — vue avancée d'un item de Review Inbox. C'est une couche de
+   présentation pure : elle ne lit que la projection `hybrid`
+   (`poker-review-hybrid-result/v1`) déjà décidée en amont, à travers
+   `review-confidence-formatter.js`. Aucun EV, aucun support et aucune
+   probabilité ne sont recalculés ici. Le panneau reste replié par défaut : la
+   rangée simple ne peint ni route, ni hash de modèle, ni note d'incertitude tant
+   que l'utilisateur n'a pas déplié le détail (action explicite). Une main sans
+   projection hybride ne reçoit ni bouton ni panneau : rien n'est fabriqué à
+   partir de l'absence. */
+const REVIEW_INBOX_ADVANCED_OPEN=new Set();
+const REVIEW_INBOX_ADVANCED_ABSTENTION="Abstention · aucune action mise en avant";
+function reviewInboxAdvancedIsOpen(handId){
+  return REVIEW_INBOX_ADVANCED_OPEN.has(String(handId||""));
+}
+function reviewInboxAdvancedFormatter(){
+  return window.PokerReviewConfidenceFormatter||null;
+}
+function reviewInboxAdvancedProvenance(item){
+  const Formatter=reviewInboxAdvancedFormatter();
+  if(!Formatter?.formatAdvancedProvenance)return null;
+  return Formatter.formatAdvancedProvenance(item?.hybrid||null);
+}
+function reviewInboxAdvancedView(item){
+  const Formatter=reviewInboxAdvancedFormatter(),hybrid=item?.hybrid||null;
+  if(!Formatter||!hybrid)return null;
+  const provenance=reviewInboxAdvancedProvenance(item);
+  const support=Formatter.formatSupportStateLabel(hybrid.support_state);
+  const abstentionReason=Formatter.formatAbstentionReason(hybrid);
+  const tooClose=Formatter.formatTooCloseNotice(hybrid);
+  // L'état d'abstention est lu sur les entrées autoritaires (`abstains`,
+  // `support_state`) ; il n'est jamais déduit de l'EV ni d'un texte de raison.
+  const abstains=hybrid.abstains===true||String(hybrid.abstains||"").toUpperCase()==="TRUE"||provenance?.support_state===Formatter.SUPPORT_STATES.OOD_UNSUPPORTED;
+  // #424 F3 — l'abstention prime sur le verdict trop proche. Dès que
+  // `abstains`/`OOD_UNSUPPORTED` est vrai, le panneau avancé affiche l'état
+  // d'abstention même si `too_close`/`LOW_CONFIDENCE_TOO_CLOSE` est également
+  // vrai sur le même hybrid. `formatAbstentionReason` renvoie volontairement ''
+  // dans ces états (ABSTENTION_NOTICE), donc le repli explicite est appliqué en
+  // premier : `tooClose` ne peut plus masquer l'abstention.
+  const verdict=abstains?(abstentionReason||REVIEW_INBOX_ADVANCED_ABSTENTION):(tooClose||abstentionReason);
+  return {
+    support_state:provenance?.support_state||null,
+    support_state_label:support.label_fr,
+    support_state_tone:support.tone,
+    confidence_level:Formatter.formatConfidenceLevel(hybrid.confidence_level),
+    ev_display:Formatter.formatEvDisplay(hybrid),
+    uncertainty_note:provenance?.uncertainty_note||"",
+    abstention_reason:abstentionReason,
+    too_close_notice:tooClose,
+    verdict,
+    provenance
+  };
+}
+function reviewInboxAdvancedModelLabel(provenance){
+  const id=provenance?.model_id||null,hash=provenance?.model_hash||null;
+  if(id&&hash)return `${id} · ${hash}`;
+  return id||hash||"";
+}
+function reviewInboxAdvancedOodLabel(provenance){
+  const status=provenance?.ood_status||null,reason=provenance?.ood_reason||null;
+  if(status&&reason)return `${status} · ${reason}`;
+  return status||reason||"";
+}
+function reviewInboxAdvancedField(label,value,tone){
+  const field=document.createElement("div");
+  field.className="review-inbox-advanced-field"+(tone?` tone-${tone}`:"");
+  const name=document.createElement("span");name.textContent=label;
+  const text=document.createElement("b");text.textContent=value||"—";
+  field.append(name,text);
+  return field;
+}
+function reviewInboxAdvancedPanel(item,handId){
+  const panel=document.createElement("div");
+  panel.className="review-inbox-advanced";
+  panel.id=`reviewInboxAdvanced${String(handId||"")}`;
+  panel.dataset.reviewInboxAdvanced=String(handId||"");
+  // Replié par défaut : seul `toggleReviewInboxAdvanced` peut l'ouvrir.
+  panel.hidden=!reviewInboxAdvancedIsOpen(handId);
+  const view=reviewInboxAdvancedView(item);
+  if(!view)return panel;
+  panel.append(
+    reviewInboxAdvancedField("Support",view.support_state_label,view.support_state_tone),
+    reviewInboxAdvancedField("Confiance",view.confidence_level),
+    reviewInboxAdvancedField("EV",view.ev_display),
+    reviewInboxAdvancedField("Note d’incertitude",view.uncertainty_note),
+    reviewInboxAdvancedField("Abstention / verdict",view.verdict),
+    reviewInboxAdvancedField("Route",view.provenance?.route),
+    reviewInboxAdvancedField("Source",view.provenance?.source),
+    reviewInboxAdvancedField("Modèle",reviewInboxAdvancedModelLabel(view.provenance)),
+    reviewInboxAdvancedField("OOD",reviewInboxAdvancedOodLabel(view.provenance))
+  );
+  return panel;
+}
+/* #424 backlog — accès garanti aux détails : au plus un panneau avancé est
+   ouvert à la fois. `.hh-list` est `overflow:hidden` (contrats #394/#395) et
+   `reviewInboxKeepAdvancedVisible` ne replie jamais une ligne dont le panneau
+   est visible : avec 2+ panneaux ouverts, plus aucune ligne n'était repliable
+   et un panneau ouvert pouvait rester clippé derrière la coque. Ouvrir un
+   panneau referme donc tout autre panneau visible (id retiré de l'ensemble
+   ouvert, `hidden=true`, bouton de bascule réinitialisé). Le panneau ciblé est
+   épargné par la comparaison d'`id`. Couche de présentation pure : ni la
+   fenêtre paginée ni la taille de page ne changent. */
+function reviewInboxCloseOtherAdvancedPanels(handId){
+  const list=hhHandsEl;if(!list?.querySelectorAll)return;
+  const keepId=`reviewInboxAdvanced${String(handId||"")}`;
+  for(const panel of Array.from(list.querySelectorAll(".review-inbox-advanced:not([hidden])"))){
+    if(panel.id===keepId)continue;
+    REVIEW_INBOX_ADVANCED_OPEN.delete(String(panel.dataset?.reviewInboxAdvanced||""));
+    panel.hidden=true;
+    const toggle=list.querySelector(`[aria-controls="${panel.id}"]`);
+    if(toggle){
+      toggle.setAttribute("aria-expanded","false");
+      toggle.textContent="Détails avancés";
+    }
+  }
+}
+function toggleReviewInboxAdvanced(handId,button,panel){
+  const id=String(handId||""),open=!panel.hidden;
+  if(open)REVIEW_INBOX_ADVANCED_OPEN.delete(id);
+  else{
+    // Un seul panneau ouvert : on referme tout autre panneau encore visible
+    // *avant* d'ouvrir celui demandé.
+    reviewInboxCloseOtherAdvancedPanels(id);
+    REVIEW_INBOX_ADVANCED_OPEN.add(id);
+  }
+  panel.hidden=open;
+  button.setAttribute("aria-expanded",String(!open));
+  button.textContent=open?"Détails avancés":"Masquer les détails";
+  reviewInboxKeepAdvancedVisible();
+  return !open;
+}
+/* #424 F1 — garder la ligne ouverte et son panneau atteignables dans la coque
+   bornée. `.hh-list` est `overflow:hidden` (aucun scroll de liste : contrats
+   #394/#395) : la hauteur ajoutée par le panneau avancé ferait passer la
+   dernière ligne — et son panneau — derrière la coque. On replie donc des lignes
+   (jamais une ligne dont le panneau est ouvert) jusqu'à ce que la coque porte
+   l'ensemble : la fenêtre visible reste contiguë et se termine sur — ou après —
+   la ligne ouverte, comme un défilement local. Les lignes repliées
+   réapparaissent dès qu'un panneau est fermé ou que la liste est re-peinte.
+   C'est une couche de présentation pure : ni la fenêtre paginée ni la taille de
+   page ne changent, et aucun EV, range ou résultat scientifique n'est
+   recalculé. */
+function reviewInboxKeepAdvancedVisible(){
+  const list=hhHandsEl;
+  if(!list||!reviewInboxIsHeightBound())return;
+  const rows=Array.from(list.querySelectorAll(".hh-hand"));
+  for(const row of rows)row.removeAttribute("data-review-inbox-folded");
+  for(const row of rows){
+    // Une ligne dont le panneau est ouvert est celle qu'on garde atteignable :
+    // elle n'est jamais repliée.
+    if(row.querySelector(".review-inbox-advanced:not([hidden])"))continue;
+    if(list.scrollHeight<=list.clientHeight+1)break;
+    row.setAttribute("data-review-inbox-folded","");
+  }
+}
 function paintReviewInboxRows(pageHands,byId){
   hhHandsEl.innerHTML="";
   for(const h of pageHands){
@@ -7392,7 +7574,50 @@ function paintReviewInboxRows(pageHands,byId){
     const analysisState=item.analysis_state||null;
     const analysisStateLabel=item.analysis_state_label||analysisState?.state||item.status_label;
     const analysisReasons=(analysisState?.reason_codes||item.coverage?.reasons||[]).join(" · ");
-    const decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
+    let decisionText=decision?`Joué ${item.action_played} → reco ${item.action_recommended}`:"Aucune décision comparable";
+    // #424 T2 — la rangée principale est gatée sur la projection `hybrid` déjà
+    // décidée en amont (passthrough). Seules les entrées autoritaires
+    // (`abstains`, `support_state`, `too_close`) et les formateurs exportés sont
+    // lus ici : aucun EV, aucun support et aucune probabilité ne sont recalculés.
+    // Une main sans projection, en STRONG_SUPPORT ou ROBUST, ne passe jamais par
+    // ce chemin et garde donc la rangée historique à l'identique.
+    const rowHybrid=item.hybrid||null;
+    const rowFormatter=rowHybrid?reviewInboxAdvancedFormatter():null;
+    const rowSupportState=rowHybrid?(reviewInboxAdvancedProvenance(item)?.support_state||null):null;
+    const rowAbstains=!!rowHybrid&&(rowHybrid.abstains===true||String(rowHybrid.abstains||"").toUpperCase()==="TRUE"||rowSupportState===rowFormatter?.SUPPORT_STATES?.OOD_UNSUPPORTED);
+    const rowTooClose=!rowAbstains&&!!(rowFormatter&&rowFormatter.formatTooCloseNotice(rowHybrid));
+    // #424 F2 — l'estimation est portée par `is_estimate` *ou* par le support
+    // `SPARSE_ESTIMATED`, exactement comme `isEstimated` du formateur : les deux
+    // signaux sont indépendants. Le formateur reste requis (fail-closed) : sans
+    // lui aucune marque n'est fabriquée dans la coque.
+    const rowEstimated=!rowAbstains&&!!rowFormatter&&(rowHybrid.is_estimate===true||rowSupportState===rowFormatter.SUPPORT_STATES.SPARSE_ESTIMATED);
+    // Cellule « Perte EV » : le gabarit historique reste la valeur par défaut et
+    // n'est remplacé que dans les états où un montant actionnable serait trompeur
+    // (abstention / non supporté) ou surestimé (estimation).
+    let lossCell=`Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small>`;
+    // #424 F2 — la marque d'estimation est un *ajout*, jamais une alternative :
+    // un item peut être simultanément trop proche (`too_close` ou
+    // `LOW_CONFIDENCE_TOO_CLOSE`) et estimé (`is_estimate`). Elle réutilise
+    // uniquement les exports du formateur (préfixe / suffixe).
+    const markEstimated=()=>{
+      decisionText=rowFormatter.ESTIMATE_PREFIX+' '+decisionText+' '+rowFormatter.ESTIMATE_SUFFIX;
+      lossCell=`Perte EV<b>${escapeHtml(rowFormatter.ESTIMATE_PREFIX+' '+formatBB(item.total_loss_bb)+' '+rowFormatter.ESTIMATE_SUFFIX)}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small>`;
+    };
+    if(rowAbstains){
+      // Abstention explicite ou spot hors distribution : aucune reco et aucune
+      // perte EV numérique, seulement l'état d'abstention déjà servi.
+      decisionText=REVIEW_INBOX_ADVANCED_ABSTENTION;
+      lossCell=`Perte EV<b>—</b><small>${escapeHtml(REVIEW_INBOX_ADVANCED_ABSTENTION)}</small>`;
+    }else if(rowTooClose){
+      // Verdict trop proche : le formateur interdit de désigner une action unique.
+      decisionText=rowFormatter.formatTooCloseNotice(rowHybrid);
+      // La marque d'estimation survit au verdict trop proche (#424 F2).
+      if(rowEstimated)markEstimated();
+    }else if(rowEstimated){
+      // Estimation : les marques viennent du formateur (préfixe / suffixe
+      // exportés), jamais d'une chaîne dupliquée dans la coque.
+      markEstimated();
+    }
     const robustness=modelBRobustnessViewForDecision(h.id,item.deep_link?.step_index);
     const robustnessText=modelBRobustnessStatusText(robustness);
     const statusCls=analysisState&&analysisState.state!=="ANALYSE_DISPONIBLE"?" incomplete":item.status==="INCOMPLETE_ANALYSIS"?" incomplete":"";
@@ -7401,7 +7626,7 @@ function paintReviewInboxRows(pageHands,byId){
     open.setAttribute("aria-label",`Ouvrir la main ${h.id} sur ${decisionText}`);
     const display=reviewHandDisplayMeta(h);
     open.innerHTML=`<span class="review-inbox-hand-result"><strong>Hero ${escapeHtml(display.hero_cards)}</strong><small>Résultat réel · <span class="review-real-result ${escapeHtml(display.result.state)}">${escapeHtml(display.result.text)}</span></small></span>
-      <span class="review-inbox-loss">Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small></span>
+      <span class="review-inbox-loss">${lossCell}</span>
       <span class="review-inbox-spot"><strong>${escapeHtml(item.position)} · ${escapeHtml(item.spot_family)}</strong><small>${escapeHtml(item.main_street)} · Main #${escapeHtml(h.id)} · ${escapeHtml(coverage)}</small></span>
       <span class="review-inbox-decision"><strong>${escapeHtml(decisionText)}</strong><small>${escapeHtml(markers||"action")} · ${escapeHtml(robustnessText)}</small></span>`;
     open.onclick=()=>openReviewInboxItem(item);
@@ -7410,6 +7635,20 @@ function paintReviewInboxRows(pageHands,byId){
     status.innerHTML=`<span class="review-inbox-status-badge${statusCls}" title="${escapeHtml([item.status_label,analysisReasons].filter(Boolean).join(" · "))}" data-analysis-state="${escapeHtml(analysisState?.state||"")}">${escapeHtml(analysisStateLabel)}</span><label class="review-inbox-reviewed-toggle"><input type="checkbox" data-review-inbox-reviewed="${escapeHtml(h.id)}" ${item.user_review?.reviewed?"checked":""}> Revue</label>`;
     status.querySelector("[data-review-inbox-reviewed]")?.addEventListener("change",ev=>setReviewInboxReviewed(h.id,ev.currentTarget.checked));
     row.append(open,status);
+    // #424 T4 — la vue avancée n'existe que pour une main qui porte la projection
+    // hybride : sans elle la rangée reste exactement la rangée simple (ni bouton,
+    // ni panneau), et le détail de provenance n'est peint qu'après un toggle.
+    if(item.hybrid){
+      const advanced=reviewInboxAdvancedPanel(item,h.id);
+      const advancedToggle=document.createElement("button");
+      advancedToggle.type="button";advancedToggle.className="review-inbox-advanced-toggle";
+      advancedToggle.setAttribute("aria-controls",advanced.id);
+      advancedToggle.setAttribute("aria-expanded",String(reviewInboxAdvancedIsOpen(h.id)));
+      advancedToggle.textContent=reviewInboxAdvancedIsOpen(h.id)?"Masquer les détails":"Détails avancés";
+      advancedToggle.addEventListener("click",()=>toggleReviewInboxAdvanced(h.id,advancedToggle,advanced));
+      status.append(advancedToggle);
+      row.append(advanced);
+    }
     hhHandsEl.appendChild(row);
   }
 }
@@ -7695,6 +7934,7 @@ function relayoutReviewInbox(){
   if(!hands.length)return;
   const byId=new Map((state.reviewInboxView?.items||[]).map(item=>[String(item.hand_id),item]));
   renderReviewInboxPage(hands,byId);
+  reviewInboxKeepAdvancedVisible();
 }
 window.addEventListener("resize",()=>{
   // Anti-rebond : une seule re-mesure après la fin du redimensionnement.

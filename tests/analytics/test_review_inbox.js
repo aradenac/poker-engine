@@ -980,6 +980,109 @@ const t3Inbox=Inbox.buildReviewInbox({
   assert.equal(runtime,src,'site/analytics/review-inbox.js must stay byte-identical to src/analytics/review-inbox.js');
 }
 
+// #424 T3: the optional `hybrid` projection carried by the persisted review
+// input is transported verbatim to the matching item. An input without it keeps
+// the explicit `null` schema default, and the passthrough must never change any
+// other field, ordering or filter facet of the pre-existing item.
+{
+  const hybrid={
+    schema:'poker-review-hybrid-result/v1',support_state:'LOW_CONFIDENCE_TOO_CLOSE',confidence_level:'LOW',
+    is_estimate:true,ev_bb:-0.7,uncertainty_note:'Marge trop faible pour conclure',abstains:false,abstention_reason:null,too_close:true,
+    provenance:{route:'HYBRID_BACKOFF',source:'model_b+model_a',model_id:'gbm-2026-09',model_hash:'sha256:abcd',ood_status:'IN_DISTRIBUTION',ood_reason:null}
+  };
+  for(const item of inbox.items)assert.equal(item.hybrid,null,'an input without hybrid yields the explicit null schema default');
+  const withHybridScores=JSON.parse(JSON.stringify(reviewScores));
+  withHybridScores['100001'].hybrid=hybrid;
+  const carried=Inbox.buildReviewInbox({
+    reviewScores:withHybridScores,
+    hhSources:[{name:'all.txt',content:[HH1,HH2,HH3,HH4].join('\n')}],
+    scope:SCOPE,user_metadata:metadata2
+  });
+  const rows=new Map(carried.items.map(x=>[x.hand_id,x]));
+  assert.ok('hybrid' in rows.get('100001'),'an item always carries the hybrid key');
+  assert.equal(rows.get('100001').hybrid,withHybridScores['100001'].hybrid,'the hybrid value must be transported by reference, unchanged');
+  assert.equal(rows.get('100001').hybrid.provenance.route,'HYBRID_BACKOFF','the whole projection is carried, provenance included');
+  for(const id of ['100002','100003','100004'])assert.equal(rows.get(id).hybrid,null,'a hand without hybrid keeps the explicit null default');
+  const strip=item=>{const copy={...item};delete copy.hybrid;return copy;};
+  for(const id of ['100001','100002','100003','100004']){
+    assert.deepEqual(strip(rows.get(id)),strip(byId.get(id)),'the hybrid passthrough must not alter any other field of item '+id);
+  }
+  assert.deepEqual(carried.items.map(x=>x.hand_id),inbox.items.map(x=>x.hand_id),'the default ordering is untouched by the hybrid passthrough');
+  assert.deepEqual(rows.get('100001').facets,byId.get('100001').facets,'the filter facets are untouched by the hybrid passthrough');
+  const schema=JSON.parse(fs.readFileSync(path.join(__dirname,'../../contracts/analytics/review-inbox.schema.json'),'utf8'));
+  assert.ok(schema.$defs.item.properties.hybrid,'the item contract declares the optional hybrid projection');
+  assert.equal(schema.$defs.item.required.includes('hybrid'),false,'hybrid stays optional for backward compatibility');
+}
+
+// #424 T5: the no-`hybrid` path stays a strict non-regression. A hand the
+// caller never annotated keeps exactly its pre-#424 item, so the pagination
+// order, the filter facets and every filtered/sorted query result must be
+// byte-identical to the run that carries a hybrid projection. The optional
+// projection can therefore never move a row, a facet or a page boundary.
+{
+  const hybrid={
+    schema:'poker-review-hybrid-result/v1',support_state:'SPARSE_ESTIMATED',confidence_level:'MEDIUM',
+    is_estimate:true,ev_bb:0.42,uncertainty_note:'Intervalle large sur cet echantillon',abstains:false,abstention_reason:null,too_close:false,
+    provenance:{route:'HYBRID_BACKOFF',source:'model_b+model_a',model_id:'gbm-2026-09',model_hash:'sha256:abcd',ood_status:'IN_DISTRIBUTION',ood_reason:null}
+  };
+  const hybridScores=JSON.parse(JSON.stringify(t3ReviewScores));
+  hybridScores['200002'].hybrid=hybrid;
+  const build=scores=>Inbox.buildReviewInbox({
+    reviewScores:scores,
+    hhSources:[{name:'t3.txt',content:t3Source}],
+    scope:SCOPE,user_metadata:{},
+    hand_results:{'200001':0,'200002':6.5,'200003':-4,'200004':6.5}
+  });
+  const plain=build(t3ReviewScores),mixed=build(hybridScores);
+  const strip=item=>{const copy={...item};delete copy.hybrid;return copy;};
+
+  // The no-hybrid input yields the explicit null schema default on every item,
+  // and never a fabricated support state.
+  for(const item of plain.items)assert.equal(item.hybrid,null,'an input without hybrid keeps the pre-existing null default');
+
+  // Same inbox envelope: the passthrough touches no top-level field.
+  for(const key of ['schema','event_schema','adapter_schema','scope_key','user_metadata_schema']){
+    assert.deepEqual(mixed[key],plain[key],'the hybrid passthrough must not touch inbox.'+key);
+  }
+  assert.deepEqual(mixed.scope,plain.scope,'the resolved scope is untouched');
+  assert.deepEqual(mixed.warnings,plain.warnings,'no warning is invented by the hybrid passthrough');
+
+  // Same pagination order: a hand's rank is decided by the pre-existing fields.
+  assert.deepEqual(mixed.items.map(x=>x.hand_id),plain.items.map(x=>x.hand_id),'the pagination order is untouched');
+  assert.deepEqual(mixed.items.map(x=>x.hand_id),t3Inbox.items.map(x=>x.hand_id),'the hybrid build paginates exactly like the pre-existing t3 inbox');
+
+  // Same pagination windows: the 5-hand fixture spans 3 pages of 2 hands.
+  const pages=items=>{const out=[];for(let i=0;i<items.length;i+=2)out.push(items.slice(i,i+2).map(x=>x.hand_id));return out;};
+  assert.deepEqual(pages(mixed.items),pages(plain.items),'the page boundaries are untouched by the hybrid passthrough');
+  assert.deepEqual(pages(mixed.items),pages(t3Inbox.items));
+
+  // Same filter facets on every item, not only the hybrided one.
+  const facets=inbox=>Object.fromEntries(inbox.items.map(x=>[x.hand_id,x.facets]));
+  assert.deepEqual(facets(mixed),facets(plain),'every filter facet is untouched');
+  assert.deepEqual(facets(plain),facets(t3Inbox),'the no-hybrid facets are byte-identical to the pre-existing inbox');
+
+  // Same filtered + sorted result for every sort mode and filter combination:
+  // only the added nullable `hybrid` key may differ.
+  const filters=[{},{street:'PREFLOP'},{street:['PREFLOP','FLOP']},{position:['BTN','BB']},{status:'TO_REVIEW'},{coverage:'COMPLETE'},{analysis_state:'ANALYSE_DISPONIBLE'},{result:'WIN'},{min_loss_bb:1},{sizing_error:true},{jam:false}];
+  for(const sort of Inbox.SORT_MODES){
+    for(const filter of filters){
+      const a=Inbox.queryInbox(mixed,filter,sort),b=Inbox.queryInbox(plain,filter,sort),label=sort+' '+JSON.stringify(filter);
+      assert.deepEqual(a.items.map(x=>x.hand_id),b.items.map(x=>x.hand_id),'the filtered/sorted ids are untouched for '+label);
+      assert.deepEqual(a.filters,b.filters,'the echoed filters are untouched for '+label);
+      assert.equal(a.sort,b.sort,'the resolved sort is untouched for '+label);
+      assert.deepEqual(a.items.map(strip),b.items.map(strip),'the hybrid passthrough changes nothing else for '+label);
+    }
+  }
+
+  // Strict: the only difference between the two runs is the added nullable key,
+  // and the hybrided hand carries its projection verbatim.
+  assert.deepEqual(mixed.items.map(strip),plain.items.map(strip),'the no-hybrid build is identical modulo the added hybrid key');
+  assert.equal(mixed.items.find(x=>x.hand_id==='200002').hybrid,hybridScores['200002'].hybrid,'the hybrid payload is carried by reference');
+  for(const id of ['200001','200003','200004','200005']){
+    assert.equal(mixed.items.find(x=>x.hand_id===id).hybrid,null,'a hand without hybrid keeps the explicit null default');
+  }
+}
+
 console.log(JSON.stringify({
   status:'PASS',
   schema:Inbox.INBOX_SCHEMA,

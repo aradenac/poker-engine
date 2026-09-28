@@ -253,4 +253,28 @@ assert.equal(Adapter.OVERRIDE_SOURCE,'PERSONAL_OVERRIDE');
   assert.equal(hasExactCustomLabel(without),false);
 }
 
+// #424 T3: the optional hand-level `hybrid` projection of the persisted review
+// data is a pure passthrough. The adapter carries it verbatim, hand by hand, and
+// adds no key when the input has none, so an input without `hybrid` returns the
+// exact pre-#424 result and the decision events are never altered.
+{
+  const hybrid={
+    schema:'poker-review-hybrid-result/v1',support_state:'ROBUST',confidence_level:'MEDIUM',
+    is_estimate:false,ev_bb:0.42,uncertainty_note:null,abstains:false,abstention_reason:null,too_close:false,
+    provenance:{route:'HYBRID_PRIMARY',source:'model_b',model_id:'gbm-2026-09',model_hash:'sha256:abcd',ood_status:'IN_DISTRIBUTION',ood_reason:null}
+  };
+  assert.equal(Object.prototype.hasOwnProperty.call(adapted,'hybrids'),false,'an input without hybrid adds no passthrough key');
+  const withHybridScores=JSON.parse(JSON.stringify(reviewScores));
+  withHybridScores['100001'].hybrid=hybrid;
+  const carried=Adapter.adaptPersistedReviewData({reviewScores:withHybridScores,hhSources:[{name:'hands.txt',content:HH1+'\n'+HH2}],scope});
+  assert.equal(carried.hybrids['100001'],hybrid,'the adapter must carry the hybrid value unchanged');
+  assert.equal(carried.hybrids['100002'],undefined,'a hand without hybrid carries nothing');
+  assert.deepEqual(carried.events,adapted.events,'the hybrid passthrough must not alter the decision events');
+  const nullHybridScores=JSON.parse(JSON.stringify(reviewScores));
+  nullHybridScores['100001'].hybrid=null;
+  const nullCarried=Adapter.adaptPersistedReviewData({reviewScores:nullHybridScores,hhSources:[{name:'hands.txt',content:HH1+'\n'+HH2}],scope});
+  assert.equal(Object.prototype.hasOwnProperty.call(nullCarried,'hybrids'),false,'hybrid:null stays absent');
+  assert.deepEqual(nullCarried.events,adapted.events,'a null hybrid must not alter the decision events');
+}
+
 console.log(JSON.stringify({status:'PASS',schema:Adapter.ADAPTER_SCHEMA,events:adapted.events.length,total_loss_bb:report.summary.total_loss_bb}));

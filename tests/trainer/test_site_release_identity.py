@@ -30,6 +30,7 @@ def main() -> int:
         "site/analytics/review-score-adapter.js",
         "site/analytics/review-inbox.js",
         "site/analytics/leak-training-target.js",
+        "site/analytics/review-confidence-formatter.js",
         "site/analytics/review-dashboard.js",
         "site/analytics/model-b-robustness.js",
         "site/training/leak-scenario-selector.js",
