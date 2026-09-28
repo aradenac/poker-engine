@@ -123,6 +123,27 @@ class RobustnessContractTest(unittest.TestCase):
             contract.validate_robustness_input(bad)
         self.assertEqual(raised.exception.reason_code, "SUPPORT_INVALID")
 
+    def test_non_string_support_status_fails_closed_without_type_error(self) -> None:
+        document = load_json(FIXTURES / "robust_consistent.json")
+        # A non-hashable status (list/dict) must fail closed as SUPPORT_INVALID,
+        # never escape as an uncaught TypeError from the membership test.
+        for bad_status in ([], ["CONSISTENT"], {}, {"value": "CONSISTENT"}, 1, None):
+            for mutate in (
+                lambda doc, value=bad_status: doc["hero_entry"]["support"].__setitem__(
+                    "status", value
+                ),
+                lambda doc, value=bad_status: doc["hero_entry"]["alternatives"][0][
+                    "support"
+                ].__setitem__("status", value),
+            ):
+                with self.subTest(status=repr(bad_status)):
+                    bad = copy.deepcopy(document)
+                    mutate(bad)
+                    with self.assertRaises(contract.RobustnessContractError) as raised:
+                        contract.validate_robustness_input(bad)
+                    self.assertEqual(raised.exception.reason_code, "SUPPORT_INVALID")
+                    self.assertIn("status", raised.exception.message)
+
     def test_unknown_and_forbidden_fields_fail_closed(self) -> None:
         document = load_json(FIXTURES / "robust_consistent.json")
         bad = copy.deepcopy(document)

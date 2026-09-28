@@ -26,12 +26,14 @@ Run it with::
 from __future__ import annotations
 
 import copy
+import io
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
@@ -41,6 +43,7 @@ if str(ROOT) not in sys.path:
 
 from tools.simulation import model_b_hero_robustness_adapter as adapter  # noqa: E402
 from tools.simulation import model_b_hero_robustness_classify as classifier  # noqa: E402
+from tools.simulation import model_b_hero_robustness_contract as contract  # noqa: E402
 from tools.simulation import model_b_preflop_sensitivity_harness as harness  # noqa: E402
 
 FIXTURES = ROOT / "tests/fixtures/model_b_hero_robustness"
@@ -348,6 +351,46 @@ class FailClosedTest(unittest.TestCase):
             self.assertEqual(payload["outcome"], "FAIL_CLOSED")
             self.assertEqual(payload["reason_code"], "SCHEMA_MISMATCH")
             self.assertNotIn("status", payload)
+
+    def test_raw_contract_error_is_emitted_as_structured_json(self) -> None:
+        # A ``RobustnessContractError`` raised below ``main`` (validation /
+        # projection / classification) must never surface as a raw traceback:
+        # the CLI keeps emitting the structured adapter error payload with exit
+        # code 2, exactly as it does for an ``AdapterError``.
+        fixture_path = FIXTURES / "robust_consistent.json"
+        for stage, error in (
+            (
+                "validation",
+                contract.RobustnessContractError(
+                    "SUPPORT_INVALID",
+                    "$.hero_entry.support.status must be a string",
+                    reason_codes=("SUPPORT_INVALID",),
+                    details={"field": "status"},
+                ),
+            ),
+            (
+                "classification",
+                contract.RobustnessContractError(
+                    "UNCERTAINTY_WIDTH_MISMATCH",
+                    "$.hero_entry.uncertainty.width_bb contradicts the ci95 bounds",
+                ),
+            ),
+        ):
+            with self.subTest(stage=stage):
+                stdout, stderr = io.StringIO(), io.StringIO()
+                with mock.patch.object(adapter, "run_fixture", side_effect=error):
+                    with redirect_stdout(stdout), redirect_stderr(stderr):
+                        code = adapter.main(["--fixture", str(fixture_path)])
+                self.assertEqual(code, 2)
+                self.assertEqual(stdout.getvalue(), "")
+                payload = json.loads(stderr.getvalue())
+                self.assertEqual(payload["schema"], adapter.ADAPTER_ERROR_SCHEMA)
+                self.assertEqual(payload["outcome"], "FAIL_CLOSED")
+                self.assertEqual(payload["reason_code"], error.reason_code)
+                self.assertEqual(payload["reason_codes"], list(error.reason_codes))
+                self.assertEqual(payload["message"], str(error))
+                self.assertEqual(payload.get("details", {}), dict(error.details))
+                self.assertNotIn("status", payload)
 
     def test_invalid_mutations_fail_closed_with_an_explicit_reason_code(self) -> None:
         base = fixture("robust_consistent.json")

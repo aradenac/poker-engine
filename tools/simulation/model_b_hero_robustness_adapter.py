@@ -199,13 +199,16 @@ class AdapterError(ValueError):
 
     def to_dict(self) -> dict[str, Any]:
         """Return the error payload; it never carries a #425 ``status``."""
-        return {
+        payload: dict[str, Any] = {
             "schema": ADAPTER_ERROR_SCHEMA,
             "outcome": "FAIL_CLOSED",
             "reason_code": self.reason_code,
             "reason_codes": list(self.reason_codes),
             "message": self.message,
         }
+        if self.details:
+            payload["details"] = dict(self.details)
+        return payload
 
 
 def _is_number(value: Any) -> bool:
@@ -538,8 +541,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             context_path=args.context,
             **source_340_paths,
         )
-    except AdapterError as exc:
-        print(json.dumps(exc.to_dict(), indent=2, sort_keys=True), file=sys.stderr)
+    except (AdapterError, RobustnessContractError) as exc:
+        # A ``RobustnessContractError`` may still escape ``run_fixture`` from the
+        # validation, projection or classification stages (a layer that has not
+        # wrapped it yet). It is normalised onto the adapter's error contract so
+        # the CLI always emits the same structured JSON payload and exit code 2
+        # instead of a raw Python traceback.
+        error = exc if isinstance(exc, AdapterError) else AdapterError.from_error(exc)
+        print(json.dumps(error.to_dict(), indent=2, sort_keys=True), file=sys.stderr)
         return 2
 
     rendered = render_report(report)

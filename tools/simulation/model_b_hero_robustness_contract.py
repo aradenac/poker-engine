@@ -468,11 +468,22 @@ def _validate_support(support: Any, path: str) -> None:
             reason_codes=("MISSING_SUPPORT", "SUPPORT_INCOMPLETE"),
             details={"missing": missing},
         )
-    if support.get("status") not in SUPPORT_STATUSES:
+    status = support.get("status")
+    # Guard the type *before* the membership test: a non-hashable status (a list
+    # or a dict) would otherwise raise an uncaught ``TypeError`` instead of the
+    # explicit fail-closed ``SUPPORT_INVALID`` this contract promises.
+    if not isinstance(status, str):
         raise RobustnessContractError(
             "SUPPORT_INVALID",
-            f"{path}.support.status {support.get('status')!r} is outside the closed "
-            f"#425 vocabulary {sorted(SUPPORT_STATUSES)}",
+            f"{path}.support.status must be a string drawn from the closed #425 "
+            f"vocabulary {sorted(SUPPORT_STATUSES)}; "
+            f"got {type(status).__name__} {status!r}",
+        )
+    if status not in SUPPORT_STATUSES:
+        raise RobustnessContractError(
+            "SUPPORT_INVALID",
+            f"{path}.support.status {status!r} is outside the closed #425 "
+            f"vocabulary {sorted(SUPPORT_STATUSES)}",
         )
     if not isinstance(support.get("tier"), str) or not support.get("tier"):
         raise RobustnessContractError(
