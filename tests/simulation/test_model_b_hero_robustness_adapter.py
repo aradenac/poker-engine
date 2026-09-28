@@ -65,6 +65,7 @@ FIXTURE_STATUSES = {
     "too_close.json": "TOO_CLOSE",
     "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
     "ood_unsupported.json": "OOD_UNTESTABLE",
+    "best_alternative_clearly_superior.json": "SENSITIVE",
 }
 INVALID_FIXTURE = "schema_mismatch.json"
 
@@ -679,17 +680,21 @@ class ClearlySuperiorAlternativeRegressionTest(unittest.TestCase):
         """Derive a coherent ``robust_consistent.json`` with a new Hero EV.
 
         The alternatives keep their committed public identity (action/sizing),
-        only their synthetic EV envelope moves, and every paired delta is kept
-        consistent with the derived point estimates (delta = alternative - hero).
+        only their synthetic EV envelope moves, and every paired delta keeps the
+        schema's direction: ``hero_entry.paired_delta`` is Hero versus the best
+        alternative, and each ``alternatives[].paired_delta`` is that alternative
+        versus the best alternative (so the best-ranked one is the auto-relative
+        ``0.0`` the classifier must never read as Hero evidence).
         """
 
         document = fixture("robust_consistent.json")
         entry = document["hero_entry"]
         entry["ev"] = hero_ev
         entry["uncertainty"] = self._bracket(hero_ev)
+        entry["paired_delta"] = hero_ev - self.BEST_EV
         for alternative, ev in zip(entry["alternatives"], (self.BEST_EV, self.SECOND_EV)):
             alternative["ev"] = ev
-            alternative["paired_delta"] = ev - hero_ev
+            alternative["paired_delta"] = ev - self.BEST_EV
             alternative["uncertainty"] = self._bracket(ev)
         return document
 

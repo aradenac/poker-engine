@@ -1,8 +1,8 @@
 {
   "artifacts": {
-    "INDEPENDENCE_PROOF.json": "4343179ae337def6dd466bb63e6446c9d989563d11df78f2980eb55696a39603",
-    "INPUT_SCHEMA_REF.json": "4cd0bf5d01039309dc8a353a8319f0a4e2b81070e74f91dcc1eac3f3bec950ae",
-    "RUN_PROVENANCE.json": "3e6c5d7f47aefcc5fa026b8a8a18ed79309375e043460e1a9856851f64cef6ba"
+    "INDEPENDENCE_PROOF.json": "663ab9ae40e5d65c26c1ffe216c93bf705037e912292f614c955fc81c65e540c",
+    "INPUT_SCHEMA_REF.json": "27d37436282c473af1c0527d40e56cc859c6d129d8b3aeb24f5df51910809599",
+    "RUN_PROVENANCE.json": "3e4d378b7ba1e2fbd88dcaaa9f49a76291bbd5615392295864d9f1137586a065"
   },
   "determinism": {
     "guarantee": "two regenerations over the same inputs are byte-identical",
@@ -12,6 +12,7 @@
   "expectations": {
     "all_match": true,
     "expected": {
+      "best_alternative_clearly_superior.json": "SENSITIVE",
       "multi_sizing.json": "SENSITIVE",
       "ood_unsupported.json": "OOD_UNTESTABLE",
       "robust_consistent.json": "CONSISTENT",
@@ -19,6 +20,7 @@
       "too_close.json": "TOO_CLOSE"
     },
     "observed": {
+      "best_alternative_clearly_superior.json": "SENSITIVE",
       "multi_sizing.json": "SENSITIVE",
       "ood_unsupported.json": "OOD_UNTESTABLE",
       "robust_consistent.json": "CONSISTENT",
@@ -29,7 +31,7 @@
       "schema_mismatch.json": "SCHEMA_MISMATCH"
     }
   },
-  "fixture_count": 5,
+  "fixture_count": 6,
   "independence": {
     "forbidden_hits": [],
     "independence_clean": true,
@@ -41,6 +43,16 @@
   "regeneration_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --out-dir training/runs/20260927_model_b_hero_robustness_consumer_v1",
   "report_schema": "hero-model-b-hero-robustness-consumer-report/v1",
   "reports": {
+    "best_alternative_clearly_superior.report.json": {
+      "fixture": "best_alternative_clearly_superior.json",
+      "harness_report_sha256": "7805b5d6fd4be6f539367b949cc7cfe5f6748e754806dc9eedab69924771aa1d",
+      "harness_request_sha256": "93195acbf498e44433d8f1c7fba33a1e3b4fc4c1e8b4b423a6d96770d1b4da5f",
+      "reason_codes": [
+        "BEST_ALTERNATIVE_CLEARLY_SUPERIOR"
+      ],
+      "sha256": "f496556e9b54cd09c339717dd8bb90e3ea9780a8a374f7bab186045823b80869",
+      "status": "SENSITIVE"
+    },
     "multi_sizing.report.json": {
       "fixture": "multi_sizing.json",
       "harness_report_sha256": "212e94aa5ffb311dd54983f1baaa2ef578d0570657e5e35abde3e2dab52f352b",
@@ -107,7 +119,7 @@
     "CONSISTENT": 1,
     "INSUFFICIENT_SUPPORT": 1,
     "OOD_UNTESTABLE": 1,
-    "SENSITIVE": 1,
+    "SENSITIVE": 2,
     "TOO_CLOSE": 1
   }
 }

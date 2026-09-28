@@ -39,6 +39,7 @@ FIXTURE_STATUSES = {
     "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
     "ood_unsupported.json": "OOD_UNTESTABLE",
     "multi_sizing.json": "SENSITIVE",
+    "best_alternative_clearly_superior.json": "SENSITIVE",
 }
 
 
@@ -52,7 +53,9 @@ def _entry(**overrides) -> dict:
         "sizing": 5.0,
         "ev": 1.0,
         "uncertainty": {"ci95": [0.97, 1.03], "width_bb": 0.06, "source": "s"},
-        "paired_delta": 0.0,
+        # `hero_entry.paired_delta` is Hero versus the *best* alternative, so the
+        # coherent default is the Hero advantage over `_alternative()`'s 0.5 EV.
+        "paired_delta": 0.5,
         "route_source": "route_iso_5",
         "support": {"status": "CONSISTENT", "tier": "HIGH", "ood": False},
         "posterior_refs": None,
@@ -69,7 +72,10 @@ def _alternative(**overrides) -> dict:
         "sizing": 4.0,
         "ev": 0.5,
         "uncertainty": {"ci95": [0.47, 0.53], "width_bb": 0.06, "source": "s"},
-        "paired_delta": -0.5,
+        # An alternative's `paired_delta` compares it with the best alternative,
+        # so the only alternative of the default entry is trivially tied with
+        # itself. The classifier never reads this value as Hero evidence.
+        "paired_delta": 0.0,
         "route_source": "route_iso_4",
         "support": {"status": "CONSISTENT", "tier": "HIGH", "ood": False},
         "posterior_refs": None,
@@ -191,40 +197,59 @@ class PrecedenceTests(unittest.TestCase):
     def test_too_close_is_preserved_over_sensitive(self) -> None:
         entry = _entry(
             support={"status": "SENSITIVE", "tier": "HIGH", "ood": False},
-            alternatives=[_alternative(ev=0.99, paired_delta=-0.01)],
+            paired_delta=0.01,
+            alternatives=[_alternative(ev=0.99)],
         )
         result = classify(entry)
         self.assertEqual(result["status"], "TOO_CLOSE")
         self.assertIn("ADVANTAGE_WITHIN_TOLERANCE", result["reason_codes"])
 
     def test_too_close_is_preserved_over_consistent(self) -> None:
-        entry = _entry(alternatives=[_alternative(ev=0.98, paired_delta=-0.02)])
+        entry = _entry(paired_delta=0.02, alternatives=[_alternative(ev=0.98)])
         self.assertEqual(classify(entry)["status"], "TOO_CLOSE")
 
     def test_sizing_variation_inside_sensitivity_band_is_sensitive(self) -> None:
-        entry = _entry(alternatives=[_alternative(ev=0.85, paired_delta=-0.15)])
+        entry = _entry(paired_delta=0.15, alternatives=[_alternative(ev=0.85)])
         result = classify(entry)
         self.assertEqual(result["status"], "SENSITIVE")
         self.assertIn("SIZING_VARIATION_WITHIN_SENSITIVITY_BAND", result["reason_codes"])
 
     def test_settled_standing_is_consistent(self) -> None:
-        entry = _entry(alternatives=[_alternative(ev=0.5, paired_delta=-0.5)])
+        entry = _entry(paired_delta=0.5, alternatives=[_alternative(ev=0.5)])
         self.assertEqual(classify(entry)["status"], "CONSISTENT")
 
     def test_paired_ci_including_zero_is_too_close(self) -> None:
-        alternative = _alternative(ev=0.5, paired_delta=-0.5)
-        alternative["paired_delta_ci95"] = [-0.2, 0.2]
-        entry = _entry(alternatives=[alternative])
+        # A Hero-versus-best paired CI covering zero is a quasi-equality, even
+        # when the paired point estimate sits outside the close band. Only the
+        # Hero entry's own paired comparison speaks about this standing, and an
+        # explicit no-ordering pair is never promoted to a sensitivity claim.
+        entry = _entry(
+            ev=0.5,
+            uncertainty={"ci95": [0.47, 0.53], "width_bb": 0.06, "source": "s"},
+            paired_delta=-0.4,
+            alternatives=[
+                _alternative(
+                    ev=0.9,
+                    uncertainty={
+                        "ci95": [0.87, 0.93],
+                        "width_bb": 0.06,
+                        "source": "s",
+                    },
+                )
+            ],
+        )
+        entry["paired_delta_ci95"] = [-0.9, 0.6]
         result = classify(entry)
         self.assertEqual(result["status"], "TOO_CLOSE")
         self.assertIn("PAIRED_CI_INCLUDES_ZERO", result["reason_codes"])
+        self.assertNotIn("PAIRED_DELTA_WITHIN_TOLERANCE", result["reason_codes"])
 
     def test_every_returned_status_is_in_the_closed_vocabulary(self) -> None:
         probes = [
             _entry(),
             _entry(support=None),
             _entry(support={"status": "SENSITIVE", "tier": "LOW", "ood": False}),
-            _entry(alternatives=[_alternative(ev=0.99, paired_delta=0.0)]),
+            _entry(paired_delta=0.01, alternatives=[_alternative(ev=0.99)]),
             _entry(alternatives=None),
         ]
         for probe in probes:
@@ -418,18 +443,34 @@ class CloseBandSemanticsTests(unittest.TestCase):
     alternative is clearly superior to Hero and the verdict is an explicit
     ``SENSITIVE`` carrying ``BEST_ALTERNATIVE_CLEARLY_SUPERIOR`` -- never
     ``TOO_CLOSE``, and never a sizing selection or a recommendation.
+
+    The two schema ``paired_delta`` fields are not interchangeable (task
+    ``backlog-kuh``): ``hero_entry.paired_delta`` compares Hero with the best
+    alternative and is the only paired signal about this standing, while
+    ``alternatives[].paired_delta`` compares that alternative with the best
+    alternative -- for the best-ranked one it is a self-comparison, ~0 by
+    construction, and can never prove that Hero is tied with the best.
     """
 
-    def _hero_below_best(self, *, best_ev: float, best_paired_delta: float = 4.0) -> dict:
-        """A coherent Hero entry at EV -5.0 whose best alternative is far above."""
+    def _hero_below_best(
+        self, *, best_ev: float, hero_paired_delta: float = -4.0
+    ) -> dict:
+        """A coherent Hero entry at EV -5.0 whose best alternative is far above.
+
+        ``hero_paired_delta`` is the Hero-versus-best paired delta, coherent
+        with the ``-5.0`` versus ``-1.0`` point estimates by default. The best
+        alternative declares its own (auto-relative) paired delta of ``0.0``,
+        exactly as the schema defines it.
+        """
 
         return _entry(
             ev=-5.0,
+            paired_delta=hero_paired_delta,
             alternatives=[
                 _alternative(
                     alternative_id="BEST",
                     ev=best_ev,
-                    paired_delta=best_paired_delta,
+                    paired_delta=0.0,
                     # Same sizing as Hero: the corrected case must not hinge on a
                     # sizing variation reason.
                     sizing=5.0,
@@ -438,7 +479,7 @@ class CloseBandSemanticsTests(unittest.TestCase):
         )
 
     def test_clearly_better_alternative_is_sensitive_not_too_close(self) -> None:
-        entry = self._hero_below_best(best_ev=-1.0, best_paired_delta=4.0)
+        entry = self._hero_below_best(best_ev=-1.0, hero_paired_delta=-4.0)
         result = classify(entry)
         self.assertEqual(result["status"], "SENSITIVE")
         self.assertNotEqual(result["status"], "TOO_CLOSE")
@@ -452,6 +493,53 @@ class CloseBandSemanticsTests(unittest.TestCase):
         self.assertFalse(
             set(result["reason_codes"]) & set(REASON_CODES_BY_STATUS["TOO_CLOSE"])
         )
+
+    def test_fixture_with_self_paired_delta_on_the_superior_alternative_is_sensitive(
+        self,
+    ) -> None:
+        """The committed fixture of the ``paired_delta`` alignment (task ``backlog-kuh``).
+
+        The best alternative is clearly superior to Hero in EV and declares its
+        own ``paired_delta`` of ``0.0`` -- the schema's auto-comparison of the
+        best alternative with itself. That trivially zero number must never be
+        read as "Hero is tied with the best": the verdict is the explicit
+        ``SENSITIVE``/``BEST_ALTERNATIVE_CLEARLY_SUPERIOR``, never ``TOO_CLOSE``
+        and never a close-band reason.
+        """
+
+        document = _load("best_alternative_clearly_superior.json")
+        entry = document["hero_entry"]
+        best = entry["alternatives"][0]
+
+        # The fixture really carries the ambiguous shape: the best alternative
+        # is clearly above Hero while declaring a zero auto-relative delta.
+        self.assertEqual(best["paired_delta"], 0.0)
+        self.assertLess(entry["ev"] - best["ev"], -TOO_CLOSE_DELTA_BB)
+        # The Hero-side paired delta is *not* near zero, so the zero it must not
+        # inherit can only come from the alternative's auto-comparison.
+        self.assertGreater(
+            abs(float(entry["paired_delta"])), TOO_CLOSE_DELTA_BB
+        )
+
+        result = classify(document)
+        self.assertEqual(result["status"], "SENSITIVE")
+        self.assertNotEqual(result["status"], "TOO_CLOSE")
+        self.assertEqual(result["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
+        self.assertNotIn("PAIRED_DELTA_WITHIN_TOLERANCE", result["reason_codes"])
+        self.assertFalse(
+            set(result["reason_codes"]) & set(REASON_CODES_BY_STATUS["TOO_CLOSE"])
+        )
+        # A full document and its bare ``hero_entry`` block agree.
+        self.assertEqual(classify(document), classify(document["hero_entry"]))
+
+        # The best alternative's own paired signal cannot move the verdict at
+        # all -- it is not Hero evidence, whatever value (or paired CI) it
+        # declares.
+        bribed = copy.deepcopy(document)
+        bribed_best = bribed["hero_entry"]["alternatives"][0]
+        bribed_best["paired_delta"] = 3.0
+        bribed_best["paired_delta_ci95"] = [-0.1, 0.1]
+        self.assertEqual(classify(bribed), result)
 
     def test_corrected_case_never_selects_or_recommends_a_sizing(self) -> None:
         # Only the standing is reported: exactly one status, one dedicated
@@ -469,11 +557,10 @@ class CloseBandSemanticsTests(unittest.TestCase):
         ahead = classify(
             _entry(
                 ev=1.0,
+                # Hero-versus-best, coherent with the point estimates below.
+                paired_delta=TOO_CLOSE_DELTA_BB,
                 alternatives=[
-                    _alternative(
-                        ev=1.0 - TOO_CLOSE_DELTA_BB,
-                        paired_delta=-TOO_CLOSE_DELTA_BB,
-                    )
+                    _alternative(ev=1.0 - TOO_CLOSE_DELTA_BB)
                 ],
             )
         )
@@ -485,11 +572,9 @@ class CloseBandSemanticsTests(unittest.TestCase):
         behind = classify(
             _entry(
                 ev=1.0,
+                paired_delta=-TOO_CLOSE_DELTA_BB,
                 alternatives=[
-                    _alternative(
-                        ev=1.0 + TOO_CLOSE_DELTA_BB,
-                        paired_delta=TOO_CLOSE_DELTA_BB,
-                    )
+                    _alternative(ev=1.0 + TOO_CLOSE_DELTA_BB)
                 ],
             )
         )
@@ -503,9 +588,8 @@ class CloseBandSemanticsTests(unittest.TestCase):
             with self.subTest(gap=gap):
                 entry = _entry(
                     ev=1.0,
-                    alternatives=[
-                        _alternative(ev=1.0 - gap, paired_delta=-gap)
-                    ],
+                    paired_delta=gap,
+                    alternatives=[_alternative(ev=1.0 - gap)],
                 )
                 result = classify(entry)
                 self.assertEqual(result["status"], "TOO_CLOSE", result)
@@ -521,9 +605,8 @@ class CloseBandSemanticsTests(unittest.TestCase):
         below = classify(
             _entry(
                 ev=1.0,
-                alternatives=[
-                    _alternative(ev=1.0 + outside, paired_delta=outside)
-                ],
+                paired_delta=-outside,
+                alternatives=[_alternative(ev=1.0 + outside)],
             )
         )
         self.assertEqual(below["status"], "SENSITIVE", below)
@@ -535,9 +618,8 @@ class CloseBandSemanticsTests(unittest.TestCase):
         above = classify(
             _entry(
                 ev=1.0,
-                alternatives=[
-                    _alternative(ev=1.0 - outside, paired_delta=-outside)
-                ],
+                paired_delta=outside,
+                alternatives=[_alternative(ev=1.0 - outside)],
             )
         )
         self.assertEqual(above["status"], "SENSITIVE", above)
@@ -546,28 +628,23 @@ class CloseBandSemanticsTests(unittest.TestCase):
 
     def test_clearly_superior_beyond_the_sensitivity_band_is_sensitive(self) -> None:
         entry = self._hero_below_best(
-            best_ev=-1.0, best_paired_delta=SENSITIVE_DELTA_BB * 4.0
+            best_ev=-1.0, hero_paired_delta=-SENSITIVE_DELTA_BB * 4.0
         )
         result = classify(entry)
         self.assertEqual(result["status"], "SENSITIVE", result)
         self.assertEqual(result["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
 
     def test_unrelated_paired_delta_does_not_mask_the_corrected_case(self) -> None:
-        # A lower-ranked alternative declares a quasi-zero paired delta (and a
-        # paired CI covering zero): that speaks about *its* standing, not about
-        # the Hero-versus-best comparison, so the corrected case stands.
-        unrelated = _alternative(
-            alternative_id="TIED",
-            ev=-5.0,
-            paired_delta=0.0,
-        )
-        unrelated["paired_delta_ci95"] = [-0.2, 0.2]
+        # A lower-ranked alternative declares its own (auto-relative) paired
+        # delta: that speaks about *its* standing versus the best alternative,
+        # not about the Hero-versus-best comparison, so the corrected case
+        # stands. Alternative-level paired deltas are never Hero evidence.
+        unrelated = _alternative(alternative_id="TIED", ev=-5.0, paired_delta=-4.0)
         entry = _entry(
             ev=-5.0,
+            paired_delta=-4.0,
             alternatives=[
-                _alternative(
-                    alternative_id="BEST", ev=-1.0, paired_delta=4.0, sizing=5.0
-                ),
+                _alternative(alternative_id="BEST", ev=-1.0, sizing=5.0),
                 unrelated,
             ],
         )
@@ -579,14 +656,13 @@ class CloseBandSemanticsTests(unittest.TestCase):
         # Same rule for the declared support signal of an unrelated alternative.
         entry = _entry(
             ev=-5.0,
+            paired_delta=-4.0,
             alternatives=[
-                _alternative(
-                    alternative_id="BEST", ev=-1.0, paired_delta=4.0, sizing=5.0
-                ),
+                _alternative(alternative_id="BEST", ev=-1.0, sizing=5.0),
                 _alternative(
                     alternative_id="TIED",
                     ev=-5.0,
-                    paired_delta=0.0,
+                    paired_delta=-4.0,
                     support={"status": "TOO_CLOSE", "tier": "MEDIUM", "ood": False},
                 ),
             ],
@@ -596,12 +672,13 @@ class CloseBandSemanticsTests(unittest.TestCase):
         self.assertEqual(result["reason_codes"], ["BEST_ALTERNATIVE_CLEARLY_SUPERIOR"])
         self.assertNotIn("SUPPORT_STATUS_TOO_CLOSE", result["reason_codes"])
 
-    def test_contradictory_paired_delta_on_the_best_alternative_keeps_too_close(self) -> None:
+    def test_contradictory_hero_paired_delta_keeps_too_close(self) -> None:
         # Contradictory signals *about the relevant comparison*: the EV gap says
-        # "clearly superior" while the best alternative's own paired comparison
-        # declares a tie. The conservative no-claim verdict and the documented
-        # precedence win -- an explicit pair never promotes a sensitivity claim.
-        entry = self._hero_below_best(best_ev=-1.0, best_paired_delta=-0.01)
+        # "clearly superior" while the Hero entry's own paired delta (Hero versus
+        # the best alternative) declares a tie. The conservative no-claim verdict
+        # and the documented precedence win -- an explicit pair never promotes a
+        # sensitivity claim.
+        entry = self._hero_below_best(best_ev=-1.0, hero_paired_delta=-0.01)
         result = classify(entry)
         self.assertEqual(result["status"], "TOO_CLOSE", result)
         self.assertIn("PAIRED_DELTA_WITHIN_TOLERANCE", result["reason_codes"])
@@ -610,11 +687,11 @@ class CloseBandSemanticsTests(unittest.TestCase):
     def test_contradictory_support_status_on_the_best_alternative_keeps_too_close(self) -> None:
         entry = _entry(
             ev=-5.0,
+            paired_delta=-4.0,
             alternatives=[
                 _alternative(
                     alternative_id="BEST",
                     ev=-1.0,
-                    paired_delta=4.0,
                     support={"status": "TOO_CLOSE", "tier": "MEDIUM", "ood": False},
                 )
             ],
@@ -648,15 +725,19 @@ class CloseBandSemanticsTests(unittest.TestCase):
 
     def test_clearly_superior_verdict_is_order_independent(self) -> None:
         alternatives = [
-            _alternative(
-                alternative_id="BEST", ev=-1.0, paired_delta=4.0, sizing=5.0
-            ),
-            _alternative(alternative_id="TIED", ev=-5.0, paired_delta=0.0),
-            _alternative(alternative_id="WORSE", ev=-7.0, paired_delta=-2.0),
+            _alternative(alternative_id="BEST", ev=-1.0, sizing=5.0),
+            _alternative(alternative_id="TIED", ev=-5.0, paired_delta=-4.0),
+            _alternative(alternative_id="WORSE", ev=-7.0, paired_delta=-6.0),
         ]
-        first = classify(_entry(ev=-5.0, alternatives=copy.deepcopy(alternatives)))
+        first = classify(
+            _entry(ev=-5.0, paired_delta=-4.0, alternatives=copy.deepcopy(alternatives))
+        )
         flipped = classify(
-            _entry(ev=-5.0, alternatives=list(reversed(copy.deepcopy(alternatives))))
+            _entry(
+                ev=-5.0,
+                paired_delta=-4.0,
+                alternatives=list(reversed(copy.deepcopy(alternatives))),
+            )
         )
         self.assertEqual(first, flipped)
         self.assertEqual(first["status"], "SENSITIVE")

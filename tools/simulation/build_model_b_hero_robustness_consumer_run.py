@@ -147,6 +147,7 @@ EXPECTED_FIXTURE_STATUSES: Mapping[str, str] = {
     "too_close.json": "TOO_CLOSE",
     "sparse_high_uncertainty.json": "INSUFFICIENT_SUPPORT",
     "ood_unsupported.json": "OOD_UNTESTABLE",
+    "best_alternative_clearly_superior.json": "SENSITIVE",
 }
 
 #: Fixtures that must fail closed with an explicit reason code and no report.

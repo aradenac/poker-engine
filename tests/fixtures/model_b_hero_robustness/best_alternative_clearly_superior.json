@@ -16,18 +16,18 @@
     "route_as_predictive_target": false
   },
   "hero_entry": {
-    "decision_id": "synthetic-robust-consistent-001",
-    "context_id": "synthetic-robust-consistent-context-001",
+    "decision_id": "synthetic-best-alternative-clearly-superior-001",
+    "context_id": "synthetic-best-alternative-clearly-superior-context-001",
     "hero_position": "SB",
     "action": "ISO",
     "sizing": 5.0,
-    "ev": 1.42,
+    "ev": 0.4,
     "uncertainty": {
-      "ci95": [1.39, 1.45],
+      "ci95": [0.37, 0.43],
       "width_bb": 0.06,
       "source": "synthetic_paired_ci95_v1"
     },
-    "paired_delta": 0.35,
+    "paired_delta": -1.0,
     "route_source": "synthetic_robustness_route_iso_5",
     "support": {
       "status": "CONSISTENT",
@@ -35,50 +35,28 @@
       "ood": false
     },
     "posterior_refs": [
-      "synthetic-posterior-robust-consistent-iso-5-01",
-      "synthetic-posterior-robust-consistent-iso-5-02"
+      "synthetic-posterior-best-alternative-clearly-superior-iso-5-01"
     ],
     "alternatives": [
       {
-        "alternative_id": "ISO@4",
+        "alternative_id": "ISO@7",
         "action": "ISO",
-        "sizing": 4.0,
-        "ev": 1.07,
+        "sizing": 7.0,
+        "ev": 1.4,
         "uncertainty": {
-          "ci95": [1.04, 1.1],
+          "ci95": [1.37, 1.43],
           "width_bb": 0.06,
           "source": "synthetic_paired_ci95_v1"
         },
         "paired_delta": 0.0,
-        "route_source": "synthetic_robustness_route_iso_4",
+        "route_source": "synthetic_robustness_route_iso_7",
         "support": {
           "status": "CONSISTENT",
           "tier": "HIGH",
           "ood": false
         },
         "posterior_refs": [
-          "synthetic-posterior-robust-consistent-iso-4-01"
-        ]
-      },
-      {
-        "alternative_id": "ISO@6",
-        "action": "ISO",
-        "sizing": 6.0,
-        "ev": 0.72,
-        "uncertainty": {
-          "ci95": [0.69, 0.75],
-          "width_bb": 0.06,
-          "source": "synthetic_paired_ci95_v1"
-        },
-        "paired_delta": -0.35,
-        "route_source": "synthetic_robustness_route_iso_6",
-        "support": {
-          "status": "CONSISTENT",
-          "tier": "HIGH",
-          "ood": false
-        },
-        "posterior_refs": [
-          "synthetic-posterior-robust-consistent-iso-6-01"
+          "synthetic-posterior-best-alternative-clearly-superior-iso-7-01"
         ]
       }
     ]

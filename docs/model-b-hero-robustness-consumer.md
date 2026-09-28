@@ -79,7 +79,7 @@ one.
 | `sizing` | number >= 0 (target total, bb) | nullable when the action has no sizing (e.g. `FOLD`) or is unavailable |
 | `ev` | number (public EV, bb) | nullable = not evaluated, never `0` |
 | `uncertainty` | `{ ci95: [low, high], width_bb, source }` | nullable = not measured |
-| `paired_delta` | number (bb, versus the best alternative) | nullable = no paired comparison |
+| `paired_delta` | number (bb, **Hero versus the best alternative**) | nullable = no paired comparison |
 | `route_source` | string (provenance label) | nullable = unlabelled |
 | `support` | `{ status, tier, ood }` | nullable = not declared (consumer fails closed) |
 | `posterior_refs` | array of non-empty strings | nullable = not computed |
@@ -89,6 +89,19 @@ Each `alternatives[]` entry repeats the same public action/sizing identity plus
 its own nullable `ev`, `uncertainty`, `paired_delta`, `route_source`, `support`
 and `posterior_refs`. `decision_id`, `context_id` and `hero_position` are
 optional public Hero-side identity and carry no private or predictive signal.
+
+The two `paired_delta` fields are **not** the same comparison, and a consumer
+must never treat them as interchangeable:
+
+| Field | Compared with | Meaning for the Hero standing |
+|---|---|---|
+| `hero_entry.paired_delta` | the **best** alternative | the only paired signal about Hero: a near-zero value (or a paired CI covering zero) is evidence that Hero is tied with the best alternative |
+| `alternatives[].paired_delta` | the **best** alternative | that alternative's own standing. For the best-ranked alternative it is a self-comparison, ~0 by construction, and says *nothing* about where Hero stands |
+
+The `#425` classifier therefore reads only `hero_entry.paired_delta` (and its
+optional paired CI, when a producer supplies one) as paired evidence: reading the
+best alternative's trivially zero auto-comparison would fabricate a quasi-equality
+that the measured EVs contradict.
 
 Until the real evidence exists, the `uncertainty` envelope of the Hero entry
 **and of every compared alternative** is read strictly and fail-closed: `ci95`
@@ -190,17 +203,23 @@ is a **magnitude-only** test: the standing is quasi ex-aequo while
 `abs(hero_ev - best_ev) <= TOO_CLOSE_DELTA_BB`, in either direction. A gap that
 merely points downwards is therefore *not* a quasi-equality beyond that band --
 an alternative evaluated clearly above Hero is reported `SENSITIVE` with the
-dedicated `BEST_ALTERNATIVE_CLEARLY_SUPERIOR` reason.
+dedicated `BEST_ALTERNATIVE_CLEARLY_SUPERIOR` reason. That corrected case is
+never weakened by the best alternative's own `paired_delta`: the best-ranked
+alternative compares itself with itself, so its ~0 auto-comparison is not a
+close-band proof (fixture
+`tests/fixtures/model_b_hero_robustness/best_alternative_clearly_superior.json`).
 
 The comparison set is read with an explicit relevance rule: the classified
-standing is Hero versus the **best-ranked** alternative, so only that
-alternative's declared ordering signal (its `paired_delta`, its paired CI and its
-declared `TOO_CLOSE`/`SENSITIVE` support status) may speak about it. A
-lower-ranked alternative's near-zero paired delta or declared `TOO_CLOSE` status
-describes its own standing and can never mask the Hero standing. Evidence-level
-signals (`ood`, `INSUFFICIENT_SUPPORT`, a sparse tier, a missing or malformed
-`uncertainty` envelope) keep being folded for the Hero entry and for **every**
-compared alternative.
+standing is Hero versus the **best-ranked** alternative, so only signals about
+*that* comparison may speak about it: `hero_entry.paired_delta` (Hero versus the
+best alternative) with its optional paired CI, and the best-ranked alternative's
+declared `TOO_CLOSE`/`SENSITIVE` support status. The alternative-level
+`paired_delta` is never read as Hero evidence -- for the best-ranked alternative
+it is the ~0 self-comparison described above, and a lower-ranked alternative's
+value describes its own standing against the best, so neither can mask the Hero
+standing. Evidence-level signals (`ood`, `INSUFFICIENT_SUPPORT`, a sparse tier, a
+missing or malformed `uncertainty` envelope) keep being folded for the Hero entry
+and for **every** compared alternative.
 
 The verdict is a status only: neither the classifier nor the report ever selects
 an alternative, emits a recommendation or names a best sizing.

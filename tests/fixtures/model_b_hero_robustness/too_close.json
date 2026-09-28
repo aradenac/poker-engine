@@ -27,7 +27,7 @@
       "width_bb": 0.06,
       "source": "synthetic_paired_ci95_v1"
     },
-    "paired_delta": 0.0,
+    "paired_delta": 0.01,
     "route_source": "synthetic_robustness_route_iso_5",
     "support": {
       "status": "TOO_CLOSE",
@@ -48,7 +48,7 @@
           "width_bb": 0.06,
           "source": "synthetic_paired_ci95_v1"
         },
-        "paired_delta": -0.01,
+        "paired_delta": 0.0,
         "route_source": "synthetic_robustness_route_iso_4",
         "support": {
           "status": "TOO_CLOSE",
@@ -69,7 +69,7 @@
           "width_bb": 0.06,
           "source": "synthetic_paired_ci95_v1"
         },
-        "paired_delta": -0.02,
+        "paired_delta": -0.01,
         "route_source": "synthetic_robustness_route_iso_6",
         "support": {
           "status": "TOO_CLOSE",

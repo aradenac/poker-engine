@@ -50,6 +50,7 @@ VALID_FIXTURES = (
     "too_close.json",
     "sparse_high_uncertainty.json",
     "ood_unsupported.json",
+    "best_alternative_clearly_superior.json",
 )
 
 

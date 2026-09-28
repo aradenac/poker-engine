@@ -28,16 +28,20 @@
     },
     "fixtures": [
       {
+        "fixture": "best_alternative_clearly_superior.json",
+        "sha256": "6cba3acce6bcebe4f50b6e79d002e8b3578fc0b82f65c362cf076d71486de97a"
+      },
+      {
         "fixture": "multi_sizing.json",
-        "sha256": "36ca01e98822d59bb05dcf25bbc84c83cc3ec4e2951b52e2f6474ad77ba5234e"
+        "sha256": "9c0d38fd5978bc0fb2bb1d325a8e7b5f34a2512115f02e73f076407ac1881404"
       },
       {
         "fixture": "ood_unsupported.json",
-        "sha256": "76c1045269379f94760191acde38c97202bd68a432c89f42f9790c4e097659f6"
+        "sha256": "417638a74beecf5d51c5afdd525003225ae76b80bb6708feef1b5a187f67cd39"
       },
       {
         "fixture": "robust_consistent.json",
-        "sha256": "d474333a342aaf8d88b83817bbc8a50bd4f0169db8333645379aa0f47854829c"
+        "sha256": "66703f28b0ac9ea374a145ba8033589263e7dd421e2be4f1fd7f9ab17d2339b4"
       },
       {
         "fixture": "schema_mismatch.json",
@@ -45,11 +49,11 @@
       },
       {
         "fixture": "sparse_high_uncertainty.json",
-        "sha256": "9931f2fbf85de2693eb3bd49b011b5727ecaea6c69acfe8ecaf5253e269bead9"
+        "sha256": "4303cf1eb0928f5470612900a980b02216f00b681fd2d24e5c47323c31c5535f"
       },
       {
         "fixture": "too_close.json",
-        "sha256": "6a37e3e514f235a7da677838e134a69ff08f3d8771716d2ff4e2fd04c0595ac3"
+        "sha256": "a3b9c3e9e89686496d049d16f2b8fe219d21f14d34c6091ccd25e597ec4e614c"
       }
     ],
     "fixtures_dir": "tests/fixtures/model_b_hero_robustness",

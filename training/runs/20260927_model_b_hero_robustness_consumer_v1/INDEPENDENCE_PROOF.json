@@ -24,6 +24,7 @@
   ],
   "forbidden_hits": [],
   "forbidden_hits_by_fixture": {
+    "best_alternative_clearly_superior.json": [],
     "multi_sizing.json": [],
     "ood_unsupported.json": [],
     "robust_consistent.json": [],
@@ -35,6 +36,7 @@
   "information_boundary": false,
   "information_boundary_all_false": true,
   "information_boundary_all_false_by_fixture": {
+    "best_alternative_clearly_superior.json": true,
     "multi_sizing.json": true,
     "ood_unsupported.json": true,
     "robust_consistent.json": true,
@@ -42,6 +44,13 @@
     "too_close.json": true
   },
   "information_boundary_by_fixture": {
+    "best_alternative_clearly_superior.json": {
+      "future_cards_consumed": false,
+      "hero_ev_consumed": false,
+      "model_a_consumed": false,
+      "opponent_hole_cards_consumed": false,
+      "recommendation_consumed": false
+    },
     "multi_sizing.json": {
       "future_cards_consumed": false,
       "hero_ev_consumed": false,
@@ -88,6 +97,7 @@
   "issue": 425,
   "model_a_consumed": false,
   "projected_request_sha256": {
+    "best_alternative_clearly_superior.json": "93195acbf498e44433d8f1c7fba33a1e3b4fc4c1e8b4b423a6d96770d1b4da5f",
     "multi_sizing.json": "4c7643cbc7fc5d8ebf9f463574a82327c1cad8e8da64bc828230f3afbc318bb2",
     "ood_unsupported.json": "e50ff8bdaf93298e1900fcd215e8547c850e798bf8eb56df24caff35389e2122",
     "robust_consistent.json": "3a35c458bbbd8e1fe8b4c999a19b1c12235547c71f6e6d3ab018d06a57d1e564",

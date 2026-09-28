@@ -27,7 +27,7 @@
       "width_bb": 0.2,
       "source": "synthetic_ood_paired_ci95_v1"
     },
-    "paired_delta": 0.0,
+    "paired_delta": 0.35,
     "route_source": "synthetic_robustness_route_iso_6_ood",
     "support": {
       "status": "OOD_UNTESTABLE",
@@ -46,7 +46,7 @@
           "width_bb": 0.2,
           "source": "synthetic_ood_paired_ci95_v1"
         },
-        "paired_delta": -0.35,
+        "paired_delta": 0.0,
         "route_source": "synthetic_robustness_route_iso_5_ood",
         "support": {
           "status": "OOD_UNTESTABLE",
@@ -65,7 +65,7 @@
           "width_bb": 0.2,
           "source": "synthetic_ood_paired_ci95_v1"
         },
-        "paired_delta": -0.7,
+        "paired_delta": -0.35,
         "route_source": "synthetic_robustness_route_overlimp_1_ood",
         "support": {
           "status": "OOD_UNTESTABLE",

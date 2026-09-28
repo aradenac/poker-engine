@@ -39,14 +39,22 @@ Precedence is fixed and strict, most severe first
 5. ``CONSISTENT`` -- the standing survives every declared tolerance.
 
 The comparison set is read with an explicit relevance rule: the standing is the
-Hero-versus-best-alternative comparison, so only the best-ranked alternative's
-declared ordering signal (its ``paired_delta``, its paired CI and its declared
-``TOO_CLOSE``/``SENSITIVE`` support status) may speak about it. A lower-ranked
-alternative describes its own standing, so an unrelated near-zero delta or
-``TOO_CLOSE`` status can never mask the corrected case. Evidence-level signals
-(``OOD_UNTESTABLE``, ``INSUFFICIENT_SUPPORT``, sparse tiers, a missing/malformed
-uncertainty envelope) keep being folded for *every* compared entry: they forbid a
-claim whatever the ordering is.
+Hero-versus-best-alternative comparison, so only signals *about* that comparison
+may speak about it -- the Hero entry's own ``paired_delta`` (Hero versus the best
+alternative) and its optional paired CI, plus the best-ranked alternative's
+declared ``TOO_CLOSE``/``SENSITIVE`` support status. The two ``paired_delta``
+fields of the schema are **not** interchangeable: ``hero_entry.paired_delta``
+compares Hero with the best alternative, while ``alternatives[].paired_delta``
+compares that alternative with the best alternative -- for the best-ranked
+alternative it is therefore a self-comparison, ~0 by construction, and carries no
+information about where Hero stands. The classifier never reads the
+alternative-level paired deltas; consuming the best alternative's trivially zero
+value would fabricate a quasi-equality that the measured EVs contradict. A
+lower-ranked alternative merely describes its own standing, so an unrelated
+near-zero delta or ``TOO_CLOSE`` status can never mask the corrected case.
+Evidence-level signals (``OOD_UNTESTABLE``, ``INSUFFICIENT_SUPPORT``, sparse
+tiers, a missing/malformed uncertainty envelope) keep being folded for *every*
+compared entry: they forbid a claim whatever the ordering is.
 
 Fail-closed: ``hero_entry`` must be a mapping carrying every required field
 (:data:`REQUIRED_HERO_ENTRY_FIELDS`) and each alternative must carry
@@ -670,8 +678,6 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
                 "alternative_id": alternative_id,
                 "sizing": _finite_or_none(raw.get("sizing")),
                 "ev": ev,
-                "paired_delta": _finite_or_none(raw.get("paired_delta")),
-                "paired_delta_ci95": raw.get("paired_delta_ci95"),
                 "support_status": declared_support_status,
             }
         )
@@ -690,13 +696,22 @@ def classify(hero_entry: Any, policy: Any = None) -> dict[str, Any]:
         # describes its own standing and must never mask the corrected case.
         _fold_ordering_support_status(best["support_status"], buckets)
 
-        # Same rule for the explicit paired comparison: a near-zero paired delta
-        # (or a paired CI covering zero) declared by an unrelated alternative is
-        # not evidence about the Hero standing.
-        best_delta = best["paired_delta"]
-        if best_delta is not None and abs(best_delta) <= effective.too_close_delta_bb + _EPS:
+        # Same rule for the explicit paired comparison. The only paired delta
+        # that speaks about *this* standing is the Hero entry's own
+        # (``hero_entry.paired_delta`` = Hero versus the best alternative). An
+        # ``alternatives[].paired_delta`` is declared against the best
+        # alternative itself, so the best-ranked alternative's own value is a
+        # self-comparison that is ~0 by construction: reading it would turn a
+        # trivially zero number into a fake "Hero is tied with the best"
+        # proof. Alternative-level paired deltas are therefore never consumed
+        # here (they are evidence about another comparison, not about Hero).
+        hero_paired_delta = _finite_or_none(entry.get("paired_delta"))
+        if (
+            hero_paired_delta is not None
+            and abs(hero_paired_delta) <= effective.too_close_delta_bb + _EPS
+        ):
             buckets["TOO_CLOSE"].add("PAIRED_DELTA_WITHIN_TOLERANCE")
-        if _paired_ci_includes_zero(best.get("paired_delta_ci95")):
+        if _paired_ci_includes_zero(entry.get("paired_delta_ci95")):
             buckets["TOO_CLOSE"].add("PAIRED_CI_INCLUDES_ZERO")
 
         if hero_ev is not None:
