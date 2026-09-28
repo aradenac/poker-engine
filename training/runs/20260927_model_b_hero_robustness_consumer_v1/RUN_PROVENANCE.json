@@ -1,0 +1,106 @@
+{
+  "active_model_b_changed": false,
+  "automatic_promotion": false,
+  "generator": {
+    "check_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --check",
+    "determinism_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --verify-determinism",
+    "determinism_guard": "the T5 runner runs twice; the run is written only when both passes are byte-identical",
+    "regeneration_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --out-dir training/runs/20260927_model_b_hero_robustness_consumer_v1",
+    "runner_cli": "tools/simulation/model_b_hero_robustness_adapter.py",
+    "tool": "tools/simulation/build_model_b_hero_robustness_consumer_run.py",
+    "verified_by": "tests/simulation/test_model_b_hero_robustness_consumer_run.py"
+  },
+  "inputs": {
+    "context": {
+      "path": "tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json",
+      "sha256": "7efbd8003056e3844495b6fd879d94c76c8d2e01115bb297530def5283dbae80"
+    },
+    "contract": {
+      "path": "contracts/training/model-b-hero-robustness-input.schema.json",
+      "sha256": "3c017225ab0c483a364fb1b75efe38c3f97658fad6216ec9a71213253c60ac0f"
+    },
+    "fixtures": [
+      {
+        "fixture": "best_alternative_clearly_superior.json",
+        "sha256": "6cba3acce6bcebe4f50b6e79d002e8b3578fc0b82f65c362cf076d71486de97a"
+      },
+      {
+        "fixture": "multi_sizing.json",
+        "sha256": "9c0d38fd5978bc0fb2bb1d325a8e7b5f34a2512115f02e73f076407ac1881404"
+      },
+      {
+        "fixture": "ood_unsupported.json",
+        "sha256": "417638a74beecf5d51c5afdd525003225ae76b80bb6708feef1b5a187f67cd39"
+      },
+      {
+        "fixture": "robust_consistent.json",
+        "sha256": "66703f28b0ac9ea374a145ba8033589263e7dd421e2be4f1fd7f9ab17d2339b4"
+      },
+      {
+        "fixture": "schema_mismatch.json",
+        "sha256": "bb96fc25bdf1f70014b6ea0ffcec394fbb3aa6021b155e0c3a4acb901118893d"
+      },
+      {
+        "fixture": "sparse_high_uncertainty.json",
+        "sha256": "4303cf1eb0928f5470612900a980b02216f00b681fd2d24e5c47323c31c5535f"
+      },
+      {
+        "fixture": "too_close.json",
+        "sha256": "a3b9c3e9e89686496d049d16f2b8fe219d21f14d34c6091ccd25e597ec4e614c"
+      }
+    ],
+    "fixtures_dir": "tests/fixtures/model_b_hero_robustness",
+    "source_issue_340": {
+      "artifacts": {
+        "candidate_doc": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/candidate.json",
+          "sha256": "621fb4b198e797e73f55bfe4e42f60c70dfc9056376c134fac571f4c36284a1a"
+        },
+        "provenance": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RUN_PROVENANCE.json",
+          "sha256": "38449bff8777bffc5e8ece5786f0c7eb3ad0651838b43e4c7718d4ff00be95b9"
+        },
+        "reference_doc": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/model/price_agnostic_reference.json",
+          "sha256": "7ef33983891ef21cccd59883d0cf5d386140353ad6515190377cbeda0503d1c6"
+        },
+        "result": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/RESULT.json",
+          "sha256": "3df3d5d74caf1ca636d0b7124e4f6851240016e219373a979fad86500c0372f8"
+        },
+        "summary": {
+          "path": "training/runs/20260919_model_b_preflop_response_to_price_2a/SUMMARY.json",
+          "sha256": "d68f96d0e19208215b4e4497a39f0256dacba90aa30f9809f44e5689c9063163"
+        }
+      },
+      "run_dir": "training/runs/20260919_model_b_preflop_response_to_price_2a"
+    }
+  },
+  "issue": 425,
+  "next_issue": 315,
+  "parent_closed": false,
+  "parent_issue": 315,
+  "production_effect": "NONE",
+  "real_hero_results_consumed": false,
+  "real_issue_314_consumed": false,
+  "real_issue_367_consumed": false,
+  "real_sensitivity_executed": false,
+  "rejected_fixtures": {
+    "schema_mismatch.json": {
+      "message": "SCHEMA_MISMATCH: expected robustness input schema 'hero-model-b-robustness-input/v1', got 'hero-model-b-robustness-input/v2'",
+      "outcome": "FAIL_CLOSED",
+      "reason_code": "SCHEMA_MISMATCH",
+      "reason_codes": [
+        "SCHEMA_MISMATCH"
+      ]
+    }
+  },
+  "report_generator": "tools/simulation/model_b_hero_robustness_adapter.py",
+  "report_schema": "hero-model-b-hero-robustness-consumer-report/v1",
+  "run_dir": "training/runs/20260927_model_b_hero_robustness_consumer_v1",
+  "run_id": "20260927_model_b_hero_robustness_consumer_v1",
+  "schema": "hero-model-b-robustness-consumer-run-provenance/v1",
+  "status": "READY_FOR_INTEGRATION",
+  "test_consumed": false,
+  "validation_consumed": false
+}

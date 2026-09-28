@@ -1,0 +1,79 @@
+{
+  "schema": "hero-model-b-robustness-input/v1",
+  "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+  "provenance": {
+    "synthetic_fixture": true,
+    "real_issue_367_consumed": false,
+    "validation_consumed": false,
+    "test_consumed": false
+  },
+  "information_boundary": {
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "recommendation_consumed": false,
+    "future_cards_consumed": false,
+    "opponent_hole_cards_consumed": false,
+    "route_as_predictive_target": false
+  },
+  "hero_entry": {
+    "decision_id": "synthetic-sparse-high-uncertainty-001",
+    "context_id": "synthetic-sparse-high-uncertainty-context-001",
+    "hero_position": "SB",
+    "action": "ISO",
+    "sizing": 4.0,
+    "ev": 0.48,
+    "uncertainty": {
+      "ci95": [-2.52, 3.48],
+      "width_bb": 6.0,
+      "source": "synthetic_sparse_paired_ci95_v1"
+    },
+    "paired_delta": 0.06,
+    "route_source": "synthetic_robustness_route_iso_4",
+    "support": {
+      "status": "INSUFFICIENT_SUPPORT",
+      "tier": "LOW",
+      "ood": false
+    },
+    "posterior_refs": null,
+    "alternatives": [
+      {
+        "alternative_id": "ISO@5",
+        "action": "ISO",
+        "sizing": 5.0,
+        "ev": 0.42,
+        "uncertainty": {
+          "ci95": [-2.58, 3.42],
+          "width_bb": 6.0,
+          "source": "synthetic_sparse_paired_ci95_v1"
+        },
+        "paired_delta": 0.0,
+        "route_source": "synthetic_robustness_route_iso_5",
+        "support": {
+          "status": "INSUFFICIENT_SUPPORT",
+          "tier": "LOW",
+          "ood": false
+        },
+        "posterior_refs": null
+      },
+      {
+        "alternative_id": "ISO@6",
+        "action": "ISO",
+        "sizing": 6.0,
+        "ev": 0.36,
+        "uncertainty": {
+          "ci95": [-2.64, 3.36],
+          "width_bb": 6.0,
+          "source": "synthetic_sparse_paired_ci95_v1"
+        },
+        "paired_delta": -0.06,
+        "route_source": "synthetic_robustness_route_iso_6",
+        "support": {
+          "status": "INSUFFICIENT_SUPPORT",
+          "tier": "LOW",
+          "ood": false
+        },
+        "posterior_refs": null
+      }
+    ]
+  }
+}

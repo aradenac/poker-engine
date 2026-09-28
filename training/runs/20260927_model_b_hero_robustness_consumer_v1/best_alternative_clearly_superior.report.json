@@ -1,0 +1,28 @@
+{
+  "harness_report_sha256": "7805b5d6fd4be6f539367b949cc7cfe5f6748e754806dc9eedab69924771aa1d",
+  "harness_request_sha256": "93195acbf498e44433d8f1c7fba33a1e3b4fc4c1e8b4b423a6d96770d1b4da5f",
+  "information_boundary": {
+    "future_cards_consumed": false,
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "opponent_hole_cards_consumed": false,
+    "recommendation_consumed": false,
+    "route_as_predictive_target": false
+  },
+  "input_schema_ref": "hero-model-b-robustness-input/v1",
+  "provenance": {
+    "harness_issue": 344,
+    "issue": 425,
+    "real_issue_314_consumed": false,
+    "real_issue_367_consumed": false,
+    "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+    "synthetic_fixture": true,
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "reason_codes": [
+    "BEST_ALTERNATIVE_CLEARLY_SUPERIOR"
+  ],
+  "schema": "hero-model-b-hero-robustness-consumer-report/v1",
+  "status": "SENSITIVE"
+}

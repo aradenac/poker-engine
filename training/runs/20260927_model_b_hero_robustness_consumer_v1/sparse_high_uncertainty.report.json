@@ -1,0 +1,30 @@
+{
+  "harness_report_sha256": "a2b262c6237bf9fc641f21a20ece856807a23f38ffd9a8d3651710e5e3de0b14",
+  "harness_request_sha256": "5c3a726fa1087d005d8cb622800f84c5833c4c9e3ea20185e008572108f6b807",
+  "information_boundary": {
+    "future_cards_consumed": false,
+    "hero_ev_consumed": false,
+    "model_a_consumed": false,
+    "opponent_hole_cards_consumed": false,
+    "recommendation_consumed": false,
+    "route_as_predictive_target": false
+  },
+  "input_schema_ref": "hero-model-b-robustness-input/v1",
+  "provenance": {
+    "harness_issue": 344,
+    "issue": 425,
+    "real_issue_314_consumed": false,
+    "real_issue_367_consumed": false,
+    "source_kind": "SYNTHETIC_ROBUSTNESS_SHAPED",
+    "synthetic_fixture": true,
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "reason_codes": [
+    "CI95_WIDTH_EXCEEDS_POLICY",
+    "SPARSE_SUPPORT_TIER",
+    "SUPPORT_STATUS_INSUFFICIENT"
+  ],
+  "schema": "hero-model-b-hero-robustness-consumer-report/v1",
+  "status": "INSUFFICIENT_SUPPORT"
+}

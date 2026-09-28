@@ -1,0 +1,333 @@
+{
+  "acceptance_evidence": [
+    {
+      "acceptance": "schema mismatch fails closed with a reason code",
+      "note": "section (1): SCHEMA_MISMATCH, exit code 2 and no report",
+      "suite": "model_b_hero_robustness_consumer",
+      "tests": [
+        "def test_schema_mismatch_fails_closed"
+      ]
+    },
+    {
+      "acceptance": "missing provenance / support is an explicit rejection",
+      "note": "section (2): MISSING_PROVENANCE / MISSING_SUPPORT, never a status",
+      "suite": "model_b_hero_robustness_consumer",
+      "tests": [
+        "def test_missing_provenance_and_support_are_explicit"
+      ]
+    },
+    {
+      "acceptance": "OOD_UNTESTABLE is preserved",
+      "note": "section (3): ood_unsupported.json",
+      "suite": "model_b_hero_robustness_consumer",
+      "tests": [
+        "def test_ood_fixture_is_ood_untestable"
+      ]
+    },
+    {
+      "acceptance": "TOO_CLOSE is preserved",
+      "note": "section (4): never requalified CONSISTENT / SENSITIVE",
+      "suite": "model_b_hero_robustness_consumer",
+      "tests": [
+        "def test_too_close_is_preserved"
+      ]
+    },
+    {
+      "acceptance": "human correction 1: width derived from the ci95 bounds",
+      "note": "the contract suite also asserts UNCERTAINTY_WIDTH_MISMATCH",
+      "suite": "model_b_hero_robustness_adapter",
+      "tests": [
+        "def test_width_contradicting_the_bounds_fails_closed"
+      ]
+    },
+    {
+      "acceptance": "human correction 2: every compared alternative uncertainty is checked",
+      "note": "a secondary alternative can never be masked into CONSISTENT",
+      "suite": "model_b_hero_robustness_adapter",
+      "tests": [
+        "def test_secondary_alternative_without_uncertainty_is_not_consistent",
+        "def test_broken_secondary_alternative_verdict_is_order_independent"
+      ]
+    },
+    {
+      "acceptance": "human correction 3: a clearly superior alternative is SENSITIVE",
+      "note": "BEST_ALTERNATIVE_CLEARLY_SUPERIOR, no sizing recommendation",
+      "suite": "model_b_hero_robustness_adapter",
+      "tests": [
+        "def test_better_evaluated_alternatives_are_sensitive_not_too_close"
+      ]
+    },
+    {
+      "acceptance": "independence: allowed projected fields only, closed boundary",
+      "note": "section (8), mirrored by INDEPENDENCE_PROOF.json and the #425 guards",
+      "suite": "model_b_hero_robustness_consumer",
+      "tests": [
+        "def test_projected_request_is_independent_from_model_a"
+      ]
+    },
+    {
+      "acceptance": "request unchanged when only the metadata varies",
+      "note": "section (9) of the consumer suite asserts the same end to end",
+      "suite": "model_b_hero_robustness_contract",
+      "tests": [
+        "def test_request_is_unchanged_when_only_metadata_varies",
+        "def test_classification_may_move_while_the_request_stays_pinned",
+        "def test_public_identity_change_does_change_the_request"
+      ]
+    },
+    {
+      "acceptance": "reused #344 harness only accepts its own synthetic source kind",
+      "note": "#344 module/contract/test/doc stay unedited",
+      "suite": "model_b_hero_robustness_contract",
+      "tests": [
+        "def test_harness_refuses_a_foreign_source_kind",
+        "def test_harness_refuses_an_injected_ev_feature"
+      ]
+    },
+    {
+      "acceptance": "two regenerations are byte-identical and --check finds no drift",
+      "note": "re-executed here as the documented builder commands",
+      "suite": "model_b_hero_robustness_consumer_run",
+      "tests": [
+        "def test_two_regenerations_produce_identical_sha256",
+        "def test_check_mode_passes_on_the_persisted_run",
+        "def test_verify_determinism_cli_succeeds"
+      ]
+    }
+  ],
+  "acceptance_evidence_check": {
+    "items": 11,
+    "missing_references": [],
+    "outcome": "PASS"
+  },
+  "bundle": {
+    "artifacts": {
+      "INDEPENDENCE_PROOF.json": "663ab9ae40e5d65c26c1ffe216c93bf705037e912292f614c955fc81c65e540c",
+      "INPUT_SCHEMA_REF.json": "27d37436282c473af1c0527d40e56cc859c6d129d8b3aeb24f5df51910809599",
+      "RUN_PROVENANCE.json": "3e4d378b7ba1e2fbd88dcaaa9f49a76291bbd5615392295864d9f1137586a065",
+      "SUMMARY.json": "8e02de5b00e2e9afd0b0aa42a9e118c34b6bf96558dad8699034214e4658a105",
+      "best_alternative_clearly_superior.report.json": "f496556e9b54cd09c339717dd8bb90e3ea9780a8a374f7bab186045823b80869",
+      "multi_sizing.report.json": "d93b2b9a2a6a581e9d3f589e0dbadf21bbc08bbefb1c94015bf695952e795270",
+      "ood_unsupported.report.json": "e6e779da93fd6c5b6ebfed85c293c83e08a321b410635fbee34d0de9ed291890",
+      "robust_consistent.report.json": "c3db80d11b1d19d2cfca34a4d6b8480a0261fa6db047652438d8fb41cdeda687",
+      "sparse_high_uncertainty.report.json": "af173cefd97db5fe30de85927692c91af4e40936e030ecd625125875746e424b",
+      "too_close.report.json": "8a2e1d87f8c31d155335bceff425092510df3a04b331f9e4254be8a3562063b3"
+    },
+    "check": {
+      "mismatches": [],
+      "missing": [],
+      "ok": true
+    },
+    "check_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --check",
+    "determinism": {
+      "deterministic": true,
+      "sha256": {
+        "INDEPENDENCE_PROOF.json": "663ab9ae40e5d65c26c1ffe216c93bf705037e912292f614c955fc81c65e540c",
+        "INPUT_SCHEMA_REF.json": "27d37436282c473af1c0527d40e56cc859c6d129d8b3aeb24f5df51910809599",
+        "RUN_PROVENANCE.json": "3e4d378b7ba1e2fbd88dcaaa9f49a76291bbd5615392295864d9f1137586a065",
+        "SUMMARY.json": "8e02de5b00e2e9afd0b0aa42a9e118c34b6bf96558dad8699034214e4658a105",
+        "best_alternative_clearly_superior.report.json": "f496556e9b54cd09c339717dd8bb90e3ea9780a8a374f7bab186045823b80869",
+        "multi_sizing.report.json": "d93b2b9a2a6a581e9d3f589e0dbadf21bbc08bbefb1c94015bf695952e795270",
+        "ood_unsupported.report.json": "e6e779da93fd6c5b6ebfed85c293c83e08a321b410635fbee34d0de9ed291890",
+        "robust_consistent.report.json": "c3db80d11b1d19d2cfca34a4d6b8480a0261fa6db047652438d8fb41cdeda687",
+        "sparse_high_uncertainty.report.json": "af173cefd97db5fe30de85927692c91af4e40936e030ecd625125875746e424b",
+        "too_close.report.json": "8a2e1d87f8c31d155335bceff425092510df3a04b331f9e4254be8a3562063b3"
+      }
+    },
+    "determinism_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --verify-determinism",
+    "regeneration_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --out-dir training/runs/20260927_model_b_hero_robustness_consumer_v1",
+    "run_dir": "training/runs/20260927_model_b_hero_robustness_consumer_v1",
+    "run_id": "20260927_model_b_hero_robustness_consumer_v1"
+  },
+  "documentation_alignment": {
+    "documents": [
+      "docs/model-b-hero-robustness-consumer.md",
+      "docs/model-b-robustness-consumer.md"
+    ],
+    "missing_scripts": [],
+    "outcome": "PASS"
+  },
+  "documented_commands": [
+    {
+      "command": "PYTHONPATH=. python3 tools/simulation/model_b_hero_robustness_adapter.py --fixture tests/fixtures/model_b_hero_robustness/robust_consistent.json",
+      "exit_code": 0,
+      "expects": "the deterministic report on stdout (schema and status)",
+      "id": "runner_cli_single_fixture",
+      "issue": 425,
+      "observation": "stdout report schema='hero-model-b-hero-robustness-consumer-report/v1' status='CONSISTENT'",
+      "outcome": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --check",
+      "exit_code": 0,
+      "expects": "ok=true: the versioned bundle matches a fresh build",
+      "id": "run_builder_check",
+      "issue": 425,
+      "observation": "check ok=True mismatches=[] missing=[]",
+      "outcome": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py",
+      "exit_code": 0,
+      "expects": "the bundle is written only when two passes are byte-identical",
+      "id": "run_builder_regenerate",
+      "issue": 425,
+      "observation": "deterministic=True",
+      "outcome": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_run.py --verify-determinism",
+      "exit_code": 0,
+      "expects": "deterministic=true with the sha256 of every artifact",
+      "id": "run_builder_verify_determinism",
+      "issue": 425,
+      "observation": "deterministic=True artifacts=10",
+      "outcome": "PASS"
+    }
+  ],
+  "documented_commands_failed": [],
+  "environment": {
+    "jsonschema_available": true,
+    "pytest_used": false
+  },
+  "evidence_commands": {
+    "check_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_evidence.py --check",
+    "recorded_by": "this report: the regeneration command emits it and --check compares it with a fresh run",
+    "regeneration_command": "PYTHONPATH=. python3 tools/simulation/build_model_b_hero_robustness_consumer_evidence.py"
+  },
+  "issue": 425,
+  "limitations": [
+    "Local evidence only: this worker sandbox runs no GitHub Actions workflow and performs no network I/O, so the CI gate status is NOT_OBSERVED here.",
+    "The suites run the available local CPython interpreter, not the CI-pinned 3.11 image.",
+    "No real #367/#314 evidence, no VALIDATION/TEST hand and no promotion is consumed: only the committed synthetic fixtures, the synthetic #344 context and the persisted #340 candidate/reference evidence are read."
+  ],
+  "next_issue": 315,
+  "non_consumption": {
+    "active_model_b_changed": false,
+    "automatic_promotion": false,
+    "parent_closed": false,
+    "production_effect": "NONE",
+    "real_hero_results_consumed": false,
+    "real_issue_314_consumed": false,
+    "real_issue_367_consumed": false,
+    "test_consumed": false,
+    "validation_consumed": false
+  },
+  "parent_issue": 315,
+  "removed_chain": {
+    "doc_hits": [],
+    "doc_tokens": [
+      "tools/simulation/model_b_hero_robustness_consumer.py",
+      "tools/simulation/model_b_hero_robustness_status.py",
+      "tools/simulation/build_issue425_robustness_consumer_run.py",
+      "tests/simulation/test_issue425_robustness_consumer_run.py",
+      "tests/simulation/test_model_b_hero_robustness_status.py",
+      "tests/fixtures/model_b_robustness_consumer",
+      "SYNTHETIC_ROBUSTNESS_PROJECTED",
+      "20260926_issue425"
+    ],
+    "outcome": "PASS",
+    "paths": [
+      "tools/simulation/model_b_hero_robustness_consumer.py",
+      "tools/simulation/model_b_hero_robustness_status.py",
+      "tools/simulation/build_issue425_robustness_consumer_run.py",
+      "tests/simulation/test_issue425_robustness_consumer_run.py",
+      "tests/simulation/test_model_b_hero_robustness_status.py",
+      "tests/fixtures/model_b_robustness_consumer",
+      "training/runs/20260926_issue425_model_b_robustness_consumer_v1"
+    ],
+    "present_paths": []
+  },
+  "run_dir": "training/runs/20260927_model_b_hero_robustness_consumer_v1",
+  "run_id": "20260927_model_b_hero_robustness_consumer_v1",
+  "schema": "hero-model-b-robustness-consumer-test-report/v1",
+  "status": "READY_FOR_INTEGRATION",
+  "suites": [
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_contract.py",
+      "detail": "unittest OK",
+      "exit_code": 0,
+      "id": "model_b_hero_robustness_contract",
+      "issue": 425,
+      "outcome": "PASS",
+      "role": "fail-closed contract bridge and metadata -> feature boundary",
+      "script": "tests/simulation/test_model_b_hero_robustness_contract.py",
+      "tests_run": 37,
+      "tests_skipped": 0
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_classify.py",
+      "detail": "unittest OK",
+      "exit_code": 0,
+      "id": "model_b_hero_robustness_classify",
+      "issue": 425,
+      "outcome": "PASS",
+      "role": "deterministic #425 classifier (precedence, close band, clearly superior)",
+      "script": "tests/simulation/test_model_b_hero_robustness_classify.py",
+      "tests_run": 66,
+      "tests_skipped": 0
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_adapter.py",
+      "detail": "unittest OK",
+      "exit_code": 0,
+      "id": "model_b_hero_robustness_adapter",
+      "issue": 425,
+      "outcome": "PASS",
+      "role": "runner CLI, report contract and the three human corrections",
+      "script": "tests/simulation/test_model_b_hero_robustness_adapter.py",
+      "tests_run": 31,
+      "tests_skipped": 0
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_consumer.py",
+      "detail": "9/9 sections PASS",
+      "exit_code": 0,
+      "id": "model_b_hero_robustness_consumer",
+      "issue": 425,
+      "outcome": "PASS",
+      "role": "consumer integration suite (9 sections incl. metadata invariance)",
+      "script": "tests/simulation/test_model_b_hero_robustness_consumer.py",
+      "tests_run": 9,
+      "tests_skipped": 0
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_model_b_hero_robustness_consumer_run.py",
+      "detail": "unittest OK",
+      "exit_code": 0,
+      "id": "model_b_hero_robustness_consumer_run",
+      "issue": 425,
+      "outcome": "PASS",
+      "role": "canonical run bundle: regeneration, --check and determinism",
+      "script": "tests/simulation/test_model_b_hero_robustness_consumer_run.py",
+      "tests_run": 37,
+      "tests_skipped": 0
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_model_b_preflop_sensitivity_harness.py",
+      "detail": "explicit PASS marker",
+      "exit_code": 0,
+      "id": "model_b_preflop_sensitivity_harness",
+      "issue": 344,
+      "outcome": "PASS",
+      "role": "reused #344 synthetic harness (unchanged contract)",
+      "script": "tests/simulation/test_model_b_preflop_sensitivity_harness.py",
+      "tests_run": null,
+      "tests_skipped": null
+    },
+    {
+      "command": "PYTHONPATH=. python3 tests/simulation/test_model_b_robustness.py",
+      "detail": "unittest OK",
+      "exit_code": 0,
+      "id": "model_b_robustness",
+      "issue": 199,
+      "outcome": "PASS",
+      "role": "#199 backend non-regression (semantics untouched)",
+      "script": "tests/simulation/test_model_b_robustness.py",
+      "tests_run": 22,
+      "tests_skipped": 0
+    }
+  ],
+  "suites_failed": [],
+  "task": "backlog-ncv"
+}
