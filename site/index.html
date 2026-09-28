@@ -7550,11 +7550,23 @@ function paintReviewInboxRows(pageHands,byId){
     const rowSupportState=rowHybrid?(reviewInboxAdvancedProvenance(item)?.support_state||null):null;
     const rowAbstains=!!rowHybrid&&(rowHybrid.abstains===true||String(rowHybrid.abstains||"").toUpperCase()==="TRUE"||rowSupportState===rowFormatter?.SUPPORT_STATES?.OOD_UNSUPPORTED);
     const rowTooClose=!rowAbstains&&!!(rowFormatter&&rowFormatter.formatTooCloseNotice(rowHybrid));
-    const rowEstimated=!rowAbstains&&rowSupportState===rowFormatter?.SUPPORT_STATES?.SPARSE_ESTIMATED;
+    // #424 F2 — l'estimation est portée par `is_estimate` *ou* par le support
+    // `SPARSE_ESTIMATED`, exactement comme `isEstimated` du formateur : les deux
+    // signaux sont indépendants. Le formateur reste requis (fail-closed) : sans
+    // lui aucune marque n'est fabriquée dans la coque.
+    const rowEstimated=!rowAbstains&&!!rowFormatter&&(rowHybrid.is_estimate===true||rowSupportState===rowFormatter.SUPPORT_STATES.SPARSE_ESTIMATED);
     // Cellule « Perte EV » : le gabarit historique reste la valeur par défaut et
     // n'est remplacé que dans les états où un montant actionnable serait trompeur
     // (abstention / non supporté) ou surestimé (estimation).
     let lossCell=`Perte EV<b>${escapeHtml(formatBB(item.total_loss_bb))}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small>`;
+    // #424 F2 — la marque d'estimation est un *ajout*, jamais une alternative :
+    // un item peut être simultanément trop proche (`too_close` ou
+    // `LOW_CONFIDENCE_TOO_CLOSE`) et estimé (`is_estimate`). Elle réutilise
+    // uniquement les exports du formateur (préfixe / suffixe).
+    const markEstimated=()=>{
+      decisionText=rowFormatter.ESTIMATE_PREFIX+' '+decisionText+' '+rowFormatter.ESTIMATE_SUFFIX;
+      lossCell=`Perte EV<b>${escapeHtml(rowFormatter.ESTIMATE_PREFIX+' '+formatBB(item.total_loss_bb)+' '+rowFormatter.ESTIMATE_SUFFIX)}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small>`;
+    };
     if(rowAbstains){
       // Abstention explicite ou spot hors distribution : aucune reco et aucune
       // perte EV numérique, seulement l'état d'abstention déjà servi.
@@ -7563,11 +7575,12 @@ function paintReviewInboxRows(pageHands,byId){
     }else if(rowTooClose){
       // Verdict trop proche : le formateur interdit de désigner une action unique.
       decisionText=rowFormatter.formatTooCloseNotice(rowHybrid);
+      // La marque d'estimation survit au verdict trop proche (#424 F2).
+      if(rowEstimated)markEstimated();
     }else if(rowEstimated){
       // Estimation : les marques viennent du formateur (préfixe / suffixe
       // exportés), jamais d'une chaîne dupliquée dans la coque.
-      decisionText=rowFormatter.ESTIMATE_PREFIX+' '+decisionText+' '+rowFormatter.ESTIMATE_SUFFIX;
-      lossCell=`Perte EV<b>${escapeHtml(rowFormatter.ESTIMATE_PREFIX+' '+formatBB(item.total_loss_bb)+' '+rowFormatter.ESTIMATE_SUFFIX)}</b><small>Décision max ${escapeHtml(formatBB(decisionLoss))}</small>`;
+      markEstimated();
     }
     const robustness=modelBRobustnessViewForDecision(h.id,item.deep_link?.step_index);
     const robustnessText=modelBRobustnessStatusText(robustness);
