@@ -310,7 +310,10 @@ def validate_report(
 
 def assert_source_path_allowed(path: Path | str) -> Path:
     """Refuse any artifact of the real ISO EV run before it is opened."""
-    resolved = Path(path)
+    # Resolve the path first so the marker check and the later open/read act on
+    # the same canonical location: relative segments (``./x/../``) and symlinks
+    # can no longer smuggle the real ISO EV run past the guard.
+    resolved = Path(path).resolve(strict=False)
     normalized = str(resolved).replace("\\", "/").lower()
     if any(marker in normalized for marker in FORBIDDEN_SOURCE_RUN_MARKERS):
         raise AdapterError(

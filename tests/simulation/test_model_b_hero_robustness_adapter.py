@@ -33,6 +33,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -433,6 +434,68 @@ class BoundaryTest(unittest.TestCase):
                 FIXTURES / "robust_consistent.json",
                 candidate=FORBIDDEN_367_RUN / "RESULT.json",
             )
+
+    def test_relative_path_equivalent_to_the_forbidden_run_is_refused(self) -> None:
+        # A cwd-relative path no longer spells the forbidden marker, yet it
+        # names the very same real ISO EV artifact once resolved.
+        previous = os.getcwd()
+        os.chdir(FORBIDDEN_367_RUN)
+        try:
+            self.assertNotIn(FORBIDDEN_RUN_MARKER, "RESULT.json")
+            with self.assertRaises(adapter.AdapterError) as raised:
+                adapter.assert_source_path_allowed("RESULT.json")
+            self.assertEqual(
+                raised.exception.reason_code, "FORBIDDEN_UPSTREAM_ARTIFACT"
+            )
+            with self.assertRaises(adapter.AdapterError) as raised:
+                adapter.run_fixture(FIXTURES / "robust_consistent.json", candidate="RESULT.json")
+            self.assertEqual(
+                raised.exception.reason_code, "FORBIDDEN_UPSTREAM_ARTIFACT"
+            )
+        finally:
+            os.chdir(previous)
+        # A doodled ``./x/../`` detour onto the same run is refused as well.
+        doodled = (
+            FORBIDDEN_367_RUN.parent
+            / "nested"
+            / ".."
+            / FORBIDDEN_367_RUN.name
+            / "RESULT.json"
+        )
+        with self.assertRaises(adapter.AdapterError) as raised:
+            adapter.assert_source_path_allowed(doodled)
+        self.assertEqual(raised.exception.reason_code, "FORBIDDEN_UPSTREAM_ARTIFACT")
+
+    def test_symlink_to_the_forbidden_run_is_refused_before_reading(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            link = Path(tmp) / "innocent-run"
+            try:
+                link.symlink_to(FORBIDDEN_367_RUN, target_is_directory=True)
+            except (OSError, NotImplementedError):  # pragma: no cover - platform gate
+                self.skipTest("symlinks are unavailable on this platform")
+            target = link / "RESULT.json"
+            # The bytes are genuinely reachable through the alias...
+            self.assertTrue(target.is_file())
+            # ...but the guard resolves the symlink and refuses before any read.
+            with mock.patch.object(
+                adapter, "load_json", side_effect=AssertionError("read attempted")
+            ):
+                with self.assertRaises(adapter.AdapterError) as raised:
+                    adapter.assert_source_path_allowed(target)
+                self.assertEqual(
+                    raised.exception.reason_code, "FORBIDDEN_UPSTREAM_ARTIFACT"
+                )
+                with self.assertRaises(adapter.AdapterError) as raised:
+                    adapter.load_source_340_docs(run_dir=link)
+                self.assertEqual(
+                    raised.exception.reason_code, "FORBIDDEN_UPSTREAM_ARTIFACT"
+                )
+            # ``run_fixture`` refuses the symlinked candidate before consuming it.
+            with self.assertRaises(adapter.AdapterError) as raised:
+                adapter.run_fixture(
+                    FIXTURES / "robust_consistent.json", candidate=target
+                )
+            self.assertEqual(raised.exception.reason_code, "FORBIDDEN_UPSTREAM_ARTIFACT")
 
     def test_adapter_module_never_hardcodes_the_forbidden_run(self) -> None:
         source = ADAPTER_PATH.read_text(encoding="utf-8")
