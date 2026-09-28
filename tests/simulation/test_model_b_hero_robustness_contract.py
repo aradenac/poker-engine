@@ -27,6 +27,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -610,6 +611,149 @@ class MetadataFeatureBoundaryTest(unittest.TestCase):
             harness.canonical_sha256(baseline),
             "the projected request must still track the public decision identity",
         )
+
+
+class PublicContextWhitelistTest(unittest.TestCase):
+    """Closed public-context whitelist (task ``backlog-6du``).
+
+    ``project_to_harness_request`` copies the whole public context into
+    ``public_context``. ``_validate_context`` must therefore accept only the
+    exact key set of the existing #344 synthetic context fixture, and refuse
+    every other public key fail-closed *before* the context is copied.
+
+    The expected key set and the forbidden field names below are hard-coded on
+    purpose: they are an independent oracle, so a regression of the production
+    catalogue (or of the whitelist itself) cannot also rewrite its own test.
+    """
+
+    #: The exact ten public keys of
+    #: ``tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json``.
+    EXPECTED_PUBLIC_CONTEXT_FIELDS = frozenset(
+        {
+            "schema",
+            "synthetic_fixture",
+            "scenario_id",
+            "provenance",
+            "hero_position",
+            "hero_contribution_before_bb",
+            "pot_before_hero_action_bb",
+            "initial_sequence",
+            "limper_count",
+            "responders",
+        }
+    )
+
+    #: Deliberately *not* imported from ``contract.FORBIDDEN_LEAK_FIELDS``.
+    HARDCODED_FORBIDDEN_FIELDS = ("ev_bb", "route", "support")
+
+    def document(self) -> dict:
+        return copy.deepcopy(load_json(FIXTURES / "robust_consistent.json"))
+
+    def test_whitelist_is_exactly_the_344_fixture_key_set(self) -> None:
+        self.assertEqual(
+            contract.PUBLIC_CONTEXT_ALLOWED_FIELDS,
+            self.EXPECTED_PUBLIC_CONTEXT_FIELDS,
+        )
+        self.assertEqual(set(context()), self.EXPECTED_PUBLIC_CONTEXT_FIELDS)
+
+    def test_legitimate_344_fixture_context_still_projects(self) -> None:
+        request = contract.project_to_harness_request(self.document(), context())
+        self.assertEqual(request["public_context"], context())
+        self.assertEqual(contract.check_forbidden_features(request), [])
+        self.assertIs(harness.validate_request(request), None)
+
+    def test_unknown_public_context_key_is_refused_before_any_copy(self) -> None:
+        document = self.document()
+        for injected in (
+            "unexpected_public_key",
+            "hero_ev_envelope",
+            "scenario_notes",
+        ):
+            with self.subTest(injected=injected):
+                bad = context()
+                bad[injected] = {"nested": {"support": "leaked"}}
+                copied: list = []
+                original_deepcopy = contract.copy.deepcopy
+
+                def spy(value, _copied=copied, _original=original_deepcopy):
+                    _copied.append(value)
+                    return _original(value)
+
+                with mock.patch.object(contract.copy, "deepcopy", spy):
+                    with self.assertRaises(contract.RobustnessContractError) as raised:
+                        contract.project_to_harness_request(document, bad)
+                error = raised.exception
+                self.assertEqual(error.reason_code, "UNKNOWN_CONTEXT_FIELD")
+                self.assertEqual(error.details.get("unknown"), [injected])
+                self.assertEqual(
+                    copied,
+                    [],
+                    "an unknown public key must be refused before the context is "
+                    "copied into the projected request",
+                )
+
+    def test_recursive_forbidden_injection_in_context_is_refused(self) -> None:
+        document = self.document()
+        injections = (
+            ("ev_bb", lambda bad: bad["provenance"].__setitem__("ev_bb", -1.0)),
+            (
+                "route",
+                lambda bad: bad["responders"][0].__setitem__("route", "leaked"),
+            ),
+            (
+                "support",
+                lambda bad: bad["initial_sequence"][0].__setitem__(
+                    "support", {"status": "CONSISTENT"}
+                ),
+            ),
+        )
+        for name, inject in injections:
+            with self.subTest(field=name):
+                bad = context()
+                inject(bad)
+                with self.assertRaises(contract.RobustnessContractError) as raised:
+                    contract.project_to_harness_request(document, bad)
+                error = raised.exception
+                self.assertEqual(error.reason_code, "FORBIDDEN_FEATURE")
+                hits = error.details.get("hits") or []
+                self.assertTrue(
+                    any(name in hit for hit in hits),
+                    f"{name!r} must be reported as a leak: {hits}",
+                )
+
+    def test_recursive_forbidden_injection_in_alternatives_is_refused(self) -> None:
+        injections = (
+            (
+                "ev_bb",
+                lambda alternative: alternative["uncertainty"].__setitem__(
+                    "ev_bb", 1.0
+                ),
+            ),
+            (
+                "route",
+                lambda alternative: alternative.__setitem__("route", "leaked"),
+            ),
+            (
+                "support",
+                lambda alternative: alternative["support"].__setitem__(
+                    "support", "leaked"
+                ),
+            ),
+        )
+        for name, inject in injections:
+            with self.subTest(field=name):
+                document = self.document()
+                inject(document["hero_entry"]["alternatives"][0])
+                with self.assertRaises(contract.RobustnessContractError) as raised:
+                    contract.project_to_harness_request(document, context())
+                self.assertEqual(raised.exception.reason_code, "FORBIDDEN_FEATURE")
+                self.assertIn(name, str(raised.exception))
+
+    def test_hardcoded_forbidden_names_never_reach_the_projection(self) -> None:
+        request = contract.project_to_harness_request(self.document(), context())
+        keys = all_keys(request)
+        for name in self.HARDCODED_FORBIDDEN_FIELDS:
+            self.assertNotIn(name, keys, name)
 
 
 if __name__ == "__main__":

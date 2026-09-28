@@ -76,6 +76,7 @@ __all__ = [
     "FORBIDDEN_MODEL_FEATURES",
     "FORBIDDEN_ALTERNATIVE_LEAK_FIELDS",
     "FORBIDDEN_LEAK_FIELDS",
+    "PUBLIC_CONTEXT_ALLOWED_FIELDS",
     "validate_robustness_input",
     "load_robustness_input",
     "validate_projected_request",
@@ -188,6 +189,26 @@ _CONTEXT_REQUIRED_FIELDS = (
     "limper_count",
     "responders",
 )
+
+#: Closed whitelist of public context keys the projection may copy into the
+#: #344 harness request. It is exactly the key set of the existing #344
+#: synthetic context fixture
+#: (``tests/fixtures/model_b_preflop_sensitivity/synthetic_sb_two_limpers_context.json``):
+#: the ``schema``/``synthetic_fixture``/``scenario_id`` identity keys, the
+#: fixture's synthetic ``provenance`` block and the six
+#: ``_CONTEXT_REQUIRED_FIELDS``. A public key outside this set is refused
+#: fail-closed (``UNKNOWN_CONTEXT_FIELD``) *before* anything is copied into the
+#: projected request: the previous a-posteriori blacklist could not see an
+#: uncatalogued public field at all.
+PUBLIC_CONTEXT_ALLOWED_FIELDS = frozenset(
+    {
+        "schema",
+        "synthetic_fixture",
+        "scenario_id",
+        "provenance",
+    }
+) | frozenset(_CONTEXT_REQUIRED_FIELDS)
+
 _REASON_CODE_PRECEDENCE = (
     "FORBIDDEN_FEATURE",
     "NON_FINITE_NUMBER",
@@ -845,6 +866,38 @@ def _validate_context(context: Any) -> Mapping[str, Any]:
             "the projection accepts synthetic harness contexts only "
             "(synthetic_fixture=true)",
         )
+    # Fail closed on the closed public whitelist *before* anything may be copied
+    # into the projected request. A catalogued leak keeps its specific
+    # FORBIDDEN_FEATURE code; every other uncatalogued public key is refused as
+    # UNKNOWN_CONTEXT_FIELD instead of silently crossing the boundary.
+    forbidden = sorted(
+        (
+            key
+            for key in context
+            if str(key).lower() in FORBIDDEN_LEAK_FIELDS
+            or str(key).lower().startswith("model_a")
+        ),
+        key=str,
+    )
+    if forbidden:
+        raise RobustnessContractError(
+            "FORBIDDEN_FEATURE",
+            "harness context carries forbidden Model A/EV/robustness-leak "
+            "fields: " + ", ".join(str(key) for key in forbidden),
+            details={"hits": [f"$.{key}" for key in forbidden]},
+        )
+    unknown = sorted(
+        (key for key in context if str(key) not in PUBLIC_CONTEXT_ALLOWED_FIELDS),
+        key=str,
+    )
+    if unknown:
+        raise RobustnessContractError(
+            "UNKNOWN_CONTEXT_FIELD",
+            "harness context carries public fields outside the closed "
+            f"projection whitelist {sorted(PUBLIC_CONTEXT_ALLOWED_FIELDS)}: "
+            f"{unknown}",
+            details={"unknown": unknown},
+        )
     missing = [key for key in _CONTEXT_REQUIRED_FIELDS if context.get(key) is None]
     if missing:
         raise RobustnessContractError(
@@ -871,6 +924,9 @@ def project_to_harness_request(
     defaulted. The result keeps ``source_kind=SYNTHETIC_HARNESS_ONLY``,
     ``synthetic_fixture=true`` and an all-false information boundary, is accepted
     by ``harness.validate_request`` and passes the final forbidden-feature scan.
+    The public context itself is copied only when every one of its keys belongs
+    to the closed :data:`PUBLIC_CONTEXT_ALLOWED_FIELDS` whitelist; any other key
+    is refused fail-closed before the copy.
     """
     if context is None:
         context = public_context
