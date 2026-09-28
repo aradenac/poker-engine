@@ -203,10 +203,25 @@ const encoded = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64');
 const command = `python3 /home/abel/.config/poker-engine-orchestrator/state_ops.py mark-needs-human --payload-b64 ${JSON.stringify(encoded)}`;
 return [{ json: { ...ctx, command } }];"""
 
+SAFE_PUSH_CODE = r"""const ctx = { ...$json };
+const q = s => `'${String(s).replace(/'/g, "'\\''")}'`;
+const wt = String(ctx.issue_worktree || '');
+let sync = {};
+try { sync = JSON.parse((ctx.sync && ctx.sync.stdout) || '{}'); } catch (_) { sync = {}; }
+const branch = String(sync.branch || ctx.branch_template || '');
+if (!wt || !/^[A-Za-z0-9._/-]+$/.test(branch)) throw new Error('INVALID_SAFE_PUSH_CONTEXT');
+const leaseRef = 'refs/heads/' + branch;
+const command = `cd ${q(wt)} && out_file="$(mktemp)" err_file="$(mktemp)" && ( set -e; git fetch origin main --quiet; current="$(git branch --show-current)"; test "$current" = ${q(branch)} || { echo WRONG_BRANCH >&2; exit 51; }; head="$(git rev-parse HEAD)"; test "$head" = ${q(sync.reviewed_head || '')} || { echo HEAD_CHANGED_AFTER_REVIEW >&2; exit 52; }; live_remote="$(git ls-remote --heads origin ${q(branch)} | awk '{print $1}')"; test "$live_remote" = ${q(sync.expected_remote_head || '')} || { echo REMOTE_BRANCH_MOVED_AFTER_REVIEW >&2; exit 54; }; if [ -n "$live_remote" ]; then git push --force-with-lease=${q(leaseRef)}:"$live_remote" -u origin ${q(branch)}; else git push -u origin ${q(branch)}; fi; remote_after="$(git ls-remote --heads origin ${q(branch)} | awk '{print $1}')"; test "$remote_after" = "$head" || { echo REMOTE_HEAD_MISMATCH >&2; exit 55; }; jq -n --arg head "$head" '{head:$head}'; ) >"$out_file" 2>"$err_file"; rc=$?; if [ "$rc" -eq 0 ]; then jq -n --arg status OK --rawfile stdout "$out_file" '{status:$status,stdout:$stdout}'; else jq -n --arg status BLOCKED --arg reason PUSH_FAILED --argjson exit_code "$rc" --rawfile stderr "$err_file" '{status:$status,reason:$reason,exit_code:$exit_code,stderr:$stderr}'; fi; rm -f "$out_file" "$err_file"; exit 0`;
+return [{ json: { ...ctx, branch_template: branch, command } }];"""
+
 
 def patch_integration(workflow: dict) -> list[str]:
     changed: list[str] = []
-    for name, value in (("Build sync", SYNC_CODE), ("Build NEEDS_HUMAN update", NEEDS_HUMAN_CODE)):
+    for name, value in (
+        ("Build sync", SYNC_CODE),
+        ("Build safe PR push", SAFE_PUSH_CODE),
+        ("Build NEEDS_HUMAN update", NEEDS_HUMAN_CODE),
+    ):
         target = node(workflow, name)
         if target["parameters"].get("jsCode") != value:
             target["parameters"]["jsCode"] = value

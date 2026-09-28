@@ -76,6 +76,8 @@ def main() -> int:
         push = nodes.get("Build safe PR push", {}).get("parameters", {}).get("jsCode", "")
         if "--force-with-lease=" not in push or "REMOTE_BRANCH_MOVED_AFTER_REVIEW" not in push:
             errors.append("integration: protected force push guard missing")
+        if "sync.branch || ctx.branch_template" not in push or "INVALID_SAFE_PUSH_CONTEXT" not in push:
+            errors.append("integration: reviewed branch is not authoritative for safe push")
         needs_human = nodes.get("Build NEEDS_HUMAN update", {}).get("parameters", {}).get("jsCode", "")
         if "state_ops.py mark-needs-human" not in needs_human or "Buffer.from" not in needs_human:
             errors.append("integration: shell-safe state transition missing")
