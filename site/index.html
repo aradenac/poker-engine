@@ -7436,6 +7436,13 @@ function reviewInboxAdvancedView(item){
   // L'état d'abstention est lu sur les entrées autoritaires (`abstains`,
   // `support_state`) ; il n'est jamais déduit de l'EV ni d'un texte de raison.
   const abstains=hybrid.abstains===true||String(hybrid.abstains||"").toUpperCase()==="TRUE"||provenance?.support_state===Formatter.SUPPORT_STATES.OOD_UNSUPPORTED;
+  // #424 F3 — l'abstention prime sur le verdict trop proche. Dès que
+  // `abstains`/`OOD_UNSUPPORTED` est vrai, le panneau avancé affiche l'état
+  // d'abstention même si `too_close`/`LOW_CONFIDENCE_TOO_CLOSE` est également
+  // vrai sur le même hybrid. `formatAbstentionReason` renvoie volontairement ''
+  // dans ces états (ABSTENTION_NOTICE), donc le repli explicite est appliqué en
+  // premier : `tooClose` ne peut plus masquer l'abstention.
+  const verdict=abstains?(abstentionReason||REVIEW_INBOX_ADVANCED_ABSTENTION):(tooClose||abstentionReason);
   return {
     support_state:provenance?.support_state||null,
     support_state_label:support.label_fr,
@@ -7445,7 +7452,7 @@ function reviewInboxAdvancedView(item){
     uncertainty_note:provenance?.uncertainty_note||"",
     abstention_reason:abstentionReason,
     too_close_notice:tooClose,
-    verdict:tooClose||abstentionReason||(abstains?REVIEW_INBOX_ADVANCED_ABSTENTION:""),
+    verdict,
     provenance
   };
 }

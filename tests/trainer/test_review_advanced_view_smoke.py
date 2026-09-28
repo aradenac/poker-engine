@@ -138,6 +138,14 @@ ROW_ESTIMATE_WIRING = (
     "else if(rowEstimated){",
 )
 
+# #424 F3 — dans le panneau avance, l'abstention prime sur le verdict trop
+# proche : la branche d'abstention (`abstains`/`OOD_UNSUPPORTED`) est evaluee
+# avant `tooClose`, en reutilisant strictement les exports du formateur
+# (`abstentionReason`, `REVIEW_INBOX_ADVANCED_ABSTENTION`).
+ADVANCED_VERDICT_PRIORITY = (
+    "const verdict=abstains?(abstentionReason||REVIEW_INBOX_ADVANCED_ABSTENTION):(tooClose||abstentionReason);",
+)
+
 # Mutations en memoire : chacune doit faire echouer `check`, sinon le smoke
 # passerait sur un garde trop faible. Le jeton doit etre present une seule fois.
 MUTATIONS = {
@@ -161,6 +169,11 @@ MUTATIONS = {
     "row-estimate-ignores-flag": ("rowHybrid.is_estimate===true||", ""),
     # #424 F2 — la marque d'estimation disparait derriere le verdict trop proche
     "row-estimate-lost-behind-too-close": ("if(rowEstimated)markEstimated();", "void 0;"),
+    # #424 F3 — l'abstention redevient masquee par le verdict trop proche
+    "abstention-masked-by-too-close": (
+        "const verdict=abstains?(abstentionReason||REVIEW_INBOX_ADVANCED_ABSTENTION):(tooClose||abstentionReason);",
+        'const verdict=tooClose||abstentionReason||(abstains?REVIEW_INBOX_ADVANCED_ABSTENTION:"");',
+    ),
 }
 
 
@@ -214,6 +227,12 @@ def check(index_text: str) -> None:
     #    independante du verdict trop proche : `rowEstimated` lit `is_estimate`,
     #    et l'applier unique est appele dans les deux branchements.
     for token in ROW_ESTIMATE_WIRING:
+        present(token)
+
+    # 9. #424 F3 — l'abstention du panneau avance est evaluee avant le verdict
+    #    trop proche : la branche d'abstention porte le repli explicite du
+    #    formateur et n'est plus court-circuitee par `tooClose`.
+    for token in ADVANCED_VERDICT_PRIORITY:
         present(token)
 
 
@@ -605,6 +624,187 @@ process.stdout.write(JSON.stringify({status:'PASS',mutation:mutation||null}));
 """
 
 
+# --------------------------------------------------------------------------- #
+# #424 F3 — smoke comportemental du *panneau avance* : le champ « Abstention /
+# verdict » doit afficher l'abstention des que `abstains`/`OOD_UNSUPPORTED` est
+# vrai, meme quand `too_close`/`LOW_CONFIDENCE_TOO_CLOSE` est egalement vrai sur
+# le meme hybrid. Le formateur servi et les fonctions servies du panneau sont
+# executes contre un DOM minimal, exactement comme le peintre servi. Non-
+# vacuite : remettre l'ancien ordre (`tooClose||...`) doit casser les deux cas
+# d'abstention combines, sans toucher au cas too-close seul.
+ADVANCED_VERDICT_HARNESS_SCRIPT = r"""
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+
+let source=fs.readFileSync('site/index.html','utf8');
+const formatterSource=fs.readFileSync('site/analytics/review-confidence-formatter.js','utf8');
+
+const MUTATIONS={
+  // l'abstention redevient masquee par le verdict trop proche (ancien ordre)
+  'too-close-first':[
+    'const verdict=abstains?(abstentionReason||REVIEW_INBOX_ADVANCED_ABSTENTION):(tooClose||abstentionReason);',
+    'const verdict=tooClose||abstentionReason||(abstains?REVIEW_INBOX_ADVANCED_ABSTENTION:"");',
+  ],
+};
+const mutation=process.env.ADVANCED_VERDICT_MUTATION||'';
+if(mutation){
+  const [token,replacement]=MUTATIONS[mutation];
+  assert.ok(typeof token==='string'&&token.length>0,'unknown mutation: '+mutation);
+  assert.equal(source.split(token).length-1,1,'mutation token must occur exactly once: '+mutation);
+  source=source.replace(token,replacement);
+}
+
+function extractFn(src,name){
+  const start=src.indexOf('function '+name+'(');
+  if(start<0)throw new Error('missing '+name);
+  let cursor=src.indexOf('(',start+'function '.length),depth=0;
+  for(;cursor<src.length;cursor++){
+    const ch=src[cursor];
+    if(ch==='(')depth++;
+    else if(ch===')'){depth--;if(depth===0)break;}
+  }
+  cursor=src.indexOf('{',cursor);depth=0;
+  for(;cursor<src.length;cursor++){
+    const ch=src[cursor];
+    if(ch==='{')depth++;
+    else if(ch==='}'){depth--;if(depth===0)return src.slice(start,cursor+1);}
+  }
+  throw new Error('unbalanced '+name);
+}
+function servedConst(src,name){
+  const match=src.match(new RegExp('^const '+name+'=(.*);$','m'));
+  assert.ok(match,'missing served constant: '+name);
+  return match[1];
+}
+
+// Minimal DOM: only what `paintReviewInboxRows` and the advanced panel touch.
+function makeElement(tag){
+  return {
+    tagName:String(tag),className:'',id:'',hidden:false,textContent:'',innerHTML:'',
+    children:[],handlers:{},attrs:{},dataset:{},
+    append(...nodes){for(const node of nodes)this.children.push(node);},
+    appendChild(node){this.children.push(node);return node;},
+    setAttribute(name,value){this.attrs[String(name)]=String(value);},
+    getAttribute(name){
+      return Object.prototype.hasOwnProperty.call(this.attrs,String(name))?this.attrs[String(name)]:null;
+    },
+    addEventListener(type,handler){(this.handlers[type]=this.handlers[type]||[]).push(handler);},
+    querySelector(){return null;},
+    click(){for(const handler of this.handlers.click||[])handler({});},
+  };
+}
+
+const hhHandsEl=makeElement('div');
+Object.defineProperty(hhHandsEl,'innerHTML',{
+  get(){return '';},
+  set(value){if(!value)this.children=[];},
+});
+
+const sandbox={
+  console,Set,String,Number,Boolean,Math,JSON,
+  document:{createElement:makeElement},
+  hhHandsEl,
+  state:{selectedHand:null},
+  escapeHtml:s=>String(s==null?'':s),
+  formatBB:v=>Number(v).toFixed(2)+' BB',
+  reviewHandDisplayMeta:()=>({hero_cards:'A K',result:{state:'win',text:'Gagne'}}),
+  modelBRobustnessViewForDecision:()=>null,
+  modelBRobustnessStatusText:()=>'robustesse indisponible',
+  openReviewInboxItem:()=>{},
+  setReviewInboxReviewed:()=>{},
+  reviewInboxIsHeightBound:()=>false,
+};
+vm.createContext(sandbox);
+vm.runInContext('var window=globalThis;',sandbox);
+vm.runInContext(formatterSource,sandbox);
+assert.ok(sandbox.window.PokerReviewConfidenceFormatter,'the mirrored formatter must expose its API');
+vm.runInContext([
+  'const REVIEW_INBOX_ADVANCED_OPEN='+servedConst(source,'REVIEW_INBOX_ADVANCED_OPEN')+';',
+  'const REVIEW_INBOX_ADVANCED_ABSTENTION='+servedConst(source,'REVIEW_INBOX_ADVANCED_ABSTENTION')+';',
+  ...[
+    'reviewInboxAdvancedIsOpen','reviewInboxAdvancedFormatter','reviewInboxAdvancedProvenance',
+    'reviewInboxAdvancedView','reviewInboxAdvancedModelLabel','reviewInboxAdvancedOodLabel',
+    'reviewInboxAdvancedField','reviewInboxAdvancedPanel','paintReviewInboxRows',
+  ].map(name=>extractFn(source,name)),
+].join('\n'),sandbox);
+
+const Formatter=sandbox.window.PokerReviewConfidenceFormatter;
+const ABSTENTION=vm.runInContext('REVIEW_INBOX_ADVANCED_ABSTENTION',sandbox);
+const NOTICE=Formatter.TOO_CLOSE_NOTICE;
+assert.ok(ABSTENTION&&ABSTENTION.length,'le libelle d abstention servi est lisible');
+
+const hybridBase={
+  schema:'poker-review-hybrid-result/v1',support_state:'ROBUST',confidence_level:'MEDIUM',
+  is_estimate:false,ev_bb:-0.3,uncertainty_note:null,abstains:false,abstention_reason:null,too_close:false,
+  provenance:{route:'HYBRID_BACKOFF',source:'model_b+model_a',model_id:'gbm-2026-09',model_hash:'sha256:abcd',ood_status:'IN_DISTRIBUTION',ood_reason:null},
+};
+const plainItem={hand_id:'40',status:'TO_REVIEW',status_label:'A revoir',
+  coverage:{decisions_covered:1,decisions_total:2,decisions_comparable:1},
+  analysis_state:{state:'ANALYSE_DISPONIBLE',reason_codes:[]},
+  costliest_decision:{loss_bb:0.5},action_played:'call',action_recommended:'fold',total_loss_bb:-0.3,
+  position:'IP',spot_family:'SRP',main_street:'Flop',user_review:{reviewed:false}};
+
+// Peint une rangee et lit le champ « Abstention / verdict » du panneau avance.
+function panelVerdict(item){
+  hhHandsEl.children=[];
+  sandbox.paintReviewInboxRows([{id:Number(item.hand_id)}],new Map([[String(item.hand_id),item]]));
+  assert.equal(hhHandsEl.children.length,1,'une main doit peindre une rangee');
+  const row=hhHandsEl.children[0];
+  const panel=row.children[row.children.length-1];
+  assert.ok(panel&&String(panel.className).includes('review-inbox-advanced'),'le panneau avance est peint');
+  const field=panel.children.find(f=>String(f.children[0]?.textContent)==='Abstention / verdict');
+  assert.ok(field,'le champ « Abstention / verdict » est present');
+  return String(field.children[1]?.textContent||'');
+}
+
+const CASES=[
+  // F3-a : abstains=true ET too_close=true -> l'abstention prime, la notice
+  // too-close ne masque plus l'etat d'abstention.
+  ['F3-a',()=>{
+    const verdict=panelVerdict({...plainItem,hand_id:'40',hybrid:{...hybridBase,support_state:'ROBUST',abstains:true,too_close:true,ev_bb:-0.3}});
+    assert.equal(verdict,ABSTENTION,'F3-a: abstains+too_close affiche l abstention');
+    assert.ok(!verdict.includes(NOTICE),'F3-a: la notice too-close ne masque pas l abstention');
+  }],
+  // F3-b : support_state=OOD_UNSUPPORTED ET too_close=true (abstains=false) ->
+  // l'etat non supporte prime sur le verdict trop proche.
+  ['F3-b',()=>{
+    const verdict=panelVerdict({...plainItem,hand_id:'41',hybrid:{...hybridBase,support_state:'OOD_UNSUPPORTED',abstains:false,too_close:true,ev_bb:-0.3}});
+    assert.equal(verdict,ABSTENTION,'F3-b: OOD_UNSUPPORTED+too_close affiche l abstention');
+    assert.ok(!verdict.includes(NOTICE),'F3-b: la notice too-close ne masque pas l abstention');
+  }],
+  // F3-c : non-regression — too_close seul (abstains=false, support != OOD)
+  // garde sa notice dediee, inchangee.
+  ['F3-c',()=>{
+    const verdict=panelVerdict({...plainItem,hand_id:'42',hybrid:{...hybridBase,support_state:'LOW_CONFIDENCE_TOO_CLOSE',abstains:false,too_close:true,ev_bb:-0.2}});
+    assert.equal(verdict,NOTICE,'F3-c: too_close seul garde sa notice');
+  }],
+  // F3-d : non-regression — l'abstention seule (sans too_close) reste inchangee.
+  ['F3-d',()=>{
+    const verdict=panelVerdict({...plainItem,hand_id:'43',hybrid:{...hybridBase,support_state:'OOD_UNSUPPORTED',abstains:false,too_close:false,ev_bb:-0.3}});
+    assert.equal(verdict,ABSTENTION,'F3-d: OOD_UNSUPPORTED seul affiche l abstention');
+  }],
+  // F3-e : le signal too-close peut etre porte par le support
+  // `LOW_CONFIDENCE_TOO_CLOSE` seul, sans le drapeau `too_close` : l'abstention
+  // prime quand meme.
+  ['F3-e',()=>{
+    const verdict=panelVerdict({...plainItem,hand_id:'44',hybrid:{...hybridBase,support_state:'LOW_CONFIDENCE_TOO_CLOSE',abstains:true,too_close:false,ev_bb:-0.3}});
+    assert.equal(verdict,ABSTENTION,'F3-e: abstains+LOW_CONFIDENCE_TOO_CLOSE affiche l abstention');
+  }],
+];
+
+for(const [id,fn] of CASES){
+  try{
+    fn();
+  }catch(err){
+    process.stdout.write(JSON.stringify({status:'FAIL',failed:id,message:String((err&&err.message)||err),mutation:mutation||null}));
+    process.exit(0);
+  }
+}
+process.stdout.write(JSON.stringify({status:'PASS',mutation:mutation||null}));
+"""
+
+
 def run_fold_harness(mutation: str | None = None) -> dict:
     """Drive the served open/fold path on a measured bounded DOM (node only)."""
     import json
@@ -701,6 +901,40 @@ def check_row_estimate_runtime() -> None:
         )
 
 
+def run_advanced_verdict_harness(mutation: str | None = None) -> dict:
+    """Drive the served advanced panel on the F3 abstention/too-close combinations."""
+    import json
+    import os
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    assert node is not None, "node runtime is required for the review advanced-verdict smoke"
+    completed = subprocess.run(
+        [node, "-e", ADVANCED_VERDICT_HARNESS_SCRIPT],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "ADVANCED_VERDICT_MUTATION": mutation or ""},
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    return json.loads(completed.stdout)
+
+
+def check_advanced_verdict_runtime() -> None:
+    """#424 F3 — the advanced panel shows the abstention ahead of too-close."""
+    base = run_advanced_verdict_harness()
+    assert base.get("status") == "PASS", base
+    # Non-vacuite : remettre l'ancien ordre (`tooClose` d'abord) doit casser le
+    # premier cas d'abstention combine (F3-a), et laisser le cas too-close seul
+    # (F3-c) intact.
+    mutated = run_advanced_verdict_harness("too-close-first")
+    assert mutated.get("status") == "FAIL" and mutated.get("failed") == "F3-a", (
+        "la mutation too-close-first doit casser le cas F3-a",
+        mutated,
+    )
+
+
 def main() -> None:
     # La parite octet-a-octet entre source d'edition et miroir servi : un miroir
     # desynchronise fait echouer le smoke avant meme la lecture de la coque.
@@ -729,6 +963,10 @@ def main() -> None:
     # #424 F2 — la verification comportementale de la rangee principale : la
     # marque d'estimation suit `is_estimate` et survit au verdict trop proche.
     check_row_estimate_runtime()
+
+    # #424 F3 — la verification comportementale du panneau avance : l'abstention
+    # prime sur le verdict trop proche quand les deux signaux coexistent.
+    check_advanced_verdict_runtime()
 
     print("review advanced-view smoke checks: OK")
 
