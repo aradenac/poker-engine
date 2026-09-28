@@ -111,6 +111,19 @@ FILTERS_PAGINATION = (
     "state.hhSort=normalizeReviewInboxSortCode(hhSortSelect.value);",
 )
 
+# #424 F1 — le repli borne qui garde la ligne ouverte et son panneau atteignables
+# dans la coque desktop (`overflow:hidden`). Le mecanisme est une couche de
+# presentation pure : la declaration du helper, son appel par le toggle (la
+# ligne ouverte), sa re-application apres une re-peinture (`renderHistoryHands`)
+# et apres un re-layout (`relayoutReviewInbox`), et la regle CSS qui donne son
+# effet (une ligne repliee ne reserve plus de hauteur).
+FOLD_WIRING = (
+    "function reviewInboxKeepAdvancedVisible(){",
+    "  reviewInboxKeepAdvancedVisible();\n  return !open;",
+    "  renderReviewInboxPage(hands,byId);\n  reviewInboxKeepAdvancedVisible();\n}",
+    "[data-review-inbox-folded]{display:none}",
+)
+
 # Mutations en memoire : chacune doit faire echouer `check`, sinon le smoke
 # passerait sur un garde trop faible. Le jeton doit etre present une seule fois.
 MUTATIONS = {
@@ -128,6 +141,8 @@ MUTATIONS = {
     ),
     # le pager de l'inbox disparait
     "drop-pager": ('id="hhListPager"', ""),
+    # le repli borne perd son effet CSS : une ligne repliee reserverait sa hauteur
+    "drop-fold-css": ("[data-review-inbox-folded]{display:none}", ""),
 }
 
 
@@ -171,6 +186,269 @@ def check(index_text: str) -> None:
     for token in FILTERS_PAGINATION:
         present(token)
 
+    # 7. #424 F1 — le repli borne qui garde la ligne ouverte atteignable dans la
+    #    coque bornee (`overflow:hidden`) : helper declare, appele par le toggle,
+    #    re-applique apres une re-peinture/un re-layout, et sa regle CSS.
+    for token in FOLD_WIRING:
+        present(token)
+
+
+# --------------------------------------------------------------------------- #
+# #424 F1 — smoke reproductible de l'ouverture du panneau avance sur une page
+# pleine. Les fonctions *reellement servies* (`renderReviewInboxPage`,
+# `paintReviewInboxRows` remplace par un peintre mesure, `toggleReviewInboxAdvanced`
+# et `reviewInboxKeepAdvancedVisible`) sont executees contre un DOM borne minimal ou
+# `scrollHeight` est derive des lignes peintes (une ligne repliee — attribut
+# `data-review-inbox-folded` *et* regle CSS presente — ne reserve plus de
+# hauteur), exactement comme un navigateur le ferait. Le test ouvre le panneau
+# de la derniere ligne d'une page pleine et exige que la ligne et son panneau
+# restent atteignables (`scrollHeight <= clientHeight`, aucune ligne ouverte
+# repliee), puis rejoue trois mutations en memoire : sans l'appel de repli, sans
+# l'effet du repli, ou sans la regle CSS, la page deborde derriere la coque.
+FOLD_HARNESS_SCRIPT = r"""
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+
+const FOLD_RULE='[data-review-inbox-folded]{display:none}';
+const MUTATIONS={
+  // le toggle n'appelle plus le repli borne
+  'no-fold-call':[
+    '  reviewInboxKeepAdvancedVisible();\n  return !open;',
+    '  return !open;',
+  ],
+  // le repli est appele mais ne replie jamais aucune ligne
+  'fold-keeps-rows-visible':[
+    '    row.setAttribute("data-review-inbox-folded","");',
+    '    void row;',
+  ],
+  // la regle CSS du repli disparait : une ligne repliee reserverait sa hauteur
+  'drop-fold-css':[FOLD_RULE,''],
+};
+let source=fs.readFileSync('site/index.html','utf8');
+const mutation=process.env.ADVANCED_FOLD_MUTATION||'';
+if(mutation){
+  const [token,replacement]=MUTATIONS[mutation];
+  assert.ok(typeof token==='string'&&token.length>0,'unknown mutation: '+mutation);
+  assert.equal(source.split(token).length-1,1,'mutation token must occur exactly once: '+mutation);
+  source=source.replace(token,replacement);
+}
+// Une ligne repliee ne libere sa hauteur que si la regle servie est presente :
+// c'est ce qui relie le modele mesure a l'octet servi.
+const foldCss=source.includes(FOLD_RULE);
+
+function extractFn(src,name){
+  const start=src.indexOf('function '+name+'(');
+  if(start<0)throw new Error('missing '+name);
+  let cursor=src.indexOf('(',start+'function '.length),depth=0;
+  for(;cursor<src.length;cursor++){
+    const ch=src[cursor];
+    if(ch==='(')depth++;
+    else if(ch===')'){depth--;if(depth===0)break;}
+  }
+  cursor=src.indexOf('{',cursor);depth=0;
+  for(;cursor<src.length;cursor++){
+    const ch=src[cursor];
+    if(ch==='{')depth++;
+    else if(ch==='}'){depth--;if(depth===0)return src.slice(start,cursor+1);}
+  }
+  throw new Error('unbalanced '+name);
+}
+function servedConst(src,name){
+  const match=src.match(new RegExp('^const '+name+'=(.*);$','m'));
+  assert.ok(match,'missing served constant: '+name);
+  return match[1];
+}
+function pageSizeConsts(src){
+  const re=/^const (REVIEW_INBOX_PAGE_SIZE_[A-Z]+|REVIEW_INBOX_ROW_PITCH_[A-Z]+|REVIEW_INBOX_PAGE_FIT_ATTEMPTS)=[^\n]*$/gm;
+  const consts=src.match(re)||[];
+  assert.ok(consts.length>=6,'page-size constants must be declared: '+consts.length);
+  return consts.join('\n');
+}
+
+// Minimal measured DOM: a row owns a base height plus, when its advanced panel
+// is open, the panel height. A row carrying `data-review-inbox-folded` (and the
+// served CSS rule) leaves the flow, exactly like `display:none`.
+const tokens=el=>String(el.className||'').split(/\s+/).filter(Boolean);
+function matches(el,sel){
+  if(sel==='.hh-hand')return tokens(el).includes('hh-hand');
+  if(sel==='.review-inbox-advanced')return tokens(el).includes('review-inbox-advanced');
+  if(sel==='.review-inbox-advanced:not([hidden])')
+    return tokens(el).includes('review-inbox-advanced')&&el.hidden!==true;
+  throw new Error('unsupported selector: '+sel);
+}
+function descendants(el,out=[]){for(const child of el.children||[]){out.push(child);descendants(child,out);}return out;}
+function makeElement(tag){
+  return {
+    tagName:String(tag),className:'',id:'',hidden:false,textContent:'',children:[],attrs:{},dataset:{},
+    append(...nodes){for(const node of nodes)this.children.push(node);},
+    appendChild(node){this.children.push(node);return node;},
+    setAttribute(name,value){this.attrs[String(name)]=String(value);},
+    getAttribute(name){return Object.prototype.hasOwnProperty.call(this.attrs,String(name))?this.attrs[String(name)]:null;},
+    removeAttribute(name){delete this.attrs[String(name)];},
+    addEventListener(){},
+    querySelector(sel){for(const el of descendants(this))if(matches(el,sel))return el;return null;},
+    querySelectorAll(sel){return descendants(this).filter(el=>matches(el,sel));},
+  };
+}
+
+const ROW_HEIGHT=54;
+const GAP=6;
+const PANEL_HEIGHT=132;
+const LIST_HEIGHT=600;
+const folded=row=>row.attrs['data-review-inbox-folded']!=null;
+const rowHeight=row=>row.baseHeight+((row.panel&&row.panel.hidden===false)?PANEL_HEIGHT:0);
+function makeRow(id){
+  const row=makeElement('div');
+  row.className='hh-hand review-inbox-row';
+  row.dataset.handId=String(id);
+  row.baseHeight=ROW_HEIGHT;
+  const panel=makeElement('div');
+  panel.className='review-inbox-advanced';
+  panel.hidden=true;
+  row.appendChild(panel);
+  row.panel=panel;
+  return row;
+}
+
+function harness(){
+  const hhHandsEl=makeElement('div');
+  Object.defineProperty(hhHandsEl,'innerHTML',{
+    get(){return '';},
+    set(value){if(!value)this.children=[];},
+  });
+  Object.defineProperty(hhHandsEl,'scrollHeight',{get(){
+    const rows=this.children.filter(row=>!(folded(row)&&foldCss));
+    if(!rows.length)return 0;
+    return rows.reduce((sum,row)=>sum+rowHeight(row),0)+(rows.length-1)*GAP;
+  }});
+  Object.defineProperty(hhHandsEl,'clientHeight',{get(){return LIST_HEIGHT;}});
+  const hhListPager={hidden:true};
+  const hhPageInfo={textContent:''};
+  const hhPagePrev={disabled:false};
+  const hhPageNext={disabled:false};
+  const state={reviewInboxPage:0,reviewInboxPageSize:0,selectedHand:null};
+  const paints=[];
+  const sandbox={
+    console,Array,Set,String,Number,Boolean,Math,JSON,
+    state,hhHandsEl,hhListPager,hhPageInfo,hhPagePrev,hhPageNext,
+    window:{matchMedia:()=>({matches:true})},
+    getComputedStyle:()=>({rowGap:GAP+'px'}),
+    paintReviewInboxRows(pageHands){
+      hhHandsEl.innerHTML='';
+      for(const hand of pageHands)hhHandsEl.appendChild(makeRow(hand.id));
+      paints.push(pageHands.map(hand=>String(hand.id)));
+    },
+  };
+  vm.createContext(sandbox);
+  vm.runInContext([
+    pageSizeConsts(source),
+    'const REVIEW_INBOX_ADVANCED_OPEN='+servedConst(source,'REVIEW_INBOX_ADVANCED_OPEN')+';',
+    ...[
+      'reviewInboxAdvancedIsOpen','reviewInboxIsHeightBound','reviewInboxRowPitch','reviewInboxFitCount',
+      'reviewInboxBoundedSize','reviewInboxPageSizeGuess','updateReviewInboxPager','reviewInboxPageWindow',
+      'renderReviewInboxPage','toggleReviewInboxAdvanced','reviewInboxKeepAdvancedVisible',
+    ].map(name=>extractFn(source,name)),
+  ].join('\n'),sandbox);
+  return {sandbox,state,hhHandsEl,paints};
+}
+
+function openScenario({total=32,index='last'}={}){
+  const h=harness();
+  const hands=Array.from({length:total},(_,i)=>({id:String(i+1)}));
+  h.sandbox.renderReviewInboxPage(hands,new Map());
+  const rows=h.hhHandsEl.children;
+  const paintedIds=rows.map(row=>String(row.dataset.handId));
+  const target=rows[index==='last'?rows.length-1:index];
+  const openedHand=String(target.dataset.handId);
+  const button={setAttribute(){},textContent:''};
+  // Le vrai toggle servi ouvre le panneau *et* declenche le repli borne.
+  h.sandbox.toggleReviewInboxAdvanced(openedHand,button,target.panel);
+  const read=()=>({
+    paintedIds,
+    openedHand,
+    panelHidden:target.panel.hidden,
+    foldedIds:rows.filter(folded).map(row=>String(row.dataset.handId)),
+    visibleIds:rows.filter(row=>!(folded(row)&&foldCss)).map(row=>String(row.dataset.handId)),
+    scrollHeight:h.hhHandsEl.scrollHeight,
+    clientHeight:h.hhHandsEl.clientHeight,
+    overflow:h.hhHandsEl.scrollHeight>h.hhHandsEl.clientHeight+1,
+    pageSize:h.state.reviewInboxPageSize,
+    page:h.state.reviewInboxPage,
+    paints:h.paints.length,
+  });
+  const opened=read();
+  // Fermer le panneau leve le repli et restaure la page pleine.
+  h.sandbox.toggleReviewInboxAdvanced(openedHand,button,target.panel);
+  const closed=read();
+  return {opened,closed};
+}
+
+const results={last:openScenario({index:'last'}),middle:openScenario({index:5}),mutation};
+process.stdout.write(JSON.stringify(results));
+"""
+
+
+def run_fold_harness(mutation: str | None = None) -> dict:
+    """Drive the served open/fold path on a measured bounded DOM (node only)."""
+    import json
+    import os
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    assert node is not None, "node runtime is required for the review advanced-view fold smoke"
+    completed = subprocess.run(
+        [node, "-e", FOLD_HARNESS_SCRIPT],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "ADVANCED_FOLD_MUTATION": mutation or ""},
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    return json.loads(completed.stdout)
+
+
+def check_fold_runtime() -> None:
+    """#424 F1 — opening the advanced panel on a full page stays reachable."""
+    results = run_fold_harness()
+    last = results["last"]
+    # La page est pleine : elle peint toute sa fenetre sans deborder (fermee).
+    assert last["closed"]["panelHidden"] and not last["closed"]["overflow"], last
+    assert len(last["closed"]["visibleIds"]) == len(last["closed"]["paintedIds"]), last
+    assert not last["closed"]["foldedIds"], last
+    # Ouvrir le panneau de la *derniere* ligne : la ligne et son panneau restent
+    # atteignables (aucun debordement derriere la coque), la ligne ouverte n'est
+    # jamais repliee et reste la derniere ligne visible.
+    opened = last["opened"]
+    assert opened["panelHidden"] is False, opened
+    assert not opened["overflow"], opened
+    assert opened["scrollHeight"] <= opened["clientHeight"] + 1, opened
+    assert opened["openedHand"] in opened["visibleIds"], opened
+    assert opened["visibleIds"][-1] == opened["openedHand"], opened
+    assert opened["foldedIds"], "ouvrir le panneau doit replier au moins une ligne au-dessus"
+    assert set(opened["foldedIds"]) <= set(opened["paintedIds"]) - {opened["openedHand"]}, opened
+    # Le repli est purement presentationnel : la fenetre paginee et la taille de
+    # page servies ne bougent pas.
+    assert opened["pageSize"] == last["closed"]["pageSize"], last
+    assert opened["page"] == 0, last
+
+    # Une ligne du milieu de page : le repli garde la ligne ouverte, son panneau
+    # et les lignes en dessous atteignables sans deborder.
+    middle = results["middle"]["opened"]
+    assert middle["panelHidden"] is False and not middle["overflow"], middle
+    assert middle["openedHand"] in middle["visibleIds"], middle
+    assert set(middle["visibleIds"]) - {middle["openedHand"]}, middle
+
+    # Non-vacuite : sans l'appel de repli, sans son effet, ou sans la regle CSS,
+    # la page deborde derriere `overflow:hidden`.
+    for name in ("no-fold-call", "fold-keeps-rows-visible", "drop-fold-css"):
+        mutated = run_fold_harness(name)["last"]
+        assert mutated["opened"]["overflow"], (
+            f"la mutation {name} doit faire deborder la page ouverte (repli non load-bearing)",
+            mutated,
+        )
+
 
 def main() -> None:
     # La parite octet-a-octet entre source d'edition et miroir servi : un miroir
@@ -192,6 +470,10 @@ def main() -> None:
         except AssertionError:
             continue
         raise AssertionError(f"the {name} mutation must fail the smoke harness")
+
+    # #424 F1 — la verification comportementale de l'ouverture du panneau sur une
+    # page pleine (le harnais node execute les fonctions servies).
+    check_fold_runtime()
 
     print("review advanced-view smoke checks: OK")
 

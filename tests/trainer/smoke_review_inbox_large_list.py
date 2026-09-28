@@ -57,6 +57,12 @@ Review inbox **in a browser**:
    re-applied to the restored list (hands + prefs, both from local storage).
    The restored list is read page by page, so a restored filter that overflows
    one measured page is still compared whole instead of from page 1 alone.
+8. advanced details on a full page (#424 F1) — with an injected hybrid
+   projection (a test datum, strict passthrough), opening the advanced panel of
+   the *last* row of the first page (the inbox carries `>= PAGE_SIZE_MAX`
+   hands) keeps the row and its panel reachable: the bounded shell never clips
+   them behind `overflow:hidden` (`#hhHands.scrollHeight <= clientHeight`, the
+   panel stays above the list bottom) and the document still never scrolls.
 
 Why the waits are causal (and not timed)
 ----------------------------------------
@@ -308,7 +314,11 @@ INJECT_REVIEW_SCORES_FN = """(payload) => {
       complete:details.length>0,
       analyzableDecisions:details.length,
       finishedDecisions:details.length,
-      details
+      details,
+      // #424 F1 - projection hybride optionnelle, passthrough strict : le smoke
+      // la fournit (payload.hybrid) pour peindre le toggle « Details avances »
+      // d'une main ; le shell la porte verbatim, sans rien recalculer.
+      ...(payload.hybrid&&payload.hybrid[id]?{hybrid:payload.hybrid[id]}:{})
     };
   }
   state.reviewScores=scores;
@@ -349,6 +359,57 @@ OPEN_DEEP_LINK_JS = """() => ({
   status:(document.querySelector('#replayerExportStatus')||{}).textContent||'',
   statusClass:(document.querySelector('#replayerExportStatus')||{}).className||''
 })"""
+
+# #424 F1 — projeter une main hybride pour peindre son panneau avance : le smoke
+# fournit la projection *en donnee de test* (passthrough strict), il ne calcule
+# aucun EV ni aucun support. Le panneau reste replie par defaut ; seul le toggle
+# servi l'ouvre.
+HYBRID_PROJECTION = {
+    "schema": "poker-review-hybrid-result/v1",
+    "support_state": "STRONG_SUPPORT",
+    "confidence_level": "HIGH",
+    "is_estimate": False,
+    "ev_bb": -0.2,
+    "uncertainty_note": "",
+    "abstains": False,
+    "abstention_reason": None,
+    "too_close": False,
+    "provenance": {
+        "route": "HYBRID_DIRECT",
+        "source": "model_b+model_a",
+        "model_id": "gbm-2026-09",
+        "model_hash": "sha256:abcd",
+        "ood_status": "IN_DISTRIBUTION",
+        "ood_reason": None,
+    },
+}
+
+# #424 F1 — lire la geometrie de la derniere ligne et de son panneau avance apres
+# ouverture : la coque bornee (`overflow:hidden`) doit porter la ligne ouverte et
+# son panneau — `scrollHeight <= clientHeight`, panneau sous la liste, document
+# qui ne defile pas.
+ADVANCED_PANEL_READ_FN = """() => {
+  const list=document.querySelector('#hhHands');
+  const rows=[...list.querySelectorAll('.hh-hand')];
+  const last=rows.length?rows[rows.length-1]:null;
+  const panel=last?last.querySelector('.review-inbox-advanced'):null;
+  return {
+    painted:rows.length,
+    handId:last?String(last.dataset.handId):null,
+    hasToggle:!!(last&&last.querySelector('.review-inbox-advanced-toggle')),
+    panelPresent:!!panel,
+    panelHidden:panel?panel.hidden===true:null,
+    visibleRows:rows.filter(row=>getComputedStyle(row).display!=='none').map(row=>String(row.dataset.handId)),
+    listOverflowY:getComputedStyle(list).overflowY,
+    listScrollHeight:list.scrollHeight,
+    listClientHeight:list.clientHeight,
+    listBottom:list.getBoundingClientRect().bottom,
+    panelBottom:panel?panel.getBoundingClientRect().bottom:null,
+    docScrollHeight:document.scrollingElement.scrollHeight,
+    docClientHeight:document.scrollingElement.clientHeight,
+    total:((state.reviewInboxView&&state.reviewInboxView.items)||[]).length
+  };
+}"""
 
 # #395 T1 (rework) — la lecture causale de la persistance des préférences. Elle
 # relit exactement ce que `restoreLocalState` relira au prochain chargement
@@ -1037,6 +1098,46 @@ async def run() -> None:
                     "painted_after_round_trip": returned["ids"], "selected": returned["selected"],
                 }
 
+                # --- #424 F1 : détails d'une page pleine atteignables ---------
+                # La coque desktop ne défile pas (`.hh-list{overflow:hidden}`) :
+                # ouvrir le panneau avancé de la *dernière* ligne d'une page
+                # pleine ne doit jamais pousser la ligne — ni son panneau —
+                # derrière la coque. On injecte la projection hybride (chaque main
+                # peinte porte alors son toggle « Détails avancés »), on se place
+                # sur la première page (pleine : l'inbox porte >= PAGE_SIZE_MAX
+                # mains) et on ouvre le panneau de sa dernière ligne.
+                hybrid_payload = {
+                    **payload,
+                    "hybrid": {spec["hand_id"]: HYBRID_PROJECTION for spec in specs},
+                }
+                await page.select_option(RESULT_FILTER_SELECTOR, "")
+                await page.select_option(SORT_SELECTOR, "recent_desc")
+                await page.wait_for_function(
+                    "() => state.hhSort==='recent_desc' && state.reviewInboxFilters.result===''",
+                    timeout=10_000,
+                )
+                full_page = await _return_to_first_page(
+                    page, read=partial(_inject_and_read, payload=hybrid_payload)
+                )
+                assert full_page["page"] == 0, full_page
+                assert_bounded(full_page, "advanced/full")
+                assert full_page["total"] >= PAGE_SIZE_MAX, full_page
+                assert len(full_page["ids"]) == full_page["pageSize"], full_page
+                last_id = full_page["ids"][-1]
+                await page.click(
+                    f"#hhHands .hh-hand[data-hand-id='{last_id}'] .review-inbox-advanced-toggle"
+                )
+                advanced = await page.evaluate(ADVANCED_PANEL_READ_FN)
+                assert advanced["hasToggle"], advanced
+                assert advanced["panelPresent"] and advanced["panelHidden"] is False, advanced
+                assert advanced["handId"] == last_id, (last_id, advanced)
+                assert last_id in advanced["visibleRows"], (last_id, advanced)
+                assert advanced["listOverflowY"] in ("hidden", "clip"), advanced
+                assert advanced["listScrollHeight"] <= advanced["listClientHeight"] + 1, advanced
+                assert advanced["panelBottom"] <= advanced["listBottom"] + 1, advanced
+                assert advanced["docScrollHeight"] <= advanced["docClientHeight"] + 1, advanced
+                audit["advanced_full_page"] = advanced
+
                 # --- A hand without any comparable decision stays explicit -----
                 no_decision = next(row for row in specs if row["decision_step_index"] is None)
                 await page.select_option(SORT_SELECTOR, "hand_asc")
@@ -1100,7 +1201,8 @@ async def run() -> None:
         f"({HAND_TOTAL} mains · rendu borné ≤{PAGE_SIZE_MAX}/page sans scroll de liste · "
         f"{measured_page} · "
         "pagination précédent/suivant · ordre temporel/gain/perte/EV par page · "
-        "filtre résultat · sélection stable · deep link main · prefs restaurées après reload)"
+        "filtre résultat · sélection stable · deep link main · détails avancés d'une "
+        "page pleine atteignables · prefs restaurées après reload)"
     )
 
 

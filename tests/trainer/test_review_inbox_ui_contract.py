@@ -114,6 +114,10 @@ const sandbox={
   modelBRobustnessStatusText:()=>'robustesse indisponible',
   openReviewInboxItem:()=>{},
   setReviewInboxReviewed:()=>{},
+  // #424 F1 : le repli borné ne s'applique qu'à la coque desktop mesurée ; le
+  // DOM minimal de ce harnais (pas de coque bornée) le neutralise comme hors
+  // `matchMedia("(min-width:901px)")`.
+  reviewInboxIsHeightBound:()=>false,
 };
 vm.createContext(sandbox);
 vm.runInContext('var window=globalThis;',sandbox);
@@ -135,6 +139,7 @@ vm.runInContext([
     'reviewInboxAdvancedIsOpen','reviewInboxAdvancedFormatter','reviewInboxAdvancedProvenance',
     'reviewInboxAdvancedView','reviewInboxAdvancedModelLabel','reviewInboxAdvancedOodLabel',
     'reviewInboxAdvancedField','reviewInboxAdvancedPanel','toggleReviewInboxAdvanced','paintReviewInboxRows',
+    'reviewInboxKeepAdvancedVisible',
   ].map(name=>extractFn(source,name)),
 ].join('\n'),sandbox);
 

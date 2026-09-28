@@ -1376,6 +1376,78 @@ def check_smoke_shape(smoke) -> None:
     assert composition["types"] == ["function", "function", "function"], composition
 
 
+# #424 F1 — la couverture navigateur du panneau avancé sur une page pleine. Le
+# smoke injecte une projection hybride (donnée de test, passthrough strict),
+# ouvre le panneau de la DERNIÈRE ligne de la première page (l'inbox porte
+# `>= PAGE_SIZE_MAX` mains) et exige que la ligne ou son panneau ne soient pas
+# clippés par la coque bornée (`overflow:hidden`). Ce module relie cette section
+# aux octets servis (le repli borné et sa règle CSS) et rejoue deux mutations en
+# mémoire : sans elles, le retour du débordement passerait inaperçu.
+# La borne load-bearing : c'est elle qui refuse un panneau poussé derrière la
+# coque quand la page est pleine.
+ADVANCED_FULL_PAGE_GUARD = (
+    'assert advanced["listScrollHeight"] <= advanced["listClientHeight"] + 1, advanced'
+)
+ADVANCED_FULL_PAGE_GUARD_WEAK = 'assert True, advanced'
+ADVANCED_FULL_PAGE_TOKENS = (
+    "# --- #424 F1 : détails d'une page pleine atteignables",
+    "HYBRID_PROJECTION = {",
+    'ADVANCED_PANEL_READ_FN = """',
+    "...(payload.hybrid&&payload.hybrid[id]?{hybrid:payload.hybrid[id]}:{})",
+    '"hybrid": {spec["hand_id"]: HYBRID_PROJECTION for spec in specs},',
+    ".review-inbox-advanced-toggle",
+    'assert advanced["hasToggle"], advanced',
+    'assert advanced["panelPresent"] and advanced["panelHidden"] is False, advanced',
+    'assert advanced["listOverflowY"] in ("hidden", "clip"), advanced',
+    ADVANCED_FULL_PAGE_GUARD,
+    'assert advanced["panelBottom"] <= advanced["listBottom"] + 1, advanced',
+)
+SERVED_ADVANCED_FULL_PAGE_TOKENS = (
+    "function reviewInboxKeepAdvancedVisible(){",
+    "[data-review-inbox-folded]{display:none}",
+)
+
+
+def check_advanced_full_page_surface(
+    smoke_source: str, served_index: str = SERVED_INDEX
+) -> None:
+    """#424 F1 — le smoke couvre l'ouverture du panneau sur une page pleine."""
+    for token in ADVANCED_FULL_PAGE_TOKENS:
+        assert token in smoke_source, token
+    for token in SERVED_ADVANCED_FULL_PAGE_TOKENS:
+        assert token in served_index, token
+
+
+def _assert_advanced_full_page_rejects(
+    mutated_smoke: str, mutated_served: str, label: str
+) -> None:
+    try:
+        check_advanced_full_page_surface(mutated_smoke, mutated_served)
+    except AssertionError:
+        return
+    raise AssertionError(f"le garde-fou de page pleine doit rejeter: {label}")
+
+
+def check_advanced_full_page_non_vacuity() -> None:
+    """#424 F1 — deux mutations en mémoire doivent être refusées.
+
+    (a) la borne de débordement affaiblie dans la copie du smoke (le panneau
+    pourrait être clippé sans que rien ne le voie) ; (b) la règle CSS du repli
+    retirée des octets servis (le repli n'aurait plus d'effet, la ligne repliée
+    garderait sa hauteur). Aucune mutation n'est écrite sur disque.
+    """
+    weakened = SMOKE_SOURCE.replace(
+        ADVANCED_FULL_PAGE_GUARD, ADVANCED_FULL_PAGE_GUARD_WEAK, 1
+    )
+    assert weakened != SMOKE_SOURCE, ADVANCED_FULL_PAGE_GUARD
+    _assert_advanced_full_page_rejects(weakened, SERVED_INDEX, "borne de débordement affaiblie")
+    dropped_css = SERVED_INDEX.replace("[data-review-inbox-folded]{display:none}", "", 1)
+    assert dropped_css != SERVED_INDEX, "la règle CSS du repli doit rester servie"
+    _assert_advanced_full_page_rejects(SMOKE_SOURCE, dropped_css, "règle CSS du repli retirée")
+    assert SMOKE.read_text(encoding="utf-8") == SMOKE_SOURCE
+    assert (ROOT / "site" / "index.html").read_text(encoding="utf-8") == SERVED_INDEX
+
+
 def check_ci_registration() -> None:
     driver_block = SMOKE_TRAINER.split("DRIVER_SMOKES = (", 1)[1].split("\n)", 1)[0]
     assert SMOKE_NAME in driver_block, (
@@ -1411,6 +1483,8 @@ def main() -> None:
     persistence = check_persistence_surface(SMOKE_SOURCE, SERVED_INDEX)
     persistence_rejections = check_persistence_surface_non_vacuity()
     check_smoke_shape(smoke)
+    check_advanced_full_page_surface(SMOKE_SOURCE)
+    check_advanced_full_page_non_vacuity()
     check_ci_registration()
     # La démonstration est consignée dans la sortie : chaque mutation rejouée en
     # mémoire, et la raison exacte pour laquelle le garde la refuse.

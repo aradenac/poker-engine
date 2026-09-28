@@ -278,6 +278,14 @@
   /* La cellule statut reste sur une ligne pour la vue simple : seul un panneau
      avancé (donc une main hybridée) fait replier le toggle sous le badge. */
   .review-inbox-status:has(.review-inbox-advanced-toggle){flex-wrap:wrap}
+  /* #424 F1 — repli borné des lignes sans panneau ouvert. Dans la coque desktop
+     `.hh-list` ne défile pas (`overflow:hidden`, contrats #394/#395) : ouvrir le
+     panneau avancé d'une ligne ajoute de la hauteur et ferait passer la ligne
+     ouverte (et son panneau) derrière la coque. `reviewInboxKeepAdvancedVisible`
+     replie (`display:none`) les lignes sans panneau ouvert jusqu'à ce que la
+     coque porte l'ensemble — la fenêtre paginée et la taille de page ne changent
+     pas, et le repli est levé avant toute nouvelle peinture. */
+  [data-review-inbox-folded]{display:none}
   @media(max-width:900px){
     .review-inbox-row{grid-template-columns:minmax(0,1fr) 132px}
     .review-inbox-open{grid-template-columns:126px 90px 1fr}
@@ -7335,6 +7343,7 @@ function renderHistoryHands(){
   }
 
   renderReviewInboxPage(hands,byId);
+  reviewInboxKeepAdvancedVisible();
 }
 /* Peint une page bornée de l'inbox. La barre de pagination est rendue *avant* la
    mesure (elle fait partie de la hauteur contrainte) : sinon la place rendue à
@@ -7486,7 +7495,32 @@ function toggleReviewInboxAdvanced(handId,button,panel){
   panel.hidden=open;
   button.setAttribute("aria-expanded",String(!open));
   button.textContent=open?"Détails avancés":"Masquer les détails";
+  reviewInboxKeepAdvancedVisible();
   return !open;
+}
+/* #424 F1 — garder la ligne ouverte et son panneau atteignables dans la coque
+   bornée. `.hh-list` est `overflow:hidden` (aucun scroll de liste : contrats
+   #394/#395) : la hauteur ajoutée par le panneau avancé ferait passer la
+   dernière ligne — et son panneau — derrière la coque. On replie donc des lignes
+   (jamais une ligne dont le panneau est ouvert) jusqu'à ce que la coque porte
+   l'ensemble : la fenêtre visible reste contiguë et se termine sur — ou après —
+   la ligne ouverte, comme un défilement local. Les lignes repliées
+   réapparaissent dès qu'un panneau est fermé ou que la liste est re-peinte.
+   C'est une couche de présentation pure : ni la fenêtre paginée ni la taille de
+   page ne changent, et aucun EV, range ou résultat scientifique n'est
+   recalculé. */
+function reviewInboxKeepAdvancedVisible(){
+  const list=hhHandsEl;
+  if(!list||!reviewInboxIsHeightBound())return;
+  const rows=Array.from(list.querySelectorAll(".hh-hand"));
+  for(const row of rows)row.removeAttribute("data-review-inbox-folded");
+  for(const row of rows){
+    // Une ligne dont le panneau est ouvert est celle qu'on garde atteignable :
+    // elle n'est jamais repliée.
+    if(row.querySelector(".review-inbox-advanced:not([hidden])"))continue;
+    if(list.scrollHeight<=list.clientHeight+1)break;
+    row.setAttribute("data-review-inbox-folded","");
+  }
 }
 function paintReviewInboxRows(pageHands,byId){
   hhHandsEl.innerHTML="";
@@ -7851,6 +7885,7 @@ function relayoutReviewInbox(){
   if(!hands.length)return;
   const byId=new Map((state.reviewInboxView?.items||[]).map(item=>[String(item.hand_id),item]));
   renderReviewInboxPage(hands,byId);
+  reviewInboxKeepAdvancedVisible();
 }
 window.addEventListener("resize",()=>{
   // Anti-rebond : une seule re-mesure après la fin du redimensionnement.
